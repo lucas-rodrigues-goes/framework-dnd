@@ -1,0 +1,419 @@
+[dialog5("Character Creation", "width=450; height=800; temporary=1; input=1; noframe=0"), code: {
+
+
+
+
+[r:'
+<style>
+    body {
+        background: #333;
+        color: #ddd;
+        font-size: 11px;
+    }
+
+
+    /*-----------------------------------------------------------------------*/
+    form {
+        width:80%;
+        max-width: 375px;
+        position:relative;
+        left:50%;
+        transform: translate(-50%);
+    }
+
+    form input, form select{
+        -webkit-appearance: none;
+        width: 90%;
+        left:50%;
+        position:relative;
+        transform: translate(-50%);
+
+        background-color: white;
+        border: none;
+        border-radius: 5px;
+
+        padding:5px;
+        margin-bottom: 20px;
+    }
+    form input:focus, form select:focus{
+        outline: none;
+    }
+
+    form .header {
+        text-align:center;
+        text-indent: 0px;
+        font-size: 110%;
+        font-weight: 700;
+        margin-top: 40px;
+        display:none;
+    }
+
+    form p {
+        text-indent:5%;
+        margin-bottom: 3px;
+    }
+
+    button:hover {
+        cursor:pointer;
+    }
+
+
+    /*-----------------------------------------------------------------------*/
+    .section {
+
+        padding: 10px;
+        padding-top: 5px;
+        padding-bottom: 10px;
+        
+        margin-top: 20px;
+        margin-bottom: 20px;
+
+        border: 0.1px solid #a5a397;
+        border-radius: 5px;
+    }
+
+    .center {
+        text-align:center;
+        text-indent: 0;
+    }
+
+    .points {
+        margin-top: 4px;
+        font-size: 120%;
+        font-weight: bold;
+    }
+
+    .hidden {
+        display:none
+    }
+
+
+    /*-----------------------------------------------------------------------*/
+
+    #submitButton {
+        position: absolute;
+        bottom: 5%;
+        left: 50%;
+        transform: translate(-50%);
+    }
+
+    /*-----------------------------------------------------------------------*/
+
+    .grid-container {
+        position:relative;
+        padding-top: 12px;
+        padding-right: 5px;
+        padding-left:5px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, auto);
+        gap: 10px; /* Adjust the gap between grid items as needed */
+    }
+
+    .grid-item {
+        background-color: #333;
+        border: 1px solid #555;
+        border-radius: 5px;
+        padding: 20px;
+        height: 70px;
+        text-align: center;
+        padding-left: 10px;
+        padding-right: 10px;
+        position:relative;
+    }
+    .attribute-name {
+        position:absolute;
+        text-align: center;
+        font-size: 110%;
+        top: 5px;
+        left:50%;
+        transform: translate(-50%);
+    }
+    .attribute-score {
+        position:absolute;
+        top:47%;
+        left:50%;
+        transform: translate(-50%, -50%);
+        font-size: 250%;
+        font-weight: bold;
+    }
+    .attribute-button {
+        margin:0px;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        padding: 0px;
+        font-weight: bold;
+    }
+    .bottom{
+        position: absolute;
+        bottom: 2px;
+        left: 50%;
+        transform: translate(-50%);
+    }
+</style>
+']
+
+
+
+
+<div class="hidden">
+    <a id="sendData"></a>
+    <a id="closeWindow" href="macro://closeDialog@lib:main/all/Impersonated?%5B%22Character+Creation%22%5D"></a>
+</div>
+<form>
+    <p class="header">Basic character information</p>
+    <div class="section" id="basic-character-info">
+        <input type="text" class="hidden" id="id" value="{getSelected()}"></input>
+        <p>Name:</p><input type="text" id="name" placeholder></input>
+        <p>Type:</p><select id="type">
+            <option value="" hidden>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </option>
+            <option>Aberration</option>
+            <option>Beast</option>
+            <option>Celestial</option>
+            <option>Construct</option>
+            <option>Dragon</option>
+            <option>Elemental</option>
+            <option>Fey</option>
+            <option>Fiend</option>
+            <option>Giant</option>
+            <option>Humanoid</option>
+            <option>Monstrosity</option>
+            <option>Ooze</option>
+            <option>Plant</option>
+            <option>Undead</option>
+        </select>
+        <div id="race-div" style="display:none">
+        <p>Race:</p><select id="race">
+            <option value="" hidden>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </option>
+            <option>Dragonborn</option>
+            <option>Dwarf</option>
+            <option>Elf</option>
+            <option>Gnome</option>
+            <option>Half-Elf</option>
+            <option>Half-Orc</option>
+            <option>Halfling</option>
+            <option>Human</option>
+        </select>
+        </div>
+    </div>
+    <div class="section" id="attributes">
+        <p class="center">Total Points:</p>
+        <p class="center points"><span id="total-points">12</span> / 27</p>
+        <div class="grid-container">
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Strength
+                </div>
+                <span id ="str" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Dexterity
+                </div>
+                <span id ="dex" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Constitution
+                </div>
+                <span id ="con" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Wisdom
+                </div>
+                <span id ="wis" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Intelligence
+                </div>
+                <span id ="int" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+            <div class="grid-item">
+                <div class="attribute-name">
+                    Charisma
+                </div>
+                <span id ="cha" class="attribute-score">10</span>
+                <div class="bottom">
+                    <button class="attribute-button">-</button>
+                    <button class="attribute-button">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<button id="submitButton">Concluir</button>
+
+
+
+
+[r:'
+<script>
+
+    let sendData = document.getElementById("sendData")
+    let closeWindow = document.getElementById("closeWindow")
+
+    let id = document.getElementById("id")
+    let name = document.getElementById("name")
+    let type = document.getElementById("type")
+    let race = document.getElementById("race")
+
+    let strength = document.getElementById("str")
+    let dexterity = document.getElementById("dex")
+    let constitution = document.getElementById("con")
+    let wisdom = document.getElementById("wis")
+    let intelligence = document.getElementById("int")
+    let charisma = document.getElementById("cha")
+
+    let total_points = document.getElementById("total-points")
+
+    function updateSubmit() {
+        sendData.setAttribute("href", "macro://console@lib:main/all/impersonated?"+
+            "var creature = new Creature(`"+id.value+"`);"+
+            "creature.create("+
+            "`"+name.value+"`,"+
+            "`"+type.value+"`,"+
+            "`"+race.value+"`,"+
+            "`"+strength.value+"`,"+
+            "`"+dexterity.value+"`,"+
+            "`"+constitution.value+"`,"+
+            "`"+wisdom.value+"`,"+
+            "`"+intelligence.value+"`,"+
+            "`"+charisma.value+"`,"+
+            ")"
+        )
+
+        switch (race.value) {
+            case "Human":
+                strength.innerHTML = Number(strength.value) + 1
+                dexterity.innerHTML = Number(dexterity.value) + 1
+                constitution.innerHTML = Number(constitution.value) + 1
+                wisdom.innerHTML = Number(wisdom.value) + 1
+                intelligence.innerHTML = Number(intelligence.value) + 1
+                charisma.innerHTML = Number(charisma.value) + 1
+                break
+            case "Elf":
+                strength.innerHTML = Number(strength.value)
+                dexterity.innerHTML = Number(dexterity.value) + 2
+                constitution.innerHTML = Number(constitution.value)
+                wisdom.innerHTML = Number(wisdom.value) + 1
+                intelligence.innerHTML = Number(intelligence.value)
+                charisma.innerHTML = Number(charisma.value)
+                break
+            default:
+                strength.innerHTML = Number(strength.value)
+                dexterity.innerHTML = Number(dexterity.value)
+                constitution.innerHTML = Number(constitution.value)
+                wisdom.innerHTML = Number(wisdom.value)
+                intelligence.innerHTML = Number(intelligence.value)
+                charisma.innerHTML = Number(charisma.value)
+                break
+        }
+    }
+
+    function addButtonBehavior(field) {
+        field.value = field.innerHTML
+        subtract_button = field.nextElementSibling.children[0]
+        add_button = field.nextElementSibling.children[1]
+
+        subtract_button.addEventListener("click", ()=>{
+            if (field.value > 8) {
+
+                field.innerHTML = Number(field.innerHTML) - 1
+                field.value = Number(field.value) - 1
+                
+                total_points.innerHTML = field.value >= 13 ? Number(total_points.innerHTML) - 2 : Number(total_points.innerHTML) - 1
+                updateSubmit()
+            }
+        })
+        add_button.addEventListener("click", ()=>{
+            if ((field.value < 15) && (
+                (field.value < 13 && Number(total_points.innerHTML) < 27) || (field.value >= 13 && Number(total_points.innerHTML) < 26)
+            )) {
+
+                field.innerHTML = Number(field.innerHTML) + 1
+                field.value = Number(field.value) + 1
+
+                total_points.innerHTML = field.innerHTML > 13 ? Number(total_points.innerHTML) + 2 : Number(total_points.innerHTML) + 1
+                updateSubmit()
+            }
+        })
+    }
+
+    let attributeFieldList = [strength, dexterity, constitution, wisdom, intelligence, charisma]
+    attributeFieldList.forEach((value)=>{
+        addButtonBehavior(value)
+    })
+
+    name.addEventListener("input", updateSubmit)
+    type.addEventListener("input", ()=>{
+        let race_div = document.getElementById("race-div")
+        if (type.value == "Humanoid") {race_div.setAttribute("style","")}
+        else {race.value = ""; race_div.setAttribute("style","display:none")}
+    })
+    race.addEventListener("input", updateSubmit)
+
+    document.getElementById("submitButton").addEventListener("click", ()=>{
+
+        let valid = true
+
+        if (name.value == "") { valid = false
+            name.setAttribute("style", "border-color:#c00")
+        } else { name.setAttribute("style", "") }
+
+        if (type.value == "") { valid = false
+            type.setAttribute("style", "border-color:#c00")
+        } else { type.setAttribute("style", "") }
+
+        if (race.value == "" && type.value == "Humanoid") { valid = false
+            race.setAttribute("style", "border-color:#c00")
+        } else { race.setAttribute("style", "") }
+
+        if (valid==false) {return}
+
+        sendData.click()
+        closeWindow.click()
+    })
+
+</script>
+']
+
+
+
+
+}]
