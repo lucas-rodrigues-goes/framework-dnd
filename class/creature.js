@@ -140,7 +140,7 @@ try {
         set_attribute (attribute, value) {
             value = Number(value)
             let validAttributes = ["strength","dexterity","constitution","wisdom","intelligence","charisma"]
-            if (!validAttributes.includes(attribute) || value <= 0 || value > 20) {return}
+            if (!validAttributes.includes(attribute) || value < 1 || value > 30) {return}
 
             this.#attributes[attribute] = value
             this.save()
@@ -187,15 +187,65 @@ try {
         //----------------------------------------------------------------------------------------------//
         // Functions
         create(name, type, race, str, dex, con, wis, int, cha) {
-            this.name = name;
-            this.type = type;
-            this.race = race;
-            this.set_attribute("strength",str);
-            this.set_attribute("dexterity",dex);
-            this.set_attribute("constitution",con);
-            this.set_attribute("wisdom",wis);
-            this.set_attribute("intelligence",int);
-            this.set_attribute("charisma",cha);
+
+            str = Number(str), dex = Number(dex), con = Number(con)
+            wis = Number(wis), int = Number(int), cha = Number(cha)
+
+            switch (race) {
+                case "Hill Dwarf":
+                    con += 2, wis += 1
+                    break
+                case "Mountain Dwarf":
+                    con += 2, str += 2
+                    break
+                case "High Elf":
+                    dex += 2, int += 1
+                    break
+                case "Wood Elf":
+                    dex += 2, wis += 1
+                    break
+                case "Drow":
+                    dex += 2, cha += 1
+                    break
+                case "Lightfoot Halfling":
+                    dex += 2, cha += 1
+                    break
+                case "Stout Halfling":
+                    dex += 2, con += 1
+                    break
+                case "Half-Orc":
+                    str += 2, con += 1
+                    break
+                case "Human":
+                    str += 1, dex += 1, con += 1, wis += 1, int += 1, cha += 1
+                    break
+                case "Dragonborn":
+                    str += 2, cha += 1
+                    break
+                case "Tiefling":
+                    int += 1, cha += 2
+                    break
+                case "Half-Elf":
+                    dex += 1, int += 1, wis += 1, cha += 1
+                    break
+                case "Gnome":
+                    int += 2
+                    break
+                case "Rock Gnome":
+                    int += 2, con += 1
+                    break
+                case "Forest Gnome":
+                    int += 2, dex += 1
+                    break
+                default:
+                    break
+            }
+
+            this.name = name, this.type = type, this.race = race;
+
+            this.set_attribute("strength",str); this.set_attribute("dexterity",dex);
+            this.set_attribute("constitution",con); this.set_attribute("wisdom",wis);
+            this.set_attribute("intelligence",int); this.set_attribute("charisma",cha);
         }
 
         receive_damage(value, type) {

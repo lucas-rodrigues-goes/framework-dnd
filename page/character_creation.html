@@ -198,14 +198,20 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </option>
-            <option>Dragonborn</option>
-            <option>Dwarf</option>
-            <option>Elf</option>
-            <option>Gnome</option>
-            <option>Half-Elf</option>
+            <option>Hill Dwarf</option>
+            <option>Mountain Dwarf</option>
+            <option>High Elf</option>
+            <option>Wood Elf</option>
+            <option>Drow</option>
+            <option>Lightfoot Halfling</option>
+            <option>Stout Halfling</option>
             <option>Half-Orc</option>
-            <option>Halfling</option>
             <option>Human</option>
+            <option>Dragonborn</option>
+            <option>Tiefling</option>
+            <option>Half-Elf</option>
+            <option>Rock Gnome</option>
+            <option>Forest Gnome</option>
         </select>
         </div>
     </div>
@@ -319,30 +325,126 @@
         )
 
         switch (race.value) {
+            case "Hill Dwarf":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value) + 2;
+                wisdom.innerHTML = Number(wisdom.value) + 1;
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "Mountain Dwarf":
+                strength.innerHTML = Number(strength.value) + 2;
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value) + 2;
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "High Elf":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 2;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value) + 1;
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "Wood Elf":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 2;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value) + 1;
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "Drow":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 2;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value) + 1;
+                break;
+            case "Lightfoot Halfling":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 2;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value) + 1;
+                break;
+            case "Stout Halfling":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 2;
+                constitution.innerHTML = Number(constitution.value) + 1;
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "Half-Orc":
+                strength.innerHTML = Number(strength.value) + 2;
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value) + 1;
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
             case "Human":
-                strength.innerHTML = Number(strength.value) + 1
-                dexterity.innerHTML = Number(dexterity.value) + 1
-                constitution.innerHTML = Number(constitution.value) + 1
-                wisdom.innerHTML = Number(wisdom.value) + 1
-                intelligence.innerHTML = Number(intelligence.value) + 1
-                charisma.innerHTML = Number(charisma.value) + 1
-                break
-            case "Elf":
-                strength.innerHTML = Number(strength.value)
-                dexterity.innerHTML = Number(dexterity.value) + 2
-                constitution.innerHTML = Number(constitution.value)
-                wisdom.innerHTML = Number(wisdom.value) + 1
-                intelligence.innerHTML = Number(intelligence.value)
-                charisma.innerHTML = Number(charisma.value)
-                break
+                strength.innerHTML = Number(strength.value) + 1;
+                dexterity.innerHTML = Number(dexterity.value) + 1;
+                constitution.innerHTML = Number(constitution.value) + 1;
+                wisdom.innerHTML = Number(wisdom.value) + 1;
+                intelligence.innerHTML = Number(intelligence.value) + 1;
+                charisma.innerHTML = Number(charisma.value) + 1;
+                break;
+            case "Dragonborn":
+                strength.innerHTML = Number(strength.value) + 2;
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value) + 1;
+                break;
+            case "Tiefling":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value) + 1;
+                charisma.innerHTML = Number(charisma.value) + 2;
+                break;
+            case "Half-Elf":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 1;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value) + 1;
+                intelligence.innerHTML = Number(intelligence.value) + 1;
+                charisma.innerHTML = Number(charisma.value) + 1;
+                break;
+            case "Rock Gnome":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value) + 1;
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value) + 2;
+                charisma.innerHTML = Number(charisma.value);
+                break;
+            case "Forest Gnome":
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value) + 1;
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value) + 2;
+                charisma.innerHTML = Number(charisma.value);
+                break;
             default:
-                strength.innerHTML = Number(strength.value)
-                dexterity.innerHTML = Number(dexterity.value)
-                constitution.innerHTML = Number(constitution.value)
-                wisdom.innerHTML = Number(wisdom.value)
-                intelligence.innerHTML = Number(intelligence.value)
-                charisma.innerHTML = Number(charisma.value)
-                break
+                strength.innerHTML = Number(strength.value);
+                dexterity.innerHTML = Number(dexterity.value);
+                constitution.innerHTML = Number(constitution.value);
+                wisdom.innerHTML = Number(wisdom.value);
+                intelligence.innerHTML = Number(intelligence.value);
+                charisma.innerHTML = Number(charisma.value);
+                break;
         }
     }
 
@@ -357,7 +459,7 @@
                 field.innerHTML = Number(field.innerHTML) - 1
                 field.value = Number(field.value) - 1
                 
-                total_points.innerHTML = field.value >= 13 ? Number(total_points.innerHTML) - 2 : Number(total_points.innerHTML) - 1
+                total_points.innerHTML = field.value > 12 ? Number(total_points.innerHTML) - 2 : Number(total_points.innerHTML) - 1
                 updateSubmit()
             }
         })
