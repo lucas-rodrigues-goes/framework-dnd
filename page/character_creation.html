@@ -310,7 +310,7 @@
 
     function updateSubmit() {
         sendData.setAttribute("href", "macro://console@lib:main/all/impersonated?"+
-            "var creature = new Creature(`"+id.value+"`);"+
+            "var creature = new Creature(`"+id.value+"`, true);"+
             "creature.create("+
             "`"+name.value+"`,"+
             "`"+type.value+"`,"+

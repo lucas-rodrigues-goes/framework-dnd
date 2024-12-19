@@ -42,7 +42,77 @@ try {
             "necrotic": 0,
             "force": 0
         };
-        #features = {};
+        #features = {
+            "racial": [],
+            "feat": [],
+            "barbarian": [],
+            "bard": [],
+            "cleric": [],
+            "druid": [],
+            "fighter": [],
+            "monk": [],
+            "paladin": [],
+            "ranger": [],
+            "rogue": [],
+            "sorcerer": [],
+            "warlock": [],
+            "wizard": []
+        };
+        #spells = {
+            "bard": {
+                "known":{
+                    "cantrip":[],
+                    "1st":[], "2nd":[], "3rd":[],
+                    "4th":[], "5th":[], "6th":[],
+                    "7th":[], "8th":[], "9th":[]
+                }
+            },
+            "cleric": {
+                "always_prepared":[],
+                "memorized":[]
+            },
+            "druid": {
+                "always_prepared":[],
+                "memorized":[]
+            },
+            "paladin": {
+                "always_prepared":[],
+                "memorized":[]
+            },
+            "ranger": {
+                "known":{
+                    "1st":[],
+                    "2nd":[], "3rd":[],
+                    "4th":[], "5th":[]
+                }
+            },
+            "sorcerer": {
+                "known":{
+                    "cantrip":[],
+                    "1st":[], "2nd":[], "3rd":[],
+                    "4th":[], "5th":[], "6th":[],
+                    "7th":[], "8th":[], "9th":[]
+                }
+            },
+            "warlock": {
+                "known":{
+                    "cantrip":[],
+                    "1st":[], "2nd":[], "3rd":[],
+                    "4th":[], "5th":[], "6th":[],
+                    "7th":[], "8th":[], "9th":[]
+                }
+            },
+            "wizard": {
+                "known":{
+                    "cantrip":[],
+                    "1st":[], "2nd":[], "3rd":[],
+                    "4th":[], "5th":[], "6th":[],
+                    "7th":[], "8th":[], "9th":[]
+                },
+                "always_prepared":[],
+                "memorized":[]
+            }
+        }
         #equipment = {
             "head":"",
             "body":"",
@@ -110,6 +180,7 @@ try {
         get resources() {return this.#resources}
         get resistances() {return this.#resistances}
         get features() {return this.#features}
+        get spells() {return this.#spells}
         get equipment() {return this.#equipment}
         get inventory() {return this.#inventory}
 
@@ -157,10 +228,13 @@ try {
             this.#name = object.name
             this.#type = object.type
             this.#race = object.race
-            this.#attributes = object.attributes;
-            this.#resources = object.resources;
-            this.#resistances = object.resistances;
-            this.#features = object.features;
+            this.#attributes = object.attributes
+            this.#resources = object.resources
+            this.#resistances = object.resistances
+            this.#features = object.features
+            this.#spells = object.spells
+            this.#equipment = object.equipment
+            this.#inventory = object.inventory
 
             log(this.#name+" successfully loaded.")
         }
@@ -174,6 +248,7 @@ try {
                 "resources":this.#resources,
                 "resistances":this.#resistances,
                 "features":this.#features,
+                "spells":this.#spells,
                 "equipment":this.#equipment,
                 "inventory":this.#inventory,
             }
