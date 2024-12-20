@@ -1,15 +1,19 @@
 "use strict";
 try {
 
-    // Helper function to log messages to the MapTool chat
+    // Function to facilitate logging, and easy log disabling.
     var log = function (string) {
         MapTool.chat.broadcast(string);
     }
 
-    // Creature class definition
+
+
     var Creature = class {
 
-        // Private fields for creature's attributes, resources, and features
+        //=====================================================================================================
+        // Creature Default Parameters
+        //=====================================================================================================
+
         id;
         #name = "unnamed";
         #type = "";
@@ -132,31 +136,12 @@ try {
         };
         #inventory = [];
 
-        // Constructor: Initialize the creature, either reset or load previous data
-        constructor(id, reset) {
-            this.id = id;
-            let token = MapTool.tokens.getTokenByID(this.id);
-            let has_property_object = String(token.getProperty("object")) != "null";
 
-            // Reset if no previous data or if reset flag is true
-            if (!has_property_object || reset) {
-                this.#name = token.getName();
-                log(this.#name + " was reset.");
-                this.save();
-            }
-            else {
-                try {
-                    this.load();
-                }
-                catch {
-                    this.#name = token.getName();
-                    log(this.#name + " failed to load and was reset.");
-                    this.save();
-                }
-            }
-        }
 
-        // Getter methods for creature properties
+        //=====================================================================================================
+        // Getter methods
+        //=====================================================================================================
+
         get name() { return this.#name; }
         get type() { return this.#type; }
         get race() { return this.#race; }
@@ -183,6 +168,7 @@ try {
             return 10 + this.attr_bonus.dexterity;
         }
 
+        // Array or object getters
         get resources() { return this.#resources; }
         get resistances() { return this.#resistances; }
         get features() { return this.#features; }
@@ -190,7 +176,12 @@ try {
         get equipment() { return this.#equipment; }
         get inventory() { return this.#inventory; }
 
-        // Setter methods for creature properties
+
+
+        //=====================================================================================================
+        // Setter methods
+        //=====================================================================================================
+
         set name(name) {
             if (typeof name != "string") { return; }
             this.#name = name;
@@ -222,6 +213,62 @@ try {
             this.save();
             log(this.#name + " " + attribute + " set to " + value + ".");
         }
+
+
+
+        //=====================================================================================================
+        // Resource management
+        //=====================================================================================================
+
+        // Receive damage based on resistance type
+        receive_damage(value, type) {
+            let health = this.#resources.health;
+            let resistance = this.#resistances[type];
+            let damage = 0;
+
+            if (value <= 0) { return; }
+
+            // Calculate damage based on resistance
+            switch (resistance) {
+                case "immunity":
+                    damage = 0;
+                    break;
+                case "vulnerability":
+                    damage = value * 2;
+                    break;
+                case "heals":
+                    damage = value * -1;
+                    break;
+                default:
+                    damage = Math.max(value - resistance, 0);
+                    break;
+            }
+
+            health.current = health.current - damage;
+            health.current = Math.max(0, health.current);
+            health.current = Math.min(health.current, health.maximum);
+            this.save();
+            log(this.#name + " received " + damage + " " + type + " damage.");
+        }
+
+        // Receive healing
+        receive_healing(value) {
+            let health = this.#resources.health;
+            let is_undead = this.#type == "Undead";
+
+            if (is_undead) { return; }
+
+            health.current = health.current + value;
+            health.current = Math.min(health.current, health.maximum);
+            this.save();
+            log(this.#name + " received " + value + " points of healing.");
+        }
+
+
+
+        //=====================================================================================================
+        // Feature management
+        //=====================================================================================================
 
         // Add a feature to the creature (checking feature type and duplication)
         add_feature(type, name) {
@@ -260,41 +307,38 @@ try {
             log(this.#name + " lost the " + type + " feature " + name + ".");
         }
 
-        // Load the creature data from the MapTool token properties
-        load() {
-            let token = MapTool.tokens.getTokenByID(this.id);
-            let object = JSON.parse(token.getProperty("object"));
-
-            this.#name = object.name;
-            this.#type = object.type;
-            this.#race = object.race;
-            this.#attributes = object.attributes;
-            this.#resources = object.resources;
-            this.#resistances = object.resistances;
-            this.#features = object.features;
-            this.#spells = object.spells;
-            this.#equipment = object.equipment;
-            this.#inventory = object.inventory;
+        // Check if the creature has a specific feature
+        has_feature(name) {
+            return this.#features.all.includes(name);
         }
 
-        // Save the creature data to the MapTool token properties
-        save() {
-            let token = MapTool.tokens.getTokenByID(this.id);
-            let object = {
-                "name": this.#name,
-                "type": this.#type,
-                "race": this.#race,
-                "attributes": this.#attributes,
-                "resources": this.#resources,
-                "resistances": this.#resistances,
-                "features": this.#features,
-                "spells": this.#spells,
-                "equipment": this.#equipment,
-                "inventory": this.#inventory,
-            };
 
-            token.setName(this.#name);
-            token.setProperty("object", JSON.stringify(object));
+
+        //=====================================================================================================
+        // Instance management
+        //=====================================================================================================
+
+        constructor(id, reset) {
+            this.id = id;
+            let token = MapTool.tokens.getTokenByID(this.id);
+            let has_property_object = String(token.getProperty("object")) != "null";
+
+            // Reset if no previous data or if reset flag is true
+            if (!has_property_object || reset) {
+                this.#name = token.getName();
+                log(this.#name + " was reset.");
+                this.save();
+            }
+            else {
+                try {
+                    this.load();
+                }
+                catch {
+                    this.#name = token.getName();
+                    log(this.#name + " failed to load and was reset.");
+                    this.save();
+                }
+            }
         }
 
         // Create a new creature by setting attributes, race, and type
@@ -360,53 +404,45 @@ try {
             this.set_attribute("intelligence", int); this.set_attribute("charisma", cha);
         }
 
-        // Receive damage based on resistance type
-        receive_damage(value, type) {
-            let health = this.#resources.health;
-            let resistance = this.#resistances[type];
-            let damage = 0;
 
-            if (value <= 0) { return; }
 
-            // Calculate damage based on resistance
-            switch (resistance) {
-                case "immunity":
-                    damage = 0;
-                    break;
-                case "vulnerability":
-                    damage = value * 2;
-                    break;
-                case "heals":
-                    damage = value * -1;
-                    break;
-                default:
-                    damage = Math.max(value - resistance, 0);
-                    break;
-            }
+        //=====================================================================================================
+        // MapTool sync management
+        //=====================================================================================================
 
-            health.current = health.current - damage;
-            health.current = Math.max(0, health.current);
-            health.current = Math.min(health.current, health.maximum);
-            this.save();
-            log(this.#name + " received " + damage + " " + type + " damage.");
+        load() {
+            let token = MapTool.tokens.getTokenByID(this.id);
+            let object = JSON.parse(token.getProperty("object"));
+
+            this.#name = object.name;
+            this.#type = object.type;
+            this.#race = object.race;
+            this.#attributes = object.attributes;
+            this.#resources = object.resources;
+            this.#resistances = object.resistances;
+            this.#features = object.features;
+            this.#spells = object.spells;
+            this.#equipment = object.equipment;
+            this.#inventory = object.inventory;
         }
 
-        // Receive healing
-        receive_healing(value) {
-            let health = this.#resources.health;
-            let is_undead = this.#type == "Undead";
+        save() {
+            let token = MapTool.tokens.getTokenByID(this.id);
+            let object = {
+                "name": this.#name,
+                "type": this.#type,
+                "race": this.#race,
+                "attributes": this.#attributes,
+                "resources": this.#resources,
+                "resistances": this.#resistances,
+                "features": this.#features,
+                "spells": this.#spells,
+                "equipment": this.#equipment,
+                "inventory": this.#inventory,
+            };
 
-            if (is_undead) { return; }
-
-            health.current = health.current + value;
-            health.current = Math.min(health.current, health.maximum);
-            this.save();
-            log(this.#name + " received " + value + " points of healing.");
-        }
-
-        // Check if the creature has a specific feature
-        has_feature(name) {
-            return this.#features.all.includes(name);
+            token.setName(this.#name);
+            token.setProperty("object", JSON.stringify(object));
         }
     }
 
