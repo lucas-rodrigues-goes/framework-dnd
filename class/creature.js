@@ -43,6 +43,7 @@ try {
             "force": 0
         };
         #features = {
+            "all": [],
             "racial": [],
             "feat": [],
             "barbarian": [],
@@ -231,6 +232,7 @@ try {
                 return
             }
 
+            this.#features.all.push(name)
             this.#features[type].push(name)
             this.save()
             log(this.#name+" received the "+type+" feature "+name+".")
@@ -242,6 +244,7 @@ try {
                 "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"]
             if (!validTypes.includes(type)) {return}
 
+            this.#features.all = this.#features.all.filter(value => value != name)
             this.#features[type] = this.#features[type].filter(value => value != name)
             this.save()
             log(this.#name+" lost the "+type+" feature "+name+".")
@@ -391,6 +394,10 @@ try {
             health.current = Math.min(health.current, health.maximum)
             this.save()
             log(this.#name+" received "+value+" points of healing.")
+        }
+
+        has_feature(name) {
+            return this.#features.all.includes(name)
         }
     }
 
