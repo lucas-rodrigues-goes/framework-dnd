@@ -244,7 +244,7 @@ try {
                     break;
             }
 
-            health.current = health.current - damage;
+            health.current -= damage;
             health.current = Math.max(0, health.current);
             health.current = Math.min(health.current, health.maximum);
             this.save();
