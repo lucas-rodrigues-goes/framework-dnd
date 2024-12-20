@@ -217,6 +217,35 @@ try {
             this.save()
             log(this.#name+" "+attribute+" set to "+value+".")
         }
+        add_feature(type, name) {
+            let validTypes = [
+                "racial", "feat",
+                "barbarian", "bard", "cleric", "druid", "fighter", "monk",
+                "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"]
+            if (!validTypes.includes(type)) {
+                log(this.#name+" attempted to receive the feature "+name+", but failed due to invalid type '"+type+"'.")
+                return
+            }
+            if (this.#features[type].includes(name)) {
+                log(this.#name+" attempted to receive the "+type+" feature "+name+", but failed because they already have it.")
+                return
+            }
+
+            this.#features[type].push(name)
+            this.save()
+            log(this.#name+" received the "+type+" feature "+name+".")
+        }
+        remove_feature(type, name) {
+            let validTypes = [
+                "racial", "feat",
+                "barbarian", "bard", "cleric", "druid", "fighter", "monk",
+                "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"]
+            if (!validTypes.includes(type)) {return}
+
+            this.#features[type] = this.#features[type].filter(value => value != name)
+            this.save()
+            log(this.#name+" lost the "+type+" feature "+name+".")
+        }
 
 
         //----------------------------------------------------------------------------------------------//
@@ -236,7 +265,7 @@ try {
             this.#equipment = object.equipment
             this.#inventory = object.inventory
 
-            log(this.#name+" successfully loaded.")
+            //log(this.#name+" successfully loaded.")
         }
         save () {
             let token = MapTool.tokens.getTokenByID(this.id)
@@ -255,7 +284,7 @@ try {
 
             token.setName(this.#name)
             token.setProperty("object", JSON.stringify(object))
-            log(this.#name+" successfully saved.")
+            //log(this.#name+" successfully saved.")
         }
 
 
@@ -364,7 +393,6 @@ try {
             log(this.#name+" received "+value+" points of healing.")
         }
     }
-
 
 } catch(e) {
     MapTool.chat.broadcast(""+e+"\n"+e.stack);
