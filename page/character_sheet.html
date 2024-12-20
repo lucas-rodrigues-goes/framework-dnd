@@ -1,0 +1,377 @@
+[frame5("Character Sheet", "width=1000; height=900"), code: {
+<head>
+
+[r:'
+<style>
+
+body {
+    background: #333;
+    color: #ddd;
+    font-size: 11px;
+}
+
+table {
+    width: 100%;
+}
+tr {
+    width: 100%;
+    margin: 10px;
+}
+th {
+    width: 5px;
+}
+td {
+    height: 40px;
+    text-align: center;
+    background-color: #383838;
+    border: 1px solid #888;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+
+
+.container {
+    display:block;
+    position:relative;
+    left: 50%;
+    transform: translate(-50%);
+    width: 96%;
+    text-align: center;
+}
+.accordion {
+    border: 1px solid #525252;
+    color: inherit;
+    z-index: 3;
+    background-color: #444;
+    cursor: pointer;
+    padding: 12px;
+    width: 100%;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    transition: 0.4s;
+    margin: 0px;
+    border-radius: 5px;
+    text-align: inherit;
+}
+.accordion:hover {
+    border-color: #4c8cb5;
+}
+.active {
+    border-color: #777;
+    background-color: #3f3f3f;
+}
+.panel {
+    width: 93%;
+    left: 50%;
+    transform: translate(-50%);
+    z-index: -1;
+    top:-5px;
+    position:relative;
+    padding: 0 18px;
+    background-color: #333;
+    border: 1px solid #888;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-out;
+    border-radius:5px;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.title {
+    font-size: 80%;
+    filter: brightness(0.8)
+}
+.content {
+    font-size: 110%;
+    margin-bottom: 10px;
+    font-weight: bold;
+    margin: 3px;
+}
+
+
+#portrait-div {
+    display: block;
+    position:absolute;
+    top: 20px;
+}
+#portrait {
+    border-radius: 200px;
+    border: 2px solid #888;
+    position: relative;
+}
+
+
+
+.grid-container {
+    position:relative;
+    padding-top: 12px;
+    padding-right: 5px;
+    padding-left:5px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, auto);
+    gap: 10px;
+}
+
+.grid-item {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 20px;
+    height: 70px;
+    text-align: center;
+    padding-left: 10px;
+    padding-right: 10px;
+    position:relative;
+}
+.attribute-name {
+    position:absolute;
+    text-align: center;
+    font-size: 110%;
+    top: 5px;
+    left:50%;
+    transform: translate(-50%);
+}
+.attribute-score {
+    position:absolute;
+    top:47%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+    font-weight: bold;
+}
+
+
+
+</style>
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        animateAccordion()
+        setInterval(()=>{updateFields()}, 500)
+        
+    }
+
+
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function updateFields() {
+        loadCurrentFieldInnerHTML("name","creature.name")
+        loadCurrentFieldInnerHTML("type","creature.type")
+        loadCurrentFieldInnerHTML("race","creature.race")
+
+        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
+        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
+        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
+        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
+        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
+        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
+
+    }
+
+    function getId(id) {return document.getElementById(id)}
+
+    function updateRaceVisibility() {
+        let type = getId("type")
+        let race = getId("race-div")
+
+        if (type.value == "Humanoid") {
+            race.setAttribute("style", "display: block")}
+        else {
+            race.setAttribute("style", "display: none")}
+    }
+
+    function loadCurrentFieldInnerHTML(fieldId, request) {
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+request,
+            (response) => {
+                getId(fieldId).innerHTML = response
+                updateRaceVisibility()
+            })
+    }
+
+
+
+    //=====================================================================================================
+    // Style functions
+    //=====================================================================================================
+
+    function animateAccordion() {
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+            } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+        }
+    }
+
+
+
+    //=====================================================================================================
+    // External functions
+    //=====================================================================================================
+
+    function toBackend(arguments, valueCallback) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:console@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+
+    function closeDialog(arguments) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:closeDialog@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+    
+
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+</script>
+']
+</head>
+
+<body>
+    <input type="text" style="display:none" id="id" value="{getSelected()}"></input>
+
+    <div class="container">
+        <button class="accordion">Character</button>
+        <div class="panel">
+            <div id="portrait-div">
+                <img id="portrait" src="{getTokenPortrait()}" height="162px">
+            </div>
+            <div style="
+                position:relative;
+                padding-top: 20px;
+                width:70%;
+                left:30%;
+                height:200px;
+            ">
+            <table style="
+                margin-top: 10px;
+            ">
+                <tr>
+                    <th></th>
+                    <td>
+                        <span class="title">Name</span><br>
+                        <span class="content" id="name"></span>
+                    </td>
+                    <th></th>
+                    <td>
+                        <span class="title">Type</span><br>
+                        <span class="content" id="type"></span>
+                    </td>
+                    <th></th>
+                    <td>
+                        <span class="title">Race</span><br>
+                        <span class="content" id="race"></span>
+                    </td>
+                    <th></th>
+                </tr>
+                <tr style="height: 10px"></tr>
+                <tr>
+                    <th></th>
+                    <td colspan="3">
+                        <span class="title">Class Levels</span>
+                        <p class="content" id="class">Wizard 3</p>
+                    </td>
+                    <th></th>
+                    <td>
+                        <span class="title">Experience</span>
+                        <p class="content" id="experience">1200 / 2700</p>
+                    </td>
+                    <th></th>
+                </tr>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <button class="accordion">Stats</button>
+        <div class="panel">
+            <div class="grid-container">
+
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Strength
+                    </div>
+                    <span id ="str" class="attribute-score">10</span>
+                </div>
+    
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Dexterity
+                    </div>
+                    <span id ="dex" class="attribute-score">10</span>
+                </div>
+    
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Constitution
+                    </div>
+                    <span id ="con" class="attribute-score">10</span>
+                </div>
+    
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Wisdom
+                    </div>
+                    <span id ="wis" class="attribute-score">10</span>
+                </div>
+    
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Intelligence
+                    </div>
+                    <span id ="int" class="attribute-score">10</span>
+                </div>
+    
+                <div class="grid-item">
+                    <div class="attribute-name">
+                        Charisma
+                    </div>
+                    <span id ="cha" class="attribute-score">10</span>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+
+</body>
+
+}]

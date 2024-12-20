@@ -1,20 +1,12 @@
 "use strict";
 try {
 
-    // Function to facilitate logging, and easy log disabling.
-    var log = function (string) {
-        MapTool.chat.broadcast(string);
-    }
-
-
-
-    var Creature = class {
+    var Creature = class extends Entity {
 
         //=====================================================================================================
         // Creature Default Parameters
         //=====================================================================================================
 
-        id;
         #name = "unnamed";
         #type = "";
         #race = "";
@@ -206,12 +198,27 @@ try {
         // Set individual attributes, checking validity (range 1-30)
         set_attribute(attribute, value) {
             value = Number(value);
+
             let validAttributes = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"];
-            if (!validAttributes.includes(attribute) || value < 1 || value > 30) { return; }
+
+            if (!validAttributes.includes(attribute) || value < 1 || value > 30) {return}
 
             this.#attributes[attribute] = value;
             this.save();
             log(this.#name + " " + attribute + " set to " + value + ".");
+        }
+
+        set_resistance(resistance, value) {
+            let validResistances = ["slashing", "piercing", "bludgeoning", "fire", "cold", "lightning", "thunder",
+                "acid", "poison", "psychic", "radiant", "necrotic", "force"]
+            let validValues = [0, 10, 20, 30, "immunity", "vulnerability", "heals"]
+
+            if (!validResistances.includes(resistance)) {return}
+            if (!validValues.includes(value)) {return}
+
+            this.#resistances[resistance] = value;
+            this.save()
+            log(this.#name + " " + resistance + " resistance set to " + value + ".");
         }
 
 
@@ -222,11 +229,12 @@ try {
 
         // Receive damage based on resistance type
         receive_damage(value, type) {
+            if (value <= 0) {return}
+            if (typeof type != "string") {return}
+
             let health = this.#resources.health;
             let resistance = this.#resistances[type];
             let damage = 0;
-
-            if (value <= 0) { return; }
 
             // Calculate damage based on resistance
             switch (resistance) {
@@ -254,9 +262,10 @@ try {
         // Receive healing
         receive_healing(value) {
             let health = this.#resources.health;
-            let is_undead = this.#type == "Undead";
+            let unhealable = ["Undead", "Construct"]
 
-            if (is_undead) { return; }
+
+            if (unhealable.includes(this.#type)) {return}
 
             health.current = health.current + value;
             health.current = Math.min(health.current, health.maximum);
@@ -292,6 +301,14 @@ try {
             log(this.#name + " received the " + type + " feature " + name + ".");
         }
 
+        add_feature_list(type, name_list) {
+            let i = 0
+            while (i < name_list.length) {
+                this.add_feature(type,name_list[i])
+                i += 1
+            }
+        }
+
         // Remove a feature from the creature
         remove_feature(type, name) {
             let validTypes = [
@@ -319,13 +336,12 @@ try {
         //=====================================================================================================
 
         constructor(id, reset) {
-            this.id = id;
-            let token = MapTool.tokens.getTokenByID(this.id);
-            let has_property_object = String(token.getProperty("object")) != "null";
+            super(id)
+            let has_property_object = String(this.token.getProperty("object")) != "null";
 
             // Reset if no previous data or if reset flag is true
             if (!has_property_object || reset) {
-                this.#name = token.getName();
+                this.#name = this.token.getName();
                 log(this.#name + " was reset.");
                 this.save();
             }
@@ -334,7 +350,7 @@ try {
                     this.load();
                 }
                 catch {
-                    this.#name = token.getName();
+                    this.#name = this.token.getName();
                     log(this.#name + " failed to load and was reset.");
                     this.save();
                 }
@@ -346,53 +362,107 @@ try {
             str = Number(str), dex = Number(dex), con = Number(con);
             wis = Number(wis), int = Number(int), cha = Number(cha);
 
-            // Apply race-specific attribute bonuses
+            // Apply type-specific bonuses and features
+            switch (type) {
+
+                case "Undead":
+                    this.set_resistance("necrotic","immunity")
+                    this.set_resistance("poison", "immunity")
+                    break;
+                
+                case "Construct":
+                    this.set_resistance("necrotic","immunity")
+                    this.set_resistance("poison", "immunity")
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Apply race-specific bonuses and features
             switch (race) {
+
                 case "Hill Dwarf":
                     con += 2, wis += 1;
+                    this.add_feature_list(
+                        "racial", ["Dwarven Resilience", "Stonecunning", "Dwarven Toughness"]);
+                    this.set_resistance("poison", 10);
                     break;
+
                 case "Mountain Dwarf":
                     con += 2, str += 2;
+                    this.add_feature_list(
+                        "racial", ["Dwarven Resilience", "Stonecunning", "Dwarven Armor Training"]);
+                    this.set_resistance("poison", 10);
                     break;
+
                 case "High Elf":
                     dex += 2, int += 1;
+                    this.add_feature_list(
+                        "racial", ["Keen Senses", "Fey Ancestry", "Trance", "Elf Weapon Training", "Cantrip"]);
                     break;
+
                 case "Wood Elf":
                     dex += 2, wis += 1;
+                    this.add_feature_list(
+                        "racial", ["Darkvision", "Keen Senses", "Fey Ancestry", "Trance", "Elf Weapon Training",
+                            "Fleet of Foot", "Mask of the Wild"]);
                     break;
+
                 case "Drow":
                     dex += 2, cha += 1;
+                    this.add_feature_list(
+                        "racial", ["Superior Darkvision", "Keen Senses", "Fey Ancestry", "Trance", "Drow Magic",
+                            "Drow Weapon Training", "Sunlight Sensitivity"]);
                     break;
+
                 case "Lightfoot Halfling":
                     dex += 2, cha += 1;
+                    this.add_feature_list(
+                        "racial", ["Lucky", "Brave", "Halfling Nimbleness", "Naturally Stealthy"]);
                     break;
+
                 case "Stout Halfling":
                     dex += 2, con += 1;
+                    this.add_feature_list(
+                        "racial", ["Lucky", "Brave", "Halfling Nimbleness", "Stout Resilience"]);
                     break;
+
                 case "Half-Orc":
                     str += 2, con += 1;
+                    this.add_feature_list(
+                        "racial", ["Menacing", "Relentless Endurance", "Savage Attacks"]);
                     break;
+
                 case "Human":
                     str += 1, dex += 1, con += 1, wis += 1, int += 1, cha += 1;
+                    this.add_feature_list(
+                        "racial", []);
                     break;
-                case "Dragonborn":
-                    str += 2, cha += 1;
-                    break;
-                case "Tiefling":
-                    int += 1, cha += 2;
-                    break;
+
                 case "Half-Elf":
                     dex += 1, int += 1, wis += 1, cha += 1;
+                    this.add_feature_list(
+                        "racial", ["Fey Ancestry"]);
                     break;
+                    
                 case "Gnome":
                     int += 2;
+                    this.add_feature_list(
+                        "racial", ["Darkvision", "Gnome Cunning"]);
                     break;
                 case "Rock Gnome":
                     int += 2, con += 1;
+                    this.add_feature_list(
+                        "racial", ["Darkvision", "Gnome Cunning", "Artificer's Lore", "Tinker"]);
                     break;
+
                 case "Forest Gnome":
                     int += 2, dex += 1;
+                    this.add_feature_list(
+                        "racial", ["Darkvision", "Gnome Cunning", "Natural Illusionist", "Speak with Small Beasts"]);
                     break;
+
                 default:
                     break;
             }
@@ -411,8 +481,7 @@ try {
         //=====================================================================================================
 
         load() {
-            let token = MapTool.tokens.getTokenByID(this.id);
-            let object = JSON.parse(token.getProperty("object"));
+            let object = JSON.parse(this.token.getProperty("object"));
 
             this.#name = object.name;
             this.#type = object.type;
@@ -427,7 +496,6 @@ try {
         }
 
         save() {
-            let token = MapTool.tokens.getTokenByID(this.id);
             let object = {
                 "name": this.#name,
                 "type": this.#type,
@@ -441,10 +509,13 @@ try {
                 "inventory": this.#inventory,
             };
 
-            token.setName(this.#name);
-            token.setProperty("object", JSON.stringify(object));
+            this.token.setName(this.#name);
+            this.token.setProperty("object", JSON.stringify(object));
         }
+
+        //=====================================================================================================
     }
+
 
 } catch (e) {
     MapTool.chat.broadcast("" + e + "\n" + e.stack);
