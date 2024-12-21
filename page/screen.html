@@ -1,189 +1,190 @@
 [overlay("Overlay"), code: {
-    <head>
-    
-    [r:'
-    <style>
-        body {
-            background-color: rgba(0,0,0,0);
-            --pointermap:block;
-        }
+<head>
 
-        .window {
-            --pointermap:block;
+[r:'
+<style>
+    body {
+        background-color: rgba(0,0,0,0);
+        --pointermap:block;
+    }
 
-            position: absolute;
-            z-index: 9;
-            height: 600px;
-            width: 400px;
+    .window {
+        --pointermap:block;
 
-            text-align: center;
-            background-color: rgba(50,50,50,0.95);
-            border: 1px solid #888;
-            border-radius: 10px;
-        }
+        position: absolute;
+        z-index: 9;
+        height: 600px;
+        width: 400px;
 
-        .window-header {
-            cursor:default;
-            padding: 10px;
-            z-index: 10;
-            color: #fff;
-            background-color: #222;
-            border-bottom: 2px solid #444;
-            border-radius: 10px;
-            border-bottom-right-radius: 0px;
-            border-bottom-left-radius: 0px;
-        }
+        text-align: center;
+        background-color: rgba(50,50,50,0.95);
+        border: 1px solid #888;
+        border-radius: 10px;
+    }
 
-    </style>
-    <script>
-    
-        //=====================================================================================================
-        // Execution
-        //=====================================================================================================
-    
-        function onWindowLoad() {
+    .window-header {
+        cursor:default;
+        padding: 10px;
+        z-index: 10;
+        color: #fff;
+        background-color: #222;
+        border-bottom: 2px solid #444;
+        border-radius: 10px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
 
-            dragElement(document.getElementById("inventory"));
+</style>
+<script>
 
-        }
-    
-    
-    
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
-    
-    
-        function getId(id) {return document.getElementById(id)}
-    
-        function updateRaceVisibility() {
-            let type = getId("type")
-            let race = getId("race-div")
-    
-            if (type.value == "Humanoid") {
-                race.setAttribute("style", "display: block")}
-            else {
-                race.setAttribute("style", "display: none")}
-        }
-    
-        function loadCurrentFieldInnerHTML(fieldId, request) {
-            let id = getId("id")
-    
-            toBackend("var creature = new Creature(`"+id.value+"`);"+request,
-                (response) => {
-                    getId(fieldId).innerHTML = response
-                    updateRaceVisibility()
-                })
-        }
-    
-    
-    
-        //=====================================================================================================
-        // Style functions
-        //=====================================================================================================
-    
-        function animateAccordion() {
-            var acc = document.getElementsByClassName("accordion");
-            var i;
-    
-            for (i = 0; i < acc.length; i++) {
-            acc[i].addEventListener("click", function() {
-                this.classList.toggle("active");
-                var panel = this.nextElementSibling;
-                if (panel.style.maxHeight) {
-                panel.style.maxHeight = null;
-                } else {
-                panel.style.maxHeight = panel.scrollHeight + "px";
-                } 
-            });
-            }
-        }
-    
-        function dragElement(elmnt) {
-            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            if (document.getElementById(elmnt.id + "header")) {
-                // if present, the header is where you move the DIV from:
-                document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        dragElement(document.getElementById("inventory"));
+
+    }
+
+
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+
+    function getId(id) {return document.getElementById(id)}
+
+    function updateRaceVisibility() {
+        let type = getId("type")
+        let race = getId("race-div")
+
+        if (type.value == "Humanoid") {
+            race.setAttribute("style", "display: block")}
+        else {
+            race.setAttribute("style", "display: none")}
+    }
+
+    function loadCurrentFieldInnerHTML(fieldId, request) {
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+request,
+            (response) => {
+                getId(fieldId).innerHTML = response
+                updateRaceVisibility()
+            })
+    }
+
+
+
+    //=====================================================================================================
+    // Style functions
+    //=====================================================================================================
+
+    function animateAccordion() {
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
             } else {
-                // otherwise, move the DIV from anywhere inside the DIV:
-                elmnt.onmousedown = dragMouseDown;
-            }
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+        }
+    }
 
-            function dragMouseDown(e) {
-                e = e || window.event;
-                e.preventDefault();
-                // get the mouse cursor position at startup:
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                // call a function whenever the cursor moves:
-                document.onmousemove = elementDrag;
-            }
-
-            function elementDrag(e) {
-                e = e || window.event;
-                e.preventDefault();
-                
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-
-                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-            }
-
-            function closeDragElement() {
-                // stop moving when mouse button is released:
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
+    function dragElement(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        if (document.getElementById(elmnt.id + "header")) {
+            // if present, the header is where you move the DIV from:
+            document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
+        } else {
+            // otherwise, move the DIV from anywhere inside the DIV:
+            elmnt.onmousedown = dragMouseDown;
         }
 
-    
-        //=====================================================================================================
-        // External functions
-        //=====================================================================================================
-    
-        function toBackend(arguments, valueCallback) {
-            let request = new XMLHttpRequest();
-            request.open("POST", "macro:console@lib:main", true);
-    
-            request.onreadystatechange = function() {
-                if (request.readyState == 4) {
-                    valueCallback(request.response);
-                }
-            };
-            request.send(arguments);
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
         }
-    
-        function closeDialog(arguments) {
-            let request = new XMLHttpRequest();
-            request.open("POST", "macro:closeDialog@lib:main", true);
-    
-            request.onreadystatechange = function() {
-                if (request.readyState == 4) {
-                    valueCallback(request.response);
-                }
-            };
-            request.send(arguments);
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
         }
-        
+
+        function closeDragElement() {
+            // stop moving when mouse button is released:
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
+
+
+    //=====================================================================================================
+    // External functions
+    //=====================================================================================================
+
+    function toBackend(arguments, valueCallback) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:console@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+
+    function closeDialog(arguments) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:closeDialog@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
     
-    
-        //=====================================================================================================
-    
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-    
-    </script>
-    ']
-    </head>
-    
-    <body>
-        <div class="window" id="inventory">
-            <div class="window-header" id="inventoryheader">Inventory</div>
-            <p></p>
-        </div>
-    </body>
-    
+
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+</script>
+']
+</head>
+
+<body>
+    <input type="text" class="hidden" id="id" value="{getSelected()}"></input>
+    <div class="window" id="window">
+        <div class="window-header" id="windowheader">Inventory</div>
+        <p></p>
+    </div>
+</body>
+
 }]
