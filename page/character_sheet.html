@@ -26,10 +26,24 @@
   border-radius:5px;
 }
 
-.stats-container {
+.container-title {
+    position: absolute;
+    top:-25px;
+    left:50%;
+    transform:translate(-50%);
+    background-color: #292929;
+    padding: 0px 15px;
+}
+
+.container {
+    position: relative;
+    padding: 20px 10px;
+    padding-bottom: 10px;
     display: block;
     text-align: center;
     width: 80%;
+    border: 1px solid #aaa;
+    border-radius: 10px;
 }
 
 .row {
@@ -253,7 +267,8 @@ div.spacer {
 
         <div class="spacer"></div>
 
-        <div class="stats-container center-horizontal">
+        <div class="container center-horizontal">
+            <h3 class="container-title">Attributes</h3>
             <div class="row">
                 <div class="stat">STR</div>
                 <div class="stat">DEX</div>
