@@ -140,7 +140,17 @@ try {
         }
 
         remove_spell(name) {
+            let spell = this.#spells.data[name]
 
+            delete this.#spells.data[spell.name]
+            this.#spells.level[spell.level] = this.#spells.level[spell.level].filter(value => value != spell.name)
+            this.#spells.school[spell.school] = this.#spells.school[spell.school].filter(value => value != spell.name)
+
+            spell.classes.forEach((value) => {
+                this.#spells.class[value] = this.#spells.class[value].filter(value => value != spell.name)
+            })
+            
+            this.save()
         }
 
 
@@ -192,6 +202,7 @@ try {
     }
 
     var database = new Database()
+
     database.set_spell(
         "Fireball",
         "3rd",
@@ -201,7 +212,7 @@ try {
         150,
         "A point you choose within range",
         ["vocal", "somatic","material"],
-        "instantaneous",
+        0,
         "A bright streak flashes from your pointing finger to a point you choose within range then blossoms "+
             "with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on "+
             "that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, "+
@@ -209,7 +220,8 @@ try {
             "objects in the area that aren't being worn or carried.",
         "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for "+
             "each slot level above 3rd."
-    )
+    ); 
+    
 
 
 } catch (e) {
