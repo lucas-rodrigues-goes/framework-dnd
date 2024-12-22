@@ -16,8 +16,15 @@ try {
             "constitution": 10,
             "wisdom": 10,
             "intelligence": 10,
-            "charisma": 10
+            "charisma": 10,
         };
+        #speed = {
+            "walk":30,
+            "climb":15,
+            "swim":15,
+            "fly":0,
+            "burrow":0,
+        }
         #resources = {
             "health": {
                 "current": this.#attributes.constitution,
@@ -25,6 +32,8 @@ try {
             },
         };
         #resistances = {
+            "non-magical": 0,
+            "non-silvered": 0,
             "slashing": 0,
             "piercing": 0,
             "bludgeoning": 0,
@@ -111,6 +120,7 @@ try {
                 "memorized": []
             }
         };
+        #conditions = {};
         #equipment = {
             "head": "",
             "body": "",
@@ -137,7 +147,15 @@ try {
         get name() { return this.#name; }
         get type() { return this.#type; }
         get race() { return this.#race; }
+
+        // Array or object getters
         get attributes() { return this.#attributes; }
+        get resources() { return this.#resources; }
+        get resistances() { return this.#resistances; }
+        get features() { return this.#features; }
+        get spells() { return this.#spells; }
+        get equipment() { return this.#equipment; }
+        get inventory() { return this.#inventory; }
 
         // Calculate the attribute bonuses based on the attribute values
         get attr_bonus() {
@@ -159,14 +177,6 @@ try {
         get armor_class() {
             return 10 + this.attr_bonus.dexterity;
         }
-
-        // Array or object getters
-        get resources() { return this.#resources; }
-        get resistances() { return this.#resistances; }
-        get features() { return this.#features; }
-        get spells() { return this.#spells; }
-        get equipment() { return this.#equipment; }
-        get inventory() { return this.#inventory; }
 
 
 

@@ -1,154 +1,210 @@
-[dialog5("Character Creation", "width=450; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Character Creation", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
 
 [r:'
 <style>
 
-body {
-    background: #333;
-    color: #ddd;
-    font-size: 11px;
+::-webkit-scrollbar {
+    width: 7px;
 }
 
-
-
-form {
-    width:80%;
-    max-width: 375px;
-    position:relative;
-    left:50%;
-    transform: translate(-50%);
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0);
 }
 
-form input, form select{
-    -webkit-appearance: none;
-    width: 90%;
-    left:50%;
-    position:relative;
-    transform: translate(-50%);
-
-    background-color: white;
-    border: none;
-    border-radius: 5px;
-
-    padding:5px;
-    margin-bottom: 20px;
+::-webkit-scrollbar-corner {
+    visibility:hidden;
 }
-form input:focus, form select:focus{
-    outline: none;
-}
-
-form .header {
-    text-align:center;
-    text-indent: 0px;
-    font-size: 110%;
-    font-weight: 700;
-    margin-top: 40px;
-    display:none;
-}
-
-form p {
-    text-indent:5%;
-    margin-bottom: 3px;
-}
-
-button:hover {
-    cursor:pointer;
-}
-
-
-
-.section {
-
-    padding: 10px;
-    padding-top: 5px;
-    padding-bottom: 10px;
     
-    margin-top: 20px;
-    margin-bottom: 20px;
-
-    border: 0.1px solid #aaa;
-    border-radius: 5px;
+::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius:5px;
 }
 
-.center {
-    text-align:center;
-    text-indent: 0;
+::-webkit-scrollbar-thumb:hover {
+    background: #999;
+    border-radius:5px;
 }
 
-.points {
-    margin-top: 4px;
+.stats-container {
+    display: block;
+    text-align: center;
+    width: 80%;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between columns */
+    margin-bottom: 10px; /* Space between rows */
+}
+
+.stat, .value {
+    width: 50px; /* Adjust width as needed */
+    text-align: center;
+    color: #999;
     font-size: 120%;
     font-weight: bold;
 }
 
-.hidden {
-    display:none
+.value {
+    font-size: 150%;
+    color: #ddd;
 }
 
+body {
 
+    position: relative;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
 
+    background: #333;
+    color: #ddd;
+    font-size: 12px;
+}
+h1,h2,h3,h4,h5,h6,p {
+    text-align:center;
+}
+div {
+    
+}
+div.spacer {
+    height: 10px;
+    padding: 0px;
+    margin: 0px;
 
-#submit {
-    position: absolute;
-    bottom: 5%;
+    border: none;
+}
+
+.center {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.center-horizontal {
+    position: relative;
     left: 50%;
     transform: translate(-50%);
 }
-
-
-
-.grid-container {
-    position:relative;
-    padding-top: 12px;
-    padding-right: 5px;
-    padding-left:5px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(2, auto);
-    gap: 10px;
+.hidden {
+    display:none;
 }
-
-.grid-item {
-    background-color: #333;
-    border: 1px solid #555;
-    border-radius: 5px;
-    padding: 20px;
-    height: 70px;
-    text-align: center;
-    padding-left: 10px;
-    padding-right: 10px;
-    position:relative;
-}
-.attribute-name {
-    position:absolute;
-    text-align: center;
-    font-size: 110%;
+.subtext {
+    position: relative;
     top: 5px;
-    left:50%;
-    transform: translate(-50%);
+
+    color: #999;
 }
-.attribute-score {
-    position:absolute;
-    top:47%;
-    left:50%;
-    transform: translate(-50%, -50%);
-    font-size: 250%;
+.outer {
+
+    height: 97%;
+    width: 95%;
+    overflow-y: scroll;
+
+    background-color: #292929;
+    border: 1px solid #444;
+    border-radius: 10px;
+    text-align: center;
+
+}
+.input {
+    background-color: #333;
+    border: 1px solid #444;
+    border-radius: 5px;
+    width: fit-content;
+    padding: 25px;
+    padding-top: 0px;
+    margin: 15px 0px;
+}
+input, select{
+    -webkit-appearance: none;
+    width:250px;
+
+    background-color: white;
+    border: 1px solid #444;
+    border-radius: 5px;
+
+    padding:5px;
+}
+input:focus, select:focus{
+    outline: none;
+}
+
+.score-container {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);  /* Adjust to fit within 450px */
+    gap: 5px;
+    grid-template-rows: repeat(2, 140px);
+    width: fit-content; /* Set the width to 450px */
+    margin: 0 auto; /* Automatically center horizontally */
+    justify-items: center; /* Ensure items in the grid are centered horizontally */
+    align-items: center; /* Ensure items in the grid are centered vertically */
+}
+
+.score {
+    background-color: #333;
+    width: 80px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 5px;
+    text-align: center;
+    height: 120px;  /* Control the height for consistency */
+}
+
+.label {
+    font-size: 110%; /* Smaller font size */
     font-weight: bold;
 }
-.attribute-button {
-    margin:0px;
+
+.score-value {
+    font-size: 34px; /* Adjusted for a smaller look */
+    font-weight: bold;
+    margin: 10px;
+    margin-top: 20px;
+}
+
+button {
     width: 20px;
     height: 20px;
-    text-align: center;
-    padding: 0px;
+    font-size: 13px;
     font-weight: bold;
+    margin: 5px;
+    margin-top: 10px;
+    padding: 0px;
+    cursor: pointer;
+    border: none;
+    background-color: #666;
+    color: white;
+    border-radius: 5px;
 }
-.bottom{
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translate(-50%);
+
+button:hover {
+    background-color: #777;
 }
+
+button:active {
+    background-color: #555;
+}
+
+#submit {
+    background-color: #333;
+    width:fit-content;
+    height:fit-content;
+    padding: 10px;
+}
+
+#submit:hover {
+    background-color: #444;
+}
+
+#submit:active {
+    background-color: #333;
+}
+
+
+
 </style>
 <script>
 
@@ -172,12 +228,12 @@ button:hover {
             let race = getId("race");
 
             // Get attribute values from form
-            let str = getId("str");
-            let dex = getId("dex");
-            let con = getId("con");
-            let wis = getId("wis");
-            let int = getId("int");
-            let cha = getId("cha");
+            let str = getId("strength");
+            let dex = getId("dexterity");
+            let con = getId("constitution");
+            let wis = getId("wisdom");
+            let int = getId("intelligence");
+            let cha = getId("charisma");
 
             // Check if form is valid
             let valid = true
@@ -281,27 +337,27 @@ button:hover {
 
 </script>
 ']
+</head>
 
+<input type="text" class="hidden" id="id" value="{getSelected()}"></input>
 
+<body>
+    <div class="outer center">
 
-<form>
-    <div class="section" id="basic-character-info">
+        <div class="spacer"></div>
 
-        <div id="name-div">
-            <input type="text" class="hidden" id="id" value="{getSelected()}"></input>
-            <p>Name:</p>
+        <div class="input center-horizontal">
+            <h3>Name</h3>
             <input type="text" id="name" placeholder></input>
         </div>
-
-        <div id="type-div">
-            <p>Type:</p>
+        <div class="input center-horizontal">
+            <h3>Type</h3>
             <select id="type">
                 <option value="" hidden>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </option>
                 <option>Aberration</option>
                 <option>Beast</option>
@@ -319,16 +375,14 @@ button:hover {
                 <option>Undead</option>
             </select>
         </div>
-
-        <div id="race-div" style="display:none">
-            <p>Race:</p>
+        <div id="race-div" class="input center-horizontal">
+            <h3>Race</h3>
             <select id="race">
                 <option value="" hidden>
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </option>
                 <option>Hill Dwarf</option>
                 <option>Mountain Dwarf</option>
@@ -345,83 +399,51 @@ button:hover {
             </select>
         </div>
 
-    </div>
-    <div class="section" id="attributes">
+        <div class="spacer"></div>
 
-        <p class="center">Total Points:</p>
-        <p class="center points"><span id="total-points">12</span> / 27</p>
-        <div class="grid-container">
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Strength
-                </div>
-                <span id ="str" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+        <div class="score-container">
+            <div class="score">
+                <div class="label">Strength</div>
+                <div class="score-value" id="strength">10</div>
+                <button class="decrease" onclick="adjustScore('strength', -1)">-</button>
+                <button class="increase" onclick="adjustScore('strength', 1)">+</button>
             </div>
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Dexterity
-                </div>
-                <span id ="dex" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+            <div class="score">
+                <div class="label">Dexterity</div>
+                <div class="score-value" id="dexterity">10</div>
+                <button class="decrease" onclick="adjustScore('dexterity', -1)">-</button>
+                <button class="increase" onclick="adjustScore('dexterity', 1)">+</button>
             </div>
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Constitution
-                </div>
-                <span id ="con" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+            <div class="score">
+                <div class="label">Constitution</div>
+                <div class="score-value" id="constitution">10</div>
+                <button class="decrease" onclick="adjustScore('constitution', -1)">-</button>
+                <button class="increase" onclick="adjustScore('constitution', 1)">+</button>
             </div>
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Wisdom
-                </div>
-                <span id ="wis" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+            <div class="score">
+                <div class="label">Wisdom</div>
+                <div class="score-value" id="wisdom">10</div>
+                <button class="decrease" onclick="adjustScore('wisdom', -1)">-</button>
+                <button class="increase" onclick="adjustScore('wisdom', 1)">+</button>
             </div>
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Intelligence
-                </div>
-                <span id ="int" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+            <div class="score">
+                <div class="label">Intelligence</div>
+                <div class="score-value" id="intelligence">10</div>
+                <button class="decrease" onclick="adjustScore('intelligence', -1)">-</button>
+                <button class="increase" onclick="adjustScore('intelligence', 1)">+</button>
             </div>
-
-            <div class="grid-item">
-                <div class="attribute-name">
-                    Charisma
-                </div>
-                <span id ="cha" class="attribute-score">10</span>
-                <div class="bottom">
-                    <button class="attribute-button">-</button>
-                    <button class="attribute-button">+</button>
-                </div>
+            <div class="score">
+                <div class="label">Charisma</div>
+                <div class="score-value" id="charisma">10</div>
+                <button class="decrease" onclick="adjustScore('charisma', -1)">-</button>
+                <button class="increase" onclick="adjustScore('charisma', 1)">+</button>
             </div>
-
         </div>
-    </div>
-</form>
 
-<button id="submit">Accept</button>
+        <div class="spacer"></div>
+
+        <button id="submit">Submit</button>
+    </div>
+</body>
 
 }]
