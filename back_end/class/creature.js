@@ -154,6 +154,7 @@ try {
         get resistances() { return this.#resistances; }
         get features() { return this.#features; }
         get spells() { return this.#spells; }
+        get conditions() {return this.#conditions}
         get equipment() { return this.#equipment; }
         get inventory() { return this.#inventory; }
 
@@ -229,6 +230,19 @@ try {
             this.#resistances[resistance] = value;
             this.save()
             log(this.#name + " " + resistance + " resistance set to " + value + ".");
+        }
+
+        set_condition(condition, value) {
+            value = Number(value)
+            if (value >= 1) {
+                this.#conditions[condition] = value;
+                this.save()
+                log(this.#name + " received " + condition + " for " + value + " rounds.");
+            } else if (value == 0) {
+                delete this.#conditions[condition]
+                this.save()
+                log(this.#name + " lost the condition " + condition + ".");
+            }
         }
 
 
@@ -378,6 +392,7 @@ try {
                 case "Undead":
                     this.set_resistance("necrotic","immunity")
                     this.set_resistance("poison", "immunity")
+                    this.set_resistance("radiant", "vulnerability")
                     break;
                 
                 case "Construct":
@@ -501,6 +516,7 @@ try {
             this.#resistances = object.resistances;
             this.#features = object.features;
             this.#spells = object.spells;
+            this.#conditions = object.conditions;
             this.#equipment = object.equipment;
             this.#inventory = object.inventory;
         }
@@ -515,6 +531,7 @@ try {
                 "resistances": this.#resistances,
                 "features": this.#features,
                 "spells": this.#spells,
+                "conditions": this.#conditions,
                 "equipment": this.#equipment,
                 "inventory": this.#inventory,
             };

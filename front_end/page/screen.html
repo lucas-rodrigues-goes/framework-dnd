@@ -22,7 +22,7 @@
         width:40px;height:40px;
         text-align:center;
         padding: 10px;
-        border-width: 1px;
+        border-width: 2px;
         background-color: #333;
         color:#ddd;
         cursor:default;
@@ -30,10 +30,6 @@
     button:hover, button:active {
         color: #333;
         cursor:default;
-    }
-
-    #info:hover {
-        filter: brightness(0.8)
     }
 
 
@@ -85,11 +81,18 @@
 
 <body>
 
-    <img id="info" src="{getTokenPortrait(108,getImpersonated())}" height="108px" style="
+    
+    <div class="top-left" style="margin: 30px">
+        <img src="{getTokenPortrait(108,getImpersonated())}" height="108px" style="
         border-radius: 108px;
         border: 2px solid #888;
-        margin: 20px;
     ">
+    <br>
+    <button id="info" style="margin-top: 30px; margin-left: 37px">C</button>
+    </div>
+    <div class="bottom-center">
+        
+    </div>
 
 </body>
 
