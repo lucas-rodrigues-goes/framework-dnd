@@ -1,5 +1,10 @@
+[h,if(argCount()>0):id = arg(0);id = getImpersonated()]
+
 [overlay("Screen"), code: {
 <head>
+<link rel='onChangeImpersonated' type='macro' href="
+    macro://screen.html@lib:main/all/impersonated?{id}
+">
 [r:style()]
 [r:script()]
 [r:'
@@ -77,13 +82,13 @@
 ']
 </head>
 
-<input type="text" class="hidden" id="id" value="{getImpersonated()}"></input>
+<input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
 
     
     <div class="top-left" style="margin: 30px">
-        <img src="{getTokenPortrait(108,getImpersonated())}" height="108px" style="
+        <img src="{getTokenPortrait(108,id)}" height="108px" style="
         border-radius: 108px;
         border: 2px solid #888;
     ">
