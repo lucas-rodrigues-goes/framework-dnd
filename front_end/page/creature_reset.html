@@ -1,4 +1,6 @@
-[dialog5("Character Creation", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+[h,if(argCount()>0):id = arg(0);id = getImpersonated()]
+
+[dialog5("Character", "width=400; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 [r:style()]
 [r:script()]
@@ -81,13 +83,21 @@
         addSubmitBehavior()
         addAbilityScoresBehavior()
 
+        getId("cancel").addEventListener("click", () => {
+            openPage("character_info.html")
+        })
+
         getId("type").addEventListener("input", () => {
             updateRaceVisibility()
         })
-
+        
         getId("race").addEventListener("input", () => {
             updateRaceBonus()
         })
+
+        setTimeout(()=>{
+            updateRaceBonus()
+        }, 250)
     }
 
 
@@ -120,8 +130,6 @@
             if (valid == false) {return}
 
             race_value = type.value != "Humanoid" ? type.value : race.value
-            console.log("race = "+race.value)
-            console.log("type = "+type.value)
 
 
             // Send data to backend
@@ -140,8 +148,7 @@
                 ")"
             )
 
-            // Close page
-            closePage("Character Creation")
+            openPage("character_info.html")
 
         })
     }
@@ -258,7 +265,9 @@
         let ability_score_list = [str, dex, con, wis, int, cha]
 
         ability_score_list.forEach((ability_score) => {
-            ability_score.innerHTML = ability_score.getAttribute("value")
+            if(ability_score.getAttribute("value")) {
+                ability_score.innerHTML = ability_score.getAttribute("value")
+            }
         })
 
         switch (race.value) {
@@ -346,14 +355,13 @@
 ']
 </head>
 
-<input type="text" class="hidden" id="id" value="{getSelected()}"></input>
+<input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
     <div class="outer center">
 
-        <div class="spacer" ></div>
-
         <div class="container center-horizontal" style="padding-bottom:0px;"><h3 class="container-title">Information</h3>
+            <div class="spacer" ></div>
             <h4>Name</h4>
             <input type="text" id="name" placeholder></input>
             <h4>Type</h4>
@@ -407,6 +415,7 @@
         <div class="spacer"></div>
 
         <div class="container center-horizontal" style="padding-bottom:15px">
+            <div class="spacer" ></div>
             <h3 class="container-title">Attribute Scores</h3>
             <h4>Available Points: <span id="points"></span> / 27</h4>
             <div class="spacer"></div><div class="spacer"></div>
@@ -458,7 +467,9 @@
 
         <div class="spacer"></div>
 
-        <button id="submit">Submit</button>
+        <button id="cancel">Cancel</button>
+        <button id="submit">Accept</button>
+
     </div>
 </body>
 

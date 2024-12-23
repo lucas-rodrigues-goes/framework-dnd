@@ -43,8 +43,7 @@
         updateFields(); setInterval(()=>{updateFields()}, 500)
 
         getId("info").addEventListener("click",()=>{
-            openClosePage(getId("id").value)
-            console.log(getId("id").value)
+            openClosePage(getId("id").value , "Character", "character_info.html")
         })
         
     }
@@ -56,12 +55,11 @@
 ']
 </head>
 
-<input type="text" class="" id="id" value="{getImpersonated()}"></input>
+<input type="text" class="hidden" id="id" value="{getImpersonated()}"></input>
 
 <body>
     <div class="bottom-center">
-        <button id="info">I</button>
-        <button id="set">S</button>
+        <button id="info">C</button>
     </div>
 </body>
 

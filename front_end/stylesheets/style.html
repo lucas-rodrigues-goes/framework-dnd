@@ -1,5 +1,25 @@
 [r:'<style>
 
+* {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+    cursor: default;
+}
+
+body {
+
+position: relative;
+overflow: hidden;
+padding: 0px;
+margin: 0px;
+
+background: #333;
+color: #ddd;
+font-size: 12px;
+
+}
+
 ::-webkit-scrollbar {
   width: 7px;
 }
@@ -33,8 +53,7 @@
 
 .container {
     position: relative;
-    padding: 20px 10px;
-    padding-bottom: 10px;
+    padding: 10px;
     display: block;
     text-align: center;
     width: 80%;
@@ -63,17 +82,6 @@
     color: #ddd;
 }
 
-body {
-
-    position: relative;
-    overflow: hidden;
-    padding: 0px;
-    margin: 0px;
-
-    background: #333;
-    color: #ddd;
-    font-size: 12px;
-}
 h1,h2,h3,h4,h5,h6,p {
     text-align:center;
 }
@@ -118,6 +126,8 @@ div.spacer {
     border-radius: 10px;
     text-align: center;
 
+    padding: 10px 0px;
+
 }
 
 
@@ -146,10 +156,16 @@ button:active {
 .container h4 {
     margin:0px;
 }
+input {
+    cursor: text;
+}
 input, select{
+    -webkit-user-select: auto; /* Safari */
+    -ms-user-select: auto; /* IE 10 and IE 11 */
+    user-select: auto; /* Standard syntax */
     -webkit-appearance: none;
     width:250px;
-
+   
     background-color: #eee;
     border: 1px solid #444;
     border-radius: 5px;
@@ -157,9 +173,13 @@ input, select{
     padding:5px;
     margin-top: 10px;
     margin-bottom: 20px;
+
 }
 input:focus, select:focus{
     outline: none;
+}
+select:hover {
+    cursor: pointer;
 }
 
 </style>']
