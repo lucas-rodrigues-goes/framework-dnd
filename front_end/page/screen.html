@@ -5,7 +5,7 @@
 [r:'
 <style>
     body {
-        all:unset
+        all:unset;
     }
     .bottom-center {
         width: 400px;
@@ -31,6 +31,15 @@
         color: #333;
         cursor:default;
     }
+
+    #info:hover {
+        filter: brightness(0.8)
+    }
+
+
+
+
+
 </style>
 <script>
 
@@ -45,12 +54,29 @@
         getId("info").addEventListener("click",()=>{
             openClosePage(getId("id").value , "Character", "character_info.html")
         })
-        
+
+        updateHealth(75)
+
+        let keysPressed = {};
+
+        document.addEventListener("keydown", (event) => {
+            keysPressed[event.key] = true;
+            console.log(keysPresseds)
+            
+        });
+        document.addEventListener("keyup", (event) => {
+            delete keysPressed[event.key];
+            console.log(keysPresseds)
+        });
+
     }
+
+
 
     //=====================================================================================================
 
     document.addEventListener("DOMContentLoaded", onWindowLoad)
+
 </script>
 ']
 </head>
@@ -58,9 +84,13 @@
 <input type="text" class="hidden" id="id" value="{getImpersonated()}"></input>
 
 <body>
-    <div class="bottom-center">
-        <button id="info">C</button>
-    </div>
+
+    <img id="info" src="{getTokenPortrait(108,getImpersonated())}" height="108px" style="
+        border-radius: 108px;
+        border: 2px solid #888;
+        margin: 20px;
+    ">
+
 </body>
 
 }]

@@ -30,6 +30,50 @@
     .background:hover {
         background-color:#444;
     }
+
+    .outer {
+        height: 92%;
+    }
+
+    .tab-switch-div {
+        position:relative;
+        height:20px;
+        min-height: 30px;
+        margin-bottom: -2px;
+    }
+    .tab-switch {
+        z-index:0;
+        bottom: 0px;
+        min-height: 20px;
+        position:absolute;
+        width:30%;
+        left: 50%;
+        transform: translate(-50%);
+        background-color: #292929;
+        border: 2px solid #414141;
+        border-radius: 10px;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        font-size: 100%;
+        color: #ddd;
+    }
+    .tab-switch:hover {
+        background-color: #444
+    }
+
+    .tab-switch.active{
+        background-color: #414141
+    }
+
+    #character-switch {
+        left: 19%
+    }
+    #skills-switch {
+        left: 50%
+    }
+    #proficiencies-switch {
+        left: 81%
+    }
 </style>
 <script>
 
@@ -48,12 +92,41 @@
         updateFeatures()
         updateResistances()
 
+        addTabFunctionality()
+
         getId("reset").addEventListener("click",()=>{
             openPage("creature_reset.html")
             closePage("Character Sheet")
         })
         
     }
+
+    function addTabFunctionality() {
+        let tab_list  = ["character", "skills", "proficiencies"]
+
+        tab_list.forEach((tab_name) => {
+            getId(tab_name+"-switch").addEventListener("click", () => {
+                tab_list.forEach((value) => {
+                    let button = getId(value+"-switch")
+                    let div = getId(value+"-tab")
+                    if (tab_name == value) {
+                        button.setAttribute("class", "tab-switch active")
+                        div.setAttribute("style", "")
+                    } else {
+                        button.setAttribute("class", "tab-switch")
+                        div.setAttribute("style", "display:none")
+                    }
+                })
+            })
+        })
+        
+    }
+
+
+
+    //=====================================================================================================
+    // Sync management
+    //=====================================================================================================
 
     function updateConditions() {
         let table = getId("conditions-table")
@@ -219,7 +292,14 @@
 <input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
-    <div class="outer center">
+
+    <div class="tab-switch-div">
+        <button class="tab-switch active" id="character-switch">Character</button>
+        <button class="tab-switch" id="skills-switch">Skills</button>
+        <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
+    </div>
+
+    <div class="outer" id="character-tab">
 
         <h2 id="name"></h2>
         <img src="{getTokenPortrait(108,id)}" height="108px" style="
@@ -279,6 +359,14 @@
         <div class="spacer"></div>
 
         <button id="reset">Reset Character</button>
+
+    </div>
+
+    <div class="outer" id="skills-tab" style="display:none">
+
+    </div>
+
+    <div class="outer" id="proficiencies-tab" style="display:none">
 
     </div>
 </body>
