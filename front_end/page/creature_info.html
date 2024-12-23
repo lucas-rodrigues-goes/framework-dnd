@@ -1,3 +1,5 @@
+[h,if(argCount()>0):id = arg(0);id = getImpersonated()]
+
 [dialog5("Character Sheet",  "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
 [r:style()]
@@ -23,7 +25,7 @@
 ']
 </head>
 
-<input type="text" class="hidden" id="id" value="{arg(0)}"></input>
+<input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
     <div class="outer center">
@@ -31,7 +33,7 @@
         <div class="spacer"></div>
 
         <h2 id="name"></h2>
-        <img src="" height="108px" style="
+        <img src="{getTokenPortrait(108,id)}" height="108px" style="
             border-radius: 108px;
             border: 2px solid #888;
         ">
