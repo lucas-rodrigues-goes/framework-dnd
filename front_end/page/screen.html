@@ -1,0 +1,68 @@
+[overlay("Screen"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+    body {
+        all:unset
+    }
+    .bottom-center {
+        width: 400px;
+        height: 50px;
+        position:fixed;
+        bottom: 10px;
+        left:50%;
+        transform: translate(-50%);
+        text-align:center;
+    }
+    div {
+    }
+    button {
+        width:40px;height:40px;
+        text-align:center;
+        padding: 10px;
+        border-width: 1px;
+        background-color: #333;
+        color:#ddd;
+        cursor:default;
+    }
+    button:hover, button:active {
+        color: #333;
+        cursor:default;
+    }
+</style>
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        updateFields(); setInterval(()=>{updateFields()}, 500)
+
+        getId("info").addEventListener("click",()=>{
+            openClosePage(getId("id").value)
+            console.log(getId("id").value)
+        })
+        
+    }
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+</script>
+']
+</head>
+
+<input type="text" class="" id="id" value="{getImpersonated()}"></input>
+
+<body>
+    <div class="bottom-center">
+        <button id="info">I</button>
+        <button id="set">S</button>
+    </div>
+</body>
+
+}]

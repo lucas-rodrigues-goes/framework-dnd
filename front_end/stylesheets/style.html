@@ -1,0 +1,165 @@
+[r:'<style>
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0);
+}
+
+::-webkit-scrollbar-corner {
+	visibility:hidden;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius:5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+  border-radius:5px;
+}
+
+.container-title {
+    position: absolute;
+    top:-25px;
+    left:50%;
+    transform:translate(-50%);
+    background-color: #292929;
+    padding: 0px 15px;
+}
+
+.container {
+    position: relative;
+    padding: 20px 10px;
+    padding-bottom: 10px;
+    display: block;
+    text-align: center;
+    width: 80%;
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    margin: 15px 0px;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* Space between columns */
+    margin-bottom: 10px; /* Space between rows */
+}
+
+.stat, .value {
+    width: 50px; /* Adjust width as needed */
+    text-align: center;
+    color: #999;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.value {
+    font-size: 150%;
+    color: #ddd;
+}
+
+body {
+
+    position: relative;
+    overflow: hidden;
+    padding: 0px;
+    margin: 0px;
+
+    background: #333;
+    color: #ddd;
+    font-size: 12px;
+}
+h1,h2,h3,h4,h5,h6,p {
+    text-align:center;
+}
+div {
+}
+div.spacer {
+    height: 10px;
+    padding: 0px;
+    margin: 0px;
+
+    border: none;
+}
+
+.center {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.center-horizontal {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%);
+}
+.hidden {
+    display:none;
+}
+.subtext {
+    position: relative;
+    top: 5px;
+
+    color: #999;
+}
+.outer {
+
+    height: 97%;
+    width: 95%;
+    overflow-y: scroll;
+
+    background-color: #292929;
+    border: 1px solid #444;
+    border-radius: 10px;
+    text-align: center;
+
+}
+
+
+button {
+    min-height: 30px;
+    min-width: 30px;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 5px;
+    cursor: pointer;
+    border: 1px solid #666;
+    background-color: #ddd;
+    color: #333;
+    border-radius: 5px;
+    margin: 0px 2px;
+}
+
+button:hover {
+    background-color: #eee;
+}
+
+button:active {
+    background-color: #ccc;
+}
+
+.container h4 {
+    margin:0px;
+}
+input, select{
+    -webkit-appearance: none;
+    width:250px;
+
+    background-color: #eee;
+    border: 1px solid #444;
+    border-radius: 5px;
+
+    padding:5px;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+input:focus, select:focus{
+    outline: none;
+}
+
+</style>']

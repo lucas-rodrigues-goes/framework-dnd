@@ -1,0 +1,82 @@
+[dialog5("Character Sheet",  "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        animateAccordion()
+        updateFields(); setInterval(()=>{updateFields()}, 500)
+        
+    }
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+</script>
+']
+</head>
+
+<input type="text" class="hidden" id="id" value="{arg(0)}"></input>
+
+<body>
+    <div class="outer center">
+        
+        <div class="spacer"></div>
+
+        <h2 id="name"></h2>
+        <img src="" height="108px" style="
+            border-radius: 108px;
+            border: 2px solid #888;
+        ">
+        <h3 class="subtext" id="level">3rd Level</h3>
+        <h2><span id="race">Human</span> <span id="class">Wizard</span></h2>
+
+        <div class="spacer"></div>
+
+        <div class="container center-horizontal"><h3 class="container-title">Attributes</h3>
+            <div class="row">
+                <div class="stat">STR</div>
+                <div class="stat">DEX</div>
+                <div class="stat">CON</div>
+                <div class="stat">WIS</div>
+                <div class="stat">INT</div>
+                <div class="stat">CHA</div>
+            </div>
+            <div class="row">
+                <div class="value" id="str">12</div>
+                <div class="value" id="dex">14</div>
+                <div class="value" id="con">13</div>
+                <div class="value" id="wis">10</div>
+                <div class="value" id="int">8</div>
+                <div class="value" id="cha">15</div>
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="container center-horizontal"><h3 class="container-title">Conditions</h3>
+            <p id="conditions"></p>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="container center-horizontal"><h3 class="container-title">Resistances</h3>
+            <p id="resistances"></p>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="container center-horizontal"><h3 class="container-title">Features</h3>
+            <p id="features"></p>
+        </div>
+    </div>
+</body>
+
+}]

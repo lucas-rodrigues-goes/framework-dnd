@@ -1,0 +1,120 @@
+[r:'
+<script>
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function updateFields() {
+        loadCurrentFieldInnerHTML("name","creature.name")
+        loadCurrentFieldInnerHTML("type","creature.type")
+        loadCurrentFieldInnerHTML("race","creature.race")
+
+        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
+        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
+        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
+        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
+        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
+        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
+
+        loadCurrentFieldInnerHTML("conditions", "");
+        loadCurrentFieldInnerHTML("resistances", "creature.resitances");
+        loadCurrentFieldInnerHTML("features", "creature.features.all");
+
+
+    }
+
+    function getId(id) {return document.getElementById(id)}
+
+    function loadCurrentFieldInnerHTML(fieldId, request) {
+        let id = getId("id")
+        if (!getId(fieldId)) {return}
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+request,
+            (response) => {
+                getId(fieldId).innerHTML = response
+                updateRaceVisibility()
+            })
+    }
+
+    function loadCurrentFieldValue(fieldId, request) {
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+request,
+            (response) => {
+                getId(fieldId).value = response
+                updateRaceVisibility()
+            })
+    }
+
+
+
+    //=====================================================================================================
+    // Style functions
+    //=====================================================================================================
+
+    function animateAccordion() {
+        var acc = document.getElementsByClassName("accordion");
+        var i;
+
+        for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+            } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+            } 
+        });
+        }
+    }
+
+
+
+    //=====================================================================================================
+    // External functions
+    //=====================================================================================================
+
+    function toBackend(arguments, valueCallback) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:console@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+
+    function closePage(arguments) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:closeDialog@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+
+    function openClosePage(arguments) {
+        let request = new XMLHttpRequest();
+        request.open("POST", "macro:openClosePage@lib:main", true);
+
+        request.onreadystatechange = function() {
+            if (request.readyState == 4) {
+                valueCallback(request.response);
+            }
+        };
+        request.send(arguments);
+    }
+    
+
+
+    //=====================================================================================================
+
+</script>
+']
