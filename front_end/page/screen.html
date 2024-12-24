@@ -1,10 +1,8 @@
-[h,if(argCount()>0):id = arg(0);id = getImpersonated()]
+[h:id = getImpersonated()]
 
 [overlay("Screen"), code: {
 <head>
-<link rel='onChangeImpersonated' type='macro' href="
-    macro://screen.html@lib:main/all/impersonated?{id}
-">
+<link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/all/impersonated?'>
 [r:style()]
 [r:script()]
 [r:'
@@ -51,7 +49,7 @@
         updateFields(); setInterval(()=>{updateFields()}, 500)
 
         getId("info").addEventListener("click",()=>{
-            openClosePage(getId("id").value , "Character", "character_info.html")
+            openClosePage(getId("id").value , "Character", "creature_info.html")
         })
 
         updateHealth(75)

@@ -1,10 +1,8 @@
-[h,if(argCount()>0):id = arg(0);id = getImpersonated()]
+[h:id = getImpersonated()]
 
 [dialog5("Character", "width=400; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
-<link rel='onChangeImpersonated' type='macro' href="
-    macro://creature_info.html@lib:main/all/impersonated?
-">
+<link rel='onChangeImpersonated' type='macro' href='macro://creature_info.html@lib:main/all/impersonated?'>
 [r:style()]
 [r:script()]
 [r:'
@@ -91,7 +89,7 @@
         addAbilityScoresBehavior()
 
         getId("cancel").addEventListener("click", () => {
-            openPage("character_info.html")
+            openPage("creature_info.html")
         })
 
         getId("type").addEventListener("input", () => {
@@ -155,7 +153,7 @@
                 ")"
             )
 
-            openPage("character_info.html")
+            openPage("creature_info.html")
 
         })
     }
