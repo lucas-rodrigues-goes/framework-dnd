@@ -57,7 +57,11 @@ try {
         #features = {
             "data":{},
             "type":{},
-            "level":{}
+            "level":{},
+            "optional":{
+                "true":[],
+                "false":[]
+            }
         }
 
         #spells = {
