@@ -33,7 +33,7 @@
 
     function addSubmitBehavior() {
         getId("submit").addEventListener("click", async () => {
-
+            console.log("here")
             // Get values from form
             let name = getId("name").value;
             let level = getId("level").value;
@@ -47,10 +47,12 @@
             let description = getId("description").value;
             let description_higher_levels = getId("description_higher_levels").value;
 
+            console.log("here2")
             // Treatment
             if (level == "Cantrip") {level = "cantrip"}
             school = school.toLowerCase()
 
+            console.log("here3")
             // Send data to backend
             toBackend(
                 "database.set_spell("+
@@ -67,6 +69,8 @@
                     "`"+description_higher_levels+"`,"+
                 ")"
             )
+
+            console.log("here4")
 
             closePage("spell.html")
 
