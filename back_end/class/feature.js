@@ -35,14 +35,39 @@ try {
             if (typeof name != "string") { return; }
             this.#name = name;
         }
-        
-        set cast_time(cast_time) {
-            cast_time = Number(cast_time)
-            if (Number(cast_time) < 1 || Number(cast_time) > 12) { return; }
 
-            this.#cast_time = cast_time;
+        set type(type) {
+            if (typeof type != "string") { return; }
+            this.#type = type;
         }
 
+        set subtype(subtype) {
+            if (this.#type != "class") {return}
+            if (typeof subtype != "string") { return; }
+
+            this.#subtype = subtype;
+        }
+        
+        set level(level) {
+            level = Number(cast_time)
+            if (level < 1 || level > 20) { return; }
+
+            this.#level = level;
+        }
+
+        set optional(optional) {
+            optional = Boolean(optional)
+            if (optional != true && optional != false) { return; }
+
+            this.#optional = optional;
+        }
+
+        set description(description) {
+            if (typeof description != "string") { return; }
+            this.#description = description;
+        }
+
+        
 
         //=====================================================================================================
         // Instance management
