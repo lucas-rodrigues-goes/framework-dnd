@@ -64,7 +64,9 @@ try {
             this.#school = school;
         }
         set cast_time(cast_time) {
-            if (Number(cast_time) < 1 || Number(cast_time) > 12) { return; }
+            cast_time = Number(cast_time)
+            
+            if (cast_time < 1 || cast_time > 12) { return; }
 
             this.#cast_time = cast_time;
         }
