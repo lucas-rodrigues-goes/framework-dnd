@@ -36,16 +36,6 @@
             console.log("here")
             // Get values from form
             let name = getId("name").value;
-            let level = getId("level").value;
-            let school = getId("school").value;
-            let classes = "";
-            let cast_time = getId("cast_time").value;
-            let range = getId("range").value;
-            let target = getId("target").value;
-            let components = "";
-            let duration = getId("duration").value;
-            let description = getId("description").value;
-            let description_higher_levels = getId("description_higher_levels").value;
 
             console.log("here2")
             // Treatment
@@ -55,18 +45,12 @@
             console.log("here3")
             // Send data to backend
             toBackend(
-                "database.set_spell("+
+                "database.set_feature("+
                     "`"+name+"`,"+
-                    "`"+level+"`,"+
-                    "`"+school+"`,"+
-                    "`"+classes+"`,"+
-                    "`"+cast_time+"`,"+
-                    "`"+range+"`,"+
-                    "`"+target+"`,"+
-                    "`"+components+"`,"+
-                    "`"+duration+"`,"+
-                    "`"+description+"`,"+
-                    "`"+description_higher_levels+"`,"+
+                    "`"+name+"`,"+
+                    "`"+name+"`,"+
+                    "`"+name+"`,"+
+                    "`"+name+"`,"+
                 ")"
             )
 
@@ -90,7 +74,7 @@
 <body>
     <div class="outer">
 
-        <h2>Spell Creation</h2>
+        <h2>Feature Creation</h2>
 
         <div class="spacer"></div>
 
@@ -102,6 +86,32 @@
             <h4>Name</h4>
             <input id="name" placeholder></input>
 
+            <h4>Type</h4>
+            <select id="school">
+                <option value="" hidden>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </option>
+                <option>Racial</option>
+                <option>Class</option>
+                <option>Feat</option>
+            </select>
+
+            <h4>Subtype</h4>
+            <select id="school">
+                <option value="" hidden>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </option>
+                <option>Barbarian</option>
+                <option>Bard</option>
+                <option>Cleric</option>
+            </select>
+
             <h4>Level</h4>
             <select id="level">
                 <option value="" hidden>
@@ -110,44 +120,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </option>
-                <option>Cantrip</option>
-                <option>1st</option>
-                <option>2nd</option>
-                <option>3rd</option>
-                <option>4th</option>
-                <option>5th</option>
-                <option>6th</option>
-                <option>7th</option>
-                <option>8th</option>
-                <option>9th</option>
-            </select>
-
-            <h4>School</h4>
-            <select id="school">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>Abjuration</option>
-                <option>Conjuration</option>
-                <option>Divination</option>
-                <option>Enchantment</option>
-                <option>Evocation</option>
-                <option>Illusion</option>
-                <option>Necromancy</option>
-                <option>Transmutation</option>
-            </select>
-
-            <h4>Cast Time</h4>
-            <select id="cast_time">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
+                <option>0</option>
                 <option>1</option>
                 <option>2</option>
                 <option>3</option>
@@ -160,22 +133,22 @@
                 <option>10</option>
                 <option>11</option>
                 <option>12</option>
+                <option>13</option>
+                <option>14</option>
+                <option>15</option>
+                <option>16</option>
+                <option>17</option>
+                <option>18</option>
+                <option>19</option>
+                <option>20</option>
             </select>
 
-            <h4>Range</h4>
-            <input id="range"></input>
 
-            <h4>Target</h4>
-            <input id="target"></input>
-
-            <h4>Duration</h4>
-            <input id="duration"></input>
+            <h4>Optional</h4>
+            <input id="optional"></input>
 
             <h4>Description</h4>
             <textarea id="description" rows="10" cols="30"></textarea>
-
-            <h4>At Higher Levels</h4>
-            <textarea id="description_higher_levels" rows="3" cols="30"></textarea>
 
         </div>
 

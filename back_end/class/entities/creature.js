@@ -65,6 +65,7 @@ try {
             "warlock": [],
             "wizard": []
         };
+        #proficiencies = {}
         #spells = {
             "bard": {
                 "known": {
@@ -153,6 +154,7 @@ try {
         get resources() { return this.#resources; }
         get resistances() { return this.#resistances; }
         get features() { return this.#features; }
+        get proficiencies() { return this.#proficiencies; }
         get spells() { return this.#spells; }
         get conditions() {return this.#conditions}
         get equipment() { return this.#equipment; }
@@ -351,6 +353,24 @@ try {
         // Check if the creature has a specific feature
         has_feature(name) {
             return this.#features.all.includes(name);
+        }
+
+
+
+        //=====================================================================================================
+        // Proficiency management
+        //=====================================================================================================
+
+        // Add a feature to the creature (checking feature type and duplication)
+        set_proficiency(name, level) {
+        }
+
+        // Remove a feature from the creature
+        remove_proficiency(name) {
+        }
+
+        // Check if the creature has a specific feature
+        get_proficiency_level(name) {
         }
 
 
