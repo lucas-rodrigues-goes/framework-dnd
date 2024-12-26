@@ -9,7 +9,7 @@ try {
 
         #name = "" // 
         #type = "" // racial, feat, class
-        #subtype = undefined // is used instead of type when defined
+        #subtype = undefined // specifies class
         #level = 0 // 0 if no level requirement
         #optional = true // whether it is automatically added (for races and classes)
         #description = ""
@@ -37,7 +37,8 @@ try {
         }
 
         set type(type) {
-            if (typeof type != "string") { return; }
+            valid_types = ["racial", "class", "feat"]
+            if (!valid_types.includes(type)) { return; }
             this.#type = type;
         }
 
