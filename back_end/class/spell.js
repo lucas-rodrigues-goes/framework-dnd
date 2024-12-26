@@ -96,7 +96,27 @@ try {
         constructor(name, level, school, classes,
             cast_time, range, target, components, duration,
             description, description_higher_levels) {
+
+            // Validations
+            if (typeof name != "string") { return; }
+
+            valid_level_list = ["cantrip","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"]
+            if (!valid_level_list.includes(level)) { return; }
+
+            valid_school_list = ["abjuration","conjuration","divination","enchantment",
+                "evocation","illusion","necromancy","transmutation"]
+            if (!valid_school_list.includes(school)) { return; }
+
+            cast_time = Number(cast_time)
+            if (cast_time < 1 || cast_time > 12) { return; }
+
+            valid_classes = ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]
+            classes = classes.filter(value => valid_classes.includes(value))
+
+            valid_components = ["vocal", "somatic", "material"]
+            componenets = components.filter(value => valid_components.includes(value))
             
+            // Attribution
             this.#name = name
             this.#level = level
             this.#school = school

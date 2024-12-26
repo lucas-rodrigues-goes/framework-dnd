@@ -119,6 +119,47 @@ try {
 
 
         //=====================================================================================================
+        // Feature management
+        //=====================================================================================================
+
+        set_feature(name, type, subtype, level, optional, description) {
+
+            if(name in this.#features.data) {this.remove_feature(name)}
+            
+            let feature = new Feature(name, type, subtype, level, optional, description)
+            
+            this.#features.data[name] = feature.object()
+            this.#features.level[feature.level].push(feature.name)
+            this.#features.optional[feature.optional].push(feature.name)
+
+            if (feature.type != "class") {
+                this.#features.type[feature.type].push(feature.name)
+            } else {
+                this.#features.type[feature.subtype].push(feature.name)
+            }
+
+            this.save()
+        }
+
+        remove_feature(name) {
+            let feature = this.#features.data[name]
+
+            delete this.#features.data[feature.name]
+            this.#features.level[feature.level] = this.#features.level[feature.level].filter(value => value != feature.name)
+            this.#features.optional[feature.optional] = this.#features.optional[feature.optional].filter(value => value != feature.name)
+
+            if (feature.type != "class") {
+                this.#features.type[feature.type].filter(value => value != feature.name)
+            } else {
+                this.#features.type[feature.subtype].filter(value => value != feature.name)
+            }
+            
+            this.save()
+        }
+
+
+
+        //=====================================================================================================
         // Spell management
         //=====================================================================================================
 
@@ -202,10 +243,23 @@ try {
             this.token.setProperty("object", JSON.stringify(object));
         }
 
+
+
         //=====================================================================================================
     }
 
     var database = new Database()
+
+    database.set_feature(
+        "Darkvision",
+        'racial',
+        "",
+        0,
+        false,
+        "You have superior vision in dark and dim conditions. You can see in dim light within 30 feet of you as "+
+        "if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, "+
+        "only shades of gray."
+    )
 
     database.set_spell(
         "Fireball",
