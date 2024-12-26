@@ -1,23 +1,21 @@
 "use strict";
 try {
 
-    var Equipment = class extends Item {
+    var Weapon = class extends Equipment {
 
         //=====================================================================================================
         // Feature parameters
         //=====================================================================================================
 
-        #bonus
-        #conditions
+        #damage
 
 
 
         //=====================================================================================================
         // Getter methods
         //=====================================================================================================
-        
-        get bonus () {return this.#bonus}
-        get conditions () {return this.#conditions}
+
+        get damage () { return this.#damage }
 
 
 
@@ -28,30 +26,31 @@ try {
         constructor(
             name,
             image,
-            subtype, 
-            weight, 
+            weight,
             rarity, 
             price, 
             properties, 
-            bonus = {}, 
-            conditions = []
+            bonus, 
+            conditions, 
+            damage = [{
+                "ammount": 1,
+                "size": 4,
+                "type": "piercing"
+            }]
         ) {
             super(
                 name,
                 image,
-                "equipment", // Type
-                subtype,
+                "weapon",
                 weight, 
                 rarity, 
                 price, 
-                false, // Stackable
-                true, // Equippable
-                properties
+                properties, 
+                bonus, 
+                conditions
             )
-            
-            this.#bonus = bonus
-            this.#conditions = conditions
 
+            this.#damage = damage
         }
 
         object() {
@@ -66,8 +65,9 @@ try {
                 "stackable": this.stackable,
                 "equippable": this.equippable,
                 "properties": this.properties,
-                "bonus": this.#bonus,
-                "conditions": this.#conditions
+                "bonus": this.bonus,
+                "conditions": this.conditions,
+                "damage": this.damage
             };
         }
 

@@ -27,55 +27,32 @@ try {
         get description() { return this.#description; }
 
 
-        //=====================================================================================================
-        // Setter methods
-        //=====================================================================================================
-
-        set name(name) {
-            if (typeof name != "string") { return; }
-            this.#name = name;
-        }
-
-        set type(type) {
-            valid_types = ["racial", "class", "feat"]
-            if (!valid_types.includes(type)) { return; }
-            this.#type = type;
-        }
-
-        set subtype(subtype) {
-            if (this.#type != "class") {return}
-            if (typeof subtype != "string") { return; }
-
-            this.#subtype = subtype;
-        }
-        
-        set level(level) {
-            level = Number(cast_time)
-            if (level < 1 || level > 20) { return; }
-
-            this.#level = level;
-        }
-
-        set optional(optional) {
-            optional = Boolean(optional)
-            if (optional != true && optional != false) { return; }
-
-            this.#optional = optional;
-        }
-
-        set description(description) {
-            if (typeof description != "string") { return; }
-            this.#description = description;
-        }
-
-        
 
         //=====================================================================================================
         // Instance management
         //=====================================================================================================
 
-        constructor(name, type, subtype, level, optional, description) {
-            
+        constructor(
+            name, 
+            type,
+            subtype,
+            level = 0,
+            optional = true,
+            description
+        ) {
+
+            // Validate Type
+            if ( ! [
+                "racial", "class", "feat"
+            ].includes(type)) { return }
+
+            // Validate Subtype
+            if (type != "class") { subtype = undefined }
+
+            // Validate Level
+            if (Number(level) < 0 || Number(level) > 20) { return }
+
+            // Instance
             this.#name = name
             this.#type = type
             this.#subtype = subtype

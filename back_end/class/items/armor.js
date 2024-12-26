@@ -1,23 +1,21 @@
 "use strict";
 try {
 
-    var Equipment = class extends Item {
+    var Armor = class extends Equipment {
 
         //=====================================================================================================
         // Feature parameters
         //=====================================================================================================
 
-        #bonus
-        #conditions
+        #base_armor_class
 
 
 
         //=====================================================================================================
         // Getter methods
         //=====================================================================================================
-        
-        get bonus () {return this.#bonus}
-        get conditions () {return this.#conditions}
+
+        get base_armor_class () { return this.#base_armor_class }
 
 
 
@@ -28,30 +26,28 @@ try {
         constructor(
             name,
             image,
-            subtype, 
-            weight, 
+            weight,
             rarity, 
             price, 
             properties, 
-            bonus = {}, 
-            conditions = []
+            bonus, 
+            conditions, 
+            base_armor_class
         ) {
             super(
                 name,
                 image,
-                "equipment", // Type
-                subtype,
+                "armor",
                 weight, 
                 rarity, 
                 price, 
-                false, // Stackable
-                true, // Equippable
-                properties
+                properties, 
+                bonus, 
+                conditions, 
+                base_armor_class = 10
             )
-            
-            this.#bonus = bonus
-            this.#conditions = conditions
 
+            this.#base_armor_class = base_armor_class
         }
 
         object() {
@@ -66,8 +62,9 @@ try {
                 "stackable": this.stackable,
                 "equippable": this.equippable,
                 "properties": this.properties,
-                "bonus": this.#bonus,
-                "conditions": this.#conditions
+                "bonus": this.bonus,
+                "conditions": this.conditions,
+                "ac": this.base_armor_class
             };
         }
 

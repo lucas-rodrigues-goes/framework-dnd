@@ -7,19 +7,19 @@ try {
         // Spell parameters
         //=====================================================================================================
 
-        #name = ""
-        #level = ""
-        #school = ""
-        #classes = []
+        #name
+        #level
+        #school
+        #classes
 
-        #cast_time = ""
-        #range = ""
-        #target = ""
-        #components = []
-        #duration = ""
+        #cast_time
+        #range
+        #target
+        #components
+        #duration
 
-        #description = ""
-        #description_higher_levels = ""
+        #description
+        #description_higher_levels
 
 
         
@@ -43,80 +43,47 @@ try {
 
 
         //=====================================================================================================
-        // Setter methods
-        //=====================================================================================================
-
-        set name(name) {
-            if (typeof name != "string") { return; }
-            this.#name = name;
-        }
-        set level(level) {
-            valid_level_list = ["cantrip","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"]
-            if (!valid_level_list.includes(level)) { return; }
-
-            this.#level = level;
-        }
-        set school(school) {
-            valid_school_list = ["abjuration","conjuration","divination","enchantment",
-                                "evocation","illusion","necromancy","transmutation"]
-            if (!valid_school_list.includes(school)) { return; }
-
-            this.#school = school;
-        }
-        set cast_time(cast_time) {
-            cast_time = Number(cast_time)
-            
-            if (cast_time < 1 || cast_time > 12) { return; }
-
-            this.#cast_time = cast_time;
-        }
-        set range(range) {this.#range = range;}
-        set target(target) {this.#target = target;}
-        set duration(duration) {this.#duration = duration;}
-        set description(description) {this.#description = description;}
-        set description_higher_levels(description_higher_levels) {this.#description_higher_levels = description_higher_levels;}
-
-        set classes(classes) {
-            valid_classes = ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]
-
-            this.#classes = classes.filter(value => valid_classes.includes(value))
-        }
-        set components(components) {
-            valid_components = ["vocal", "somatic", "material"]
-
-            this.#components = components.filter(value => valid_components.includes(value))
-        }
-
-
-
-        //=====================================================================================================
         // Instance management
         //=====================================================================================================
 
-        constructor(name, level, school, classes,
-            cast_time, range, target, components, duration,
-            description, description_higher_levels) {
+        constructor(
+            name = "", 
+            level = "1st", 
+            school = "", 
+            classes = [],
+            cast_time = 0, 
+            range = 0, 
+            target = "", 
+            components = [], 
+            duration = 0,
+            description = "", 
+            description_higher_levels = ""
+        ) {
 
-            // Validations
-            if (typeof name != "string") { return; }
+            // Validate Level
+            if (![
+                "cantrip","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"
+            ].includes(level)) { return }
 
-            valid_level_list = ["cantrip","1st","2nd","3rd","4th","5th","6th","7th","8th","9th"]
-            if (!valid_level_list.includes(level)) { return; }
+            // Validate School of Magic
+            if (![
+                "abjuration","conjuration","divination","enchantment","evocation","illusion","necromancy","transmutation"
+            ].includes(school)) { return }
 
-            valid_school_list = ["abjuration","conjuration","divination","enchantment",
-                "evocation","illusion","necromancy","transmutation"]
-            if (!valid_school_list.includes(school)) { return; }
+            // Validate Cast Time
+            if (Number(cast_time) < 1 || Number(cast_time) > 12) { return }
 
-            cast_time = Number(cast_time)
-            if (cast_time < 1 || cast_time > 12) { return; }
+            // Remove Invalid Spellcasting Classes
+            classes = classes.filter(value => [
+                "bard", "druid", "cleric", "sorcerer", "warlock", "wizard"
+            ].includes(value))
 
-            valid_classes = ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]
-            classes = classes.filter(value => valid_classes.includes(value))
-
-            valid_components = ["vocal", "somatic", "material"]
-            componenets = components.filter(value => valid_components.includes(value))
+            // Remove invaild components
+            components = components.filter(value => [
+                "vocal", "somatic", "material"
+            ].includes(value))
             
-            // Attribution
+            // Instancing
             this.#name = name
             this.#level = level
             this.#school = school
