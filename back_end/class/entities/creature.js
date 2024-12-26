@@ -176,6 +176,36 @@ try {
             }
         }
 
+        get skills() {
+            let str_bonus = this.attr_bonus('strength')
+            let dex_bonus = this.attr_bonus('dexterity')
+            let wis_bonus = this.attr_bonus('wisdom')
+            let int_bonus = this.attr_bonus('intelligence')
+            let cha_bonus = this.attr_bonus('charisma')
+            
+            return {
+                "acrobatics": str_bonus,
+                "animal handling": wis_bonus,
+                "arcana": int_bonus,
+                "athletics": str_bonus,
+                "deception": cha_bonus,
+                "history": int_bonus,
+                "insight": wis_bonus,
+                "intimidation": Math.max(cha_bonus,str_bonus),
+                "investigation": int_bonus,
+                "medicine": wis_bonus,
+                "nature": int_bonus,
+                "perception": wis_bonus,
+                "performance": cha_bonus,
+                "persuasion": cha_bonus,
+                "religion": int_bonus,
+                "sleight of hand": dex_bonus,
+                "stealth": dex_bonus,
+                "survival": wis_bonus
+            }
+            
+        }
+
         // Armor class is determined by 10 + dexterity modifier
         get armor_class() {
             return 10 + this.attr_bonus.dexterity;
