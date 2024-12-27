@@ -19,6 +19,7 @@
     .content-right {
         width: 40%;
         text-align: right;
+        font-weight: bold;
     }    
     .content-left::first-letter, .content-right::first-letter{
         text-transform: capitalize;
@@ -87,11 +88,17 @@
         animateAccordion()
         updateFields(); setInterval(()=>{
             updateFields()
-        }, 500)
+        }, 200)
 
         updateConditions()
         updateFeatures()
         updateResistances()
+
+        setInterval(()=>{
+            updateConditions()
+            updateFeatures()
+            updateResistances()
+        }, 2000)
 
         addTabFunctionality()
 
@@ -135,6 +142,7 @@
 
         toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.conditions",
         (response) => {
+            table.innerHTML = ""
             response = JSON.parse(response)
             let has_conditions = false
             let response_keys = Object.keys(response)
@@ -175,7 +183,7 @@
                 outerDiv.appendChild(innerDivName)
                 outerDiv.appendChild(innerDivType)
                 
-                table.parentNode.appendChild(outerDiv)
+                table.appendChild(outerDiv)
             })
 
             if (!has_conditions) {
@@ -192,6 +200,7 @@
 
         toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.features",
         (response) => {
+            table.innerHTML = ""
             response = JSON.parse(response)
             let has_features = false;
             let response_keys = Object.keys(response)
@@ -214,7 +223,7 @@
                         outerDiv.appendChild(innerDivName)
                         outerDiv.appendChild(innerDivType)
                         
-                        table.parentNode.appendChild(outerDiv)
+                        table.appendChild(outerDiv)
                     })
                 }
             })
@@ -233,6 +242,7 @@
 
         toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.resistances",
         (response) => {
+            table.innerHTML = ""
             response = JSON.parse(response)
             let has_resistances = false;
             let response_keys = Object.keys(response)
@@ -271,7 +281,64 @@
                     outerDiv.appendChild(innerDivName)
                     outerDiv.appendChild(innerDivType)
                     
-                    table.parentNode.appendChild(outerDiv)
+                    table.appendChild(outerDiv)
+                }
+            })
+
+            if (!has_resistances) {
+                getId("resistances-container").style = "display:none"
+            } else {
+                getId("resistances-container").style = ""
+            }
+        })
+    }
+
+    function updateResistances() {
+        let table = getId("resistances-table")
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.resistances",
+        (response) => {
+            table.innerHTML = ""
+            response = JSON.parse(response)
+            let has_resistances = false;
+            let response_keys = Object.keys(response)
+
+            response_keys.forEach((key)=>{
+                let value = response[key]
+                if (value != 0) {
+                    has_resistances = true;
+
+                    let innerDivName = document.createElement("div")
+                    innerDivName.className = "content-left"
+                    innerDivName.innerHTML = key
+
+                    let style = "";
+                    switch(value) {
+                        case "immunity":
+                            style = "color: #d90"
+                            break
+                        case "heals":
+                            style = "color: #090"
+                            break
+                        case "vulnerability":
+                            style = "color: #a33"
+                            break
+                        default:
+                            style = "color: #090"
+                            break
+                    }
+                    let innerDivType = document.createElement("div")
+                    innerDivType.className = "content-right"
+                    innerDivType.innerHTML = value
+                    innerDivType.style = style + ";font-weight: bold"
+
+                    let outerDiv = document.createElement("div")
+                    outerDiv.className = "row background"
+                    outerDiv.appendChild(innerDivName)
+                    outerDiv.appendChild(innerDivType)
+                    
+                    table.appendChild(outerDiv)
                 }
             })
 
@@ -308,7 +375,7 @@
             border: 2px solid #888;
         ">
         <h3 class="subtext" id="level">0th Level</h3>
-        <h2><span id="race">Human</span> <span id="class">None</span></h2>
+        <h2><span id="race">Human</span> <span id="class"></span></h2>
 
         <div class="spacer"></div>
 
@@ -364,17 +431,187 @@
     </div>
 
     <div class="outer" id="skills-tab" style="display:none">
+
+        <div class="spacer"></div>
+
         <div class="container center-horizontal">
             <h3 class="container-title">Strength</h3>
             <p></p>
             <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="str-saves">+2</div>
+                </div>
+        
                 <div class="row background">
                     <div class="content-left">Athletics</div>
-                    <div class="content-right">+2</div>
+                    <div class="content-right" id="athletics">+2</div>
                 </div>
+        
             </div>
-            <p id="strength-skills"></p>
         </div>
+
+        <div class="spacer"></div>
+        
+        <div class="container center-horizontal">
+            <h3 class="container-title">Dexterity</h3>
+            <p></p>
+            <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="dex-saves">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Acrobatics</div>
+                    <div class="content-right" id="acrobatics">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Sleight of Hand</div>
+                    <div class="content-right" id="sleight-of-hand">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Stealth</div>
+                    <div class="content-right" id="stealth">+2</div>
+                </div>
+        
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+        
+        <div class="container center-horizontal">
+            <h3 class="container-title">Constitution</h3>
+            <p></p>
+            <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="con-saves">+2</div>
+                </div>
+        
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+        
+        <div class="container center-horizontal">
+            <h3 class="container-title">Wisdom</h3>
+            <p></p>
+            <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="wis-saves">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Animal Handling</div>
+                    <div class="content-right" id="animal-handling">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Insight</div>
+                    <div class="content-right" id="insight">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Medicine</div>
+                    <div class="content-right" id="medicine">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Perception</div>
+                    <div class="content-right" id="perception">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Survival</div>
+                    <div class="content-right" id="survival">+2</div>
+                </div>
+        
+            </div>
+        </div>
+
+        <div class="spacer"></div>
+        
+        <div class="container center-horizontal">
+            <h3 class="container-title">Intelligence</h3>
+            <p></p>
+            <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="int-saves">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Arcana</div>
+                    <div class="content-right" id="arcana">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">History</div>
+                    <div class="content-right" id="history">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Investigation</div>
+                    <div class="content-right" id="investigation">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Nature</div>
+                    <div class="content-right" id="nature">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Religion</div>
+                    <div class="content-right" id="religion">+2</div>
+                </div>
+        
+            </div>
+        </div>
+        
+        <div class="spacer"></div>
+        
+        <div class="container center-horizontal">
+            <h3 class="container-title">Charisma</h3>
+            <p></p>
+            <div class="table-content">
+        
+                <div class="row background">
+                    <div class="content-left">Saving Throws</div>
+                    <div class="content-right" id="cha-saves">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Deception</div>
+                    <div class="content-right" id="deception">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Intimidation</div>
+                    <div class="content-right" id="intimidation">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Performance</div>
+                    <div class="content-right" id="performance">+2</div>
+                </div>
+        
+                <div class="row background">
+                    <div class="content-left">Persuasion</div>
+                    <div class="content-right" id="persuasion">+2</div>
+                </div>
+        
+            </div>
+        </div>
+        
     </div>
 
     <div class="outer" id="proficiencies-tab" style="display:none">
