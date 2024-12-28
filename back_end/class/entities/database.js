@@ -7,12 +7,8 @@ try {
         // Database Default Parameters
         //=====================================================================================================
 
-        #creature_types = {
-            "data":{},
-            "playable":{
-                "true":[],
-                "false":[],
-            }
+        #classes = {
+            
         }
 
         #races = {

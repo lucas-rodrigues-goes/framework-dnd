@@ -1,0 +1,394 @@
+[dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+    .content-left, .content-right{
+        min-height: 0px;
+        display:block;
+        margin: 0px;
+    }
+    .content-left {
+        width: 60%;
+        text-align: left;
+    }
+    .content-right {
+        width: 40%;
+        text-align: right;
+        font-weight: bold;
+    }    
+    .content-left::first-letter, .content-right::first-letter{
+        text-transform: capitalize;
+    }
+    .background {
+        background-color:#333;
+        border-radius: 5px;
+        padding: 10px;
+    }
+    .background:hover {
+        background-color:#444;
+    }
+
+    .outer {
+        height: 91%;
+    }
+
+    .tab-switch-div {
+        position:relative;
+        height:20px;
+        min-height: 30px;
+        margin-bottom: -2px;
+    }
+    .tab-switch {
+        z-index:0;
+        bottom: 0px;
+        min-height: 20px;
+        position:absolute;
+        width:11.25%;
+        left: 50%;
+        transform: translate(-50%);
+        background-color: #292929;
+        border: 2px solid #414141;
+        border-radius: 10px;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        font-size: 100%;
+        color: #ddd;
+    }
+    .tab-switch:hover {
+        background-color: #444
+    }
+
+    .tab-switch.active{
+        background-color: #414141
+    }
+
+    #classes-switch { left: 10.625% }
+    #races-switch { left: 21.875% }
+    #conditions-switch { left: 33.125% }
+
+    #features-switch { left: 44.375% }
+    #items-switch { left: 55.625% }
+
+    #resistances-switch { left: 66.875% }
+    #resources-switch { left: 78.125% }
+    #spells-switch { left: 89.375% }
+</style>
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        animateAccordion()
+
+       /*  updateConditions()
+        updateFeatures()
+        updateResistances()
+
+        setInterval(()=>{
+            updateConditions()
+            updateFeatures()
+            updateResistances()
+        }, 2000) */
+
+        addTabFunctionality()
+
+        getId("reset").addEventListener("click",()=>{
+            openPage("creature_reset.html")
+            closePage("Character Sheet")
+        })
+        
+    }
+
+    function addTabFunctionality() {
+        let tab_list  = ["classes","races","conditions", "features", "items", "resistances", "resources", "spells"]
+
+        tab_list.forEach((tab_name) => {
+            getId(tab_name+"-switch").addEventListener("click", () => {
+                tab_list.forEach((value) => {
+                    let button = getId(value+"-switch")
+                    let div = getId(value+"-tab")
+                    if (tab_name == value) {
+                        button.setAttribute("class", "tab-switch active")
+                        div.setAttribute("style", "")
+                    } else {
+                        button.setAttribute("class", "tab-switch")
+                        div.setAttribute("style", "display:none")
+                    }
+                })
+            })
+        })
+        
+    }
+
+
+
+    //=====================================================================================================
+    // Sync management
+    //=====================================================================================================
+
+    function updateConditions() {
+        let table = getId("conditions-table")
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.conditions",
+        (response) => {
+            table.innerHTML = ""
+            response = JSON.parse(response)
+            let has_conditions = false
+            let response_keys = Object.keys(response)
+
+            response_keys.forEach((key)=>{
+                let value = Number(response[key])
+                has_conditions = true;
+
+                let innerDivName = document.createElement("div")
+                innerDivName.className = "content-left"
+                innerDivName.innerHTML = key
+
+                let unit = "Round"
+                if (value > 14400) {
+                    value /= 14400
+                    unit = "Day"
+                }
+                else if (value > 600) {
+                    value /= 600
+                    unit = "Hour"
+                }
+                else if (value > 10) {
+                    value /= 10
+                    unit = "Minute"
+                }
+
+                value = Math.round(value)
+                if (value > 1) {
+                    unit += "s"
+                }
+
+                let innerDivType = document.createElement("div")
+                innerDivType.className = "content-right"
+                innerDivType.innerHTML = value + " " + unit
+
+                let outerDiv = document.createElement("div")
+                outerDiv.className = "row background"
+                outerDiv.appendChild(innerDivName)
+                outerDiv.appendChild(innerDivType)
+                
+                table.appendChild(outerDiv)
+            })
+
+            if (!has_conditions) {
+                getId("conditions-container").style = "display:none"
+            } else {
+                getId("conditions-container").style = ""
+            }
+        })
+    }
+
+    function updateFeatures() {
+        let table = getId("features-table")
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.features",
+        (response) => {
+            table.innerHTML = ""
+            response = JSON.parse(response)
+            let has_features = false;
+            let response_keys = Object.keys(response)
+
+            response_keys.forEach((key)=>{
+                if (key != "all") {
+                    response[key].forEach((value)=>{
+                        has_features = true;
+
+                        let innerDivName = document.createElement("div")
+                        innerDivName.className = "content-left"
+                        innerDivName.innerHTML = value
+
+                        let innerDivType = document.createElement("div")
+                        innerDivType.className = "content-right"
+                        innerDivType.innerHTML = key
+
+                        let outerDiv = document.createElement("div")
+                        outerDiv.className = "row background"
+                        outerDiv.appendChild(innerDivName)
+                        outerDiv.appendChild(innerDivType)
+                        
+                        table.appendChild(outerDiv)
+                    })
+                }
+            })
+
+            if (!has_features) {
+                getId("features-container").style = "display:none"
+            } else {
+                getId("features-container").style = ""
+            }
+        })
+    }
+
+    function updateResistances() {
+        let table = getId("resistances-table")
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.resistances",
+        (response) => {
+            table.innerHTML = ""
+            response = JSON.parse(response)
+            let has_resistances = false;
+            let response_keys = Object.keys(response)
+
+            response_keys.forEach((key)=>{
+                let value = response[key]
+                if (value != 0) {
+                    has_resistances = true;
+
+                    let innerDivName = document.createElement("div")
+                    innerDivName.className = "content-left"
+                    innerDivName.innerHTML = key
+
+                    let style = "";
+                    switch(value) {
+                        case "immunity":
+                            style = "color: #d90"
+                            break
+                        case "heals":
+                            style = "color: #090"
+                            break
+                        case "vulnerability":
+                            style = "color: #a33"
+                            break
+                        default:
+                            style = "color: #090"
+                            break
+                    }
+                    let innerDivType = document.createElement("div")
+                    innerDivType.className = "content-right"
+                    innerDivType.innerHTML = value
+                    innerDivType.style = style + ";font-weight: bold"
+
+                    let outerDiv = document.createElement("div")
+                    outerDiv.className = "row background"
+                    outerDiv.appendChild(innerDivName)
+                    outerDiv.appendChild(innerDivType)
+                    
+                    table.appendChild(outerDiv)
+                }
+            })
+
+            if (!has_resistances) {
+                getId("resistances-container").style = "display:none"
+            } else {
+                getId("resistances-container").style = ""
+            }
+        })
+    }
+
+    function updateResistances() {
+        let table = getId("resistances-table")
+        let id = getId("id")
+
+        toBackend("var creature = new Creature(`"+id.value+"`);"+"creature.resistances",
+        (response) => {
+            table.innerHTML = ""
+            response = JSON.parse(response)
+            let has_resistances = false;
+            let response_keys = Object.keys(response)
+
+            response_keys.forEach((key)=>{
+                let value = response[key]
+                if (value != 0) {
+                    has_resistances = true;
+
+                    let innerDivName = document.createElement("div")
+                    innerDivName.className = "content-left"
+                    innerDivName.innerHTML = key
+
+                    let style = "";
+                    switch(value) {
+                        case "immunity":
+                            style = "color: #d90"
+                            break
+                        case "heals":
+                            style = "color: #090"
+                            break
+                        case "vulnerability":
+                            style = "color: #a33"
+                            break
+                        default:
+                            style = "color: #090"
+                            break
+                    }
+                    let innerDivType = document.createElement("div")
+                    innerDivType.className = "content-right"
+                    innerDivType.innerHTML = value
+                    innerDivType.style = style + ";font-weight: bold"
+
+                    let outerDiv = document.createElement("div")
+                    outerDiv.className = "row background"
+                    outerDiv.appendChild(innerDivName)
+                    outerDiv.appendChild(innerDivType)
+                    
+                    table.appendChild(outerDiv)
+                }
+            })
+
+            if (!has_resistances) {
+                getId("resistances-container").style = "display:none"
+            } else {
+                getId("resistances-container").style = ""
+            }
+        })
+    }
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+</script>
+']
+</head>
+
+<body>
+
+    <div class="tab-switch-div">
+        <button class="tab-switch active" id="classes-switch">Classes</button>
+        <button class="tab-switch" id="races-switch">Races</button>
+        <button class="tab-switch" id="conditions-switch">Conditions</button>
+        <button class="tab-switch" id="features-switch">Features</button>
+        <button class="tab-switch" id="items-switch">Items</button>
+        <button class="tab-switch" id="resistances-switch">Resistances</button>
+        <button class="tab-switch" id="resources-switch">Resources</button>
+        <button class="tab-switch" id="spells-switch">Spells</button>
+    </div>
+
+    <div class="outer" id="classes-tab">
+    </div>
+
+    <div class="outer" id="races-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="conditions-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="features-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="items-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="resistances-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="resources-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="spells-tab" style="display:none">
+    </div>
+
+</body>
+
+}]
