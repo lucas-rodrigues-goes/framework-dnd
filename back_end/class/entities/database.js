@@ -120,7 +120,81 @@ try {
 
         get spells() {return this.#spells}
         get features() {return this.#features}
+        get resources() {return this.#resources}
         get items() {return this.#items}
+
+
+        //=====================================================================================================
+        // Resource management
+        //=====================================================================================================
+
+        set_resource(name, type, duration, description) {
+
+            if(name in this.#resources.data) {this.remove_resource(name)}
+            
+            let resource = new Resource(name, type, duration, description)
+
+            if (this.#resources.level[resource.level] == undefined) {
+                this.#resources.level[resource.level] = []
+            }
+            if (this.#resources.type[resource.subtype] == undefined && subtype) {
+                this.#resources.type[resource.subtype] = []
+            }
+            
+            this.#resources.data[resources.name] = resources.object()
+            this.#resources.level[resource.level].push(resources.name)
+
+            if (resource.type != "class") {
+                this.#resources.type[resource.type].push(resource.name)
+            } else {
+                this.#resources.type[resource.subtype].push(resource.name)
+            }
+
+            this.save()
+        }
+
+        remove_resource(name) {
+            let resource = this.#resources.data[name]
+
+            delete this.#resources.data[resource.name]
+            this.#resources.level[resource.level] = this.#resources.level[resource.level].filter(value => value != resource.name)
+
+            if (resource.type != "class") {
+                this.#resources.type[resource.type] = this.#resources.type[resource.type].filter(value => value != resource.name)
+            } else {
+                this.#resources.type[resource.subtype] = this.#resources.type[resource.subtype].filter(value => value != resource.name)
+            }
+
+            this.save()
+        }
+
+
+
+
+        //=====================================================================================================
+        // Resistance management
+        //=====================================================================================================
+
+        set_resistance(name, type, description) {
+
+            if(name in this.#resources.data) {this.remove_resistance(name)}
+            
+            let resistance = new Resistance(name, type, description)
+
+            this.#resistances.data[resistance.name] = resistance.object()
+            this.#resistances.type[resistance.type].push(resistance.name)
+
+            this.save()
+        }
+
+        remove_resistance(name) {
+            let resistance = this.#resistances.data[name]
+
+            delete this.#resistances.data[resistance.name]
+            this.#resistances.type[resistance.type] = this.#resistances.type[resistance.type].filter(value => value != resistance.name)
+=
+            this.save()
+        }
 
 
 
@@ -218,6 +292,47 @@ try {
                 this.#spells.class[value] = this.#spells.class[value].filter(value => value != spell.name)
             })
             
+            this.save()
+        }
+
+
+
+        //=====================================================================================================
+        // Condition management
+        //=====================================================================================================
+
+        set_condition(
+            name,
+            type,
+            duration,
+            description
+        ) {
+
+            if(name in this.#conditions.data) {this.remove_condition(name)}
+            
+            let condition = new Condition(
+                name,
+                type,
+                duration,
+                description
+            )
+
+            if (this.#conditions.type[condition.type] == undefined) {
+                this.#conditions.type[condition.type] = []
+            }
+            
+            this.#conditions.data[condition.name] = condition.object()
+            this.#conditions.type[condition.type].push(condition.name)
+
+            this.save()
+        }
+
+        remove_condition(name) {
+            let condition = this.#conditions.data[name]
+
+            delete this.#conditions.data[condition.name]
+            this.#conditions.type[condition.type] = this.#conditions.type[condition.type].filter(value => value != condition.name)
+
             this.save()
         }
 
@@ -377,6 +492,7 @@ try {
         load() {
             let object = JSON.parse(this.token.getProperty("object"));
 
+            this.#resources = object.resources
             this.#features = object.features
             this.#spells = object.spells;
             this.#items = object.items;
@@ -384,6 +500,7 @@ try {
 
         save() {
             let object = {
+                "resources": this.#resources,
                 "features": this.#features,
                 "spells": this.#spells,
                 "items": this.#items

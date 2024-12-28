@@ -9,6 +9,7 @@ try {
 
         #name
         #type
+        #subtype
         #level
         #description
 
@@ -20,6 +21,7 @@ try {
 
         get name() { return this.#name; }
         get type() { return this.#type }
+        get subtype() { return this.#subtype }
         get level() { return this.#level }
         get description() { return this.#description }
 
@@ -30,20 +32,28 @@ try {
         //=====================================================================================================
 
         constructor(
-            name = "",
-            level = 0,
+            name,
             type,
-            description = ""
+            subtype,
+            level = 0,
+            description
         ) {
 
             // Validate Type
-            if (![
-                "class", "default", "feat"
+            if ( ! [
+                "racial", "class", "feat"
             ].includes(type)) { return }
-            
-            // Instancing
+
+            // Validate Subtype
+            if (type != "class") { subtype = undefined }
+
+            // Validate Level
+            if (Number(level) < 0 || Number(level) > 20) { return }
+
+            // Instance
             this.#name = name
             this.#type = type
+            this.#subtype = subtype
             this.#level = level
             this.#description = description
 
@@ -53,6 +63,7 @@ try {
             return {
                 "name": this.#name,
                 "type": this.#type,
+                "subtype": this.#subtype,
                 "level": this.#level,
                 "description": this.#description
             };
