@@ -35,6 +35,16 @@ try {
             }
         }
 
+        #proficiencies = {
+            "data":{},
+            "type":{
+                "skill":[],
+                "weapon":[],
+                "save":[],
+                "tool":[],
+            }
+        }
+
         #resources = {
             "data":{},
             "type":{},
@@ -117,7 +127,36 @@ try {
         get spells() {return this.#spells}
         get features() {return this.#features}
         get resources() {return this.#resources}
+        get resistances() {return this.#resistances}
         get items() {return this.#items}
+
+
+
+        //=====================================================================================================
+        // Proficiency management
+        //=====================================================================================================
+
+        set_proficiency(name, type, proficient, expert, master, grandmaster) {
+
+            if(name in this.#proficiencies.data) {this.remove_proficiency(name)}
+            
+            let proficiency = new Proficiency(name, type, [proficient, expert, master, grandmaster])
+
+            this.#proficiencies.data[proficiency.name] = proficiency.object()
+            this.#proficiencies.type[proficiency.type].push(proficiency.name)
+
+            this.save()
+        }
+
+        remove_proficiency(name) {
+            let resistance = this.#resistances.data[name]
+
+            delete this.#resistances.data[resistance.name]
+            this.#resistances.type[resistance.type] = this.#resistances.type[resistance.type].filter(value => value != resistance.name)
+
+            this.save()
+        }
+
 
 
         //=====================================================================================================
@@ -188,7 +227,7 @@ try {
 
             delete this.#resistances.data[resistance.name]
             this.#resistances.type[resistance.type] = this.#resistances.type[resistance.type].filter(value => value != resistance.name)
-=
+
             this.save()
         }
 
@@ -488,6 +527,7 @@ try {
         load() {
             let object = JSON.parse(this.token.getProperty("object"));
 
+            this.#proficiencies = object.proficiencies
             this.#resources = object.resources
             this.#features = object.features
             this.#spells = object.spells;
@@ -496,6 +536,7 @@ try {
 
         save() {
             let object = {
+                "proficiencies": this.#proficiencies,
                 "resources": this.#resources,
                 "features": this.#features,
                 "spells": this.#spells,
@@ -512,19 +553,23 @@ try {
 
     var database = new Database()
 
+    database.set_resistance(
+        "slashing",
+        "physical",
+        "Damage usually dealt by cutting weapons, such as swords"
+    )
+
     database.set_item(
         "Ration",
-        undefined,
         "Food",
         3,
         "common",
-        1,
+        10,
         true
     )
 
     database.set_weapon(
         "Dagger",
-        undefined,
         1,
         "common",
         2,
