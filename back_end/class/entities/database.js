@@ -502,7 +502,6 @@ try {
             super("CD63A98070EB4D2792D8AAC3F9504EE4")
 
             let has_property_object = String(this.token.getProperty("object")) != "null";
-            has_property_object = false;
 
             // Reset if no previous data or if reset flag is true
             if (!has_property_object) {
@@ -529,7 +528,7 @@ try {
 
             this.#proficiencies = object.proficiencies
             this.#resources = object.resources
-            this.#damage_types = object.resistances
+            this.#damage_types = object.damage_types
             this.#features = object.features
             this.#spells = object.spells;
             this.#items = object.items;
@@ -539,7 +538,7 @@ try {
             let object = {
                 "proficiencies": this.#proficiencies,
                 "resources": this.#resources,
-                "damage types": this.#damage_types,
+                "damage_types": this.#damage_types,
                 "features": this.#features,
                 "spells": this.#spells,
                 "items": this.#items

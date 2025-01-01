@@ -1,4 +1,4 @@
-[h:name = arg(0)]
+[h:id = arg(0)]
 [dialog5("Description", "width=400; height=400; temporary=1; input=1; noframe=0"), code: {
 <head>
 [r:style()]
@@ -20,10 +20,7 @@
 
     function onWindowLoad() {
 
-        getId("close").addEventListener("click", () => {
-            closePage("Description")
-        })
-
+        updateFields()
         addSubmitBehavior()
     }
 
@@ -33,7 +30,17 @@
     // Helper functions
     //=====================================================================================================
 
+    function updateFields() {
+        id = getId("id").value
 
+        toBackend("database.damage_types.data", (response) => {
+            response = JSON.parse(response)
+            
+            getId("name").innerHTML = capitalize(response[id].name)
+            getId("type").innerHTML = capitalize(response[id].type)
+            getId("description").innerHTML = response[id].description
+        })
+    }
 
 
     //=====================================================================================================
@@ -44,24 +51,20 @@
 ']
 </head>
 
+<input type="text" class="hidden" id="id" value="{id}"></input>
+
 <body>
     <div class="outer">
 
-        <h2 id="name">Slashing</h2>
+        <h2 id="name"></h2>
         <h4 class="subtext">
-            <span id="type">Physical</span>
+            <span id="type"></span>
             <span>Damage</span>
         </h4>
 
         <div class="spacer"></div>
 
-        <h4 id="description">
-            This damage type, includes damage from cutting weapons such as swords and axes.
-        </h4>
-
-        <h4>
-           {name} 
-        </h4>
+        <h4 id="description"></h4>
         
     </div>
 </body>

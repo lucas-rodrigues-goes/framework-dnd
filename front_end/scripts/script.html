@@ -7,6 +7,10 @@
 
     function getId(id) {return document.getElementById(id)}
 
+    function capitalize(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
     function loadCurrentFieldInnerHTML(fieldId, request) {
         let id = getId("id")
         if (!getId(fieldId)) {return}
