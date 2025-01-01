@@ -46,8 +46,6 @@
 
     function onWindowLoad() {
 
-        updateFields(); setInterval(()=>{updateFields()}, 500)
-
         getId("info").addEventListener("click",()=>{
             openClosePage(getId("id").value , "Character", "creature_info.html")
         })

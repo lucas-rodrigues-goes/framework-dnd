@@ -73,7 +73,7 @@
     #features-switch { left: 50% }
     #items-switch { left: 60% }
 
-    #resistances-switch { left: 70% }
+    #damage-switch { left: 70% }
     #resources-switch { left: 80% }
     #spells-switch { left: 90% }
 </style>
@@ -88,16 +88,16 @@
         addTabFunctionality()
 
         // Start tabs
-        resistancesTab()
+        damageTab()
 
         // Update tabs every 2s
         setInterval(()=>{
-            resistancesTab()
+            damageTab()
         },2000)
     }
 
     function addTabFunctionality() {
-        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "resistances", "resources", "spells"]
+        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
 
         tab_list.forEach((tab_name) => {
             getId(tab_name+"-switch").addEventListener("click", () => {
@@ -132,13 +132,13 @@
     // Sync management
     //=====================================================================================================
 
-    function resistancesTab() {
-        div = getId("resistances-tab")
+    function damageTab() {
+        div = getId("damage-tab")
         row_list = []
 
         div_html = `<div class="spacer"></div> `
 
-        toBackend("database.resistances", (response) => {
+        toBackend("database.damage_types", (response) => {
             response = JSON.parse(response)
             for (const key in response.type) {
 
@@ -148,7 +148,7 @@
                 for (const value of response.type[key]) {
                     row_list.push(value)
                     table_rows = table_rows + `
-                    <div class="row background">
+                    <div class="row background" id="`+value+`-damage-type">
                         <div class="content-left">`+value+`</div>
                         <div class="content-right"></div>
                     </div>
@@ -168,6 +168,12 @@
                 `
             }
             div.innerHTML = div_html
+            for (const value of row_list) {
+                getId(value+"-damage-type").addEventListener("click", ()=>{
+                    console.log("here")
+                    openPage("damage_description.html", value)
+                })
+            }
         })
     }
 
@@ -189,7 +195,7 @@
         <button class="tab-switch" id="conditions-switch">Conditions</button>
         <button class="tab-switch" id="features-switch">Features</button>
         <button class="tab-switch" id="items-switch">Items</button>
-        <button class="tab-switch active" id="resistances-switch">Resistances</button>
+        <button class="tab-switch active" id="damage-switch">Damage</button>
         <button class="tab-switch" id="resources-switch">Resources</button>
         <button class="tab-switch" id="spells-switch">Spells</button>
     </div>
@@ -212,7 +218,7 @@
     <div class="outer" id="items-tab" style="display:none">
     </div>
 
-    <div class="outer" id="resistances-tab">
+    <div class="outer" id="damage-tab">
     </div>
 
     <div class="outer" id="resources-tab" style="display:none">

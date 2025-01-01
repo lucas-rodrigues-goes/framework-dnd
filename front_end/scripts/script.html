@@ -5,20 +5,6 @@
     // Helper functions
     //=====================================================================================================
 
-    function updateFields() {
-        loadCurrentFieldInnerHTML("name","creature.name")
-        loadCurrentFieldInnerHTML("type","creature.type")
-        loadCurrentFieldInnerHTML("race","creature.race")
-
-        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
-        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
-        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
-        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
-        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
-        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
-
-    }
-
     function getId(id) {return document.getElementById(id)}
 
     function loadCurrentFieldInnerHTML(fieldId, request) {
@@ -95,7 +81,7 @@
         request.send(page_name);
     }
 
-    function openPage(page_link) {
+    function openPage(page_link, arguments = getId("id").value) {
         let request = new XMLHttpRequest();
         request.open("POST", "macro:openPage@lib:main", true);
 
@@ -104,7 +90,7 @@
                 valueCallback(request.response);
             }
         };
-        request.send(getId("id").value + ";" + page_link);
+        request.send(arguments + ";" + page_link);
     }
 
     function openClosePage(id, page_name, page_link) {

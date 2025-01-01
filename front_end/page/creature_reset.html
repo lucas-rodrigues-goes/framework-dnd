@@ -111,6 +111,21 @@
     // Helper functions
     //=====================================================================================================
 
+    function updateFields() {
+        loadCurrentFieldInnerHTML("name","creature.name")
+        loadCurrentFieldInnerHTML("type","creature.type")
+        loadCurrentFieldInnerHTML("race","creature.race")
+
+        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
+        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
+        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
+        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
+        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
+        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
+    }
+
+    function getId(id) {return document.getElementById(id)}
+
     function addSubmitBehavior() {
         getId("submit").addEventListener("click", async () => {
 

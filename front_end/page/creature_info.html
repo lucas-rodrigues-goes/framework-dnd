@@ -136,6 +136,19 @@
     // Sync management
     //=====================================================================================================
 
+    function updateFields() {
+        loadCurrentFieldInnerHTML("name","creature.name")
+        loadCurrentFieldInnerHTML("type","creature.type")
+        loadCurrentFieldInnerHTML("race","creature.race")
+
+        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
+        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
+        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
+        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
+        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
+        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
+    }
+
     function updateConditions() {
         let table = getId("conditions-table")
         let id = getId("id")
@@ -374,6 +387,10 @@
             border-radius: 108px;
             border: 2px solid #888;
         ">
+        
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+
         <h3 class="subtext" id="level">0th Level</h3>
         <h2><span id="race">Human</span> <span id="class"></span></h2>
 

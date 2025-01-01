@@ -1,0 +1,69 @@
+[h:name = arg(0)]
+[dialog5("Description", "width=400; height=400; temporary=1; input=1; noframe=0"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+
+.outer {
+    height: 91%;
+    overflow-x: hidden;
+}
+
+</style>
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+
+        getId("close").addEventListener("click", () => {
+            closePage("Description")
+        })
+
+        addSubmitBehavior()
+    }
+
+
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+
+
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+</script>
+']
+</head>
+
+<body>
+    <div class="outer">
+
+        <h2 id="name">Slashing</h2>
+        <h4 class="subtext">
+            <span id="type">Physical</span>
+            <span>Damage</span>
+        </h4>
+
+        <div class="spacer"></div>
+
+        <h4 id="description">
+            This damage type, includes damage from cutting weapons such as swords and axes.
+        </h4>
+
+        <h4>
+           {name} 
+        </h4>
+        
+    </div>
+</body>
+
+}]

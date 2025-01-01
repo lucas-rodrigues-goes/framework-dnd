@@ -51,7 +51,7 @@ try {
             "level":{}
         }
 
-        #resistances = {
+        #damage_types = {
             "data":{},
             "type":{
                 "physical":[],
@@ -127,7 +127,7 @@ try {
         get spells() {return this.#spells}
         get features() {return this.#features}
         get resources() {return this.#resources}
-        get resistances() {return this.#resistances}
+        get damage_types() {return this.#damage_types}
         get items() {return this.#items}
 
 
@@ -136,7 +136,7 @@ try {
         // Proficiency management
         //=====================================================================================================
 
-        set_proficiency(name, type, proficient, expert, master, grandmaster) {
+        /* set_proficiency(name, type, proficient, expert, master, grandmaster) {
 
             if(name in this.#proficiencies.data) {this.remove_proficiency(name)}
             
@@ -146,16 +146,16 @@ try {
             this.#proficiencies.type[proficiency.type].push(proficiency.name)
 
             this.save()
-        }
+        } */
 
-        remove_proficiency(name) {
-            let resistance = this.#resistances.data[name]
+        /* remove_proficiency(name) {
+            let proficiency = this.#proficiencies.data[name]
 
             delete this.#resistances.data[resistance.name]
             this.#resistances.type[resistance.type] = this.#resistances.type[resistance.type].filter(value => value != resistance.name)
 
             this.save()
-        }
+        } */
 
 
 
@@ -207,26 +207,26 @@ try {
 
 
         //=====================================================================================================
-        // Resistance management
+        // Damage type management
         //=====================================================================================================
 
-        set_resistance(name, type, description) {
+        set_damage_type(name, type, description) {
 
-            if(name in this.#resources.data) {this.remove_resistance(name)}
+            if(name in this.#damage_types.data) {this.remove_damage_type(name)}
             
-            let resistance = new Resistance(name, type, description)
+            let damage_type = new DamageType(name, type, description)
 
-            this.#resistances.data[resistance.name] = resistance.object()
-            this.#resistances.type[resistance.type].push(resistance.name)
+            this.#damage_types.data[damage_type.name] = damage_type.object()
+            this.#damage_types.type[damage_type.type].push(damage_type.name)
 
             this.save()
         }
 
-        remove_resistance(name) {
-            let resistance = this.#resistances.data[name]
+        remove_damage_type(name) {
+            let damage_type = this.#damage_types.data[name]
 
-            delete this.#resistances.data[resistance.name]
-            this.#resistances.type[resistance.type] = this.#resistances.type[resistance.type].filter(value => value != resistance.name)
+            delete this.#damage_types.data[damage_type.name]
+            this.#damage_types.type[damage_type.type] = this.#damage_types.type[damage_type.type].filter(value => value != damage_type.name)
 
             this.save()
         }
@@ -529,6 +529,7 @@ try {
 
             this.#proficiencies = object.proficiencies
             this.#resources = object.resources
+            this.#damage_types = object.resistances
             this.#features = object.features
             this.#spells = object.spells;
             this.#items = object.items;
@@ -538,6 +539,7 @@ try {
             let object = {
                 "proficiencies": this.#proficiencies,
                 "resources": this.#resources,
+                "damage types": this.#damage_types,
                 "features": this.#features,
                 "spells": this.#spells,
                 "items": this.#items
@@ -553,7 +555,7 @@ try {
 
     var database = new Database()
 
-    database.set_resistance(
+    database.set_damage_type(
         "slashing",
         "physical",
         "Damage usually dealt by cutting weapons, such as swords"
