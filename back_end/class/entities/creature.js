@@ -218,21 +218,18 @@ try {
         //=====================================================================================================
 
         set name(name) {
-            if (typeof name != "string") { return; }
             this.#name = name;
             this.save();
             log(this.#name + " updated their name.");
         }
 
         set type(type) {
-            if (typeof type != "string") { return; }
             this.#type = type;
             this.save();
             log(this.#name + " type set to " + type + ".");
         }
 
         set race(race) {
-            if (typeof race != "string") { return; }
             this.#race = race;
             this.save();
             log(this.#name + " race set to " + race + ".");

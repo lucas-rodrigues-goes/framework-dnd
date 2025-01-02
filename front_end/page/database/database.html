@@ -1,0 +1,366 @@
+[dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .action-button {
+        font-size: 75%;
+        min-height: 0px;
+        min-width: 0px;
+        padding: 3px 3px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .action-button:hover {
+        background-color: #0056b3;
+    }
+
+    .table-container {
+        margin: 10px;
+    }
+
+    .table-header {
+        display: grid;
+        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+        gap: 10px;
+        color: white;
+        padding: 0px 10px;
+        border-radius: 10px;
+        font-weight: bold;
+        align-items: center;
+        text-align: left;
+    }
+
+    .table-row {
+        display: grid;
+        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+        gap: 10px;
+        background-color: #444;
+        padding: 10px;
+        margin: 10px 0px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        align-items: center;
+        text-align: left;
+    }
+
+    .table-row:hover {
+        background-color: #555;
+    }
+
+    .collapsible-content {
+        display: none;
+        position: relative;
+        height: 0px;
+        margin: 0px;
+        top: -20px;
+        z-index: -5;
+        opacity: 0; /* Initially hidden */
+        visibility: hidden; /* Prevent interaction when hidden */
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s; /* Smooth transition */
+        padding: 10px; /* Padding when collapsed */
+        padding-top: 15px;
+        background-color: #333;
+        border-radius: 10px;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border: 1px solid #444;
+    }
+
+    .table-row.open + .collapsible-content {
+        display:block;
+        height: fit-content;
+        margin-bottom: -20px;
+        opacity: 1; /* Fully visible */
+        visibility: visible; /* Make it interactable */
+        transform: translateY(0); /* Final position */
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0s; /* Transition without delay for showing */
+    }
+
+    .outer {
+        height: 91%;
+    }
+
+    .tab-switch-div {
+        position:relative;
+        height:20px;
+        min-height: 30px;
+        margin-bottom: -2px;
+    }
+    .tab-switch {
+        z-index:0;
+        bottom: 0px;
+        min-height: 20px;
+        position:absolute;
+        width:10%;
+        left: 50%;
+        transform: translate(-50%);
+        background-color: #292929;
+        border: 2px solid #414141;
+        border-radius: 10px;
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        font-size: 75%;
+        color: #ddd;
+    }
+    .tab-switch:hover {
+        background-color: #444
+    }
+
+    .tab-switch.active{
+        background-color: #414141
+    }
+
+    #classes-switch { left: 10% }
+    #races-switch { left: 20% }
+    #proficiencies-switch { left: 30% }
+
+    #conditions-switch { left: 40% }
+    #features-switch { left: 50% }
+    #items-switch { left: 60% }
+
+    #damage-switch { left: 70% }
+    #resources-switch { left: 80% }
+    #spells-switch { left: 90% }
+</style>
+<script>
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+        addTabFunctionality()
+
+        // Start tabs
+        damageTab()
+        setInterval(
+            ()=>{
+                damageTab()
+            }
+        , 200)
+    }
+
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function hash(string) {
+        
+        let hash = 0;
+
+        if (string.length == 0) return hash;
+
+        for (i = 0; i < string.length; i++) {
+            char = string.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
+        }
+
+        return hash;
+    }
+
+    function addTabFunctionality() {
+        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+
+        tab_list.forEach((tab_name) => {
+            getId(tab_name+"-switch").addEventListener("click", () => {
+                tab_list.forEach((value) => {
+                    let button = getId(value+"-switch")
+                    let div = getId(value+"-tab")
+                    if (tab_name == value) {
+                        button.setAttribute("class", "tab-switch active")
+                        div.setAttribute("style", "")
+                    } else {
+                        button.setAttribute("class", "tab-switch")
+                        div.setAttribute("style", "display:none")
+                    }
+                })
+            })
+        })
+        
+    }
+
+    function updateColapsible() {
+        document.querySelectorAll(".table-row").forEach(row => {
+            row.addEventListener("click", () => {
+                const isOpen = row.classList.contains("open");
+                document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
+
+                if (!isOpen) {
+                    row.classList.add("open");
+                }
+            });
+        });
+
+        document.querySelectorAll(".action-buttons button").forEach(button => {
+            button.addEventListener("click", event => {
+                event.stopPropagation(); // Prevent triggering row click
+            });
+    });
+    }
+
+    //=====================================================================================================
+    // Sync management
+    //=====================================================================================================
+
+    function damageTab() {
+
+        let newHTML = `<div class="spacer"></div>`
+
+        function row(name, type, description) {
+
+            return `
+            <div class="table-row" style="grid-template-columns: min-content 1fr 1fr 100px;">
+                <div></div>
+                <div>`+capitalize(name)+`</div>
+                <div>`+capitalize(type)+`</div>
+                <div class="action-buttons">
+                    <button id="`+name+`-edit" class="action-button">Edit</button>
+                    <button id="`+name+`-remove" class="action-button">Remove</button>
+                </div>
+            </div>
+            <div class="collapsible-content">
+                <p>`+description+`</p>
+            </div>
+        `
+        }
+
+        function table(rows, hash) {
+            return `
+            <div class="table-container" id="damage-table" hash="`+hash+`">
+                <div class="table-header" style="grid-template-columns: min-content 1fr 1fr 100px;">
+                    <div></div>
+                    <div>Name</div>
+                    <div>Type</div>
+                    <div style="text-align:right;">Actions</div>
+                </div>
+
+                `+rows+`
+
+            </div>
+            `
+        }
+
+        function button_add_new() {
+            return `
+            <button style="
+                position: sticky;
+                bottom:0px;
+                z-index: 20;
+                background-color: #292929;
+                color: #ddd;
+                border-color: #ddd;
+                transform: translate(40vw)
+
+            ">
+                Create New
+            </button>
+            `
+        }
+
+        let added_items = []
+        let rows = ""
+
+        toBackend("database.damage_types", (response) => {
+            response = JSON.parse(response)
+
+            for (const key in response.data) {
+                damage = response.data[key]
+                
+                added_items.push(damage.name)
+                rows += row(damage.name, damage.type, damage.description)
+
+            }
+
+            let new_hash = hash(JSON.stringify(response.data))
+            let previous_hash = undefined
+            
+            if(getId("damage-table") != undefined) {previous_hash = getId("damage-table").getAttribute("hash")}
+
+            newHTML += table(rows, new_hash) + button_add_new()
+
+            if (new_hash != previous_hash) {
+
+                getId("damage-tab").innerHTML = newHTML
+                updateColapsible()
+                for (const value of added_items) {
+                    getId(value+"-edit").addEventListener("click", ()=>{
+                        openPage("damage_set.html", value)
+                    })
+                    getId(value+"-remove").addEventListener("click", ()=>{
+                        toBackend(`database.remove_damage_type("`+value+`")`)
+                    })
+                }
+            }
+        })
+    }
+
+
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+</script>
+']
+</head>
+
+<body>
+
+    <div class="tab-switch-div">
+        <button class="tab-switch" id="classes-switch">Classes</button>
+        <button class="tab-switch" id="races-switch">Races</button>
+        <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
+        <button class="tab-switch" id="conditions-switch">Conditions</button>
+        <button class="tab-switch" id="features-switch">Features</button>
+        <button class="tab-switch" id="items-switch">Items</button>
+        <button class="tab-switch active" id="damage-switch">Damage</button>
+        <button class="tab-switch" id="resources-switch">Resources</button>
+        <button class="tab-switch" id="spells-switch">Spells</button>
+    </div>
+
+    <div class="outer" id="classes-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="races-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="proficiencies-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="conditions-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="features-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="items-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="damage-tab" style="">
+    </div>
+
+    <div class="outer" id="resources-tab" style="display:none">
+    </div>
+
+    <div class="outer" id="spells-tab" style="display:none">
+    </div>
+
+</body>
+
+}]
