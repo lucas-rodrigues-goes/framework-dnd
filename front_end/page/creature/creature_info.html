@@ -34,48 +34,54 @@
     }
 
     .outer {
-        height: 92%;
+        margin-top: 20px;
     }
 
     .tab-switch-div {
-        position:relative;
-        height:20px;
-        min-height: 30px;
+        display: flex;                     /* Use flexbox for layout */
+        justify-content: space-between;    /* Distribute tabs with space between them */
+        align-items: center;               /* Vertically center the tabs */
+        position: relative;
         margin-bottom: -2px;
+        height: 30px;                      /* Min height */
     }
+
     .tab-switch {
-        z-index:0;
-        bottom: 0px;
+        z-index: 0;
         min-height: 20px;
-        position:absolute;
-        width:30%;
-        left: 50%;
-        transform: translate(-50%);
+        padding: 3px;                 /* Adjust padding */
+        text-align: center;
         background-color: #292929;
-        border: 2px solid #414141;
-        border-radius: 10px;
-        border-bottom-left-radius: 0px;
-        border-bottom-right-radius: 0px;
-        font-size: 75%;
         color: #ddd;
+        border: 2px solid #414141;
+        border-radius: 7px;
+        font-size: 75%;
+        cursor: pointer;
+        transition: background-color 0.3s;
     }
+
     .tab-switch:hover {
-        background-color: #444
+        background-color: #444;
     }
 
-    .tab-switch.active{
-        background-color: #414141
+    .tab-switch.active {
+        background-color: #414141;
     }
 
-    #character-switch {
-        left: 19%
+    .tab-switch-div .tab-switch {
+        flex: 1;                           /* Make each tab take equal space */
+        margin: 0 5px;                     /* Add spacing between tabs */
+        text-align: center;                /* Ensure text is centered */
     }
-    #skills-switch {
-        left: 50%
+
+    .tab-switch-div .tab-switch:first-child {
+        margin-left: 15px;                    /* Remove left margin for the first tab */
     }
-    #proficiencies-switch {
-        left: 81%
+
+    .tab-switch-div .tab-switch:last-child {
+        margin-right: 15px;                   /* Remove right margin for the last tab */
     }
+
 </style>
 <script>
 

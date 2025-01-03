@@ -10,6 +10,7 @@ try {
         #name
         #type
         #description
+        #image
 
 
         
@@ -20,6 +21,7 @@ try {
         get name() { return this.#name; }
         get type() { return this.#type }
         get description() { return this.#description }
+        get image() { return this.#image }
 
 
 
@@ -30,7 +32,8 @@ try {
         constructor(
             name = "", 
             type,
-            description = ""
+            description = "",
+            image = "",
         ) {
 
             // Validate Level
@@ -42,6 +45,7 @@ try {
             this.#name = name
             this.#type = type
             this.#description = description
+            this.#image = image
 
         }
 
@@ -49,7 +53,8 @@ try {
             return {
                 "name": this.#name,
                 "type": this.#type,
-                "description": this.#description
+                "description": this.#description,
+                "image": this.#image
             };
         }
 

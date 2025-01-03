@@ -4,11 +4,6 @@
 [r:script()]
 [r:'
 <style>
-
-.outer {
-    height: 95.5%;
-}
-
 </style>
 <script>
 
@@ -30,6 +25,26 @@
     //=====================================================================================================
     // Helper functions
     //=====================================================================================================
+
+    function updateFields() {
+        id = getId("id").value
+
+        if(id == "") {return}
+
+        toBackend("database.features.data", (response) => {
+            response = JSON.parse(response)
+            
+            getId("name").value = capitalize(response[id].name)
+            getId("type").value = capitalize(response[id].type)
+            getId("subtype").value = capitalize(response[id].subtype)
+            getId("level").value = capitalize(response[id].level)
+            getId("description").value = response[id].description
+
+            if(response[id].image) {
+                getId("image").value = response[id].image
+            }
+        })
+    }
 
     function addSubmitBehavior() {
         getId("submit").addEventListener("click", async () => {
@@ -145,7 +160,9 @@
 
 
             <h4>Optional</h4>
-            <input id="optional"></input>
+            <div class="checkmark">
+                
+            </div>
 
             <h4>Description</h4>
             <textarea id="description" rows="10" cols="30"></textarea>

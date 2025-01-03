@@ -4,6 +4,18 @@
 [r:script()]
 [r:'
 <style>
+    img {
+        image-rendering: smooth;
+        margin: 0px;
+    }
+
+    img:hover {
+        opacity: 0.5;
+    }
+
+    img:active {
+        opacity: 0.3;
+    }
 
     .action-buttons {
         display: flex;
@@ -45,17 +57,23 @@
     }
 
     .table-row {
+        position:relative;
+        transition: background-color 0.3s;
+
         display: grid;
         grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
         gap: 10px;
-        background-color: #444;
-        padding: 10px;
+        padding: 2px 10px;
+        padding-top: 7px;
         margin: 10px 0px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: background-color 0.3s;
+
+        background-color: #444;
+        border-radius: 5px;
+
         align-items: center;
         text-align: left;
+        font-weight: bold;
+        z-index: 3;
     }
 
     .table-row:hover {
@@ -63,22 +81,26 @@
     }
 
     .collapsible-content {
+        position:relative;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s; /* Smooth transition */
         display: none;
+
         position: relative;
         height: 0px;
-        margin: 0px;
         top: -20px;
-        z-index: -5;
-        opacity: 0; /* Initially hidden */
-        visibility: hidden; /* Prevent interaction when hidden */
-        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s; /* Smooth transition */
-        padding: 10px; /* Padding when collapsed */
+        z-index: 0;
+
+        margin: 0px 3px;
+        padding: 10px;
         padding-top: 15px;
+
         background-color: #333;
-        border-radius: 10px;
+        border: 1px solid #444;
+        border-radius: 5px;
         border-top-left-radius: 0px;
         border-top-right-radius: 0px;
-        border: 1px solid #444;
     }
 
     .table-row.open + .collapsible-content {
@@ -92,50 +114,53 @@
     }
 
     .outer {
-        height: 91%;
+        margin-top: 20px;
     }
 
     .tab-switch-div {
-        position:relative;
-        height:20px;
-        min-height: 30px;
+        display: flex;                     /* Use flexbox for layout */
+        justify-content: space-between;    /* Distribute tabs with space between them */
+        align-items: center;               /* Vertically center the tabs */
+        position: relative;
         margin-bottom: -2px;
+        height: 30px;                      /* Min height */
     }
+
     .tab-switch {
-        z-index:0;
-        bottom: 0px;
+        z-index: 0;
         min-height: 20px;
-        position:absolute;
-        width:10%;
-        left: 50%;
-        transform: translate(-50%);
+        padding: 3px;                 /* Adjust padding */
+        text-align: center;
         background-color: #292929;
-        border: 2px solid #414141;
-        border-radius: 10px;
-        border-bottom-left-radius: 0px;
-        border-bottom-right-radius: 0px;
-        font-size: 75%;
         color: #ddd;
+        border: 2px solid #414141;
+        border-radius: 7px;
+        font-size: 75%;
+        cursor: pointer;
+        transition: background-color 0.3s;
     }
+
     .tab-switch:hover {
-        background-color: #444
+        background-color: #444;
     }
 
-    .tab-switch.active{
-        background-color: #414141
+    .tab-switch.active {
+        background-color: #414141;
     }
 
-    #classes-switch { left: 10% }
-    #races-switch { left: 20% }
-    #proficiencies-switch { left: 30% }
+    .tab-switch-div .tab-switch {
+        flex: 1;                           /* Make each tab take equal space */
+        margin: 0 5px;                     /* Add spacing between tabs */
+        text-align: center;                /* Ensure text is centered */
+    }
 
-    #conditions-switch { left: 40% }
-    #features-switch { left: 50% }
-    #items-switch { left: 60% }
+    .tab-switch-div .tab-switch:first-child {
+        margin-left: 15px;                    /* Remove left margin for the first tab */
+    }
 
-    #damage-switch { left: 70% }
-    #resources-switch { left: 80% }
-    #spells-switch { left: 90% }
+    .tab-switch-div .tab-switch:last-child {
+        margin-right: 15px;                   /* Remove right margin for the last tab */
+    }
 </style>
 <script>
 
@@ -208,7 +233,7 @@
             });
         });
 
-        document.querySelectorAll(".action-buttons button").forEach(button => {
+        document.querySelectorAll(".action-buttons img").forEach(button => {
             button.addEventListener("click", event => {
                 event.stopPropagation(); // Prevent triggering row click
             });
@@ -221,22 +246,20 @@
 
     function damageTab() {
 
-        let newHTML = `<div class="spacer"></div>`
-
-        function row(name, type, description) {
+        function row(name, type, description, image) {
 
             return `
-            <div class="table-row" style="grid-template-columns: min-content 1fr 1fr 100px;">
-                <div></div>
+            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 100px;">
+                <div><img src=`+image+`-24 style="opacity:1"></div>
                 <div>`+capitalize(name)+`</div>
                 <div>`+capitalize(type)+`</div>
                 <div class="action-buttons">
-                    <button id="`+name+`-edit" class="action-button">Edit</button>
-                    <button id="`+name+`-remove" class="action-button">Remove</button>
+                    <img id="`+name+`-edit" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+name+`-remove" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
                 </div>
             </div>
             <div class="collapsible-content">
-                <p>`+description+`</p>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>
             </div>
         `
         }
@@ -244,7 +267,7 @@
         function table(rows, hash) {
             return `
             <div class="table-container" id="damage-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: min-content 1fr 1fr 100px;">
+                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 100px;">
                     <div></div>
                     <div>Name</div>
                     <div>Type</div>
@@ -259,14 +282,15 @@
 
         function button_add_new() {
             return `
-            <button style="
+            <button id="new-damage-type" style="
                 position: sticky;
                 bottom:0px;
                 z-index: 20;
                 background-color: #292929;
                 color: #ddd;
-                border-color: #ddd;
-                transform: translate(40vw)
+                border: 2px solid #ddd;
+                font-size:75%;
+                transform: translate(40vw);
 
             ">
                 Create New
@@ -274,42 +298,137 @@
             `
         }
 
-        let added_items = []
-        let rows = ""
+        let rows = "" // Stores HTML for all of the rows
+        let items = [] // Stores the name of each value added to the table
 
-        toBackend("database.damage_types", (response) => {
-            response = JSON.parse(response)
+        // Get data from backend
+        toBackend("database.damage_types", (response) => { response = JSON.parse(response)
+
+            // Verifies if new JSON is equal to current iteration of table
+            let new_hash = hash(JSON.stringify(response))
+            let previous_hash = getId("damage-table") != undefined ? getId("damage-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
 
             for (const key in response.data) {
                 damage = response.data[key]
                 
-                added_items.push(damage.name)
-                rows += row(damage.name, damage.type, damage.description)
+                items.push(damage.name) // Add to list of items
+                rows += row(damage.name, damage.type, damage.description, damage.image) // Create new row
 
             }
 
-            let new_hash = hash(JSON.stringify(response.data))
-            let previous_hash = undefined
-            
-            if(getId("damage-table") != undefined) {previous_hash = getId("damage-table").getAttribute("hash")}
+            getId("damage-tab").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
 
-            newHTML += table(rows, new_hash) + button_add_new()
+            getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
+            updateColapsible()
 
-            if (new_hash != previous_hash) {
+            for (const value of items) {
 
-                getId("damage-tab").innerHTML = newHTML
-                updateColapsible()
-                for (const value of added_items) {
-                    getId(value+"-edit").addEventListener("click", ()=>{
-                        openPage("damage_set.html", value)
-                    })
-                    getId(value+"-remove").addEventListener("click", ()=>{
-                        toBackend(`database.remove_damage_type("`+value+`")`)
-                    })
-                }
+                // Edit buttons behavior
+                getId(value+"-edit").addEventListener("click", ()=>{
+                    openPage("damage_set.html", value)
+                })
+
+                // Remove buttons behavior
+                getId(value+"-remove").addEventListener("click", ()=>{
+                    toBackend(`database.remove_damage_type("`+value+`")`)
+                })
             }
         })
     }
+
+    function damageTab() {
+
+        function row(name, type, description, image) {
+
+            return `
+            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 100px;">
+                <div><img src=`+image+`-24 style="opacity:1"></div>
+                <div>`+capitalize(name)+`</div>
+                <div>`+capitalize(type)+`</div>
+                <div class="action-buttons">
+                    <img id="`+name+`-edit" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+name+`-remove" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                </div>
+            </div>
+            <div class="collapsible-content">
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>
+            </div>
+        `
+        }
+
+        function table(rows, hash) {
+            return `
+            <div class="table-container" id="damage-table" hash="`+hash+`">
+                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 100px;">
+                    <div></div>
+                    <div>Name</div>
+                    <div>Type</div>
+                    <div style="text-align:right;">Actions</div>
+                </div>
+
+                `+rows+`
+
+            </div>
+            `
+        }
+
+        function button_add_new() {
+            return `
+            <button id="new-damage-type" style="
+                position: sticky;
+                bottom:0px;
+                z-index: 20;
+                background-color: #292929;
+                color: #ddd;
+                border: 2px solid #ddd;
+                font-size:75%;
+                transform: translate(40vw);
+
+            ">
+                Create New
+            </button>
+            `
+        }
+
+        let rows = "" // Stores HTML for all of the rows
+        let items = [] // Stores the name of each value added to the table
+
+        // Get data from backend
+        toBackend("database.damage_types", (response) => { response = JSON.parse(response)
+
+            // Verifies if new JSON is equal to current iteration of table
+            let new_hash = hash(JSON.stringify(response))
+            let previous_hash = getId("damage-table") != undefined ? getId("damage-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
+
+            for (const key in response.data) {
+                damage = response.data[key]
+                
+                items.push(damage.name) // Add to list of items
+                rows += row(damage.name, damage.type, damage.description, damage.image) // Create new row
+
+            }
+
+            getId("damage-tab").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
+
+            getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
+            updateColapsible()
+
+            for (const value of items) {
+
+                // Edit buttons behavior
+                getId(value+"-edit").addEventListener("click", ()=>{
+                    openPage("damage_set.html", value)
+                })
+
+                // Remove buttons behavior
+                getId(value+"-remove").addEventListener("click", ()=>{
+                    toBackend(`database.remove_damage_type("`+value+`")`)
+                })
+            }
+        })
+        }
 
 
 

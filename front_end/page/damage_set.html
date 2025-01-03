@@ -1,16 +1,12 @@
 [h:id = arg(0)]
+[h:image = getTokenImage("",getSelected())]
 
-[dialog5("Damage Type", "width=400; height=600; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Damage Type", "width=400; height=700; temporary=1; input=1; noframe=0"), code: {
 <head>
 [r:style()]
 [r:script()]
 [r:'
 <style>
-
-.outer {
-    height: 95.5%;
-}
-
 </style>
 <script>
 
@@ -45,6 +41,10 @@
             getId("name").value = capitalize(response[id].name)
             getId("type").value = capitalize(response[id].type)
             getId("description").value = response[id].description
+
+            if(response[id].image) {
+                getId("image").value = response[id].image
+            }
         })
     }
 
@@ -57,6 +57,7 @@
             let name = getId("name").value;
             let type = getId("type").value;
             let description = getId("description").value;
+            let image = getId("image").value;
 
 
             // Treatment
@@ -70,6 +71,7 @@
                     "`"+name+"`,"+
                     "`"+type+"`,"+
                     "`"+description+"`,"+
+                    "`"+image+"`,"+
                 ")"
             )
 
@@ -117,7 +119,10 @@
             </select>
 
             <h4>Description</h4>
-            <textarea id="description" rows="10" cols="30"></textarea>
+            <textarea id="description" rows="15" cols="30"></textarea>
+
+            <h4>Image</h4>
+            <input id="image" value="{image}"></input>
 
         </div>
 

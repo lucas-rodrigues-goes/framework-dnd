@@ -210,11 +210,11 @@ try {
         // Damage type management
         //=====================================================================================================
 
-        set_damage_type(name, type, description) {
+        set_damage_type(name, type, description, image) {
 
             if(name in this.#damage_types.data) {this.remove_damage_type(name)}
             
-            let damage_type = new DamageType(name, type, description)
+            let damage_type = new DamageType(name, type, description, image)
 
             this.#damage_types.data[damage_type.name] = damage_type.object()
             this.#damage_types.type[damage_type.type].push(damage_type.name)
