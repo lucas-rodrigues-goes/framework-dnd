@@ -41,7 +41,7 @@
             getId("type").value = capitalize(response[id].type)
             getId("subtype").value = capitalize(response[id].subtype)
             getId("level").value = capitalize(response[id].level)
-            getId("optional").value = response[id].optional
+            getId("optional").value = capitalize(response[id].optional)
             getId("description").value = response[id].description
 
         })
@@ -130,8 +130,56 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </option>
                 <option>Barbarian</option>
+                <option>Path of the Berserker</option>
+                <option>Path of the Totem Warrior</option>
                 <option>Bard</option>
+                <option>College of Lore</option>
+                <option>College of Valor</option>
                 <option>Cleric</option>
+                <option>Life Domain</option>
+                <option>Knowledge Domain</option>
+                <option>Light Domain</option>
+                <option>Nature Domain</option>
+                <option>Tempest Domain</option>
+                <option>Trickery Domain</option>
+                <option>War Domain</option>
+                <option>Druid</option>
+                <option>Circle of the Land</option>
+                <option>Circle of the Moon</option>
+                <option>Fighter</option>
+                <option>Champion</option>
+                <option>Battle Master</option>
+                <option>Eldritch Knight</option>
+                <option>Monk</option>
+                <option>Way of the Open Hand</option>
+                <option>Way of Shadow</option>
+                <option>Way of the Four Elements</option>
+                <option>Paladin</option>
+                <option>Oath of Devotion</option>
+                <option>Oath of the Ancients</option>
+                <option>Oath of Vengeance</option>
+                <option>Ranger</option>
+                <option>Hunter</option>
+                <option>Beast Master</option>
+                <option>Rogue</option>
+                <option>Thief</option>
+                <option>Assassin</option>
+                <option>Arcane Trickster</option>
+                <option>Sorcerer</option>
+                <option>Draconic Bloodline</option>
+                <option>Wild Magic</option>
+                <option>Warlock</option>
+                <option>The Fiend</option>
+                <option>The Great Old One</option>
+                <option>Wizard</option>
+                <option>School of Abjuration</option>
+                <option>School of Conjuration</option>
+                <option>School of Divination</option>
+                <option>School of Enchantment</option>
+                <option>School of Evocation</option>
+                <option>School of Illusion</option>
+                <option>School of Necromancy</option>
+                <option>School of Transmutation</option>
             </select>
 
             <h4>Level</h4>
@@ -174,7 +222,7 @@
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 </option>
-                <option>False</option>
+                <option selected>False</option>
                 <option>True</option>
             </select>
 

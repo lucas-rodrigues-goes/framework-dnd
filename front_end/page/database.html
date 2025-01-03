@@ -171,13 +171,30 @@
     function onWindowLoad() {
         addTabFunctionality()
 
-        // Start tabs
-        damageTab()
-        featuresTab()
+        // Update Tabs
         setInterval(
             ()=>{
-                damageTab()
-                featuresTab()
+                let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+                let current_tab
+                let tab_function
+
+
+                if(getId("damage-tab").style.display != "none") {
+                    current_tab = "damage" ; tab_function = damageTab }
+                else if (getId("features-tab").style.display != "none") {
+                    current_tab = "features" ; tab_function = featuresTab}
+                else if (getId("spells-tab").style.display != "none") {
+                    current_tab = "spells" ; tab_function = spellsTab 
+                }
+
+
+                tab_list = tab_list.filter(item => item != current_tab)
+                for (const tab of tab_list) {
+                    if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
+                }
+
+                tab_function()
+
             }
         , 200)
     }
@@ -355,8 +372,6 @@
             getId("damage-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
             getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
 
-            updateColapsible()
-
             for (const value of items) {
 
                 // Edit buttons behavior
@@ -369,20 +384,22 @@
                     toBackend(`database.remove_damage_type("`+value+`")`)
                 })
             }
+            updateColapsible()
         })
     }
 
     function featuresTab() {
 
-        function row(name, type, level, description) {
+        function row(name, type, subtype, level, description) {
             image = ""
 
             return `
-            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 1fr 100px;">
+            <div class="table-row" style="grid-template-columns: 30px 1fr 50px 1fr 50px 100px;">
                 <div><img src=`+image+`-24 style="opacity:1"></div>
                 <div>`+capitalize(name)+`</div>
                 <div>`+capitalize(type)+`</div>
-                <div>`+level+`</div>
+                <div>`+capitalize(subtype)+`</div>
+                <div style="text-align: center">`+level+`</div>
                 <div class="action-buttons">
                     <img id="`+name+`-edit-feature" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
                     <img id="`+name+`-remove-feature" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
@@ -397,11 +414,12 @@
         function table(rows, hash) {
             return `
             <div class="table-container" id="features-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 1fr 100px;">
+                <div class="table-header" style="grid-template-columns: 30px 1fr 50px 1fr 50px 100px;">
                     <div></div>
                     <div>Name</div>
                     <div>Type</div>
-                    <div>Level</div>
+                    <div></div>
+                    <div style="text-align: center">Level</div>
                     <div style="text-align:right;">Actions</div>
                 </div>
 
@@ -446,18 +464,14 @@
 
             for (const key in filtered_response) {
                 let feature = response.data[key]
-
-                let type = feature.subtype == "" ? feature.type : feature.subtype
                 
                 items.push(feature.name) // Add to list of items
-                rows += row(feature.name, type, feature.level, feature.description) // Create new row
+                rows += row(feature.name, feature.type, feature.subtype, feature.level, feature.description) // Create new row
 
             }
 
             getId("features-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
             getId("new-feature").addEventListener("click", ()=>{ openPage("feature_set.html","") })
-
-            updateColapsible()
 
             for (const value of items) {
 
@@ -471,8 +485,161 @@
                     toBackend(`database.remove_feature("`+value+`")`)
                 })
             }
+            updateColapsible()
         })
     }
+
+    function spellsTab() {
+
+        function row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
+            image = ""
+
+            // Components
+            components_string = ""
+            for (const i in components) {
+                components_string += components[i]
+                if (i != components.length-1) {
+                    components_string += ", "
+                }
+            }
+            components_string = capitalize(components_string)
+
+            // Classes
+            classes_string = ""
+            for (const i in classes) {
+                classes_string += capitalize(classes[i])
+                if (i != classes.length-1) {
+                    classes_string += ", "
+                }
+            }
+
+            // Duration
+            duration = duration == 0 ? "Instantaneous" : duration;
+
+            // Range
+            try {
+                range = Number(range) + " feet"
+            } catch {}
+
+            // Casting Time
+            cast_time = cast_time/2+" seconds"
+
+            return `
+            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 1fr 1fr 100px;">
+                <div><img src=`+image+`-24 style="opacity:1"></div>
+                <div>`+capitalize(name)+`</div>
+                <div>`+level+` Level</div>
+                <div>`+capitalize(school)+`</div>
+                <div>`+duration+`</div>
+                <div class="action-buttons">
+                    <img id="`+name+`-edit-spell" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+name+`-remove-spell" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                </div>
+            </div>
+            <div class="collapsible-content" style="text-align:left">
+                <span style="line-height: 1.5;">
+                <b>Classes</b>: `+classes_string+`
+                <br><b>Components</b>: `+components_string+`
+                <br><b>Target</b>: `+target+`
+                <br><b>Range</b>: `+range+`
+                <br><b>Casting Time</b>: `+cast_time+`
+                <br><b>Duration</b>: `+duration+`</span>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                    >`+description+`</pre>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                    ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>
+            </div>
+        `
+        }
+
+        function table(rows, hash) {
+            return `
+            <div class="table-container" id="spells-table" hash="`+hash+`">
+                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 1fr 1fr 100px;">
+                    <div></div>
+                    <div>Name</div>
+                    <div>Level</div>
+                    <div>School</div>
+                    <div>Duration</div>
+                    <div style="text-align:right;">Actions</div>
+                </div>
+
+                `+rows+`
+
+            </div>
+            `
+        }
+
+        function button_add_new() {
+            return `
+            <button id="new-spell" style="
+                position: sticky;
+                bottom:0px;
+                z-index: 20;
+                background-color: #292929;
+                color: #ddd;
+                border: 2px solid #ddd;
+                font-size:100%;
+                transform: translate(42vw);
+            ">
+                Create New
+            </button>
+            `
+        }
+
+        let rows = "" // Stores HTML for all of the rows
+        let items = [] // Stores the name of each value added to the table
+
+        // Get data from backend
+        toBackend("database.spells", (response) => { response = JSON.parse(response)
+            
+            let filtered_response = response.data
+            
+            filtered_response = filterObjectByString(filtered_response, getId("spells-search-bar").value)
+
+
+            // Verifies if new JSON is equal to current iteration of table
+            let new_hash = hash(JSON.stringify(filtered_response))
+            let previous_hash = getId("spells-table") != undefined ? getId("spells-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
+
+            for (const key in filtered_response) {
+                let spell = response.data[key]
+                
+                items.push(spell.name) // Add to list of items
+                rows += row(
+                    spell.name, 
+                    spell.level, 
+                    spell.school, 
+                    spell.cast_time, 
+                    spell.range, 
+                    spell.target,
+                    spell.components,
+                    spell.duration,
+                    spell.classes,
+                    spell.description, 
+                    spell.description_higher_levels) // Create new row
+
+            }
+
+            getId("spells-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
+            getId("new-spell").addEventListener("click", ()=>{ openPage("spell_set.html","") })
+
+            for (const value of items) {
+
+                // Edit buttons behavior
+                getId(value+"-edit-spell").addEventListener("click", ()=>{
+                    openPage("spell_set.html", value)
+                })
+
+                // Remove buttons behavior
+                getId(value+"-remove-spell").addEventListener("click", ()=>{
+                    toBackend(`database.remove_spell("`+value+`")`)
+                })
+            }
+            updateColapsible()
+        })
+        }
 
     //=====================================================================================================
 
@@ -526,6 +693,9 @@
     </div>
 
     <div class="outer" id="spells-tab" style="display:none">
+        <input id="spells-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+        <div id="spells-tab-content">
+        </div>
     </div>
 
 </body>
