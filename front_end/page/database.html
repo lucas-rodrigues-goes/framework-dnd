@@ -173,9 +173,11 @@
 
         // Start tabs
         damageTab()
+        featuresTab()
         setInterval(
             ()=>{
                 damageTab()
+                featuresTab()
             }
         , 200)
     }
@@ -240,6 +242,35 @@
     });
     }
 
+    function filterObjectByString(obj, searchString) {
+        const lowerCaseSearch = searchString.toLowerCase();
+
+        function filter(obj) {
+            return Object.fromEntries(
+                Object.entries(obj).filter(([key, value]) => {
+                    const keyMatches = key.toLowerCase().includes(lowerCaseSearch);
+                    const valueMatches =
+                        typeof value === "string" &&
+                        value.toLowerCase().includes(lowerCaseSearch);
+
+                    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+                        const nestedResult = filter(value); // Recursively filter nested objects
+                        return keyMatches || Object.keys(nestedResult).length > 0;
+                    }
+
+                    return keyMatches || valueMatches;
+                }).map(([key, value]) => {
+                    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+                        return [key, filter(value)]; // Recursively filter nested objects
+                    }
+                    return [key, value];
+                })
+            );
+        }
+
+        return filter(obj);
+    }
+
     //=====================================================================================================
     // Sync management
     //=====================================================================================================
@@ -254,8 +285,8 @@
                 <div>`+capitalize(name)+`</div>
                 <div>`+capitalize(type)+`</div>
                 <div class="action-buttons">
-                    <img id="`+name+`-edit" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+name+`-remove" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                    <img id="`+name+`-edit-damage" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+name+`-remove-damage" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
                 </div>
             </div>
             <div class="collapsible-content">
@@ -289,8 +320,8 @@
                 background-color: #292929;
                 color: #ddd;
                 border: 2px solid #ddd;
-                font-size:75%;
-                transform: translate(40vw);
+                font-size:100%;
+                transform: translate(42vw);
 
             ">
                 Create New
@@ -303,13 +334,17 @@
 
         // Get data from backend
         toBackend("database.damage_types", (response) => { response = JSON.parse(response)
+            
+            let filtered_response = response.data
+            
+            filtered_response = filterObjectByString(filtered_response, getId("damage-search-bar").value)
 
             // Verifies if new JSON is equal to current iteration of table
-            let new_hash = hash(JSON.stringify(response))
+            let new_hash = hash(JSON.stringify(filtered_response))
             let previous_hash = getId("damage-table") != undefined ? getId("damage-table").getAttribute("hash") : undefined;
             if (new_hash == previous_hash) { return }
 
-            for (const key in response.data) {
+            for (const key in filtered_response) {
                 damage = response.data[key]
                 
                 items.push(damage.name) // Add to list of items
@@ -317,38 +352,40 @@
 
             }
 
-            getId("damage-tab").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
-
+            getId("damage-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
             getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
+
             updateColapsible()
 
             for (const value of items) {
 
                 // Edit buttons behavior
-                getId(value+"-edit").addEventListener("click", ()=>{
+                getId(value+"-edit-damage").addEventListener("click", ()=>{
                     openPage("damage_set.html", value)
                 })
 
                 // Remove buttons behavior
-                getId(value+"-remove").addEventListener("click", ()=>{
+                getId(value+"-remove-damage").addEventListener("click", ()=>{
                     toBackend(`database.remove_damage_type("`+value+`")`)
                 })
             }
         })
     }
 
-    function damageTab() {
+    function featuresTab() {
 
-        function row(name, type, description, image) {
+        function row(name, type, level, description) {
+            image = ""
 
             return `
-            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 100px;">
+            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 1fr 100px;">
                 <div><img src=`+image+`-24 style="opacity:1"></div>
                 <div>`+capitalize(name)+`</div>
                 <div>`+capitalize(type)+`</div>
+                <div>`+level+`</div>
                 <div class="action-buttons">
-                    <img id="`+name+`-edit" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+name+`-remove" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                    <img id="`+name+`-edit-feature" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+name+`-remove-feature" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
                 </div>
             </div>
             <div class="collapsible-content">
@@ -359,11 +396,12 @@
 
         function table(rows, hash) {
             return `
-            <div class="table-container" id="damage-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 100px;">
+            <div class="table-container" id="features-table" hash="`+hash+`">
+                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 1fr 100px;">
                     <div></div>
                     <div>Name</div>
                     <div>Type</div>
+                    <div>Level</div>
                     <div style="text-align:right;">Actions</div>
                 </div>
 
@@ -375,16 +413,15 @@
 
         function button_add_new() {
             return `
-            <button id="new-damage-type" style="
+            <button id="new-feature" style="
                 position: sticky;
                 bottom:0px;
                 z-index: 20;
                 background-color: #292929;
                 color: #ddd;
                 border: 2px solid #ddd;
-                font-size:75%;
-                transform: translate(40vw);
-
+                font-size:100%;
+                transform: translate(42vw);
             ">
                 Create New
             </button>
@@ -395,42 +432,47 @@
         let items = [] // Stores the name of each value added to the table
 
         // Get data from backend
-        toBackend("database.damage_types", (response) => { response = JSON.parse(response)
+        toBackend("database.features", (response) => { response = JSON.parse(response)
+            
+            let filtered_response = response.data
+            
+            filtered_response = filterObjectByString(filtered_response, getId("features-search-bar").value)
+
 
             // Verifies if new JSON is equal to current iteration of table
-            let new_hash = hash(JSON.stringify(response))
-            let previous_hash = getId("damage-table") != undefined ? getId("damage-table").getAttribute("hash") : undefined;
+            let new_hash = hash(JSON.stringify(filtered_response))
+            let previous_hash = getId("features-table") != undefined ? getId("features-table").getAttribute("hash") : undefined;
             if (new_hash == previous_hash) { return }
 
-            for (const key in response.data) {
-                damage = response.data[key]
+            for (const key in filtered_response) {
+                let feature = response.data[key]
+
+                let type = feature.subtype == "" ? feature.type : feature.subtype
                 
-                items.push(damage.name) // Add to list of items
-                rows += row(damage.name, damage.type, damage.description, damage.image) // Create new row
+                items.push(feature.name) // Add to list of items
+                rows += row(feature.name, type, feature.level, feature.description) // Create new row
 
             }
 
-            getId("damage-tab").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
+            getId("features-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
+            getId("new-feature").addEventListener("click", ()=>{ openPage("feature_set.html","") })
 
-            getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
             updateColapsible()
 
             for (const value of items) {
 
                 // Edit buttons behavior
-                getId(value+"-edit").addEventListener("click", ()=>{
-                    openPage("damage_set.html", value)
+                getId(value+"-edit-feature").addEventListener("click", ()=>{
+                    openPage("feature_set.html", value)
                 })
 
                 // Remove buttons behavior
-                getId(value+"-remove").addEventListener("click", ()=>{
-                    toBackend(`database.remove_damage_type("`+value+`")`)
+                getId(value+"-remove-feature").addEventListener("click", ()=>{
+                    toBackend(`database.remove_feature("`+value+`")`)
                 })
             }
         })
-        }
-
-
+    }
 
     //=====================================================================================================
 
@@ -466,12 +508,18 @@
     </div>
 
     <div class="outer" id="features-tab" style="display:none">
+        <input id="features-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+        <div id="features-tab-content">
+        </div>
     </div>
 
     <div class="outer" id="items-tab" style="display:none">
     </div>
 
-    <div class="outer" id="damage-tab" style="">
+    <div class="outer" id="damage-tab">
+        <input id="damage-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+        <div id="damage-tab-content">
+        </div>
     </div>
 
     <div class="outer" id="resources-tab" style="display:none">

@@ -554,12 +554,6 @@ try {
 
     var database = new Database()
 
-    database.set_damage_type(
-        "slashing",
-        "physical",
-        "Damage usually dealt by cutting weapons, such as swords"
-    )
-
     database.set_item(
         "Ration",
         "Food",
