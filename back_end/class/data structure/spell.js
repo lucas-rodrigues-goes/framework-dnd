@@ -51,11 +51,11 @@ try {
             level = "1st", 
             school = "", 
             classes = [],
-            cast_time = 0, 
-            range = 0, 
-            target = "", 
+            cast_time = 0, // from 0 to 12
+            range = 0, // self, touch, sight, unlimited, special 
+            target = "",
             components = [], 
-            duration = 0,
+            duration = 0, // 0 for instantaneous
             description = "", 
             description_higher_levels = ""
         ) {
