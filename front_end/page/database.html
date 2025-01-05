@@ -490,8 +490,8 @@
                 <div><img src=`+image+`-24 style="opacity:1"></div>
                 `+div_columns+`
                 <div class="action-buttons">
-                    <img id="`+tab_id+`-edit-`+id+`" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+tab_id+`-remove-`+id+`" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                    <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
                 </div>
             </div>
             <div class="collapsible-content">
@@ -578,7 +578,7 @@
             const subtypeComparison = subtypeA.localeCompare(subtypeB);
             if (subtypeComparison !== 0) return subtypeComparison; // If types are the same, compare subtypes
 
-            return getSpellLevelValue(a.level) - getSpellLevelValue(b.level); // If both type and subtype are the same, compare level
+            return b.level - a.level; // If both type and subtype are the same, compare level
         };
 
 

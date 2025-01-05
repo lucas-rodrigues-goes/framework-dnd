@@ -11,12 +11,8 @@ try {
         #type = "";
         #race = "";
         #attributes = {
-            "strength": 10,
-            "dexterity": 10,
-            "constitution": 10,
-            "wisdom": 10,
-            "intelligence": 10,
-            "charisma": 10,
+            "strength": 10, "dexterity": 10, "constitution": 10,
+            "wisdom": 10, "intelligence": 10, "charisma": 10,
         };
         #speed = {
             "walk":30,
@@ -25,10 +21,11 @@ try {
             "fly":0,
             "burrow":0,
         }
+        #health = 10
         #resources = {
-            "health": {
-                "current": this.#attributes.constitution,
-                "maximum": this.#attributes.constitution
+            "mana": {
+                "current": 0,
+                "maximum": 0
             },
         };
         #resistances = {
@@ -49,31 +46,16 @@ try {
             "force": 0
         };
         #features = {
-            "all": [],
-            "racial": [],
-            "feat": [],
-            "barbarian": [],
-            "bard": [],
-            "cleric": [],
-            "druid": [],
-            "fighter": [],
-            "monk": [],
-            "paladin": [],
-            "ranger": [],
-            "rogue": [],
-            "sorcerer": [],
-            "warlock": [],
-            "wizard": []
+            "all": [], "racial": [], "feat": [],
+            "barbarian": [], "bard": [], "cleric": [],
+            "druid": [], "fighter": [], "monk": [],
+            "paladin": [], "ranger": [], "rogue": [],
+            "sorcerer": [], "warlock": [], "wizard": []
         };
         #proficiencies = {}
         #spells = {
             "bard": {
-                "known": {
-                    "cantrip": [],
-                    "1st": [], "2nd": [], "3rd": [],
-                    "4th": [], "5th": [], "6th": [],
-                    "7th": [], "8th": [], "9th": []
-                }
+                "known": []
             },
             "cleric": {
                 "always_prepared": [],
@@ -88,35 +70,16 @@ try {
                 "memorized": []
             },
             "ranger": {
-                "known": {
-                    "1st": [],
-                    "2nd": [], "3rd": [],
-                    "4th": [], "5th": []
-                }
+                "known": []
             },
             "sorcerer": {
-                "known": {
-                    "cantrip": [],
-                    "1st": [], "2nd": [], "3rd": [],
-                    "4th": [], "5th": [], "6th": [],
-                    "7th": [], "8th": [], "9th": []
-                }
+                "known": []
             },
             "warlock": {
-                "known": {
-                    "cantrip": [],
-                    "1st": [], "2nd": [], "3rd": [],
-                    "4th": [], "5th": [], "6th": [],
-                    "7th": [], "8th": [], "9th": []
-                }
+                "known": []
             },
             "wizard": {
-                "known": {
-                    "cantrip": [],
-                    "1st": [], "2nd": [], "3rd": [],
-                    "4th": [], "5th": [], "6th": [],
-                    "7th": [], "8th": [], "9th": []
-                },
+                "known": [],
                 "always_prepared": [],
                 "memorized": []
             }
@@ -151,6 +114,7 @@ try {
 
         // Array or object getters
         get attributes() { return this.#attributes; }
+        get health() { return this.#health }
         get resources() { return this.#resources; }
         get resistances() { return this.#resistances; }
         get features() { return this.#features; }
@@ -174,6 +138,16 @@ try {
                 "intelligence": calculate_bonus(this.#attributes.intelligence),
                 "charisma": calculate_bonus(this.#attributes.charisma)
             }
+        }
+
+        get max_health() {
+            calculated_max_health = this.#attributes.constitution
+
+            this.#health = Math.min(calculated_max_health, this.#health)
+
+            this.save()
+
+            return calculated_max_health
         }
 
         get skills() {
@@ -235,6 +209,16 @@ try {
             log(this.#name + " race set to " + race + ".");
         }
 
+        set health(health) {
+            if (isNaN(Number(health))) { return }
+            if (health > this.max_health) {
+                
+            }
+
+            this.#health = health;
+            this.save();
+        }
+
         // Set individual attributes, checking validity (range 1-30)
         set_attribute(attribute, value) {
             value = Number(value);
@@ -251,7 +235,7 @@ try {
         set_resistance(resistance, value) {
             let validResistances = ["slashing", "piercing", "bludgeoning", "fire", "cold", "lightning", "thunder",
                 "acid", "poison", "psychic", "radiant", "necrotic", "force"]
-            let validValues = [0, 10, 20, 30, "immunity", "vulnerability", "heals"]
+            let validValues = [0, 5, 10, 15, 20, 30, "immunity", "vulnerability", "heals"]
 
             if (!validResistances.includes(resistance)) {return}
             if (!validValues.includes(value)) {return}
@@ -277,7 +261,7 @@ try {
 
 
         //=====================================================================================================
-        // Resource management
+        // Health management
         //=====================================================================================================
 
         // Receive damage based on resistance type
@@ -285,7 +269,7 @@ try {
             if (value <= 0) {return}
             if (typeof type != "string") {return}
 
-            let health = this.#resources.health;
+            let health = this.health;
             let resistance = this.#resistances[type];
             let damage = 0;
 
@@ -371,8 +355,11 @@ try {
             ];
             if (!validTypes.includes(type)) { return; }
 
-            this.#features.all = this.#features.all.filter(value => value != name);
+            // Removes only one instance from ALL in case gained from multiple classes  
+            const index = this.#features.all.indexOf(name); if (index !== -1) { this.#features.all.splice(index, 1);}
+            
             this.#features[type] = this.#features[type].filter(value => value != name);
+
             this.save();
             log(this.#name + " lost the " + type + " feature " + name + ".");
         }
