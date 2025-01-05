@@ -54,7 +54,7 @@ try {
             cast_time = 0, // from 0 to 12
             range = 0, // self, touch, sight, unlimited, special 
             target = "",
-            components = [], 
+            components = [], // vocal, somatic, material, concentration
             duration = 0, // 0 for instantaneous
             description = "", 
             description_higher_levels = ""
@@ -80,7 +80,7 @@ try {
 
             // Remove invaild components
             components = components.filter(value => [
-                "vocal", "somatic", "material"
+                "vocal", "somatic", "material", "concentration"
             ].includes(value))
             
             // Instancing

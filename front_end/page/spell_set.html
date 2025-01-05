@@ -1,188 +1,251 @@
-[dialog5("Spell", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
-<head>
-[r:style()]
-[r:script()]
-[r:'
-<style>
+    [h:id = arg(0)]
 
-.outer {
-    height: 95.5%;
-}
+    [dialog5("Feature", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+    <head>
+    [r:style()]
+    [r:script()]
+    [r:'
+    <style>
+        .checkbox-container {
+        display: flex;
+        align-items: center;       /* Vertically center the items */
+        justify-content: center;    /* Horizontally center the items */
+        width: 100%;
+        border: 1px solid red;
+        margin-bottom: 8px;
+        }
 
-</style>
-<script>
+        .checkbox-grid {
+        display: grid;             /* Enable grid layout */
+        grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+        gap: 16px;                 /* Add space between items */
+        width: 100%;
+        }
 
-    //=====================================================================================================
-    // Execution
-    //=====================================================================================================
+        .checkbox-text {
+        font-size: 100%;
+        margin-right: 8px;
+        }
 
-    function onWindowLoad() {
+        .checkbox {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #333;
+        border-radius: 4px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        user-select: none;
+        }
 
-        getId("cancel").addEventListener("click", () => {
-            closePage("Spell")
-        })
+        .checkbox[data-checked="true"] {
+        background-color: #4caf50;
+        color: white;
+        }
 
-        addSubmitBehavior()
-    }
+        .checkbox[data-checked="true"]::after {
+        font-size: 14px;
+        font-weight: bold;
+        }
+    </style>
+    <script>
+
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function onWindowLoad() {
+            loadPage()
+
+            getId("cancel").addEventListener("click", () => {
+                closePage("Feature")
+            })
+
+            updateFields()
+            addSubmitBehavior()
+
+            updateCheckboxes()
+        }
+
+        function loadPage() {
+            getId("information").innerHTML += 
+
+                input("name", "Name") +
+
+                select("level", "Level", [
+                    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
+
+                select("school", "School of Magic", [
+                    "Abjuration","Conjuration","Divination","Enchantment",
+                    "Evocation","Illusion","Necromancy","Transmutation"]) +
+                
+                title("Classes") +
+
+                checkbox_grid([
+                    ["Bard", "bard"], ["Druid", "druid"], ["Cleric", "cleric"],
+                    ["Sorcerer", "sorcerer"], ["Warlock", "warlock"], ["Wizard", "wizard"],
+                ])
+        }
 
 
 
-    //=====================================================================================================
-    // Helper functions
-    //=====================================================================================================
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
 
-    function addSubmitBehavior() {
-        getId("submit").addEventListener("click", async () => {
+        function updateFields() {
+            id = getId("id").value
+
+            if(id == "") {return}
+
+            toBackend("database.features.data", (response) => {
+                response = JSON.parse(response)
+                
+                getId("name").value = capitalize(response[id].name)
+
+            })
+        }
+
+        function addSubmitBehavior() {
+            getId("submit").addEventListener("click", async () => {
+                
+
+
+                // Get values from form
+                let name = getId("name").value;
+
+
+                // Treatment
+                
+
+                // Send data to backend
+                toBackend(
+                    "database.set_spell("+
+                        "`"+name+"`,"+
+                        "`"+level+"`,"+
+                        "`"+school+"`,"+
+                        "`"+classes+"`,"+
+                        "`"+cast_time+"`,"+
+                        "`"+range+"`,"+
+                        "`"+target+"`,"+
+                        "`"+components+"`,"+
+                        "`"+duration+"`,"+
+                        "`"+description+"`,"+
+                        "`"+description_higher_levels+"`,"+
+                    ")"
+                )
+
+                closePage("Feature")
+
+            })
+        }
+
+        function updateCheckboxes() {
+            // Select all elements with the class checkbox
+            const checkboxes = document.querySelectorAll(".checkbox");
+
+            checkboxes.forEach(checkbox => {
+            checkbox.addEventListener("click", () => {
+                // Toggle the data-checked attribute
+                const isChecked = checkbox.getAttribute("data-checked") === "true";
+                checkbox.setAttribute("data-checked", !isChecked);
+            });
+            });
+        }
+
+
+
+        //=====================================================================================================
+        // Components
+        //=====================================================================================================
+
+        function title(title = "") {
+            return `
+            <h4>`+title+`</h4>
+            `
+        }
+
+        function input(id = "", title = "", placeholder = "") {
+            return `
+            <h4>`+title+`</h4>
+            <input id="`+id+`" placeholder="`+placeholder+`"></input>
+            `
+        }
+
+        function select(id = "", title = "", options = []) {
+            options_string = ""
+            for (const value of options) {
+                options_string += `<option>`+value+`</option>`
+            }
+            return `
+            <h4>`+title+`</h4>
+            <select id="`+id+`">
+                <option value="" hidden>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                </option>
+                `+options_string+`
+            </select>
+            `
+        }
+
+        function checkbox(id = "", title = "") {
+            return `
+            <div class="checkbox-container">
+                <span class="checkbox-text">`+title+`:</span>
+                <div class="checkbox" data-checked="`+"false"+`"></div>
+            </div>
+            `
+        }
+
+        function checkbox_grid(checkboxes = [["","Title"]]) {
+            let checkboxes = ""
             console.log("here")
-            // Get values from form
-            let name = getId("name").value;
-            let level = getId("level").value;
-            let school = getId("school").value;
-            let classes = "";
-            let cast_time = getId("cast_time").value;
-            let range = getId("range").value;
-            let target = getId("target").value;
-            let components = "";
-            let duration = getId("duration").value;
-            let description = getId("description").value;
-            let description_higher_levels = getId("description_higher_levels").value;
+            for (const box of checkboxes) {
+                console.log(box)
+                checkboxes += checkbox(box[0], box[1])
+            }
 
-            console.log("here2")
-            // Treatment
-            if (level == "Cantrip") {level = "cantrip"}
-            school = school.toLowerCase()
+            return `
+            <div class="checkbox-grid">
+                `+checkboxes+`
+            </div>
+            `
+        }
 
-            console.log("here3")
-            // Send data to backend
-            toBackend(
-                "database.set_spell("+
-                    "`"+name+"`,"+
-                    "`"+level+"`,"+
-                    "`"+school+"`,"+
-                    "`"+classes+"`,"+
-                    "`"+cast_time+"`,"+
-                    "`"+range+"`,"+
-                    "`"+target+"`,"+
-                    "`"+components+"`,"+
-                    "`"+duration+"`,"+
-                    "`"+description+"`,"+
-                    "`"+description_higher_levels+"`,"+
-                ")"
-            )
 
-            console.log("here4")
+        //=====================================================================================================
 
-            closePage("spell.html")
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
 
-        })
-    }
+    </script>
+    ']
+    </head>
+
+    <input type="text" class="hidden" id="id" value="{id}"></input>
+
+    <body>
+        <div class="outer">
+
+            <div class="spacer"></div>
+
+            <div id="information" class="container center-horizontal" style="padding-bottom:0px;">
+                <h3 class="container-title">Information</h3>
+
+                <div class="spacer" ></div>
 
 
 
-    //=====================================================================================================
+            </div>
 
-    document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-</script>
-']
-</head>
-
-<body>
-    <div class="outer">
-
-        <h2>Spell Creation</h2>
-
-        <div class="spacer"></div>
-
-        <div class="container center-horizontal" style="padding-bottom:0px;">
-            <h3 class="container-title">Information</h3>
-
-            <div class="spacer" ></div>
-
-            <h4>Name</h4>
-            <input id="name" placeholder></input>
-
-            <h4>Level</h4>
-            <select id="level">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>Cantrip</option>
-                <option>1st</option>
-                <option>2nd</option>
-                <option>3rd</option>
-                <option>4th</option>
-                <option>5th</option>
-                <option>6th</option>
-                <option>7th</option>
-                <option>8th</option>
-                <option>9th</option>
-            </select>
-
-            <h4>School</h4>
-            <select id="school">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>Abjuration</option>
-                <option>Conjuration</option>
-                <option>Divination</option>
-                <option>Enchantment</option>
-                <option>Evocation</option>
-                <option>Illusion</option>
-                <option>Necromancy</option>
-                <option>Transmutation</option>
-            </select>
-
-            <h4>Cast Time</h4>
-            <select id="cast_time">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-                <option>10</option>
-                <option>11</option>
-                <option>12</option>
-            </select>
-
-            <h4>Range</h4>
-            <input id="range"></input>
-
-            <h4>Target</h4>
-            <input id="target"></input>
-
-            <h4>Duration</h4>
-            <input id="duration"></input>
-
-            <h4>Description</h4>
-            <textarea id="description" rows="10" cols="30"></textarea>
-
-            <h4>At Higher Levels</h4>
-            <textarea id="description_higher_levels" rows="3" cols="30"></textarea>
+            <button id="cancel">Cancel</button>
+            <button id="submit">Accept</button>
 
         </div>
+    </body>
 
-        <button id="cancel">Cancel</button>
-        <button id="submit">Accept</button>
-
-    </div>
-</body>
-
-}]
+    }]

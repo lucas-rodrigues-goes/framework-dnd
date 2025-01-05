@@ -141,11 +141,7 @@ try {
         }
 
         get max_health() {
-            calculated_max_health = this.#attributes.constitution
-
-            this.#health = Math.min(calculated_max_health, this.#health)
-
-            this.save()
+            let calculated_max_health = this.#attributes.constitution
 
             return calculated_max_health
         }
@@ -211,11 +207,9 @@ try {
 
         set health(health) {
             if (isNaN(Number(health))) { return }
-            if (health > this.max_health) {
-                
-            }
+            let clampedHealth = Math.max(Math.min(health, this.max_health), 0)
 
-            this.#health = health;
+            this.#health = clampedHealth;
             this.save();
         }
 
@@ -269,7 +263,6 @@ try {
             if (value <= 0) {return}
             if (typeof type != "string") {return}
 
-            let health = this.health;
             let resistance = this.#resistances[type];
             let damage = 0;
 
@@ -282,31 +275,20 @@ try {
                     damage = value * 2;
                     break;
                 case "heals":
-                    damage = value * -1;
-                    break;
+                    this.receive_healing(value)
+                    return
                 default:
                     damage = Math.max(value - resistance, 0);
                     break;
             }
 
-            health.current -= damage;
-            health.current = Math.max(0, health.current);
-            health.current = Math.min(health.current, health.maximum);
-            this.save();
+            this.health = this.health - damage;
             log(this.#name + " received " + damage + " " + type + " damage.");
         }
 
         // Receive healing
         receive_healing(value) {
-            let health = this.#resources.health;
-            let unhealable = ["Undead", "Construct"]
-
-
-            if (unhealable.includes(this.#type)) {return}
-
-            health.current = health.current + value;
-            health.current = Math.min(health.current, health.maximum);
-            this.save();
+            this.health = this.health + value
             log(this.#name + " received " + value + " points of healing.");
         }
 
@@ -542,10 +524,24 @@ try {
         load() {
             let object = JSON.parse(this.token.getProperty("object"));
 
+            // Check for undefined values and raise an error
+            const keysToCheck = [
+                "name", "type", "race", "attributes", "health",
+                "resources", "resistances", "features", "spells",
+                "conditions", "equipment", "inventory"
+            ];
+
+            for (const key of keysToCheck) {
+                if (object[key] === undefined) {
+                    throw new Error(`Property "${key}" is undefined in the loaded object.`);
+                }
+            }
+
             this.#name = object.name;
             this.#type = object.type;
             this.#race = object.race;
             this.#attributes = object.attributes;
+            this.#health = object.health
             this.#resources = object.resources;
             this.#resistances = object.resistances;
             this.#features = object.features;
@@ -561,6 +557,7 @@ try {
                 "type": this.#type,
                 "race": this.#race,
                 "attributes": this.#attributes,
+                "health": this.#health,
                 "resources": this.#resources,
                 "resistances": this.#resistances,
                 "features": this.#features,
