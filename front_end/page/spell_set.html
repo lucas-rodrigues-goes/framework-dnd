@@ -11,19 +11,21 @@
         align-items: center;       /* Vertically center the items */
         justify-content: center;    /* Horizontally center the items */
         width: 100%;
-        border: 1px solid red;
-        margin-bottom: 8px;
+        margin: 5px;
         }
 
         .checkbox-grid {
         display: grid;             /* Enable grid layout */
         grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-        gap: 16px;                 /* Add space between items */
+        gap: 0px;                 /* Add space between items */
         width: 100%;
+        margin: 10px 0px
         }
 
         .checkbox-text {
-        font-size: 100%;
+        font-size: 90%;
+        width: 40px;
+        padding-bottom: 3px;
         margin-right: 8px;
         }
 
@@ -196,23 +198,22 @@
         function checkbox(id = "", title = "") {
             return `
             <div class="checkbox-container">
-                <span class="checkbox-text">`+title+`:</span>
+                <span class="checkbox-text">`+title+`</span>
                 <div class="checkbox" data-checked="`+"false"+`"></div>
             </div>
             `
         }
 
         function checkbox_grid(checkboxes = [["","Title"]]) {
-            let checkboxes = ""
-            console.log("here")
+            let checkboxes_string = ""
             for (const box of checkboxes) {
                 console.log(box)
-                checkboxes += checkbox(box[0], box[1])
+                checkboxes_string += checkbox(box[1], box[0])
             }
 
             return `
             <div class="checkbox-grid">
-                `+checkboxes+`
+                `+checkboxes_string+`
             </div>
             `
         }
