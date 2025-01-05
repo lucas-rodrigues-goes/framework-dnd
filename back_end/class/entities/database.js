@@ -579,35 +579,24 @@ try {
         
     )
 
-    database.set_feature(
-        "Darkvision",
-        'racial',
-        "",
-        0,
-        false,
-        "You have superior vision in dark and dim conditions. You can see in dim light within 30 feet of you as "+
-        "if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, "+
-        "only shades of gray."
-    )
-
     database.set_spell(
         "Fireball",
         "3rd",
         "evocation",
-        ["sorcerer","wizard"],
+        ["sorcerer", "wizard"],
         3,
         150,
         "A point you choose within range",
-        ["vocal", "somatic","material"],
+        ["vocal", "somatic", "material"],
         0,
-        "A bright streak flashes from your pointing finger to a point you choose within range then blossoms "+
-            "with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on "+
-            "that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, "+
-            "or half as much damage on a successful one. The fire spreads around corners. It ignites flammable "+
+        "A bright streak flashes from your pointing finger to a point you choose within range then blossoms " +
+            "with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on " +
+            "that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, " +
+            "or half as much damage on a successful one. The fire spreads around corners. It ignites flammable " +
             "objects in the area that aren't being worn or carried.",
-        "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for "+
+        "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for " +
             "each slot level above 3rd."
-    ); 
+    );
     
 
 

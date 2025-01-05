@@ -1,703 +1,779 @@
 [dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
-<head>
-[r:style()]
-[r:script()]
-[r:'
-<style>
-    img {
-        image-rendering: smooth;
-        margin: 0px;
-    }
+    <head>
+    [r:style()]
+    [r:script()]
+    [r:'
+    <style>
+        img {
+            image-rendering: smooth;
+            margin: 0px;
+        }
+    
+        img:hover {
+            opacity: 0.5;
+        }
+    
+        img:active {
+            opacity: 0.3;
+        }
+    
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+    
+        .action-button {
+            font-size: 75%;
+            min-height: 0px;
+            min-width: 0px;
+            padding: 3px 3px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        .action-button:hover {
+            background-color: #0056b3;
+        }
+    
+        .table-container {
+            margin: 10px;
+        }
+    
+        .table-header {
+            display: grid;
+            grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+            gap: 10px;
+            color: white;
+            padding: 0px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            align-items: center;
+            text-align: left;
+        }
+    
+        .table-row {
+            position:relative;
+            transition: background-color 0.3s;
+    
+            display: grid;
+            grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+            gap: 10px;
+            padding: 2px 10px;
+            padding-top: 7px;
+            margin: 10px 0px;
+    
+            background-color: #444;
+            border-radius: 5px;
+    
+            align-items: center;
+            text-align: left;
+            font-weight: bold;
+            z-index: 3;
+        }
+    
+        .table-row:hover {
+            background-color: #555;
+        }
+    
+        .collapsible-content {
+            position:relative;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s; /* Smooth transition */
+            display: none;
+    
+            position: relative;
+            height: 0px;
+            top: -20px;
+            z-index: 0;
+    
+            margin: 0px 3px;
+            padding: 10px;
+            padding-top: 15px;
+    
+            background-color: #333;
+            border: 1px solid #444;
+            border-radius: 5px;
+            border-top-left-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+    
+        .table-row.open + .collapsible-content {
+            display:block;
+            height: fit-content;
+            margin-bottom: -20px;
+            opacity: 1; /* Fully visible */
+            visibility: visible; /* Make it interactable */
+            transform: translateY(0); /* Final position */
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0s; /* Transition without delay for showing */
+        }
+    
+        .outer {
+            margin-top: 20px;
+        }
+    
+        .tab-switch-div {
+            display: flex;                     /* Use flexbox for layout */
+            justify-content: space-between;    /* Distribute tabs with space between them */
+            align-items: center;               /* Vertically center the tabs */
+            position: relative;
+            margin-bottom: -2px;
+            height: 30px;                      /* Min height */
+        }
+    
+        .tab-switch {
+            z-index: 0;
+            min-height: 20px;
+            padding: 3px;                 /* Adjust padding */
+            text-align: center;
+            background-color: #292929;
+            color: #ddd;
+            border: 2px solid #414141;
+            border-radius: 7px;
+            font-size: 75%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    
+        .tab-switch:hover {
+            background-color: #444;
+        }
+    
+        .tab-switch.active {
+            background-color: #414141;
+        }
+    
+        .tab-switch-div .tab-switch {
+            flex: 1;                           /* Make each tab take equal space */
+            margin: 0 5px;                     /* Add spacing between tabs */
+            text-align: center;                /* Ensure text is centered */
+        }
+    
+        .tab-switch-div .tab-switch:first-child {
+            margin-left: 15px;                    /* Remove left margin for the first tab */
+        }
+    
+        .tab-switch-div .tab-switch:last-child {
+            margin-right: 15px;                   /* Remove right margin for the last tab */
+        }
+    </style>
+    <script>
+    
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+    
+        function onWindowLoad() {
+    
+            addTabFunctionality()
+            runCurrentTab() ; setInterval(runCurrentTab, 200)
+    
+        }
+    
+    
+    
+        //=====================================================================================================
+        // Tabs
+        //=====================================================================================================
+    
+        function featuresTab() {
+    
+            // Parameters
+            const edit_page = "feature_set.html"
+            const database_path = "database.features"
+            const remove_function = "database.remove_feature"
+            const tab_id = "features"
+    
+            // Components
+            const table_headers = ["Name", "Type", "", "Level"]
+            const table_config = "0px 1fr 50px 1fr 50px 100px"
+            function render_row(name, type, subtype, level, description, image) {
+                id = name
+                if (!subtype) {subtype = ""}
+                
 
-    img:hover {
-        opacity: 0.5;
-    }
-
-    img:active {
-        opacity: 0.3;
-    }
-
-    .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .action-button {
-        font-size: 75%;
-        min-height: 0px;
-        min-width: 0px;
-        padding: 3px 3px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .action-button:hover {
-        background-color: #0056b3;
-    }
-
-    .table-container {
-        margin: 10px;
-    }
-
-    .table-header {
-        display: grid;
-        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-        gap: 10px;
-        color: white;
-        padding: 0px 10px;
-        border-radius: 10px;
-        font-weight: bold;
-        align-items: center;
-        text-align: left;
-    }
-
-    .table-row {
-        position:relative;
-        transition: background-color 0.3s;
-
-        display: grid;
-        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-        gap: 10px;
-        padding: 2px 10px;
-        padding-top: 7px;
-        margin: 10px 0px;
-
-        background-color: #444;
-        border-radius: 5px;
-
-        align-items: center;
-        text-align: left;
-        font-weight: bold;
-        z-index: 3;
-    }
-
-    .table-row:hover {
-        background-color: #555;
-    }
-
-    .collapsible-content {
-        position:relative;
-        visibility: hidden;
-        opacity: 0;
-        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s; /* Smooth transition */
-        display: none;
-
-        position: relative;
-        height: 0px;
-        top: -20px;
-        z-index: 0;
-
-        margin: 0px 3px;
-        padding: 10px;
-        padding-top: 15px;
-
-        background-color: #333;
-        border: 1px solid #444;
-        border-radius: 5px;
-        border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
-    }
-
-    .table-row.open + .collapsible-content {
-        display:block;
-        height: fit-content;
-        margin-bottom: -20px;
-        opacity: 1; /* Fully visible */
-        visibility: visible; /* Make it interactable */
-        transform: translateY(0); /* Final position */
-        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0s; /* Transition without delay for showing */
-    }
-
-    .outer {
-        margin-top: 20px;
-    }
-
-    .tab-switch-div {
-        display: flex;                     /* Use flexbox for layout */
-        justify-content: space-between;    /* Distribute tabs with space between them */
-        align-items: center;               /* Vertically center the tabs */
-        position: relative;
-        margin-bottom: -2px;
-        height: 30px;                      /* Min height */
-    }
-
-    .tab-switch {
-        z-index: 0;
-        min-height: 20px;
-        padding: 3px;                 /* Adjust padding */
-        text-align: center;
-        background-color: #292929;
-        color: #ddd;
-        border: 2px solid #414141;
-        border-radius: 7px;
-        font-size: 75%;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .tab-switch:hover {
-        background-color: #444;
-    }
-
-    .tab-switch.active {
-        background-color: #414141;
-    }
-
-    .tab-switch-div .tab-switch {
-        flex: 1;                           /* Make each tab take equal space */
-        margin: 0 5px;                     /* Add spacing between tabs */
-        text-align: center;                /* Ensure text is centered */
-    }
-
-    .tab-switch-div .tab-switch:first-child {
-        margin-left: 15px;                    /* Remove left margin for the first tab */
-    }
-
-    .tab-switch-div .tab-switch:last-child {
-        margin-right: 15px;                   /* Remove right margin for the last tab */
-    }
-</style>
-<script>
-
-    //=====================================================================================================
-    // Execution
-    //=====================================================================================================
-
-    function onWindowLoad() {
-        addTabFunctionality()
-
-        // Update Tabs
-        setInterval(
-            ()=>{
-                let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
-                let current_tab
-                let tab_function
-
-
-                if(getId("damage-tab").style.display != "none") {
-                    current_tab = "damage" ; tab_function = damageTab }
-                else if (getId("features-tab").style.display != "none") {
-                    current_tab = "features" ; tab_function = featuresTab}
-                else if (getId("spells-tab").style.display != "none") {
-                    current_tab = "spells" ; tab_function = spellsTab 
-                }
-
-
-                tab_list = tab_list.filter(item => item != current_tab)
-                for (const tab of tab_list) {
-                    if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
-                }
-
-                tab_function()
-
+                columns = [capitalize(name), capitalize(type), capitalize(subtype), level]
+                description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+    
+                // Image
+                const typeImages = {
+                    "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
+    
+                };
+                image = typeImages[type] || "";
+    
+                return row(id, columns, description, image, tab_id, table_config)
             }
-        , 200)
-    }
+    
+            // If create new button is not present, creates it
+            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
+
+            // Get data from backend
+            toBackend(database_path, (response) => {
+                response = JSON.parse(response)
+                
+                // Filters
+                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
+                filtered_response = Object.keys(filtered_response)
+                // filtered_response = intersection(filtered_response, response.level["1st"])
+    
+                // Sorting
+                filtered_response = sortArrayBy(filtered_response, response.data, sortFeatures);
+                
+    
+                // Reverse Order
+                filtered_response = filtered_response.reverse()
+    
+                // Confirming necessity for update
+                let new_hash = hash(JSON.stringify(filtered_response))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+    
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of filtered_response) { 
+                    feature = response.data[key]
+                    
+                    // Creating row, and adding key to items for later use
+                    items.push(feature.name)
+                    rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
+                }
+    
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+    
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+    
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        }
+    
+        function damageTab() {
+    
+            // Parameters
+            const edit_page = "damage_set.html"
+            const database_path = "database.damage_types"
+            const remove_function = "database.remove_damage_type"
+            const tab_id = "damage"
+    
+            // Components
+            const table_headers = ["Name", "Type"]
+            const table_config = "30px 1fr 1fr 100px"
+            function render_row(name, type, description, image) {
+                id = name
+                columns = [capitalize(name), capitalize(type)]
+                description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+    
+                return row(id, columns, description, image, tab_id, table_config)
+            }
+    
+            // If create new button is not present, creates it
+            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
+    
+            // Get data from backend
+            toBackend(database_path, (response) => { 
+                response = JSON.parse(response)
+    
+                // Filters
+                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
+                filtered_response = Object.keys(filtered_response)
+                // filtered_response = intersection(filtered_response, response.level["1st"])
+    
+                // Sorting
+                filtered_response = sortArrayBy(filtered_response, response.data, sortByType);
+    
+                // Reverse Order
+                //filtered_response = filtered_response.reverse()
+    
+                // Confirming necessity for update
+                let new_hash = hash(JSON.stringify(filtered_response))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+    
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of filtered_response) { 
+                    damage = response.data[key]
+                    
+                    // Creating row, and adding key to items for later use
+                    items.push(damage.name)
+                    rows += render_row(damage.name, damage.type, damage.description, damage.image)
+                }
+    
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+    
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+    
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        }
+    
+        function spellsTab() {
+    
+            // Parameters
+            const edit_page = "spell_set.html"
+            const database_path = "database.spells"
+            const remove_function = "database.remove_spell"
+            const tab_id = "spells"
+    
+            // Components
+            const table_headers = ["Name", "Level", "School", "Duration"]
+            const table_config = "30px 1fr 1fr 1fr 1fr 100px"
+            function render_row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
+                id = name
+    
+                duration = duration == 0 ? "Instantaneous" : timeUnit(duration);
+                cast_time = cast_time/2+" seconds"
+    
+                // Components
+                components_string = ""
+                for (const i in components) {
+                    components_string += components[i]
+                    if (i != components.length-1) {
+                        components_string += ", "
+                    }
+                }
+                components_string = capitalize(components_string)
+    
+                // Classes
+                classes_string = ""
+                for (const i in classes) {
+                    classes_string += capitalize(classes[i])
+                    if (i != classes.length-1) {
+                        classes_string += ", "
+                    }
+                }
+    
+                // Range
+                if (!isNaN(Number(range))) {
+                    range = range + " feet"
+                } else {
+                    range = capitalize(range)
+                }
+    
+                // Higher levels description
+                if (description_higher_levels != "") {
+                description_higher_levels = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>`
+                }
+    
+                columns = [capitalize(name), level, capitalize(school), duration]
+    
+                description = `
+                    <div style="line-height: 1.5;text-align:left;padding-top:10px;">
+                    <b>Classes</b>: `+classes_string+`
+                    <br><b>Components</b>: `+components_string+`
+                    <br><b>Target</b>: `+target+`
+                    <br><b>Range</b>: `+range+`
+                    <br><b>Casting Time</b>: `+cast_time+`
+                    <br><b>Duration</b>: `+duration+`</div>
+                    <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                        >`+description+`</pre>
+                    `+description_higher_levels
+    
+                // Image
+                const schoolImages = {
+                    "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
+                    "divination": "asset://4aad8d5a0358701909aea571612a2485",
+                    "enchantment": "asset://8d2464a3ae0afde2ce0ec69abd65aa2f",
+                    "evocation": "asset://79f5407b61a5d7cf13137910bb0cf3fc",
+                    "illusion": "asset://d0a8db9574e38703b490746c17d91560",
+                    "necromancy": "asset://4e7caf122839630f94575156850cf067",
+                    "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
+                };
+                image = schoolImages[school] || "";
+    
+                return row(id, columns, description, image, tab_id, table_config)
+            }
+    
+            // If create new button is not present, creates it
+            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
+    
+            // Get data from backend
+            toBackend(database_path, (response) => {
+                response = JSON.parse(response)
+    
+                // Filters
+                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
+                filtered_response = Object.keys(filtered_response)
+                // filtered_response = intersection(filtered_response, response.level["1st"])
+    
+                // Sorting
+                filtered_response = sortArrayBy(filtered_response, response.data, sortBySpellLevel);
+    
+                // Reverse Order
+                //filtered_response = filtered_response.reverse()
+    
+                // Confirming necessity for update
+                let new_hash = hash(JSON.stringify(filtered_response))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+    
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of filtered_response) { 
+                    spell = response.data[key]
+                    
+                    // Creating row, and adding key to items for later use
+                    items.push(spell.name)
+                    rows += render_row(
+                        spell.name, 
+                        spell.level, 
+                        spell.school, 
+                        spell.cast_time, 
+                        spell.range, 
+                        spell.target,
+                        spell.components,
+                        spell.duration,
+                        spell.classes,
+                        spell.description, 
+                        spell.description_higher_levels)
+                }
+    
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+    
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+    
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        }
+    
+    
+    
+        //=====================================================================================================
+        // Components
+        //=====================================================================================================
+    
+        function row(
+            id,
+            columns = ["Name", "Type"], 
+            description=`<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"></pre>`, 
+            image="", 
+            tab_id="", 
+            config="1fr 1fr"
+        ){
+    
+            let div_columns = ""
+            for (const value of columns) {
+                div_columns += `<div>`+value+`</div>`
+            }
+    
+            return `
+            <div class="table-row" style="grid-template-columns: `+config+`;">
+                <div><img src=`+image+`-24 style="opacity:1"></div>
+                `+div_columns+`
+                <div class="action-buttons">
+                    <img id="`+tab_id+`-edit-`+id+`" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
+                    <img id="`+tab_id+`-remove-`+id+`" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                </div>
+            </div>
+            <div class="collapsible-content">
+                `+description+`
+                
+            </div>
+            `
+        }
+    
+        function table(
+            headers = ["Name", "Type"],
+            rows=row(),
+            hash="",
+            tab_id="",
+            config="30px 1fr 1fr 100px"
+        ){
+    
+            let div_headers = ""
+            for (const value of headers) {
+                div_headers += `<div>`+value+`</div>`
+            }
+    
+            return `
+            <div class="table-container" id="`+tab_id+`-table" hash="`+hash+`">
+                <div class="table-header" style="grid-template-columns: `+config+`;">
+                    <div></div>
+                    `+div_headers+`
+                    <div style="text-align:right;">Actions</div>
+                </div>
+    
+                `+rows+`
+    
+            </div>
+            `
+        }
+    
+        function button_create_new(tab_id) {
+            return `
+            <button id="`+tab_id+`-create-new" style="
+                position: sticky;
+                bottom:0px;
+                z-index: 20;
+                background-color: #292929;
+                color: #ddd;
+                border: 2px solid #ddd;
+                font-size:100%;
+                transform: translate(42vw);
+    
+            ">
+                Create New
+            </button>
+            `
+        }
+    
 
 
-    //=====================================================================================================
-    // Helper functions
-    //=====================================================================================================
-
-    function hash(string) {
-        
-        let hash = 0;
-
-        if (string.length == 0) return hash;
-
-        for (i = 0; i < string.length; i++) {
-            char = string.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+        //=====================================================================================================
+        // Sorting functions
+        //=====================================================================================================
+    
+        function sortArrayBy(array, dataObject, comparisonFn) { 
+            return array.sort((a, b) => comparisonFn(dataObject[a], dataObject[b]));
         }
 
-        return hash;
-    }
+        function getSpellLevelValue(level) {
+            if (level === "cantrip") return 0; // Cantrips are the lowest
+            const levelMap = { "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6, "7th": 7, "8th": 8, "9th": 9 }; // Extend as needed
+            return levelMap[level] || Number.MAX_SAFE_INTEGER; // Fallback for undefined levels
+        }
 
-    function addTabFunctionality() {
-        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+        const sortByName = (a, b) => a.name.localeCompare(b.name);
+        const sortBySchool = (a, b) => a.school.localeCompare(b.school);
+        const sortByType = (a, b) => a.type.localeCompare(b.type);
+        const sortByDuration = (a, b) => a.duration - b.duration;
+        const sortByLevel = (a, b) => a.level - b.level;
 
-        tab_list.forEach((tab_name) => {
-            getId(tab_name+"-switch").addEventListener("click", () => {
-                tab_list.forEach((value) => {
-                    let button = getId(value+"-switch")
-                    let div = getId(value+"-tab")
-                    if (tab_name == value) {
-                        button.setAttribute("class", "tab-switch active")
-                        div.setAttribute("style", "")
-                    } else {
-                        button.setAttribute("class", "tab-switch")
-                        div.setAttribute("style", "display:none")
-                    }
+        const sortBySpellLevel = (a, b) => getSpellLevelValue(a.level) - getSpellLevelValue(b.level);
+        const sortFeatures = (a, b) => {
+            const typeComparison = a.type.localeCompare(b.type);
+            if (typeComparison !== 0) return typeComparison; // Compare types first
+
+            const subtypeA = a.subtype || ""; // Treat undefined subtype as an empty string
+            const subtypeB = b.subtype || ""; // Treat undefined subtype as an empty string
+            const subtypeComparison = subtypeA.localeCompare(subtypeB);
+            if (subtypeComparison !== 0) return subtypeComparison; // If types are the same, compare subtypes
+
+            return getSpellLevelValue(a.level) - getSpellLevelValue(b.level); // If both type and subtype are the same, compare level
+        };
+
+
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+    
+        function intersection(arr1, arr2) {
+            const set2 = new Set(arr2);
+            return arr1.filter(value => set2.has(value));
+        }
+    
+        function runCurrentTab() {
+            let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+            let current_tab
+            let tab_function
+    
+    
+            if(getId("damage-tab").style.display != "none") {
+                current_tab = "damage" ; tab_function = damageTab }
+            else if (getId("features-tab").style.display != "none") {
+                current_tab = "features" ; tab_function = featuresTab}
+            else if (getId("spells-tab").style.display != "none") {
+                current_tab = "spells" ; tab_function = spellsTab 
+            }
+    
+    
+            tab_list = tab_list.filter(item => item != current_tab)
+            for (const tab of tab_list) {
+                if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
+            }
+    
+            tab_function()
+        }
+        
+        function timeUnit(time) {
+            const units = [
+                { threshold: 14400, unit: "Day" },
+                { threshold: 600, unit: "Hour" },
+                { threshold: 10, unit: "Minute" },
+                { threshold: 1, unit: "Round" }
+            ];
+    
+            for (const { threshold, unit } of units) {
+                if (time > threshold) {
+                    const value = Math.round(time / threshold);
+                    return value + " " + unit + (value > 1 ? "s" : "");
+                }
+            }
+    
+            return "1 Round"; // Default case if time is <= 1
+        }
+    
+        function hash(string) {
+            
+            let hash = 0;
+    
+            if (string.length == 0) return hash;
+    
+            for (i = 0; i < string.length; i++) {
+                char = string.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+    
+            return hash;
+        }
+    
+        function addTabFunctionality() {
+            let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+    
+            tab_list.forEach((tab_name) => {
+                getId(tab_name+"-switch").addEventListener("click", () => {
+                    tab_list.forEach((value) => {
+                        let button = getId(value+"-switch")
+                        let div = getId(value+"-tab")
+                        if (tab_name == value) {
+                            button.setAttribute("class", "tab-switch active")
+                            div.setAttribute("style", "")
+                        } else {
+                            button.setAttribute("class", "tab-switch")
+                            div.setAttribute("style", "display:none")
+                        }
+                    })
                 })
             })
-        })
-        
-    }
-
-    function updateColapsible() {
-        document.querySelectorAll(".table-row").forEach(row => {
-            row.addEventListener("click", () => {
-                const isOpen = row.classList.contains("open");
-                document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
-
-                if (!isOpen) {
-                    row.classList.add("open");
-                }
+            
+        }
+    
+        function updateColapsible() {
+            document.querySelectorAll(".table-row").forEach(row => {
+                row.addEventListener("click", () => {
+                    const isOpen = row.classList.contains("open");
+                    document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
+    
+                    if (!isOpen) {
+                        row.classList.add("open");
+                    }
+                });
             });
+    
+            document.querySelectorAll(".action-buttons img").forEach(button => {
+                button.addEventListener("click", event => {
+                    event.stopPropagation(); // Prevent triggering row click
+                });
         });
-
-        document.querySelectorAll(".action-buttons img").forEach(button => {
-            button.addEventListener("click", event => {
-                event.stopPropagation(); // Prevent triggering row click
-            });
-    });
-    }
-
-    function filterObjectByString(obj, searchString) {
-        const lowerCaseSearch = searchString.toLowerCase();
-
-        function filter(obj) {
-            return Object.fromEntries(
-                Object.entries(obj).filter(([key, value]) => {
-                    const keyMatches = key.toLowerCase().includes(lowerCaseSearch);
-                    const valueMatches =
-                        typeof value === "string" &&
-                        value.toLowerCase().includes(lowerCaseSearch);
-
-                    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-                        const nestedResult = filter(value); // Recursively filter nested objects
-                        return keyMatches || Object.keys(nestedResult).length > 0;
-                    }
-
-                    return keyMatches || valueMatches;
-                }).map(([key, value]) => {
-                    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-                        return [key, filter(value)]; // Recursively filter nested objects
-                    }
-                    return [key, value];
-                })
-            );
         }
-
-        return filter(obj);
-    }
-
-    //=====================================================================================================
-    // Sync management
-    //=====================================================================================================
-
-    function damageTab() {
-
-        function row(name, type, description, image) {
-
-            return `
-            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 100px;">
-                <div><img src=`+image+`-24 style="opacity:1"></div>
-                <div>`+capitalize(name)+`</div>
-                <div>`+capitalize(type)+`</div>
-                <div class="action-buttons">
-                    <img id="`+name+`-edit-damage" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+name+`-remove-damage" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
-                </div>
-            </div>
-            <div class="collapsible-content">
-                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>
-            </div>
-        `
-        }
-
-        function table(rows, hash) {
-            return `
-            <div class="table-container" id="damage-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 100px;">
-                    <div></div>
-                    <div>Name</div>
-                    <div>Type</div>
-                    <div style="text-align:right;">Actions</div>
-                </div>
-
-                `+rows+`
-
-            </div>
-            `
-        }
-
-        function button_add_new() {
-            return `
-            <button id="new-damage-type" style="
-                position: sticky;
-                bottom:0px;
-                z-index: 20;
-                background-color: #292929;
-                color: #ddd;
-                border: 2px solid #ddd;
-                font-size:100%;
-                transform: translate(42vw);
-
-            ">
-                Create New
-            </button>
-            `
-        }
-
-        let rows = "" // Stores HTML for all of the rows
-        let items = [] // Stores the name of each value added to the table
-
-        // Get data from backend
-        toBackend("database.damage_types", (response) => { response = JSON.parse(response)
-            
-            let filtered_response = response.data
-            
-            filtered_response = filterObjectByString(filtered_response, getId("damage-search-bar").value)
-
-            // Verifies if new JSON is equal to current iteration of table
-            let new_hash = hash(JSON.stringify(filtered_response))
-            let previous_hash = getId("damage-table") != undefined ? getId("damage-table").getAttribute("hash") : undefined;
-            if (new_hash == previous_hash) { return }
-
-            for (const key in filtered_response) {
-                damage = response.data[key]
-                
-                items.push(damage.name) // Add to list of items
-                rows += row(damage.name, damage.type, damage.description, damage.image) // Create new row
-
+    
+        function filterObjectByString(obj, searchString) {
+            const lowerCaseSearch = searchString.toLowerCase();
+    
+            function filter(obj) {
+                return Object.fromEntries(
+                    Object.entries(obj).filter(([key, value]) => {
+                        const keyMatches = key.toLowerCase().includes(lowerCaseSearch);
+                        const valueMatches =
+                            typeof value === "string" &&
+                            value.toLowerCase().includes(lowerCaseSearch);
+    
+                        if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+                            const nestedResult = filter(value); // Recursively filter nested objects
+                            return keyMatches || Object.keys(nestedResult).length > 0;
+                        }
+    
+                        return keyMatches || valueMatches;
+                    }).map(([key, value]) => {
+                        if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+                            return [key, filter(value)]; // Recursively filter nested objects
+                        }
+                        return [key, value];
+                    })
+                );
             }
-
-            getId("damage-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
-            getId("new-damage-type").addEventListener("click", ()=>{ openPage("damage_set.html","") })
-
-            for (const value of items) {
-
-                // Edit buttons behavior
-                getId(value+"-edit-damage").addEventListener("click", ()=>{
-                    openPage("damage_set.html", value)
-                })
-
-                // Remove buttons behavior
-                getId(value+"-remove-damage").addEventListener("click", ()=>{
-                    toBackend(`database.remove_damage_type("`+value+`")`)
-                })
-            }
-            updateColapsible()
-        })
-    }
-
-    function featuresTab() {
-
-        function row(name, type, subtype, level, description) {
-            image = ""
-
-            return `
-            <div class="table-row" style="grid-template-columns: 30px 1fr 50px 1fr 50px 100px;">
-                <div><img src=`+image+`-24 style="opacity:1"></div>
-                <div>`+capitalize(name)+`</div>
-                <div>`+capitalize(type)+`</div>
-                <div>`+capitalize(subtype)+`</div>
-                <div style="text-align: center">`+level+`</div>
-                <div class="action-buttons">
-                    <img id="`+name+`-edit-feature" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+name+`-remove-feature" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
-                </div>
-            </div>
-            <div class="collapsible-content">
-                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>
-            </div>
-        `
+    
+            return filter(obj);
         }
-
-        function table(rows, hash) {
-            return `
-            <div class="table-container" id="features-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: 30px 1fr 50px 1fr 50px 100px;">
-                    <div></div>
-                    <div>Name</div>
-                    <div>Type</div>
-                    <div></div>
-                    <div style="text-align: center">Level</div>
-                    <div style="text-align:right;">Actions</div>
-                </div>
-
-                `+rows+`
-
-            </div>
-            `
-        }
-
-        function button_add_new() {
-            return `
-            <button id="new-feature" style="
-                position: sticky;
-                bottom:0px;
-                z-index: 20;
-                background-color: #292929;
-                color: #ddd;
-                border: 2px solid #ddd;
-                font-size:100%;
-                transform: translate(42vw);
-            ">
-                Create New
-            </button>
-            `
-        }
-
-        let rows = "" // Stores HTML for all of the rows
-        let items = [] // Stores the name of each value added to the table
-
-        // Get data from backend
-        toBackend("database.features", (response) => { response = JSON.parse(response)
-            
-            let filtered_response = response.data
-            
-            filtered_response = filterObjectByString(filtered_response, getId("features-search-bar").value)
-
-
-            // Verifies if new JSON is equal to current iteration of table
-            let new_hash = hash(JSON.stringify(filtered_response))
-            let previous_hash = getId("features-table") != undefined ? getId("features-table").getAttribute("hash") : undefined;
-            if (new_hash == previous_hash) { return }
-
-            for (const key in filtered_response) {
-                let feature = response.data[key]
-                
-                items.push(feature.name) // Add to list of items
-                rows += row(feature.name, feature.type, feature.subtype, feature.level, feature.description) // Create new row
-
-            }
-
-            getId("features-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
-            getId("new-feature").addEventListener("click", ()=>{ openPage("feature_set.html","") })
-
-            for (const value of items) {
-
-                // Edit buttons behavior
-                getId(value+"-edit-feature").addEventListener("click", ()=>{
-                    openPage("feature_set.html", value)
-                })
-
-                // Remove buttons behavior
-                getId(value+"-remove-feature").addEventListener("click", ()=>{
-                    toBackend(`database.remove_feature("`+value+`")`)
-                })
-            }
-            updateColapsible()
-        })
-    }
-
-    function spellsTab() {
-
-        function row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
-            image = ""
-
-            // Components
-            components_string = ""
-            for (const i in components) {
-                components_string += components[i]
-                if (i != components.length-1) {
-                    components_string += ", "
-                }
-            }
-            components_string = capitalize(components_string)
-
-            // Classes
-            classes_string = ""
-            for (const i in classes) {
-                classes_string += capitalize(classes[i])
-                if (i != classes.length-1) {
-                    classes_string += ", "
-                }
-            }
-
-            // Duration
-            duration = duration == 0 ? "Instantaneous" : duration;
-
-            // Range
-            try {
-                range = Number(range) + " feet"
-            } catch {}
-
-            // Casting Time
-            cast_time = cast_time/2+" seconds"
-
-            return `
-            <div class="table-row" style="grid-template-columns: 30px 1fr 1fr 1fr 1fr 100px;">
-                <div><img src=`+image+`-24 style="opacity:1"></div>
-                <div>`+capitalize(name)+`</div>
-                <div>`+level+` Level</div>
-                <div>`+capitalize(school)+`</div>
-                <div>`+duration+`</div>
-                <div class="action-buttons">
-                    <img id="`+name+`-edit-spell" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img id="`+name+`-remove-spell" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
-                </div>
-            </div>
-            <div class="collapsible-content" style="text-align:left">
-                <span style="line-height: 1.5;">
-                <b>Classes</b>: `+classes_string+`
-                <br><b>Components</b>: `+components_string+`
-                <br><b>Target</b>: `+target+`
-                <br><b>Range</b>: `+range+`
-                <br><b>Casting Time</b>: `+cast_time+`
-                <br><b>Duration</b>: `+duration+`</span>
-                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
-                    >`+description+`</pre>
-                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
-                    ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>
-            </div>
-        `
-        }
-
-        function table(rows, hash) {
-            return `
-            <div class="table-container" id="spells-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: 30px 1fr 1fr 1fr 1fr 100px;">
-                    <div></div>
-                    <div>Name</div>
-                    <div>Level</div>
-                    <div>School</div>
-                    <div>Duration</div>
-                    <div style="text-align:right;">Actions</div>
-                </div>
-
-                `+rows+`
-
-            </div>
-            `
-        }
-
-        function button_add_new() {
-            return `
-            <button id="new-spell" style="
-                position: sticky;
-                bottom:0px;
-                z-index: 20;
-                background-color: #292929;
-                color: #ddd;
-                border: 2px solid #ddd;
-                font-size:100%;
-                transform: translate(42vw);
-            ">
-                Create New
-            </button>
-            `
-        }
-
-        let rows = "" // Stores HTML for all of the rows
-        let items = [] // Stores the name of each value added to the table
-
-        // Get data from backend
-        toBackend("database.spells", (response) => { response = JSON.parse(response)
-            
-            let filtered_response = response.data
-            
-            filtered_response = filterObjectByString(filtered_response, getId("spells-search-bar").value)
-
-
-            // Verifies if new JSON is equal to current iteration of table
-            let new_hash = hash(JSON.stringify(filtered_response))
-            let previous_hash = getId("spells-table") != undefined ? getId("spells-table").getAttribute("hash") : undefined;
-            if (new_hash == previous_hash) { return }
-
-            for (const key in filtered_response) {
-                let spell = response.data[key]
-                
-                items.push(spell.name) // Add to list of items
-                rows += row(
-                    spell.name, 
-                    spell.level, 
-                    spell.school, 
-                    spell.cast_time, 
-                    spell.range, 
-                    spell.target,
-                    spell.components,
-                    spell.duration,
-                    spell.classes,
-                    spell.description, 
-                    spell.description_higher_levels) // Create new row
-
-            }
-
-            getId("spells-tab-content").innerHTML = table(rows, new_hash) + button_add_new() // Create whole tab
-            getId("new-spell").addEventListener("click", ()=>{ openPage("spell_set.html","") })
-
-            for (const value of items) {
-
-                // Edit buttons behavior
-                getId(value+"-edit-spell").addEventListener("click", ()=>{
-                    openPage("spell_set.html", value)
-                })
-
-                // Remove buttons behavior
-                getId(value+"-remove-spell").addEventListener("click", ()=>{
-                    toBackend(`database.remove_spell("`+value+`")`)
-                })
-            }
-            updateColapsible()
-        })
-        }
-
-    //=====================================================================================================
-
-    document.addEventListener("DOMContentLoaded", onWindowLoad)
-</script>
-']
-</head>
-
-<body>
-
-    <div class="tab-switch-div">
-        <button class="tab-switch" id="classes-switch">Classes</button>
-        <button class="tab-switch" id="races-switch">Races</button>
-        <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
-        <button class="tab-switch" id="conditions-switch">Conditions</button>
-        <button class="tab-switch" id="features-switch">Features</button>
-        <button class="tab-switch" id="items-switch">Items</button>
-        <button class="tab-switch active" id="damage-switch">Damage</button>
-        <button class="tab-switch" id="resources-switch">Resources</button>
-        <button class="tab-switch" id="spells-switch">Spells</button>
-    </div>
-
-    <div class="outer" id="classes-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="races-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="proficiencies-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="conditions-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="features-tab" style="display:none">
-        <input id="features-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-        <div id="features-tab-content">
+    
+        //=====================================================================================================
+    
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+    </script>
+    ']
+    </head>
+    
+    <body>
+    
+        <div class="tab-switch-div">
+            <button class="tab-switch" id="classes-switch">Classes</button>
+            <button class="tab-switch" id="races-switch">Races</button>
+            <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
+            <button class="tab-switch" id="conditions-switch">Conditions</button>
+            <button class="tab-switch" id="features-switch">Features</button>
+            <button class="tab-switch" id="items-switch">Items</button>
+            <button class="tab-switch active" id="damage-switch">Damage</button>
+            <button class="tab-switch" id="resources-switch">Resources</button>
+            <button class="tab-switch" id="spells-switch">Spells</button>
         </div>
-    </div>
-
-    <div class="outer" id="items-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="damage-tab">
-        <input id="damage-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-        <div id="damage-tab-content">
+    
+        <div class="outer" id="classes-tab" style="display:none">
         </div>
-    </div>
-
-    <div class="outer" id="resources-tab" style="display:none">
-    </div>
-
-    <div class="outer" id="spells-tab" style="display:none">
-        <input id="spells-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-        <div id="spells-tab-content">
+    
+        <div class="outer" id="races-tab" style="display:none">
         </div>
-    </div>
-
-</body>
-
-}]
+    
+        <div class="outer" id="proficiencies-tab" style="display:none">
+        </div>
+    
+        <div class="outer" id="conditions-tab" style="display:none">
+        </div>
+    
+        <div class="outer" id="features-tab" style="display:none">
+            <input id="features-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+            <div id="features-tab-content">
+            </div>
+        </div>
+    
+        <div class="outer" id="items-tab" style="display:none">
+        </div>
+    
+        <div class="outer" id="damage-tab">
+            <input id="damage-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+            <div id="damage-tab-content">
+            </div>
+        </div>
+    
+        <div class="outer" id="resources-tab" style="display:none">
+        </div>
+    
+        <div class="outer" id="spells-tab" style="display:none">
+            <input id="spells-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+            <div id="spells-tab-content">
+            </div>
+        </div>
+    
+    </body>
+    
+    }]
