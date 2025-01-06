@@ -15,16 +15,16 @@
         }
 
         .checkbox-grid {
-        display: grid;             /* Enable grid layout */
-        grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-        gap: 0px;                 /* Add space between items */
-        width: 100%;
-        margin: 10px 0px
+            display: grid; /* Enable grid layout */
+            grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+            gap: 0px; /* Add space between items */
+            width: 100%;
+            margin: 10px 0px;
         }
 
         .checkbox-text {
         font-size: 90%;
-        width: 40px;
+        min-width: 40px;
         padding-bottom: 3px;
         margin-right: 8px;
         }
@@ -72,23 +72,52 @@
         }
 
         function loadPage() {
-            getId("information").innerHTML += 
+            getId("content").innerHTML += 
 
-                input("name", "Name") +
+                container("Basic",
+                    input("name", "Name") +
 
-                select("level", "Level", [
-                    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
+                    select("level", "Level", [
+                        "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
 
-                select("school", "School of Magic", [
-                    "abjuration","conjuration","divination","enchantment",
-                    "evocation","illusion","necromancy","transmutation"]) +
+                    select("school", "School of Magic", [
+                        "abjuration","conjuration","divination","enchantment",
+                        "evocation","illusion","necromancy","transmutation"])
+                ) +
                 
-                title("Classes") +
+                container("Classes",
+                    checkbox_grid([
+                        ["bard", "Bard"], ["druid", "Druid"], ["cleric", "Cleric"],
+                        ["sorcerer", "Sorcerer"], ["warlock", "Warlock"], ["wizard", "Wizard"],
+                    ])
+                ) +
 
-                checkbox_grid([
-                    ["Bard", "bard"], ["Druid", "druid"], ["Cleric", "cleric"],
-                    ["Sorcerer", "sorcerer"], ["Warlock", "warlock"], ["Wizard", "wizard"],
-                ])
+                container("Casting",
+                    select("cast_time", "Cast Time", [
+                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]) +
+
+                    select("range", "Range Type", [
+                        "self", "touch", "sight", "unlimited", "special", "distance"]) +
+
+                    input("range-distance", "Range in Feet") +
+
+                    input("target", "Target") +
+
+                    input("duration", "Duration in Rounds")
+                ) +
+
+                container("Components",
+                    checkbox_grid([
+                        ["vocal", "Vocal"], ["somatic", "Somatic"], 
+                        ["material", "Material"], ["concentration", "Concentration"]
+                    ], "2", "80")
+                ) +
+
+                container("Information",
+                    text_area("description", "Description", "10") +
+
+                    text_area("description-higher-levels", "Description for Upcasting", "5")
+                )
         }
 
 
@@ -195,26 +224,51 @@
             `
         }
 
-        function checkbox(id = "", title = "") {
+        function checkbox(id = "", title = "", min_width = "40") {
+            if (id == "" && title == "") {
+                style = `style="display:none"`
+            } else {style = ""}
+
             return `
             <div class="checkbox-container">
-                <span class="checkbox-text">`+title+`</span>
-                <div class="checkbox" data-checked="`+"false"+`"></div>
+                <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
+                <div class="checkbox" `+style+` data-checked="`+"false"+`"></div>
             </div>
             `
         }
 
-        function checkbox_grid(checkboxes = [["","Title"]]) {
+        function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
             let checkboxes_string = ""
             for (const box of checkboxes) {
                 console.log(box)
-                checkboxes_string += checkbox(box[1], box[0])
+                checkboxes_string += checkbox(box[0], box[1], min_width)
             }
 
             return `
-            <div class="checkbox-grid">
+            <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
                 `+checkboxes_string+`
             </div>
+            `
+        }
+
+        function text_area(id = "", title = "", size = "7") {
+            return `
+            <h4>`+title+`</h4>
+            <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
+            `
+        }
+
+        function container(title="", children="") {
+
+            return `
+            <div class="spacer"></div>
+            <div class="container center-horizontal" style="padding-bottom:0px;">
+                <h3 class="container-title">`+title+`</h3>
+                <div class="spacer" ></div>
+                `+children+`
+                <div class="spacer"></div>
+            </div>
+            <div class="spacer"></div>
             `
         }
 
@@ -232,14 +286,7 @@
     <body>
         <div class="outer">
 
-            <div class="spacer"></div>
-
-            <div id="information" class="container center-horizontal" style="padding-bottom:0px;">
-                <h3 class="container-title">Information</h3>
-
-                <div class="spacer" ></div>
-
-            </div>
+            <div id="content"></div>
 
             <button id="cancel">Cancel</button>
             <button id="submit">Accept</button>
