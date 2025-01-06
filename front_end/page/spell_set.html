@@ -80,8 +80,8 @@
                     "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
 
                 select("school", "School of Magic", [
-                    "Abjuration","Conjuration","Divination","Enchantment",
-                    "Evocation","Illusion","Necromancy","Transmutation"]) +
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"]) +
                 
                 title("Classes") +
 
@@ -179,7 +179,7 @@
         function select(id = "", title = "", options = []) {
             options_string = ""
             for (const value of options) {
-                options_string += `<option>`+value+`</option>`
+                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
             }
             return `
             <h4>`+title+`</h4>
@@ -238,8 +238,6 @@
                 <h3 class="container-title">Information</h3>
 
                 <div class="spacer" ></div>
-
-
 
             </div>
 

@@ -161,6 +161,11 @@
         .tab-switch-div .tab-switch:last-child {
             margin-right: 15px;                   /* Remove right margin for the last tab */
         }
+
+        select:invalid {
+            color: rgb(173, 173, 173);
+        }
+
     </style>
     <script>
     
@@ -175,7 +180,21 @@
     
         }
     
-    
+        const classesDND = [
+            "Barbarian", "Path of the Berserker", "Path of the Totem Warrior",
+            "Bard", "College of Lore", "College of Valor",
+            "Cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
+            "Druid", "Circle of the Land", "Circle of the Moon",
+            "Fighter", "Champion", "Battle Master", "Eldritch Knight",
+            "Monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
+            "Paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
+            "Ranger", "Hunter", "Beast Master",
+            "Rogue", "Thief", "Assassin", "Arcane Trickster",
+            "Sorcerer", "Draconic Bloodline", "Wild Magic",
+            "Warlock", "The Archfey", "The Fiend", "The Great Old One",
+            "Wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
+        ]
+        const oneThrough20 = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
     
         //=====================================================================================================
         // Tabs
@@ -185,13 +204,14 @@
     
             // Parameters
             const edit_page = "feature_set.html"
-            const database_path = "database.features"
+            const database_data = "database.features.data"
+            const database_get_list = "database.get_features_list"
             const remove_function = "database.remove_feature"
             const tab_id = "features"
     
             // Components
             const table_headers = ["Name", "Type", "", "Level"]
-            const table_config = "0px 1fr 50px 1fr 50px 100px"
+            const table_config = "30px 1fr 50px 1fr 50px 100px"
             function render_row(name, type, subtype, level, description, image) {
                 id = name
                 if (!subtype) {subtype = ""}
@@ -201,62 +221,72 @@
                 description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
     
                 // Image
-                const typeImages = {
-                    "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
-                    "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
-    
+                const subtypeImages = {
+                    "sorcerer":"asset://610c5852df8ef040a3c1ba678fbd2e3d",
                 };
-                image = typeImages[type] || "";
+                const typeImages = {
+                    "racial": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "feat": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "class": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                };
+                image = subtypeImages[subtype] || typeImages[type] || "";
     
                 return row(id, columns, description, image, tab_id, table_config)
             }
     
-            // If create new button is not present, creates it
-            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
+            // Creates div base content
+            if(!getId(tab_id + "-search-bar")){
+
+                getId(tab_id + "-tab").innerHTML += 
+                    search_bar(tab_id) +
+                    select(tab_id + "-type", "Type", ["racial", "feat", "class"]) +
+                    select(tab_id + "-subtype", "Subtype", classesDND) +
+                    select(tab_id + "-level", "Level", oneThrough20) +
+                    div(tab_id + "-tab-content") +
+                    button_create_new(tab_id)
+
+                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+            }
 
             // Get data from backend
-            toBackend(database_path, (response) => {
-                response = JSON.parse(response)
-                
-                // Filters
-                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
-                filtered_response = Object.keys(filtered_response)
-                // filtered_response = intersection(filtered_response, response.level["1st"])
-    
-                // Sorting
-                filtered_response = sortArrayBy(filtered_response, response.data, sortFeatures);
-                
-    
-                // Reverse Order
-                filtered_response = filtered_response.reverse()
-    
-                // Confirming necessity for update
-                let new_hash = hash(JSON.stringify(filtered_response))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
-    
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of filtered_response) { 
-                    feature = response.data[key]
+            const search = getId(tab_id + "-search-bar").value
+            const type = getId(tab_id + "-type").value
+            const subtype = getId(tab_id + "-subtype").value
+            const level = getId(tab_id + "-level").value
+            toBackend(database_get_list+`({"type":"`+type+`", "subtype":"`+subtype+`", "level":"`+level+`"}, "", "`+search+`")`, (list) => {
+                list = JSON.parse(list)
+
+                toBackend(database_data, (data) => {
+                    data = JSON.parse(data)
+
+                    // Hashing
+                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                    if (new_hash == previous_hash) { return }
+
+                    // Row creation
+                    let rows = "" // Stores HTML for all of the rows
+                    let items = [] // Stores the name of each value added to the table
+                    for (const key of list) {
+                        feature = data[key]
                     
-                    // Creating row, and adding key to items for later use
-                    items.push(feature.name)
-                    rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
-                }
-    
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-    
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-    
-                // Updates collapsible behavior for table
-                updateColapsible()
+                        // Creating row, and adding key to items for later use
+                        items.push(feature.name)
+                        rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
+                    }
+
+                    // Creating table in tab
+                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+        
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                    }
+
+                    // Updates collapsible behavior for table
+                    updateColapsible()
+                })
             })
         }
     
@@ -264,7 +294,8 @@
     
             // Parameters
             const edit_page = "damage_set.html"
-            const database_path = "database.damage_types"
+            const database_data = "database.damage_types.data"
+            const database_get_list = "database.get_damage_type_list"
             const remove_function = "database.remove_damage_type"
             const tab_id = "damage"
     
@@ -279,51 +310,55 @@
                 return row(id, columns, description, image, tab_id, table_config)
             }
     
-            // If create new button is not present, creates it
-            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
-    
+            // Creates div base content
+            if(!getId(tab_id + "-search-bar")){
+
+                getId(tab_id + "-tab").innerHTML += 
+                    search_bar(tab_id) +
+                    select(tab_id + "-type", "Type", ["elemental", "physical", "special"]) +
+                    div(tab_id + "-tab-content") + 
+                    button_create_new(tab_id)
+
+                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+            }
+
             // Get data from backend
-            toBackend(database_path, (response) => { 
-                response = JSON.parse(response)
-    
-                // Filters
-                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
-                filtered_response = Object.keys(filtered_response)
-                // filtered_response = intersection(filtered_response, response.level["1st"])
-    
-                // Sorting
-                filtered_response = sortArrayBy(filtered_response, response.data, sortByType);
-    
-                // Reverse Order
-                //filtered_response = filtered_response.reverse()
-    
-                // Confirming necessity for update
-                let new_hash = hash(JSON.stringify(filtered_response))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
-    
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of filtered_response) { 
-                    damage = response.data[key]
-                    
-                    // Creating row, and adding key to items for later use
-                    items.push(damage.name)
-                    rows += render_row(damage.name, damage.type, damage.description, damage.image)
-                }
-    
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-    
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-    
-                // Updates collapsible behavior for table
-                updateColapsible()
+            const search = getId(tab_id + "-search-bar").value
+            const type = getId(tab_id + "-type").value
+            toBackend(database_get_list+`({"type":"`+type+`"}, "level", "`+search+`")`, (list) => {
+                list = JSON.parse(list)
+
+                toBackend(database_data, (data) => {
+                    data = JSON.parse(data)
+
+                    // Hashing
+                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                    if (new_hash == previous_hash) { return }
+
+                    // Row creation
+                    let rows = "" // Stores HTML for all of the rows
+                    let items = [] // Stores the name of each value added to the table
+                    for (const key of list) { 
+                        damage = data[key]
+                        
+                        // Creating row, and adding key to items for later use
+                        items.push(damage.name)
+                        rows += render_row(damage.name, damage.type, damage.description, damage.image)
+                    }
+
+                    // Creating table in tab
+                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+        
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                    }
+
+                    // Updates collapsible behavior for table
+                    updateColapsible()
+                })
             })
         }
     
@@ -331,7 +366,8 @@
     
             // Parameters
             const edit_page = "spell_set.html"
-            const database_path = "database.spells"
+            const database_data = "database.spells.data"
+            const database_get_list = "database.get_spells_list"
             const remove_function = "database.remove_spell"
             const tab_id = "spells"
     
@@ -406,62 +442,73 @@
                 return row(id, columns, description, image, tab_id, table_config)
             }
     
-            // If create new button is not present, creates it
-            if(!getId(tab_id + "-create-new")){ getId(tab_id + "-tab").innerHTML += button_create_new(tab_id) ; getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) }
-    
-            // Get data from backend
-            toBackend(database_path, (response) => {
-                response = JSON.parse(response)
-    
-                // Filters
-                let filtered_response = response.data ; filtered_response = filterObjectByString(filtered_response, getId(tab_id + "-search-bar").value) // Search bar filter
-                filtered_response = Object.keys(filtered_response)
-                // filtered_response = intersection(filtered_response, response.level["1st"])
-    
-                // Sorting
-                filtered_response = sortArrayBy(filtered_response, response.data, sortBySpellLevel);
-    
-                // Reverse Order
-                //filtered_response = filtered_response.reverse()
-    
-                // Confirming necessity for update
-                let new_hash = hash(JSON.stringify(filtered_response))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
-    
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of filtered_response) { 
-                    spell = response.data[key]
+            // Creates div base content
+            if(!getId(tab_id + "-search-bar")){
+
+                getId(tab_id + "-tab").innerHTML += 
+
+                    search_bar(tab_id) +
+
+                    select(tab_id + "-level", "Level", [
+                    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
+
+                    select(tab_id + "-school", "School", [
+                        "abjuration","conjuration","divination","enchantment",
+                        "evocation","illusion","necromancy","transmutation"]) +
+
+                    select(tab_id + "-player_class", "Class", [
+                        "bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]) +
+
+                    div(tab_id + "-tab-content") + 
                     
-                    // Creating row, and adding key to items for later use
-                    items.push(spell.name)
-                    rows += render_row(
-                        spell.name, 
-                        spell.level, 
-                        spell.school, 
-                        spell.cast_time, 
-                        spell.range, 
-                        spell.target,
-                        spell.components,
-                        spell.duration,
-                        spell.classes,
-                        spell.description, 
-                        spell.description_higher_levels)
-                }
-    
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-    
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-    
-                // Updates collapsible behavior for table
-                updateColapsible()
+                    button_create_new(tab_id)
+
+                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+            }
+
+            // Get data from backend
+            const search = getId(tab_id + "-search-bar").value
+            const level = getId(tab_id + "-level").value
+            const school = getId(tab_id + "-school").value
+            const player_class = getId(tab_id + "-player_class").value
+            toBackend(database_get_list+`({"school":"`+school+`", "level":"`+level+`", "player_class":"`+player_class+`"}, "level", "`+search+`")`, (list) => {
+                list = JSON.parse(list)
+
+                toBackend(database_data, (data) => {
+                    data = JSON.parse(data)
+
+                    // Hashing
+                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                    if (new_hash == previous_hash) { return }
+
+                    // Row creation
+                    let rows = "" // Stores HTML for all of the rows
+                    let items = [] // Stores the name of each value added to the table
+                    for (const key of list) { 
+                        spell = data[key]
+                        
+                        // Creating row, and adding key to items for later use
+                        items.push(spell.name)
+                        rows += render_row(
+                            spell.name, spell.level, spell.school, 
+                            spell.cast_time, spell.range, spell.target,
+                            spell.components, spell.duration, spell.classes,
+                            spell.description, spell.description_higher_levels)
+                    }
+
+                    // Creating table in tab
+                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+        
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                    }
+
+                    // Updates collapsible behavior for table
+                    updateColapsible()
+                })
             })
         }
     
@@ -545,42 +592,35 @@
             </button>
             `
         }
-    
 
-
-        //=====================================================================================================
-        // Sorting functions
-        //=====================================================================================================
-    
-        function sortArrayBy(array, dataObject, comparisonFn) { 
-            return array.sort((a, b) => comparisonFn(dataObject[a], dataObject[b]));
+        function search_bar(tab_id) {
+            return `
+            <input id="`+tab_id+`-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+            `
         }
 
-        function getSpellLevelValue(level) {
-            if (level === "cantrip") return 0; // Cantrips are the lowest
-            const levelMap = { "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6, "7th": 7, "8th": 8, "9th": 9 }; // Extend as needed
-            return levelMap[level] || Number.MAX_SAFE_INTEGER; // Fallback for undefined levels
+        function div(id, content="") {
+            return `
+            <div id="`+id+`">
+                `+content+`
+            </div>
+            `
         }
 
-        const sortByName = (a, b) => a.name.localeCompare(b.name);
-        const sortBySchool = (a, b) => a.school.localeCompare(b.school);
-        const sortByType = (a, b) => a.type.localeCompare(b.type);
-        const sortByDuration = (a, b) => a.duration - b.duration;
-        const sortByLevel = (a, b) => a.level - b.level;
+        function select(id = "", title = "", options = []) {
+            options_string = ""
+            for (const value of options) {
+                options_string += `<option value=`+value.toLowerCase()+`>`+capitalize(value)+`</option>`
+            }
 
-        const sortBySpellLevel = (a, b) => getSpellLevelValue(a.level) - getSpellLevelValue(b.level);
-        const sortFeatures = (a, b) => {
-            const typeComparison = a.type.localeCompare(b.type);
-            if (typeComparison !== 0) return typeComparison; // Compare types first
-
-            const subtypeA = a.subtype || ""; // Treat undefined subtype as an empty string
-            const subtypeB = b.subtype || ""; // Treat undefined subtype as an empty string
-            const subtypeComparison = subtypeA.localeCompare(subtypeB);
-            if (subtypeComparison !== 0) return subtypeComparison; // If types are the same, compare subtypes
-
-            return b.level - a.level; // If both type and subtype are the same, compare level
-        };
-
+            return `
+            <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+                <option value="" selected>`+title+`</option>
+                `+options_string+`
+            </select>
+            `
+        }
+    
 
 
         //=====================================================================================================
@@ -751,27 +791,18 @@
         </div>
     
         <div class="outer" id="features-tab" style="display:none">
-            <input id="features-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-            <div id="features-tab-content">
-            </div>
         </div>
     
         <div class="outer" id="items-tab" style="display:none">
         </div>
     
         <div class="outer" id="damage-tab">
-            <input id="damage-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-            <div id="damage-tab-content">
-            </div>
         </div>
     
         <div class="outer" id="resources-tab" style="display:none">
         </div>
     
         <div class="outer" id="spells-tab" style="display:none">
-            <input id="spells-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-            <div id="spells-tab-content">
-            </div>
         </div>
     
     </body>
