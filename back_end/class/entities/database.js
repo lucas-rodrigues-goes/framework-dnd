@@ -271,49 +271,91 @@ try {
         //=====================================================================================================
 
         set_spell(
-            name, 
-            level, 
-            school, 
+            name,
+            level,
+            school,
             classes,
-            cast_time, 
-            range, 
-            target, 
-            components, 
+            cast_time,
+            range,
+            target,
+            components,
             duration,
-            description, 
+            description,
             description_higher_levels
         ) {
-
-            if(name in this.#spells.data) {this.remove_spell(name)}
-            
-            let spell = new Spell(name, level, school, classes,
-                cast_time, range, target, components, duration,
-                description, description_higher_levels)
-            
-            this.#spells.data[name] = spell.object()
-            this.#spells.level[spell.level].push(spell.name)
-            this.#spells.school[spell.school].push(spell.name)
-
-            spell.classes.forEach((value) => {
-                this.#spells.class[value].push(spell.name)
-            })
-
-            this.save()
+            const database = this.#spells;
+            const object = new Spell(
+                name,
+                level,
+                school,
+                classes,
+                cast_time,
+                range,
+                target,
+                components,
+                duration,
+                description,
+                description_higher_levels
+            );
+        
+            // Verify if already exists
+            if (name in database.data) {
+                this.remove_spell(name);
+            }
+        
+            // Level
+            if (!database.level[object.level]) {
+                database.level[object.level] = [];
+            }
+            database.level[object.level].push(object.name);
+        
+            // School
+            if (!database.school[object.school]) {
+                database.school[object.school] = [];
+            }
+            database.school[object.school].push(object.name);
+        
+            // Classes
+            object.classes.forEach((cls) => {
+                if (!database.class[cls]) {
+                    database.class[cls] = [];
+                }
+                database.class[cls].push(object.name);
+            });
+        
+            // Data
+            database.data[object.name] = object.object();
+        
+            this.save();
         }
-
+        
         remove_spell(name) {
-            let spell = this.#spells.data[name]
-
-            delete this.#spells.data[spell.name]
-            this.#spells.level[spell.level] = this.#spells.level[spell.level].filter(value => value != spell.name)
-            this.#spells.school[spell.school] = this.#spells.school[spell.school].filter(value => value != spell.name)
-
-            spell.classes.forEach((value) => {
-                this.#spells.class[value] = this.#spells.class[value].filter(value => value != spell.name)
-            })
-            
-            this.save()
+            const database = this.#spells;
+            const object = database.data[name];
+        
+            // Data
+            delete database.data[object.name];
+        
+            // Level
+            database.level[object.level] = database.level[object.level].filter(
+                (value) => value != object.name
+            );
+        
+            // School
+            database.school[object.school] = database.school[object.school].filter(
+                (value) => value != object.name
+            );
+        
+            // Classes
+            object.classes.forEach((cls) => {
+                database.class[cls] = database.class[cls].filter(
+                    (value) => value != object.name
+                );
+            });
+        
+            this.save();
         }
+        
 
 
 
