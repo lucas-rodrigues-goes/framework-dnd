@@ -8,109 +8,46 @@ try {
         //=====================================================================================================
 
         #classes = {
-            
         }
 
         #races = {
-            "data":{},
-            "type":{
-                "aberration":[],
-                "beast":[],
-                "celestial":[],
-                "construct":[],
-                "dragon":[],
-                "elemental":[],
-                "fey":[],
-                "fiend":[],
-                "giant":[],
-                "humanoid":[],
-                "monstrosity":[],
-                "ooze":[],
-                "plant":[],
-                "undead":[]
-            },
-            "playable":{
-                "true":[],
-                "false":[],
-            }
         }
 
         #proficiencies = {
             "data":{},
-            "type":{
-                "skill":[],
-                "weapon":[],
-                "save":[],
-                "tool":[],
-            }
+            "type":{}
         }
 
         #resources = {
             "data":{},
             "type":{},
+            "subtype":{},
             "level":{}
         }
 
         #damage_types = {
             "data":{},
-            "type":{
-                "physical":[],
-                "elemental":[],
-                "special":[],
-            }
+            "type":{}
         }
 
         #features = {
             "data":{},
-            "type":{
-                "class":[],
-                "racial":[],
-                "type":[]
-            },
+            "type":{},
+            "subtype":{},
             "level":{},
-            "optional":{
-                "true":[],
-                "false":[]
-            }
+            "optional":{}
         }
 
         #spells = {
             "data":{},
-            "level":{
-                "cantrip": [],
-                "1st": [], "2nd": [], "3rd": [],
-                "4th": [], "5th": [], "6th": [],
-                "7th": [], "8th": [], "9th": []
-            },
-            "class":{
-                "bard": [],
-                "cleric": [],
-                "druid": [],
-                "sorcerer": [],
-                "warlock": [],
-                "wizard": []
-            },
-            "school":{
-                "abjuration": [],
-                "conjuration": [],
-                "divination": [],
-                "enchantment": [],
-                "evocation": [],
-                "illusion": [],
-                "necromancy": [],
-                "transmutation": []
-            }
+            "level":{},
+            "class":{},
+            "school":{}
         }
 
         #conditions = {
             "data":{},
-            "type":{
-                "spell":[],
-                "natural":[],
-                "curse":[],
-                "poison":[],
-                "special":[]
-            }
+            "type":{}
         }
 
         #items = {
@@ -163,42 +100,55 @@ try {
         // Resource management
         //=====================================================================================================
 
-        set_resource(name, type, duration, description) {
+        set_resource(name, type, subtype, level, description) {
+            const database = this.#resources
+            const object = new Resource(name, type, subtype, level, description)
 
-            if(name in this.#resources.data) {this.remove_resource(name)}
+            // Verify if already exists
+            if(name in database.data) {this.remove_resource(name)}
+
+
+            // Type
+            if (!database.type[object.type]) { 
+                database.type[object.type] = [] 
+            }
+            database.type[object.type].push(object.name)
+
+            // Subtype
+            if (!database.subtype[object.subtype]) { 
+                database.subtype[object.subtype] = [] 
+            }
+            database.subtype[object.subtype].push(object.name)
+
+            // Level
+            if (!database.level[object.level]) { 
+                database.level[object.level] = [] 
+            }
+            database.level[object.level].push(object.name)
             
-            let resource = new Resource(name, type, duration, description)
 
-            if (this.#resources.level[resource.level] == undefined) {
-                this.#resources.level[resource.level] = []
-            }
-            if (this.#resources.type[resource.subtype] == undefined && subtype) {
-                this.#resources.type[resource.subtype] = []
-            }
-            
-            this.#resources.data[resources.name] = resources.object()
-            this.#resources.level[resource.level].push(resources.name)
+            // Data
+            database.data[object.name] = object.object()
 
-            if (resource.type != "class") {
-                this.#resources.type[resource.type].push(resource.name)
-            } else {
-                this.#resources.type[resource.subtype].push(resource.name)
-            }
 
             this.save()
         }
 
         remove_resource(name) {
-            let resource = this.#resources.data[name]
+            const database = this.#resources
+            const object = database.data[name]
 
-            delete this.#resources.data[resource.name]
-            this.#resources.level[resource.level] = this.#resources.level[resource.level].filter(value => value != resource.name)
+            // Data
+            delete database.data[object.name]
 
-            if (resource.type != "class") {
-                this.#resources.type[resource.type] = this.#resources.type[resource.type].filter(value => value != resource.name)
-            } else {
-                this.#resources.type[resource.subtype] = this.#resources.type[resource.subtype].filter(value => value != resource.name)
-            }
+            // Type
+            database.type[object.type] = database.type[object.type].filter(value => value != object.name)
+
+            // Subtype
+            database.subtype[object.subtype] = database.subtype[object.subtype].filter(value => value != object.name)
+
+            // Level
+            database.level[object.level] = database.level[object.level].filter(value => value != object.name)
 
             this.save()
         }
@@ -211,22 +161,37 @@ try {
         //=====================================================================================================
 
         set_damage_type(name, type, description, image) {
+            const database = this.#damage_types
+            const object = new DamageType(name, type, description, image)
 
-            if(name in this.#damage_types.data) {this.remove_damage_type(name)}
-            
-            let damage_type = new DamageType(name, type, description, image)
+            // Verify if already exists
+            if(name in database.data) {this.remove_damage_type(name)}
 
-            this.#damage_types.data[damage_type.name] = damage_type.object()
-            this.#damage_types.type[damage_type.type].push(damage_type.name)
+
+            // Type
+            if (!database.type[object.type]) { 
+                database.type[object.type] = [] 
+            }
+            database.type[object.type].push(object.name)
+
+
+            // Data
+            database.data[object.name] = object.object()
+
 
             this.save()
         }
 
         remove_damage_type(name) {
-            let damage_type = this.#damage_types.data[name]
+            const database = this.#damage_types
+            const object = database.data[name]
 
-            delete this.#damage_types.data[damage_type.name]
-            this.#damage_types.type[damage_type.type] = this.#damage_types.type[damage_type.type].filter(value => value != damage_type.name)
+            // Data
+            delete database.data[object.name]
+
+            // Type
+            database.type[object.type] = database.type[object.type].filter(value => value != object.name)
+
 
             this.save()
         }
@@ -238,43 +203,63 @@ try {
         //=====================================================================================================
 
         set_feature(name, type, subtype, level, optional, description) {
+            const database = this.#features
+            const object = new Feature(name, type, subtype, level, optional, description)
 
-            if(name in this.#features.data) {this.remove_feature(name)}
+            // Verify if already exists
+            if(name in database.data) {this.remove_resource(name)}
+
+
+            // Type
+            if (!database.type[object.type]) { 
+                database.type[object.type] = [] 
+            }
+            database.type[object.type].push(object.name)
+
+            // Subtype
+            if (!database.subtype[object.subtype]) { 
+                database.subtype[object.subtype] = [] 
+            }
+            database.subtype[object.subtype].push(object.name)
+
+            // Level
+            if (!database.level[object.level]) { 
+                database.level[object.level] = [] 
+            }
+            database.level[object.level].push(object.name)
+
+            // Optional
+            if (!database.optional[object.optional]) { 
+                database.optional[object.optional] = [] 
+            }
+            database.optional[object.optional].push(object.name)
             
-            let feature = new Feature(name, type, subtype, level, optional, description)
 
-            if (this.#features.level[feature.level] == undefined) {
-                this.#features.level[feature.level] = []
-            }
-            if (this.#features.type[feature.subtype] == undefined && subtype) {
-                this.#features.type[feature.subtype] = []
-            }
-            
-            this.#features.data[name] = feature.object()
-            this.#features.level[feature.level].push(feature.name)
-            this.#features.optional[feature.optional].push(feature.name)
+            // Data
+            database.data[object.name] = object.object()
 
-            if (feature.type != "class") {
-                this.#features.type[feature.type].push(feature.name)
-            } else {
-                this.#features.type[feature.subtype].push(feature.name)
-            }
 
             this.save()
         }
 
         remove_feature(name) {
-            let feature = this.#features.data[name]
+            const database = this.#features
+            const object = database.data[name]
 
-            delete this.#features.data[feature.name]
-            this.#features.level[feature.level] = this.#features.level[feature.level].filter(value => value != feature.name)
-            this.#features.optional[feature.optional] = this.#features.optional[feature.optional].filter(value => value != feature.name)
+            // Data
+            delete database.data[object.name]
 
-            if (feature.type != "class") {
-                this.#features.type[feature.type] = this.#features.type[feature.type].filter(value => value != feature.name)
-            } else {
-                this.#features.type[feature.subtype] = this.#features.type[feature.subtype].filter(value => value != feature.name)
-            }
+            // Type
+            database.type[object.type] = database.type[object.type].filter(value => value != object.name)
+
+            // Subtype
+            database.subtype[object.subtype] = database.subtype[object.subtype].filter(value => value != object.name)
+
+            // Level
+            database.level[object.level] = database.level[object.level].filter(value => value != object.name)
+
+            // Optional
+            database.optional[object.optional] = database.optional[object.optional].filter(value => value != object.name)
 
             this.save()
         }
