@@ -11,6 +11,7 @@ try {
         #image
         #type
         #subtype
+        #description
         #weight
         #rarity
         #price
@@ -27,6 +28,7 @@ try {
         get name() { return this.#name; }
         get image() { return this.#image }
         get subtype () {return this.#subtype}
+        get description () {return this.#description}
         get type() { return this.#type; }
         get weight() { return this.#weight; }
         get rarity() { return this.#rarity; }
@@ -46,6 +48,7 @@ try {
             image,
             type,
             subtype,
+            description="",
             weight = 1,
             rarity = "common",
             price = 0,
@@ -63,6 +66,7 @@ try {
             this.#image = image;
             this.#type = type;
             this.#subtype = subtype
+            this.#description = description
             this.#weight = weight;
             this.#rarity = rarity;
             this.#price = price;
@@ -78,6 +82,7 @@ try {
                 "image": this.#image,
                 "type": this.#type,
                 "subtype": this.#subtype,
+                "description": this.#description,
                 "weight": this.#weight,
                 "rarity": this.#rarity,
                 "price": this.#price,

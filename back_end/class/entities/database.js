@@ -676,6 +676,16 @@ try {
                 });
             }
         
+            
+            // Helper function to convert level strings to numbers
+            const convertLevel = (level) => {
+                if (level === "cantrip") return 0;
+                if (level.endsWith("st") || level.endsWith("nd") || level.endsWith("rd") || level.endsWith("th")) {
+                    return parseInt(level, 10);
+                }
+                return Infinity; // If the level is not recognized, place it at the end
+            };
+
             // Sort the object names if a sortBy parameter is provided
             switch (sortBy) {
                 case "name":
@@ -699,7 +709,11 @@ try {
                     object_names.sort((a, b) => {
                         const levelA = database.data[a].level || '';
                         const levelB = database.data[b].level || '';
-                        return levelA.localeCompare(levelB);
+                    
+                        const numericLevelA = convertLevel(levelA);
+                        const numericLevelB = convertLevel(levelB);
+                    
+                        return numericLevelA - numericLevelB;
                     });
                     break;
                 default:
@@ -707,7 +721,11 @@ try {
                     object_names.sort((a, b) => {
                         const levelA = database.data[a].level || '';
                         const levelB = database.data[b].level || '';
-                        return levelA.localeCompare(levelB);
+                    
+                        const numericLevelA = convertLevel(levelA);
+                        const numericLevelB = convertLevel(levelB);
+                    
+                        return numericLevelA - numericLevelB;
                     });
                     break;
             }
@@ -1027,16 +1045,19 @@ try {
         
 
         set_item(
-            name, 
-            type, 
+            name,
+            image,
+            type,
+            subtype,
+            description = "",
             weight = 1, 
             rarity = "common", 
-            price = 0, 
+            price = 0,
             stackable = true, 
             properties = []
         ) {
             const database = this.#items;
-            const item = new Item(name, type, undefined, weight, rarity, price, stackable, false, properties);
+            const item = new Item(name, image, type, subtype, description, weight, rarity, price, stackable, false, properties);
         
             // Verify if the item already exists
             if (name in database.data) {
@@ -1057,7 +1078,9 @@ try {
         
         set_equipment(
             name, 
+            image,
             subtype, 
+            description,
             weight, 
             rarity, 
             price, 
@@ -1066,7 +1089,43 @@ try {
             conditions = []
         ) {
             const database = this.#items;
-            const item = new Equipment(name, subtype, weight, rarity, price, properties, bonus, conditions);
+            const item = new Equipment(name, image, subtype, description, weight, rarity, price, properties, bonus, conditions);
+        
+            // Verify if the item already exists
+            if (name in database.data) {
+                this.remove_item(name);
+            }
+        
+            // Type
+            if (!database.type[item.type]) {
+                database.type[item.type] = [];
+            }
+            database.type[item.type].push(item.name);
+        
+            // Data
+            database.data[item.name] = item.object();
+        
+            this.save();
+        }
+
+        set_weapon(
+            name, 
+            image,
+            description,
+            weight, 
+            rarity, 
+            price, 
+            properties = [], 
+            bonus = {}, 
+            conditions = [], 
+            damage = [{
+                "ammount": 1,
+                "size": 4,
+                "type": "piercing"
+            }]
+        ) {
+            const database = this.#items;
+            const item = new Weapon(name, image, description, weight, rarity, price, properties, bonus, conditions, damage);
         
             // Verify if the item already exists
             if (name in database.data) {
@@ -1085,18 +1144,20 @@ try {
             this.save();
         }
         
-        set_weapon(
+        set_armor(
             name, 
+            image,
+            description,
             weight, 
             rarity, 
             price, 
             properties = [], 
             bonus = {}, 
             conditions = [], 
-            damage = [{ "ammount": 1, "size": 4, "type": "piercing" }]
+            base_armor_class
         ) {
             const database = this.#items;
-            const item = new Weapon(name, weight, rarity, price, properties, bonus, conditions, damage);
+            const item = new Armor(name, image, description, weight, rarity, price, properties, bonus, conditions, base_armor_class);
         
             // Verify if the item already exists
             if (name in database.data) {
@@ -1192,24 +1253,18 @@ try {
 
     var database = new Database()
 
-    database.set_spell(
-        "Fireball",
-        "3rd",
-        "evocation",
-        ["sorcerer", "wizard"],
-        3,
-        150,
-        "A point you choose within range",
-        ["vocal", "somatic", "material"],
-        0,
-        "A bright streak flashes from your pointing finger to a point you choose within range then blossoms " +
-            "with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on " +
-            "that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, " +
-            "or half as much damage on a successful one. The fire spreads around corners. It ignites flammable " +
-            "objects in the area that aren't being worn or carried.",
-        "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for " +
-            "each slot level above 3rd."
-    );
+    database.set_weapon(
+        "Dagger",
+        "",
+        "A dagger",
+        2,
+        "common",
+        10,
+        [],
+        undefined,
+        undefined,
+        undefined
+    )
     
 
 

@@ -29,6 +29,7 @@ try {
             name,
             image,
             subtype, 
+            description,
             weight, 
             rarity, 
             price, 
@@ -41,6 +42,7 @@ try {
                 image,
                 "equipment", // Type
                 subtype,
+                description,
                 weight, 
                 rarity, 
                 price, 
@@ -60,6 +62,7 @@ try {
                 "image": this.image,
                 "type": this.type,
                 "subtype": this.subtype,
+                "description": this.description,
                 "weight": this.weight,
                 "rarity": this.rarity,
                 "price": this.price,

@@ -26,6 +26,7 @@ try {
         constructor(
             name,
             image,
+            description,
             weight,
             rarity, 
             price, 
@@ -42,6 +43,7 @@ try {
                 name,
                 image,
                 "weapon",
+                description,
                 weight, 
                 rarity, 
                 price, 
@@ -59,6 +61,7 @@ try {
                 "image": this.image,
                 "type": this.type,
                 "subtype": this.subtype,
+                "description": this.description,
                 "weight": this.weight,
                 "rarity": this.rarity,
                 "price": this.price,
