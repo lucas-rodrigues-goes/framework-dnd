@@ -368,6 +368,20 @@
             </select>
             `
         }
+
+        function select_same_id(id = "", title = "", options = []) {
+            options_string = ""
+            for (const value of options) {
+                options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
+            }
+
+            return `
+            <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+                <option value="" selected>`+title+`</option>
+                `+options_string+`
+            </select>
+            `
+        }
     
 
 
@@ -376,18 +390,18 @@
         //=====================================================================================================
     
         const dnd_classes = [
-            "Barbarian", "Path of the Berserker", "Path of the Totem Warrior",
-            "Bard", "College of Lore", "College of Valor",
-            "Cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
-            "Druid", "Circle of the Land", "Circle of the Moon",
-            "Fighter", "Champion", "Battle Master", "Eldritch Knight",
-            "Monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
-            "Paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
-            "Ranger", "Hunter", "Beast Master",
-            "Rogue", "Thief", "Assassin", "Arcane Trickster",
-            "Sorcerer", "Draconic Bloodline", "Wild Magic",
-            "Warlock", "The Archfey", "The Fiend", "The Great Old One",
-            "Wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
+            "barbarian", "Path of the Berserker", "Path of the Totem Warrior",
+            "bard", "College of Lore", "College of Valor",
+            "cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
+            "druid", "Circle of the Land", "Circle of the Moon",
+            "fighter", "Champion", "Battle Master", "Eldritch Knight",
+            "monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
+            "paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
+            "ranger", "Hunter", "Beast Master",
+            "rogue", "Thief", "Assassin", "Arcane Trickster",
+            "sorcerer", "Draconic Bloodline", "Wild Magic",
+            "warlock", "The Archfey", "The Fiend", "The Great Old One",
+            "wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
         ]
         const one_to_twenty = [
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
@@ -398,6 +412,9 @@
             "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
             "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
             "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+                "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
+                "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
+                "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
             "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
             "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
             "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
@@ -459,7 +476,7 @@
 
                     select(tab_id + "-type", "Type", ["racial", "feat", "class"]) +
 
-                    select(tab_id + "-subtype", "Subtype", dnd_classes) +
+                    select_same_id(tab_id + "-subtype", "Subtype", dnd_classes) +
 
                     select(tab_id + "-level", "Level", one_to_twenty) +
 

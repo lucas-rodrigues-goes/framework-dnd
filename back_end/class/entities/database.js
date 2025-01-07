@@ -431,6 +431,26 @@ try {
                 });
             }
         
+            const classOrder = {
+                "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+                "bard": ["College of Lore", "College of Valor"],
+                "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+                "druid": ["Circle of the Land", "Circle of the Moon"],
+                "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+                "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+                "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+                "ranger": ["Hunter", "Beast Master"],
+                "rogue": ["Thief", "Assassin", "Arcane Trickster"],
+                "sorcerer": ["Draconic Bloodline", "Wild Magic"],
+                "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+                "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+            };
+            const flatOrder = [];
+            Object.entries(classOrder).forEach(([mainClass, subclasses]) => {
+                flatOrder.push(mainClass);
+                flatOrder.push(...subclasses);
+            });
+
             // Sort the object names if a sortBy parameter is provided
             switch (sortBy) {
                 case "name":
@@ -462,16 +482,38 @@ try {
                     object_names.sort((a, b) => {
                         const typeA = database.data[a].type || '';
                         const typeB = database.data[b].type || '';
+                    
+                        // Sort by type alphabetically (class, racial, feat)
                         if (typeA !== typeB) {
                             return typeB.localeCompare(typeA);
                         }
+                    
                         const subtypeA = database.data[a].subtype || '';
                         const subtypeB = database.data[b].subtype || '';
-                        if (subtypeA !== subtypeB) {
-                            return subtypeA.localeCompare(subtypeB);
+                    
+                        const indexA = flatOrder.indexOf(subtypeA);
+                        const indexB = flatOrder.indexOf(subtypeB);
+                    
+                        // If both subtypes are found in flatOrder, compare their indices
+                        if (indexA !== -1 && indexB !== -1) {
+                            if (indexA !== indexB) {
+                                return indexA - indexB;
+                            }
+                        } else {
+                            // If one is found and the other isn't, prioritize the one that is found
+                            if (indexA !== -1) return -1;
+                            if (indexB !== -1) return 1;
                         }
-                        const levelA = Number(database.data[a].level) || '';
-                        const levelB = Number(database.data[b].level) || '';
+                    
+                        // If neither is found or if they are equal in order, sort alphabetically by subtype
+                        const subtypeComparison = subtypeA.localeCompare(subtypeB);
+                        if (subtypeComparison !== 0) {
+                            return subtypeComparison;
+                        }
+                    
+                        // Finally, sort by level numerically
+                        const levelA = Number(database.data[a].level) || 0;
+                        const levelB = Number(database.data[b].level) || 0;
                         return levelA - levelB;
                     });
                     break;

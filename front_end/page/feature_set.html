@@ -1,240 +1,349 @@
-[h:id = arg(0)]
+        [h:id = arg(0)]
 
-[dialog5("Feature", "width=500; height=700; temporary=1; input=1; noframe=0"), code: {
-<head>
-[r:style()]
-[r:script()]
-[r:'
-<style>
-</style>
-<script>
+        [dialog5("Feature", "width=500; height=700; temporary=1; input=1; noframe=0"), code: {
+        <head>
+        [r:style()]
+        [r:script()]
+        [r:'
+        <style>
+            .checkbox-container {
+            display: flex;
+            align-items: center;       /* Vertically center the items */
+            justify-content: center;    /* Horizontally center the items */
+            width: 100%;
+            margin: 5px;
+            }
 
-    //=====================================================================================================
-    // Execution
-    //=====================================================================================================
+            .checkbox-grid {
+                display: grid; /* Enable grid layout */
+                grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+                gap: 0px; /* Add space between items */
+                width: 100%;
+                margin: 10px 0px;
+            }
 
-    function onWindowLoad() {
+            .checkbox-text {
+            font-size: 90%;
+            min-width: 40px;
+            padding-bottom: 3px;
+            margin-right: 8px;
+            }
 
-        getId("cancel").addEventListener("click", () => {
-            closePage("Feature")
-        })
+            .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            }
 
-        updateFields()
-        addSubmitBehavior()
-    }
+            .checkbox[data-checked="true"] {
+            background-color: #ddd;
+            color: white;
+            }
+
+            .checkbox[data-checked="true"]::after {
+            font-size: 14px;
+            font-weight: bold;
+            }
+        </style>
+        <script>
+
+            //=====================================================================================================
+            // Components
+            //=====================================================================================================
+
+            function title(title = "") {
+                return `
+                <h4>`+title+`</h4>
+                `
+            }
+
+            function input(id = "", title = "", placeholder = "", style = "") {
+                return `
+                <h4 id="`+id+`-title">`+title+`</h4>
+                <input style="`+style+`" id="`+id+`" placeholder="`+placeholder+`"></input>
+                `
+            }
+
+            function select(id = "", title = "", options = [], placeholder="", style = "") {
+                options_string = ""
+                for (const value of options) {
+                    options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
+                }
+                return `
+                <h4 id="`+id+`-title">`+title+`</h4>
+                <select required style="`+style+`" id="`+id+`">
+                    <option disabled selected value="" hidden>`+placeholder+`</option>
+                    `+options_string+`
+                </select>
+                `
+            }
+
+            function inline_select(id = "", options = [], placeholder="", style = "") {
+                options_string = ""
+                for (const value of options) {
+                    options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
+                }
+                return `
+                <select required style="`+style+`" id="`+id+`">
+                    <option value="" disabled selected hidden>`+placeholder+`</option>
+                    `+options_string+`
+                </select>
+                `
+            }
+
+            function checkbox(id = "", title = "", min_width = "40") {
+                if (id == "" && title == "") {
+                    style = `style="display:none"`
+                } else {style = ""}
+
+                return `
+                <div class="checkbox-container">
+                    <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
+                    <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
+                </div>
+                `
+            }
+
+            function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
+                let checkboxes_string = ""
+                for (const box of checkboxes) {
+                    checkboxes_string += checkbox(box[0], box[1], min_width)
+                }
+
+                return `
+                <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
+                    `+checkboxes_string+`
+                </div>
+                `
+            }
+
+            function text_area(id = "", title = "", size = "7") {
+                return `
+                <h4>`+title+`</h4>
+                <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
+                `
+            }
+
+            function container(title="", children="") {
+
+                return `
+                <div class="spacer"></div>
+                <div class="container center-horizontal" style="padding-bottom:0px;">
+                    <h3 class="container-title">`+title+`</h3>
+                    <div class="spacer" ></div>
+                    `+children+`
+                    <div class="spacer"></div>
+                </div>
+                <div class="spacer"></div>
+                `
+            }
 
 
 
-    //=====================================================================================================
-    // Helper functions
-    //=====================================================================================================
+            //=====================================================================================================
+            // Helper functions
+            //=====================================================================================================
 
-    function updateFields() {
-        id = getId("id").value
-
-        if(id == "") {return}
-
-        toBackend("database.features.data", (response) => {
-            response = JSON.parse(response)
+            dndSubclasses = {
+                "Barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+                "Bard": ["College of Lore", "College of Valor"],
+                "Cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+                "Druid": ["Circle of the Land", "Circle of the Moon"],
+                "Fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+                "Monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+                "Paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+                "Ranger": ["Hunter", "Beast Master"],
+                "Rogue": ["Thief", "Assassin", "Arcane Trickster"],
+                "Sorcerer": ["Draconic Bloodline", "Wild Magic"],
+                "Warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+                "Wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+            }
             
-            getId("name").value = capitalize(response[id].name)
-            getId("type").value = capitalize(response[id].type)
-            getId("subtype").value = capitalize(response[id].subtype)
-            getId("level").value = capitalize(response[id].level)
-            getId("optional").value = capitalize(response[id].optional)
-            getId("description").value = response[id].description
+            function loadCheckboxes() {
+                // Select all elements with the class checkbox
+                const checkboxes = document.querySelectorAll(".checkbox");
 
-        })
-    }
-
-    function addSubmitBehavior() {
-        getId("submit").addEventListener("click", async () => {
+                checkboxes.forEach(checkbox => {
+                checkbox.addEventListener("click", () => {
+                    // Toggle the data-checked attribute
+                    const isChecked = checkbox.getAttribute("data-checked") === "true";
+                    checkbox.setAttribute("data-checked", !isChecked);
+                });
+                });
+            }
             
+            function findClassBySubclass(classesObj, subclass) {
+                for (const [className, subclasses] of Object.entries(classesObj)) {
+                    if (subclasses.includes(subclass)) {
+                        return className;
+                    }
+                }
+                return undefined; // Return null if the subclass is not found
+            }
+
+            function setSubtypeStyle(style) {
+                let type = getId("type")
+                let subtype = getId("subtype")
+                let subtype_title = getId("subtype-title")
+                let subclass = getId("subclass")
+                let subclass_title = getId("subclass-title")
+                
+                subtype.setAttribute("style", style)
+                subtype_title.setAttribute("style", style)
+                subclass.setAttribute("style", style)
+                subclass_title.setAttribute("style", style)
+            }
+
+            function updateSubtype () {
+                let type = getId("type")
+                let subtype = getId("subtype")
+
+                if (type.value == "class") {
+                    setSubtypeStyle("")
+                } else {
+                    setSubtypeStyle("display:none")
+                }
+
+                let options = dndSubclasses[capitalize(subtype.value)] || []
+
+                options_string = ""
+                for (const value of options) {
+                    options_string += `<option value="`+value+`">`+value+`</option>`
+                }
+
+                subclass.innerHTML = `
+                <option value="" selected>`+"No subclass"+`</option>
+                `+options_string+`
+                `
+            }
+
+            function updateFields() {
+
+                id = getId("id").value
+
+                if(id == "") {return}
+
+                toBackend("database.features.data", (response) => {
+                    response = JSON.parse(response)
+                    
+                    getId("name").value = capitalize(response[id].name)
+                    getId("type").value = response[id].type
+                    getId("level").value = response[id].level
+                    getId("optional").setAttribute("data-checked", response[id].optional)
+                    getId("description").value = response[id].description
+
+                    let feat_class = findClassBySubclass(dndSubclasses, response[id].subtype)
+                    if (feat_class != undefined) { feat_class = feat_class.toLowerCase() }
+                    getId("subtype").value = feat_class || response[id].subtype || ""
+
+                    updateSubtype()
+
+                    getId("subclass").value = response[id].subtype || ""
+
+                })
+            }
+
+            function submit() {
+                
+                // Get values from form
+                let name = getId("name").value;
+                let type = getId("type").value;
+                let subtype = getId("subclass").value || getId("subtype").value.toLowerCase() || "";
+                let level = getId("level").value;
+                let optional = getId("optional").getAttribute("data-checked");
+                let description = getId("description").value;
+
+                // Treatment
+                optional = optional == "true" ? true : false
+
+                // Send data to backend
+                toBackend(
+                    "database.set_feature("+
+                        "`"+name+"`,"+
+                        "`"+type+"`,"+
+                        "`"+subtype+"`,"+
+                        "`"+level+"`,"+
+                        "`"+optional+"`,"+
+                        "`"+description+"`,"+
+                    ")"
+                )
+            }
 
 
-            // Get values from form
-            let name = getId("name").value;
-            let type = getId("type").value;
-            let subtype = getId("subtype").value;
-            let level = getId("level").value;
-            let optional = getId("optional").value;
-            let description = getId("description").value;
 
+            //=====================================================================================================
+            // Execution
+            //=====================================================================================================
 
-            // Treatment
-            type = type.toLowerCase()
-            subtype = subtype.toLowerCase()
-            optional = optional == "True" ? true : false
+            function loadPage() {
 
-            // Send data to backend
-            toBackend(
-                "database.set_feature("+
-                    "`"+name+"`,"+
-                    "`"+type+"`,"+
-                    "`"+subtype+"`,"+
-                    "`"+level+"`,"+
-                    "`"+optional+"`,"+
-                    "`"+description+"`,"+
-                ")"
-            )
+                getId("content").innerHTML += 
 
-            //closePage("Feature")
+                    container("Basic",
+                        input("name", "Name", "Feature name") +
 
-        })
-    }
+                        select("type", "Type", [
+                            "racial", "feat", "class"], "Feature type") +
 
+                        select("subtype", "Class", [
+                            "barbarian","bard","cleric","druid","fighter","monk",
+                            "paladin","ranger","rogue","sorcerer", "warlock", "wizard"], "Any class") +
 
+                        select("subclass", "Subclass", [], "No subclass")
+                    ) +
+                    
+                    container("Requirements",
+                        input("level", "Level", "0") +
+                        checkbox("optional", "Optional Feature")
+                    ) +
 
-    //=====================================================================================================
+                    container("Information",
+                        text_area("description", "Description", "10")
+                    )
 
-    document.addEventListener("DOMContentLoaded", onWindowLoad)
+                getId("type").addEventListener("input", ()=>{ updateSubtype() })
+                getId("subtype").addEventListener("input", ()=>{ updateSubtype() })
+            }
 
-</script>
-']
-</head>
+            function onWindowLoad() {
+                loadPage()
 
-<input type="text" class="hidden" id="id" value="{id}"></input>
+                let close_button = getId("close")
+                let submit_button = getId("submit")
 
-<body>
-    <div class="outer">
+                close_button.addEventListener("click", () => { closePage("Feature") })
+                submit_button.addEventListener("click", () => { submit() })
 
-        <div class="spacer"></div>
+                loadCheckboxes()
+                updateFields()
+                updateSubtype()
+            }
 
-        <div class="container center-horizontal" style="padding-bottom:0px;">
-            <h3 class="container-title">Information</h3>
+            document.addEventListener("DOMContentLoaded", onWindowLoad)
 
-            <div class="spacer" ></div>
+            //=====================================================================================================
 
-            <h4>Name</h4>
-            <input id="name" placeholder></input>
+        </script>
+        ']
+        </head>
 
-            <h4>Type</h4>
-            <select id="type">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>Racial</option>
-                <option>Class</option>
-                <option>Feat</option>
-            </select>
+        <input type="text" class="hidden" id="id" value="{id}"></input>
 
-            <h4>Subtype</h4>
-            <select id="subtype">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option>Barbarian</option>
-                <option>Path of the Berserker</option>
-                <option>Path of the Totem Warrior</option>
-                <option>Bard</option>
-                <option>College of Lore</option>
-                <option>College of Valor</option>
-                <option>Cleric</option>
-                <option>Life Domain</option>
-                <option>Knowledge Domain</option>
-                <option>Light Domain</option>
-                <option>Nature Domain</option>
-                <option>Tempest Domain</option>
-                <option>Trickery Domain</option>
-                <option>War Domain</option>
-                <option>Druid</option>
-                <option>Circle of the Land</option>
-                <option>Circle of the Moon</option>
-                <option>Fighter</option>
-                <option>Champion</option>
-                <option>Battle Master</option>
-                <option>Eldritch Knight</option>
-                <option>Monk</option>
-                <option>Way of the Open Hand</option>
-                <option>Way of Shadow</option>
-                <option>Way of the Four Elements</option>
-                <option>Paladin</option>
-                <option>Oath of Devotion</option>
-                <option>Oath of the Ancients</option>
-                <option>Oath of Vengeance</option>
-                <option>Ranger</option>
-                <option>Hunter</option>
-                <option>Beast Master</option>
-                <option>Rogue</option>
-                <option>Thief</option>
-                <option>Assassin</option>
-                <option>Arcane Trickster</option>
-                <option>Sorcerer</option>
-                <option>Draconic Bloodline</option>
-                <option>Wild Magic</option>
-                <option>Warlock</option>
-                <option>The Fiend</option>
-                <option>The Great Old One</option>
-                <option>Wizard</option>
-                <option>School of Abjuration</option>
-                <option>School of Conjuration</option>
-                <option>School of Divination</option>
-                <option>School of Enchantment</option>
-                <option>School of Evocation</option>
-                <option>School of Illusion</option>
-                <option>School of Necromancy</option>
-                <option>School of Transmutation</option>
-            </select>
+        <body>
+            <div class="outer">
 
-            <h4>Level</h4>
-            <select id="level">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option selected>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-                <option>6</option>
-                <option>7</option>
-                <option>8</option>
-                <option>9</option>
-                <option>10</option>
-                <option>11</option>
-                <option>12</option>
-                <option>13</option>
-                <option>14</option>
-                <option>15</option>
-                <option>16</option>
-                <option>17</option>
-                <option>18</option>
-                <option>19</option>
-                <option>20</option>
-            </select>
+                <div id="content"></div>
 
+                <button id="close">Close</button>
+                <button id="submit">Save</button>
 
-            <h4>Optional</h4>
-            <select id="optional">
-                <option value="" hidden>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                </option>
-                <option selected>False</option>
-                <option>True</option>
-            </select>
+            </div>
+        </body>
 
-            <h4>Description</h4>
-            <textarea id="description" rows="13" cols="30"></textarea>
-
-        </div>
-
-        <button id="cancel">Close</button>
-        <button id="submit">Set</button>
-
-    </div>
-</body>
-
-}]
+        }]
