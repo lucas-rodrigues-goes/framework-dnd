@@ -1,6 +1,6 @@
     [h:id = arg(0)]
 
-    [dialog5("Spell", "width=500; height=800; temporary=1; input=1; noframe=0"), code: {
+    [dialog5("Spell", "width=500; height=700; temporary=1; input=1; noframe=0"), code: {
     <head>
     [r:style()]
     [r:script()]
@@ -54,95 +54,6 @@
     <script>
 
         //=====================================================================================================
-        // Execution
-        //=====================================================================================================
-
-        function onWindowLoad() {
-            loadPage()
-
-            let range = getId("range")
-            let range_distance = getId("range-distance")
-            let range_distance_title = getId("range-distance-title")
-            let cancel = getId("cancel")
-
-            range_distance.setAttribute("style","display:none")
-            range_distance_title.setAttribute("style","display:none")
-
-            range.addEventListener("input",()=>{
-                if (range.value == "distance") {
-                    range_distance.setAttribute("style","")
-                    range_distance_title.setAttribute("style","")
-                } else {
-                    range_distance.setAttribute("style","display:none")
-                    range_distance_title.setAttribute("style","display:none")
-                }
-            })
-
-            cancel.addEventListener("click", () => {
-                closePage("Feature")
-            })
-
-            updateFields()
-            addSubmitBehavior()
-
-            updateCheckboxes()
-        }
-
-        function loadPage() {
-
-            getId("content").innerHTML += 
-
-                container("Basic",
-                    input("name", "Name", "Spell name") +
-
-                    select("level", "Level", [
-                        "cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"], "Spell level, can be cantrip") +
-
-                    select("school", "School of Magic", [
-                        "abjuration","conjuration","divination","enchantment",
-                        "evocation","illusion","necromancy","transmutation"], "School of the spell")
-                ) +
-                
-                container("Classes",
-                    checkbox_grid([
-                        ["bard", "Bard"], ["druid", "Druid"], ["cleric", "Cleric"],
-                        ["sorcerer", "Sorcerer"], ["warlock", "Warlock"], ["wizard", "Wizard"],
-                    ])
-                ) +
-
-                container("Casting",
-                    select("cast_time", "Cast Time", [
-                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"], "Cast time in half seconds") +
-
-                    select("range", "Range Type", [
-                        "self", "touch", "sight", "unlimited", "special", "distance"], "Range type") +
-
-                    input("range-distance", "Distance in Feet", "100") +
-
-                    input("target", "Target", "A creature within range") +
-
-                    input("duration", "Duration", "Time", "width: 70%") + inline_select("", ["rounds", "minutes", "hours", "days"], "Unit", "width:20%")
-
-
-                ) +
-
-                container("Components",
-                    checkbox_grid([
-                        ["vocal", "Vocal"], ["somatic", "Somatic"], 
-                        ["material", "Material"], ["concentration", "Concentration"]
-                    ], "2", "80")
-                ) +
-
-                container("Information",
-                    text_area("description", "Description", "10") +
-
-                    text_area("description-higher-levels", "Description for Upcasting", "5")
-                )
-        }
-
-
-
-        //=====================================================================================================
         // Helper functions
         //=====================================================================================================
 
@@ -159,40 +70,6 @@
             })
         }
 
-        function addSubmitBehavior() {
-            getId("submit").addEventListener("click", async () => {
-                
-
-
-                // Get values from form
-                let name = getId("name").value;
-
-
-                // Treatment
-                
-
-                // Send data to backend
-                toBackend(
-                    "database.set_spell("+
-                        "`"+name+"`,"+
-                        "`"+level+"`,"+
-                        "`"+school+"`,"+
-                        "`"+classes+"`,"+
-                        "`"+cast_time+"`,"+
-                        "`"+range+"`,"+
-                        "`"+target+"`,"+
-                        "`"+components+"`,"+
-                        "`"+duration+"`,"+
-                        "`"+description+"`,"+
-                        "`"+description_higher_levels+"`,"+
-                    ")"
-                )
-
-                closePage("Feature")
-
-            })
-        }
-
         function updateCheckboxes() {
             // Select all elements with the class checkbox
             const checkboxes = document.querySelectorAll(".checkbox");
@@ -204,6 +81,83 @@
                 checkbox.setAttribute("data-checked", !isChecked);
             });
             });
+        }
+
+        function addSubmitBehavior() {
+            getId("submit").addEventListener("click", async () => {
+
+                // Get values from form
+                let name = getId("name").value;
+                let level = getId("level").value;
+                let school = getId("school").value;
+
+                let cast_time = getId("cast_time").value;
+                let target = getId("target").value;
+
+                let description = getId("description").value;
+                let description_higher_levels = getId("description-higher-levels").value;
+
+                let duration;
+                let duration_rounds = getId("duration").value;
+                let duration_unit = getId("duration-unit").value;
+                switch (duration_unit) {
+                    case "days":
+                        duration = duration_rounds * 14400
+                        break
+                    case "hours":
+                        duration = duration_rounds * 600
+                        break
+                    case "minutes":
+                        duration = duration_rounds * 10
+                        break
+                    default:
+                        duration = duration_rounds
+                        break
+                }
+
+
+                let range = getId("range").value;
+                if (range == "distance") {
+                    range = getId("range-distance").value
+                }
+
+                let classes = []
+                for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
+                    if(getId(value).getAttribute("data-checked") == "true") {
+                        classes.push(value)
+                    }
+                }
+                classes = JSON.stringify(classes)
+
+                let components = []
+                for (const value of ["vocal", "somatic", "material", "concentration"]) {
+                    if(getId(value).getAttribute("data-checked") == "true") {
+                        components.push(value)
+                    }
+                }
+                components = JSON.stringify(components)
+                
+
+                // Send data to backend
+                toBackend(
+                    "database.set_spell("+
+                        "`"+name+"`,"+
+                        "`"+level+"`,"+
+                        "`"+school+"`,"+
+                        ""+classes+","+
+                        "`"+cast_time+"`,"+
+                        "`"+range+"`,"+
+                        "`"+target+"`,"+
+                        ""+components+","+
+                        "`"+duration+"`,"+
+                        "`"+description+"`,"+
+                        "`"+description_higher_levels+"`,"+
+                    ")"
+                )
+
+                /* closePage("Feature") */
+
+            })
         }
 
 
@@ -260,7 +214,7 @@
             return `
             <div class="checkbox-container">
                 <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
-                <div class="checkbox" `+style+` data-checked="`+"false"+`"></div>
+                <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
             </div>
             `
         }
@@ -300,9 +254,96 @@
         }
 
 
+
+        //=====================================================================================================
+        // Execution
         //=====================================================================================================
 
+        function loadPage() {
+
+            getId("content").innerHTML += 
+
+                container("Basic",
+                    input("name", "Name", "Spell name") +
+
+                    select("level", "Level", [
+                        "cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"], "Spell level, can be cantrip") +
+
+                    select("school", "School of Magic", [
+                        "abjuration","conjuration","divination","enchantment",
+                        "evocation","illusion","necromancy","transmutation"], "School of the spell")
+                ) +
+                
+                container("Classes",
+                    checkbox_grid([
+                        ["bard", "Bard"], ["druid", "Druid"], ["cleric", "Cleric"],
+                        ["sorcerer", "Sorcerer"], ["warlock", "Warlock"], ["wizard", "Wizard"],
+                    ])
+                ) +
+
+                container("Casting",
+                    select("cast_time", "Cast Time", [
+                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"], "Cast time in half seconds") +
+
+                    select("range", "Range Type", [
+                        "self", "touch", "sight", "unlimited", "special", "distance"], "Range type") +
+
+                    input("range-distance", "Distance in Feet", "100") +
+
+                    input("target", "Target", "A creature within range") +
+
+                    input("duration", "Duration", "Time", "width: 70%") + inline_select("duration-unit", ["rounds", "minutes", "hours", "days"], "Unit", "width:20%")
+
+
+                ) +
+
+                container("Components",
+                    checkbox_grid([
+                        ["vocal", "Vocal"], ["somatic", "Somatic"], 
+                        ["material", "Material"], ["concentration", "Concentration"]
+                    ], "2", "80")
+                ) +
+
+                container("Information",
+                    text_area("description", "Description", "10") +
+
+                    text_area("description-higher-levels", "Description for Upcasting", "5")
+                )
+        }
+
+        function onWindowLoad() {
+            loadPage()
+
+            let range = getId("range")
+            let range_distance = getId("range-distance")
+            let range_distance_title = getId("range-distance-title")
+            let cancel = getId("cancel")
+
+            range_distance.setAttribute("style","display:none")
+            range_distance_title.setAttribute("style","display:none")
+
+            range.addEventListener("input",()=>{
+                if (range.value == "distance") {
+                    range_distance.setAttribute("style","")
+                    range_distance_title.setAttribute("style","")
+                } else {
+                    range_distance.setAttribute("style","display:none")
+                    range_distance_title.setAttribute("style","display:none")
+                }
+            })
+
+            cancel.addEventListener("click", () => {
+                closePage("Feature")
+            })
+
+            updateFields()
+            updateCheckboxes()
+            addSubmitBehavior()
+        }
+
         document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
 
     </script>
     ']
@@ -315,8 +356,8 @@
 
             <div id="content"></div>
 
-            <button id="cancel">Cancel</button>
-            <button id="submit">Accept</button>
+            <button id="cancel">Close</button>
+            <button id="submit">Set</button>
 
         </div>
     </body>
