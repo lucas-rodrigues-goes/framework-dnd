@@ -5,7 +5,6 @@
     [r:'
     <style>
         img {
-            image-rendering: smooth;
             margin: 0px;
         }
     
@@ -58,7 +57,6 @@
     
         .table-row {
             position:relative;
-            transition: background-color 0.3s;
     
             display: grid;
             grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
@@ -88,7 +86,6 @@
     
             position: relative;
             height: 0px;
-            top: -20px;
             z-index: 0;
     
             margin: 0px 3px;
@@ -108,7 +105,7 @@
             margin-bottom: -20px;
             opacity: 1; /* Fully visible */
             visibility: visible; /* Make it interactable */
-            transform: translateY(0); /* Final position */
+            transform: translateY(-20px); /* Final position */
         }
     
         .outer {
@@ -294,11 +291,11 @@
     
             return `
             <div class="table-row" style="grid-template-columns: `+config+`;">
-                <div><img src=`+image+`-24 style="opacity:1"></div>
+                <div><img src=`+image+` height=24px style="opacity:1"></div>
                 `+div_columns+`
                 <div class="action-buttons">
-                    <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" src=asset://1ceaeb30a0df8232adc84209a54e5829-24>
-                    <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" src=asset://eaf41cb4f2d8b12ccf85c865b4a2c32f-24>
+                    <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" height=24px src=asset://f218b6ad34fe8564e0553dc2bba91cc8>
+                    <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" height=24px src=asset://e984745ad793f4ca43bc3c5f14cb317d>
                 </div>
             </div>
             <div class="collapsible-content">
@@ -403,7 +400,7 @@
         ]
         const oneThrough20 = [
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
-    
+  
         function featuresTab() {
             
             // Parameters
@@ -429,12 +426,23 @@
 
                 // Image
                 const subtypeImages = {
-                    "sorcerer":"asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
+                    "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+                    "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
+                    "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+                    "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+                    "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
+                    "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+                    "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
+                    "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
+                    "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
+                    "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
+                    "wizard":"asset://e2d748d34e46ddf3b9fa29762c3f5c14",
                 };
                 const typeImages = {
-                    "racial": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
-                    "feat": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
-                    "class": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                    "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
+                    "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
+                    "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
                 };
                 image = subtypeImages[subtype] || typeImages[type] || "";
 
@@ -733,7 +741,6 @@
                 })
             })
         }
-
 
 
         //=====================================================================================================

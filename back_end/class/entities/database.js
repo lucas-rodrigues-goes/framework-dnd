@@ -486,7 +486,7 @@ try {
             const object = new Feature(name, type, subtype, level, optional, description)
 
             // Verify if already exists
-            if(name in database.data) {this.remove_resource(name)}
+            if(name in database.data) {this.remove_feature(name)}
 
 
             // Type

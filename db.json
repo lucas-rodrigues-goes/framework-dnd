@@ -1,0 +1,1016 @@
+{
+  "proficiencies": {
+    "data": {},
+    "type": {
+      "skill": [],
+      "weapon": [],
+      "save": [],
+      "tool": []
+    }
+  },
+  "resources": {
+    "data": {},
+    "type": {},
+    "level": {}
+  },
+  "damage_types": {
+    "data": {
+      "acid": {
+        "name": "acid",
+        "type": "elemental",
+        "description": "Acid damage corrodes and dissolves materials, leaving behind smoking remnants and searing wounds. The air fills with the acrid stench of sulfur, and whatever it touches seems to bubble and hiss in agony.\n\nA green dragon's acidic breath sweeps over the battlefield, dissolving the armor of its enemies and leaving deep, burning holes in their skin. A character caught in the breath must struggle to avoid the corrosive effects, feeling their armor and weapons start to melt away under the acid's relentless assault.",
+        "image": "asset://2dec258f2f1c8012f4cf58b457fbd459"
+      },
+      "bludgeoning": {
+        "name": "bludgeoning",
+        "type": "physical",
+        "description": "Bludgeoning damage crushes and batters, leaving behind bruises, fractures, and broken bones. The impact resonates like thunder, as though the earth itself rises to meet the blow.\n\nA barbarian swings their greatsword in a massive arc, landing a crushing blow against a giant's leg. The heavy force causes the giant to stumble, while the ground beneath trembles with the sheer weight of the strike. The giant roars in pain, staggering as it feels the brute force of the blow reverberate through its bones.",
+        "image": "asset://5be7c85b6eff402cdd533bea7517d564"
+      },
+      "cold": {
+        "name": "cold",
+        "type": "elemental",
+        "description": "Cold damage freezes and numbs, enshrouding the target in biting frost. The air becomes brittle, and frost crystals creep across surfaces, leaving behind icy scars and a deathly chill.\n\nA wizard casts Cone of Cold, sending a blast of freezing air toward a group of enemies. As the icy wind hits them, their movements slow, and frostbite marks appear on their exposed skin. Those caught in the blast struggle to move, their muscles stiff and slow from the numbing cold, as the ice creeps into their joints.",
+        "image": "asset://3bec73de34380eaa439b63ed4a081909"
+      },
+      "fire": {
+        "name": "fire",
+        "type": "elemental",
+        "description": "Fire damage burns with fierce, searing heat, scorching flesh and igniting materials in an inferno of destruction. The world around the flames warps and flickers, the air thick with smoke and the crackling of burning matter.\n\nA sorcerer conjures a fireball that explodes in the midst of a cluster of orcs. The blast sets the surrounding foliage ablaze, and the orcs cry out in pain as flames lick at their skin, reducing their armor to ash. The smell of burnt flesh fills the air as the heat from the explosion continues to burn everything in its radius.",
+        "image": "asset://daa543ebbb04f5cea92ea064656c85c6"
+      },
+      "force": {
+        "name": "force",
+        "type": "special",
+        "description": "Force damage is an unseen, pure energy that crushes and pushes with overwhelming power. It feels as though the very air itself is turned into a solid weight, compressing and flinging the target with devastating results.\n\nA mage casts Magic Missile, sending bolts of magical force darting toward the enemy. Each bolt strikes with pinpoint precision, exploding in bursts of invisible energy that leave the target stumbling backward, as if slammed by an unseen hand. The creature feels the impact deep within its chest, though no physical object touched it.",
+        "image": "asset://2957f07243eb79029f44c069481f4853"
+      },
+      "piercing": {
+        "name": "piercing",
+        "type": "physical",
+        "description": "Piercing damage punctures and slices through the target, often leaving deep, narrow wounds. The damage is quick and precise, tearing through armor and flesh alike with ease.\n\nA rogue fires a crossbow bolt at an approaching enemy, the tip of the bolt punching through the creature’s defenses and embedding itself in its shoulder. The victim winces, the bolt having pierced both armor and flesh, and with a small spray of blood, it’s clear the damage is deep, though the wound is narrow.",
+        "image": "asset://c99068f93e9cbec6a1e4fe64f8b0beb5"
+      },
+      "psychic": {
+        "name": "psychic",
+        "type": "special",
+        "description": "Psychic damage assaults the mind directly, causing unbearable mental anguish and confusion. The target’s thoughts are twisted and torn, leaving them in a state of disorientation or madness.\n\nA mind flayer reaches out with its tentacles and sends a psychic shockwave through a character’s mind. The character stumbles, clutching their head as their thoughts spin out of control, their vision blurring and their sense of reality warping. The pain is not physical but an overwhelming mental assault that disorients and weakens the will to fight.",
+        "image": "asset://5f1eadd995ada478ae415d01039227aa"
+      },
+      "radiant": {
+        "name": "radiant",
+        "type": "special",
+        "description": "Radiant damage shines with divine light, burning through darkness and evil with holy purity. It leaves behind a glowing mark, as though touched by the sun itself, dispelling shadows and healing wounds with its blinding light.\n\nA cleric calls upon the power of their deity, casting Guiding Bolt and striking their enemy with a bolt of radiant light. The enemy is temporarily blinded by the sudden burst, and the light seems to scorch their skin, leaving a faint glow that lingers even after the attack is over, purging the darkness within them.",
+        "image": "asset://c2fefa091fa0c48437731f0ad6944de5"
+      },
+      "thunder": {
+        "name": "thunder",
+        "type": "special",
+        "description": "Thunder damage pulses with explosive sound waves, rattling the environment and causing concussive effects. The force reverberates through the air, stunning and deafening those caught in its path.\n\nA bard uses their Thunderwave spell, creating a shockwave of sound that pushes enemies away. The roar is deafening, and enemies are knocked off their feet, disoriented by the violent noise and the tremors in the ground. Their ears ring as the air seems to vibrate with the force of the sound.",
+        "image": "asset://8800aa11907a964e37390a68f3e4feb3"
+      },
+      "necrotic": {
+        "name": "necrotic",
+        "type": "special",
+        "description": "Necrotic damage drains the life force, corrupting and decaying everything it touches. It leaves behind withered, gray skin and a deep, internal chill as it leeches vitality and vitality from its victims.\n\nA lich raises its hand, sending a wave of necrotic energy that engulfs a group of adventurers. The life force is sucked from them, their skin turning ashen and their strength waning. The effect feels like a heavy weight on the soul, as if the body itself is resisting the drain but cannot stop it.",
+        "image": "asset://e4038c86139ef7bb00ae7ede271aa5be"
+      },
+      "lightning": {
+        "name": "lightning",
+        "type": "elemental",
+        "description": "Lightning damage crackles with raw energy, snapping through the air with a violent jolt. The electric current sears flesh, leaves marks, and leaves a ringing in the ears, as the air crackles with static.\n\nA storm sorcerer summons a bolt of lightning that strikes down from the heavens, slamming into a group of enemies. The electric charge dances over their bodies, frying their armor and leaving scorch marks across their skin. The target is knocked backward, twitching from the aftershocks of the lightning coursing through their nerves.",
+        "image": "asset://134583abf12f915d3277e7096ba22c09"
+      },
+      "slashing": {
+        "name": "slashing",
+        "type": "physical",
+        "description": "Slashing damage rends and tears, carving deep gashes into flesh and slicing through armor with unrelenting precision. The air hums with the sharp hiss of a blade's arc, leaving behind trails of blood and the jagged sting of exposed wounds. Each strike is a calculated savagery, a testament to the lethality of a honed edge.\n\nA rogue darts forward, twin daggers flashing in the light as they carve intricate patterns across an enemy's defenses. The blades bite deep, severing sinew and tearing cloth in a flurry of motion. The enemy staggers, blood dripping freely from the fresh wounds as the sting of the cuts settles in, each movement reopening the jagged lines and reminding them of the rogue's merciless precision.",
+        "image": "asset://a5ecc68523b5c6a9f843de98879c2ed8"
+      },
+      "poison": {
+        "name": "poison",
+        "type": "special",
+        "description": "Poison damage creeps insidiously through the body, corrupting and weakening from within. The target feels their strength ebb away as a vile, toxic force courses through their veins, overwhelming their natural defenses. The effects can range from excruciating pain to a slow, suffocating numbness that leaves the victim gasping for relief.\n\nA yuan-ti pureblood lashes out with a venom-coated blade, nicking the skin of its target. Within moments, a burning sensation spreads from the wound, intensifying into waves of nausea and muscle spasms. The victim's limbs grow heavy, their breath labored, and their vision dims as the poison takes hold. The agony feels as though their very life force is being consumed by a malevolent toxin, leaving them fragile and vulnerable.",
+        "image": "asset://91d630c543aa531518fbcecbf011042a"
+      }
+    },
+    "type": {
+      "physical": [
+        "bludgeoning",
+        "piercing",
+        "slashing"
+      ],
+      "elemental": [
+        "acid",
+        "cold",
+        "fire",
+        "lightning"
+      ],
+      "special": [
+        "force",
+        "psychic",
+        "radiant",
+        "thunder",
+        "necrotic",
+        "poison"
+      ]
+    }
+  },
+  "features": {
+    "data": {
+      "Sneak Attack": {
+        "name": "Sneak Attack",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "1",
+        "optional": "false",
+        "description": "You know how to strike subtly and exploit a foe's distraction. Once per turn, you can deal an extra 1d6 damage to one creature you hit with an attack if you have advantage on the attack roll. The attack must use a finesse or a ranged weapon.\n\nYou don't need advantage on the attack roll if another enemy of the target is within 5 feet of it, that enemy isn't incapacitated, and you don't have disadvantage on the attack roll.\n\nThe amount of the extra damage increases as you gain levels in this class, as shown in the Sneak Attack column of the Rogue table."
+      },
+      "Expertise": {
+        "name": "Expertise",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "1",
+        "optional": "false",
+        "description": "Choose two of your skill proficiencies, or one of your skill proficiencies and your proficiency with thieves' tools. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.\n\nAt 6th level, you can choose two more of your proficiencies (in skills or with thieves' tools) to gain this benefit."
+      },
+      "Thieves' Cant": {
+        "name": "Thieves' Cant",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "1",
+        "optional": "false",
+        "description": "During your rogue training you learned thieves' cant, a secret mix of dialect, jargon, and code that allows you to hide messages in seemingly normal conversation. Only another creature that knows thieves' cant understands such messages. It takes four times longer to convey such a message than it does to speak the same idea plainly.\n\nIn addition, you understand a set of secret signs and symbols used to convey short, simple messages, such as whether an area is dangerous or the territory of a thieves' guild, whether loot is nearby, or whether the people in an area are easy marks or will provide a safe house for thieves on the run."
+      },
+      "Cunning Action": {
+        "name": "Cunning Action",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "2",
+        "optional": "false",
+        "description": "Your quick thinking and agility allow you to move and act quickly. You can take a bonus action on each of your turns in combat. This action can be used only to take the Dash, Disengage, or Hide action."
+      },
+      "Roguish Archetype": {
+        "name": "Roguish Archetype",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "3",
+        "optional": "false",
+        "description": "You choose an archetype that you emulate in the exercise of your rogue abilities, such as Thief. Your archetype choice grants you features at 3rd level and then again at 9th, 13th, and 17th level."
+      },
+      "Ability Score Improvement": {
+        "name": "Ability Score Improvement",
+        "type": "feat",
+        "level": "4",
+        "optional": "true",
+        "description": "When you reach 4th level, and again at 8th, 10th, 12th, 16th, and 19th level, you can increase one ability score of your choice by 2, or you can increase two ability scores of your choice by 1. As normal, you can’t increase an ability score above 20 using this feature."
+      },
+      "Uncanny Dodge": {
+        "name": "Uncanny Dodge",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "5",
+        "optional": "false",
+        "description": "When an attacker that you can see hits you with an attack, you can use your reaction to halve the attack's damage against you."
+      },
+      "Roguish Evasion": {
+        "name": "Roguish Evasion",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "5",
+        "optional": "false",
+        "description": "You can nimbly dodge out of the way of certain area effects, such as a red dragon's fiery breath or an Ice Storm spell. When you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail."
+      },
+      "Reliable Talent": {
+        "name": "Reliable Talent",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "11",
+        "optional": "false",
+        "description": "You have refined your chosen skills until they approach perfection. Whenever you make an ability check that lets you add your proficiency bonus, you can treat a d20 roll of 9 or lower as a 10."
+      },
+      "Rogue Blindsense": {
+        "name": "Rogue Blindsense",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "14",
+        "optional": "false",
+        "description": "If you are able to hear, you are aware of the location of any hidden or invisible creature within 10 feet of you."
+      },
+      "Slippery Mind": {
+        "name": "Slippery Mind",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "15",
+        "optional": "false",
+        "description": "You have acquired greater mental strength. You gain proficiency in Wisdom saving throws."
+      },
+      "Elusive": {
+        "name": "Elusive",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "18",
+        "optional": "false",
+        "description": "You are so evasive that attackers rarely gain the upper hand against you. No attack roll has advantage against you while you aren't incapacitated."
+      },
+      "Stroke of Luck": {
+        "name": "Stroke of Luck",
+        "type": "class",
+        "subtype": "rogue",
+        "level": "20",
+        "optional": "false",
+        "description": "You have an uncanny knack for succeeding when you need to. If your attack misses a target within range, you can turn the miss into a hit. Alternatively, if you fail an ability check, you can treat the d20 roll as a 20.\n\nOnce you use this feature, you can't use it again until you finish a short or long rest.\n"
+      },
+      "Rage": {
+        "name": "Rage",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "1",
+        "optional": "false",
+        "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\n\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\n\n• You have advantage on Strength checks and Strength saving throws.\n\n• When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n\n• You have resistance to bludgeoning, piercing, and slashing damage.\n\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\n\nYour rage lasts for 1 minute. It ends early if you are knocked unconscious or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\n\nOnce you have raged the maximum number of times for your barbarian level, you must finish a long rest before you can rage again. You may rage 2 times at 1st level, 3 at 3rd, 4 at 6th, 5 at 12th, and 6 at 17th."
+      },
+      "Barbarian Toughness": {
+        "name": "Barbarian Toughness",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "1",
+        "optional": "false",
+        "description": "While you are not wearing any armor, your Armor Class equals 10 + your Dexterity modifier + your Constitution modifier. You can use a shield and still gain this benefit."
+      },
+      "Reckless Attack": {
+        "name": "Reckless Attack",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "2",
+        "optional": "false",
+        "description": "You can throw aside all concern for defense to attack with fierce desperation. When you make your first attack on your turn, you can decide to attack recklessly. Doing so gives you advantage on melee weapon attack rolls using Strength during this turn, but attack rolls against you have advantage until your next turn."
+      },
+      "Primal Path": {
+        "name": "Primal Path",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "3",
+        "optional": "false",
+        "description": "You choose a path that shapes the nature of your rage, such as the Path of the Berserker. Your choice grants you features at 3rd level and again at 6th, 10th, and 14th levels."
+      },
+      "Extra Attack": {
+        "name": "Extra Attack",
+        "type": "class",
+        "subtype": "",
+        "level": "5",
+        "optional": "false",
+        "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn."
+      },
+      "Brutal Movement": {
+        "name": "Brutal Movement",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "5",
+        "optional": "false",
+        "description": "Your speed increases by 10 feet while you aren't wearing heavy armor."
+      },
+      "Feral Instinct": {
+        "name": "Feral Instinct",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "7",
+        "optional": "false",
+        "description": "Your instincts are so honed that you have advantage on initiative rolls.\n\nAdditionally, if you are surprised at the beginning of combat and aren't incapacitated, you can act normally on your first turn, but only if you enter your rage before doing anything else on that turn."
+      },
+      "Relentless Rage": {
+        "name": "Relentless Rage",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "11",
+        "optional": "false",
+        "description": "Your rage can keep you fighting despite grievous wounds. If you drop to 0 hit points while you're raging and don't die outright, you can make a DC 10 Constitution saving throw. If you succeed, you drop to 1 hit point instead.\n\nEach time you use this feature after the first, the DC increases by 5. When you finish a short or long rest, the DC resets to 10."
+      },
+      "Brutal Critical": {
+        "name": "Brutal Critical",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "9",
+        "optional": "false",
+        "description": "Your critical multiplier is increased by 1x when determining the extra damage for a critical hit with a melee attack.\n\nThis increases to an increase of 2x at 13th level and 3x at 17th level."
+      },
+      "Danger Sense": {
+        "name": "Danger Sense",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "2",
+        "optional": "false",
+        "description": "You gain an uncanny sense of when things nearby aren't as they should be, giving you an edge when you dodge away from danger. You have advantage on Dexterity saving throws against effects that you can see, such as traps and spells. To gain this benefit, you can't be blinded, deafened, or incapacitated."
+      },
+      "Persistent Rage": {
+        "name": "Persistent Rage",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "15",
+        "optional": "false",
+        "description": "Your rage is so fierce that it ends early only if you fall unconscious or if you choose to end it."
+      },
+      "Indomitable Might": {
+        "name": "Indomitable Might",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "18",
+        "optional": "false",
+        "description": "If your total for a Strength check is less than your Strength score, you can use that score in place of the total."
+      },
+      "Primal Champion": {
+        "name": "Primal Champion",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "20",
+        "optional": "false",
+        "description": "You embody the power of the wilds. Your Strength and Constitution scores increase by 4. Your maximum for those scores is now 24."
+      },
+      "Wizard Spellcasting": {
+        "name": "Wizard Spellcasting",
+        "type": "class",
+        "subtype": "wizard",
+        "level": "1",
+        "optional": "false",
+        "description": "As a student of arcane magic, you have a spellbook containing spells that show the first glimmerings of your true power.\n\nCantrips\n\nAt 1st level, you know three cantrips of your choice from the wizard spell list. You learn additional wizard cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Wizard table.\n\nSpellbook\n\nAt 1st level, you have a spellbook containing six 1st-level wizard spells of your choice. Your spellbook is the repository of the wizard spells you know, except your cantrips, which are fixed in your mind.\n\nPreparing and Casting Spells\n\nThe Wizard table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nYou prepare the list of wizard spells that are available for you to cast. To do so, choose a number of wizard spells from your spellbook equal to your Intelligence modifier + your wizard level (minimum of one spell). The spells must be of a level for which you have spell slots.\n\nFor example, if you're a 3rd-level wizard, you have four 1st-level and two 2nd-level spell slots. With an Intelligence of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination, chosen from your spellbook. If you prepare the 1st-level spell Magic Missile, you can cast it using a 1st-level or a 2nd-level slot. Casting the spell doesn't remove it from your list of prepared spells.\n\nYou can change your list of prepared spells when you finish a long rest. Preparing a new list of wizard spells requires time spent studying your spellbook and memorizing the incantations and gestures you must make to cast the spell: at least 1 minute per spell level for each spell on your list.\n\nSpellcasting Ability\n\nIntelligence is your spellcasting ability for your wizard spells, since you learn your spells through dedicated study and memorization. You use your Intelligence whenever a spell refers to your spellcasting ability. In addition, you use your Intelligence modifier when setting the saving throw DC for a wizard spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Intelligence modifier\nSpell attack modifier = your proficiency bonus + your Intelligence modifier\n\nRitual Casting\n\nYou can cast a wizard spell as a ritual if that spell has the ritual tag and you have the spell in your spellbook. You don't need to have the spell prepared.\n\nSpellcasting Focus\n\nYou can use an arcane focus as a spellcasting focus for your wizard spells.\n\nLearning Spells of 1st Level and Higher\n\nEach time you gain a wizard level, you can add two wizard spells of your choice to your spellbook for free. Each of these spells must be of a level for which you have spell slots, as shown on the Wizard table. On your adventures, you might find other spells that you can add to your spellbook."
+      },
+      "Arcane Recovery": {
+        "name": "Arcane Recovery",
+        "type": "class",
+        "subtype": "wizard",
+        "level": "1",
+        "optional": "false",
+        "description": "You have learned to regain some of your magical energy by studying your spellbook. Once per day when you finish a short rest, you can choose expended spell slots to recover. The spell slots can have a combined level that is equal to or less than half your wizard level (rounded up), and none of the slots can be 6th level or higher.\n\nFor example, if you’re a 4th-level wizard, you can recover up to two levels worth of spell slots. You can recover either a 2nd-level spell slot or two 1st-level spell slots."
+      },
+      "Arcane Tradition": {
+        "name": "Arcane Tradition",
+        "type": "class",
+        "subtype": "wizard",
+        "level": "2",
+        "optional": "false",
+        "description": "You choose an arcane tradition, shaping your practice of magic through one of eight schools, such as Evocation. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level."
+      },
+      "Spell Mastery": {
+        "name": "Spell Mastery",
+        "type": "class",
+        "subtype": "wizard",
+        "level": "18",
+        "optional": "false",
+        "description": "You have achieved such mastery over certain spells that you can cast them at will. Choose a 1st-level wizard spell and a 2nd-level wizard spell that are in your spellbook. You can cast those spells at their lowest level without expending a spell slot when you have them prepared. If you want to cast either spell at a higher level, you must expend a spell slot as normal.\n\nBy spending 8 hours in study, you can exchange one or both of the spells you chose for different spells of the same levels."
+      },
+      "Signature Spells": {
+        "name": "Signature Spells",
+        "type": "class",
+        "subtype": "wizard",
+        "level": "20",
+        "optional": "false",
+        "description": "You gain mastery over two powerful spells and can cast them with little effort. Choose two 3rd-level wizard spells in your spellbook as your signature spells. You always have these spells prepared, they don't count against the number of spells you have prepared, and you can cast each of them once at 3rd level without expending a spell slot. When you do so, you can't do so again until you finish a short or long rest.\n\nIf you want to cast either spell at a higher level, you must expend a spell slot as normal."
+      },
+      "Action Surge": {
+        "name": "Action Surge",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "2",
+        "optional": "false",
+        "description": "You can push yourself beyond your normal limits for a moment. On your turn, you can take one additional action on top of your regular action and a possible bonus action.\n\nOnce you use this feature, you must finish a short or long rest before you can use it again. Starting at 17th level, you can use it twice before a rest, but only once on the same turn."
+      },
+      "Martial Archetype": {
+        "name": "Martial Archetype",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "3",
+        "optional": "false",
+        "description": "You choose an archetype that you strive to emulate in your combat styles and techniques, such as Champion. The archetype you choose grants you features at 3rd level and again at 7th, 10th, 15th, and 18th level."
+      },
+      "Extra Feat": {
+        "name": "Extra Feat",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "6",
+        "optional": "false",
+        "description": "You receive an extra feat, you receive this feature again at 14th level."
+      },
+      "Two Extra Attacks": {
+        "name": "Two Extra Attacks",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "11",
+        "optional": "false",
+        "description": "You can attack thrice, instead of twice, whenever you take the Attack action on your turn."
+      },
+      "Three Extra Attacks": {
+        "name": "Three Extra Attacks",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "20",
+        "optional": "false",
+        "description": "You can attack four times whenever you take the Attack action on your turn."
+      },
+      "Indomitable": {
+        "name": "Indomitable",
+        "type": "class",
+        "subtype": "fighter",
+        "level": "9",
+        "optional": "false",
+        "description": "You can reroll a saving throw that you fail. If you do so, you must use the new roll, and you can't use this feature again until you finish a long rest.\n\nYou can use this feature twice between long rests starting at 13th level and three times between long rests starting at 17th level."
+      },
+      "Druid Spellcasting": {
+        "name": "Druid Spellcasting",
+        "type": "class",
+        "subtype": "druid",
+        "level": "1",
+        "optional": "false",
+        "description": "Drawing on the divine essence of nature itself, you can cast spells to shape that essence to your will.\n\nCantrips\n\nAt 1st level, you know two cantrips of your choice from the druid spell list. You learn additional druid cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Druid table.\n\nPreparing and Casting Spells\n\nThe Druid table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these druid spells, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nYou prepare the list of druid spells that are available for you to cast, choosing from the druid spell list. When you do so, choose a number of druid spells equal to your Wisdom modifier + your druid level (minimum of one spell). The spells must be of a level for which you have spell slots.\n\nFor example, if you are a 3rd-level druid, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell Cure Wounds, you can cast it using a 1st-level ar 2nd-level slot. Casting the spell doesn't remove it from your list of prepared spells.\n\nYou can also change your list of prepared spells when you finish a long rest. Preparing a new list of druid spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.\n\nSpellcasting Ability\n\nWisdom is your spellcasting ability for your druid spells, since your magic draws upon your devotion and attunement to nature. You use your Wisdom whenever a spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a druid spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Wisdom modifier\nSpell attack modifier = your proficiency bonus + your Wisdom modifier\n\nRitual Casting\n\nYou can cast a druid spell as a ritual if that spell has the ritual tag and you have the spell prepared.\n\nSpellcasting Focus\n\nYou can use a druidic focus as a spellcasting focus for your druid spells."
+      },
+      "Wildshape": {
+        "name": "Wildshape",
+        "type": "class",
+        "subtype": "druid",
+        "level": "2",
+        "optional": "false",
+        "description": "You can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice. You regain expended uses when you finish a short or long rest.\n\nYou can stay in a beast shape for a number of hours equal to half your druid level (rounded down). You then revert to your normal form unless you expend another use of this feature. You can revert to your normal form earlier by using a bonus action on your turn. You automatically revert if you fall unconscious, drop to 0 hit points, or die.\n\nWhile you are transformed, the following rules apply:\n\nYour game statistics are replaced by the statistics of the beast, but you retain your alignment, personality, and Intelligence, Wisdom, and Charisma scores. You also retain all of your skill and saving throw proficiencies, in addition to gaining those of the creature. If the creature has the same proficiency as you and the bonus in its stat block is higher than yours, use the creature's bonus instead of yours. If the creature has any legendary or lair actions, you can't use them.\n\nWhen you transform, you assume the beast's hit points and Hit Dice. When you revert to your normal form, you return to the number of hit points you had before you transformed. However, if you revert as a result of dropping to 0 hit points, any excess damage carries over to your normal form. For example, if you take 10 damage in animal form and have only 1 hit point left, you revert and take 9 damage. As long as the excess damage doesn't reduce your normal form to 0 hit points, you aren't knocked unconscious.\n\nYou can't cast spells, and your ability to speak or take any action that requires hands is limited to the capabilities of your beast form. \n\nTransforming doesn't break your concentration on a spell you've already cast, however, or prevent you from taking actions that are part of a spell, such as Call Lightning, that you've already cast.\nYou retain the benefit of any features from your class, race, or other source and can use them if the new form is physically capable of doing so. \n\nHowever, you can't use any of your special senses, such as darkvision, unless your new form also has that sense.\n\nYou choose whether your equipment falls to the ground in your space, merges into your new form, or is worn by it. \n\nWorn equipment functions as normal, but the DM decides whether it is practical for the new form to wear a piece of equipment, based on the creature's shape and size. \n\nYour equipment doesn't change size or shape to match the new form, and any equipment that the new form can't wear must either fall to the ground or merge with it. \n\nEquipment that merges with the form has no effect until you leave the form."
+      },
+      "Druid Circle": {
+        "name": "Druid Circle",
+        "type": "class",
+        "subtype": "druid",
+        "level": "2",
+        "optional": "false",
+        "description": "You choose to identify with a circle of druids, such as the Circle of the Land. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level."
+      },
+      "Timeless Body": {
+        "name": "Timeless Body",
+        "type": "class",
+        "subtype": "druid",
+        "level": "18",
+        "optional": "false",
+        "description": "The primal magic that you wield causes you to age more slowly. For every 10 years that pass, your body ages only 1 year."
+      },
+      "Beast Spells": {
+        "name": "Beast Spells",
+        "type": "class",
+        "subtype": "druid",
+        "level": "18",
+        "optional": "false",
+        "description": "You can cast many of your druid spells in any shape you assume using Wild Shape. You can perform the somatic and verbal components of a druid spell while in a beast shape, but you aren't able to provide material components."
+      },
+      "Archdruid": {
+        "name": "Archdruid",
+        "type": "class",
+        "subtype": "druid",
+        "level": "18",
+        "optional": "false",
+        "description": "You can use your Wild Shape an unlimited number of times.\n\nAdditionally, you can ignore the verbal and somatic components of your druid spells, as well as any material components that lack a cost and aren't consumed by a spell. You gain this benefit in both your normal shape and your beast shape from Wild Shape."
+      },
+      "Sorcerer Spellcasting": {
+        "name": "Sorcerer Spellcasting",
+        "type": "class",
+        "subtype": "sorcerer",
+        "level": "1",
+        "optional": "false",
+        "description": "An event in your past, or in the life of a parent or ancestor, left an indelible mark on you, infusing you with arcane magic. This font of magic, whatever its origin, fuels your spells.\n\nCantrips\n\nAt 1st level, you know four cantrips of your choice from the sorcerer spell list. You learn additional sorcerer cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Sorcerer table.\n\nSpell Slots\n\nThe Sorcerer table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these sorcerer spells, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nFor example, if you know the 1st-level spell Burning Hands and have a 1st-level and a 2nd-level spell slot available, you can cast Burning Hands using either slot.\n\nSpells Known of 1st Level and Higher\n\nYou know two 1st-level spells of your choice from the sorcerer spell list.\n\nYou learn an additional sorcerer spell of your choice at each level except 12th, 14th, 16th, 18th, 19th, and 20th. Each of these spells must be of a level for which you have spell slots. For instance, when you reach 3rd level in this class, you can learn one new spell of 1st or 2nd level.\n\nAdditionally, when you gain a level in this class, you can choose one of the sorcerer spells you know and replace it with another spell from the sorcerer spell list, which also must be of a level for which you have spell slots.\n\nSpellcasting Ability\n\nCharisma is your spellcasting ability for your sorcerer spells, since the power of your magic relies on your ability to project your will into the world. You use your Charisma whenever a spell refers to your spellcasting ability. In addition, you use your Charisma modifier when setting the saving throw DC for a sorcerer spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Charisma modifier\nSpell attack modifier = your proficiency bonus + your Charisma modifier\n\nSpellcasting Focus\n\nYou can use an arcane focus as a spellcasting focus for your sorcerer spells."
+      },
+      "Sorcerer Origin": {
+        "name": "Sorcerer Origin",
+        "type": "class",
+        "subtype": "sorcerer",
+        "level": "1",
+        "optional": "false",
+        "description": "Choose a sorcerous origin, which describes the source of your innate magical power, such as Draconic Bloodline.\n\nYour choice grants you features when you choose it at 1st level and again at 6th, 14th, and 18th level."
+      },
+      "Font of Magic": {
+        "name": "Font of Magic",
+        "type": "class",
+        "subtype": "sorcerer",
+        "level": "2",
+        "optional": "false",
+        "description": "You tap into a deep wellspring of magic within yourself. This wellspring is represented by sorcery points, which allow you to create a variety of magical effects.\n\nYou have 2 sorcery points, and you gain one additional point every time you level up, to a maximum of 20 at level 20. You can never have more sorcery points than shown on the table for your level. You regain all spent sorcery points when you finish a long rest."
+      },
+      "Metamagic": {
+        "name": "Metamagic",
+        "type": "class",
+        "subtype": "sorcerer",
+        "level": "2",
+        "optional": "false",
+        "description": "You gain the ability to twist your spells to suit your needs. You gain two of the following Metamagic options of your choice. You gain another one at 10th and 17th level.\n\nYou can use only one Metamagic option on a spell when you cast it, unless otherwise noted."
+      },
+      "Sorcerous Restoration": {
+        "name": "Sorcerous Restoration",
+        "type": "class",
+        "subtype": "sorcerer",
+        "level": "20",
+        "optional": "false",
+        "description": "You regain half of your expended sorcery points whenever you finish a short rest."
+      }
+    },
+    "type": {
+      "class": [
+        "Extra Attack",
+        "Rage",
+        "Barbarian Toughness",
+        "Reckless Attack",
+        "Danger Sense",
+        "Primal Path",
+        "Brutal Movement",
+        "Feral Instinct",
+        "Brutal Critical",
+        "Relentless Rage",
+        "Persistent Rage",
+        "Indomitable Might",
+        "Primal Champion",
+        "Druid Spellcasting",
+        "Wildshape",
+        "Druid Circle",
+        "Timeless Body",
+        "Beast Spells",
+        "Archdruid",
+        "Action Surge",
+        "Martial Archetype",
+        "Extra Feat",
+        "Indomitable",
+        "Two Extra Attacks",
+        "Three Extra Attacks",
+        "Sneak Attack",
+        "Expertise",
+        "Thieves' Cant",
+        "Cunning Action",
+        "Roguish Archetype",
+        "Uncanny Dodge",
+        "Roguish Evasion",
+        "Reliable Talent",
+        "Rogue Blindsense",
+        "Slippery Mind",
+        "Elusive",
+        "Stroke of Luck",
+        "Wizard Spellcasting",
+        "Arcane Recovery",
+        "Arcane Tradition",
+        "Spell Mastery",
+        "Signature Spells",
+        "Sorcerer Spellcasting",
+        "Sorcerer Origin",
+        "Font of Magic",
+        "Metamagic",
+        "Sorcerous Restoration"
+      ],
+      "feat": [
+        "Ability Score Improvement"
+      ]
+    },
+    "subtype": {
+      "rogue": [
+        "Sneak Attack",
+        "Expertise",
+        "Thieves' Cant",
+        "Cunning Action",
+        "Roguish Archetype",
+        "Uncanny Dodge",
+        "Roguish Evasion",
+        "Reliable Talent",
+        "Rogue Blindsense",
+        "Slippery Mind",
+        "Elusive",
+        "Stroke of Luck"
+      ],
+      "barbarian": [
+        "Rage",
+        "Barbarian Toughness",
+        "Reckless Attack",
+        "Primal Path",
+        "Brutal Movement",
+        "Feral Instinct",
+        "Relentless Rage",
+        "Brutal Critical",
+        "Danger Sense",
+        "Persistent Rage",
+        "Indomitable Might",
+        "Primal Champion"
+      ],
+      "undefined": [
+        "Ability Score Improvement"
+      ],
+      "sorcerer": [
+        "Sorcerer Spellcasting",
+        "Sorcerer Origin",
+        "Font of Magic",
+        "Metamagic",
+        "Sorcerous Restoration"
+      ],
+      "": [
+        "Extra Attack"
+      ],
+      "wizard": [
+        "Wizard Spellcasting",
+        "Arcane Recovery",
+        "Arcane Tradition",
+        "Spell Mastery",
+        "Signature Spells"
+      ],
+      "fighter": [
+        "Action Surge",
+        "Martial Archetype",
+        "Extra Feat",
+        "Two Extra Attacks",
+        "Three Extra Attacks",
+        "Indomitable"
+      ],
+      "druid": [
+        "Druid Spellcasting",
+        "Wildshape",
+        "Druid Circle",
+        "Timeless Body",
+        "Beast Spells",
+        "Archdruid"
+      ]
+    },
+    "level": {
+      "1": [
+        "Sneak Attack",
+        "Expertise",
+        "Thieves' Cant",
+        "Rage",
+        "Barbarian Toughness",
+        "Wizard Spellcasting",
+        "Arcane Recovery",
+        "Druid Spellcasting",
+        "Sorcerer Spellcasting",
+        "Sorcerer Origin"
+      ],
+      "2": [
+        "Cunning Action",
+        "Reckless Attack",
+        "Danger Sense",
+        "Arcane Tradition",
+        "Action Surge",
+        "Wildshape",
+        "Druid Circle",
+        "Font of Magic",
+        "Metamagic"
+      ],
+      "3": [
+        "Roguish Archetype",
+        "Primal Path",
+        "Martial Archetype"
+      ],
+      "4": [
+        "Ability Score Improvement"
+      ],
+      "5": [
+        "Uncanny Dodge",
+        "Roguish Evasion",
+        "Extra Attack",
+        "Brutal Movement"
+      ],
+      "6": [
+        "Extra Feat"
+      ],
+      "7": [
+        "Feral Instinct"
+      ],
+      "9": [
+        "Brutal Critical",
+        "Indomitable"
+      ],
+      "11": [
+        "Reliable Talent",
+        "Relentless Rage",
+        "Two Extra Attacks"
+      ],
+      "14": [
+        "Rogue Blindsense"
+      ],
+      "15": [
+        "Slippery Mind",
+        "Persistent Rage"
+      ],
+      "18": [
+        "Elusive",
+        "Indomitable Might",
+        "Spell Mastery",
+        "Timeless Body",
+        "Beast Spells",
+        "Archdruid"
+      ],
+      "20": [
+        "Stroke of Luck",
+        "Primal Champion",
+        "Signature Spells",
+        "Three Extra Attacks",
+        "Sorcerous Restoration"
+      ]
+    },
+    "optional": {
+      "false": [
+        "Sneak Attack",
+        "Expertise",
+        "Thieves' Cant",
+        "Cunning Action",
+        "Roguish Archetype",
+        "Uncanny Dodge",
+        "Roguish Evasion",
+        "Reliable Talent",
+        "Rogue Blindsense",
+        "Slippery Mind",
+        "Elusive",
+        "Stroke of Luck",
+        "Rage",
+        "Barbarian Toughness",
+        "Reckless Attack",
+        "Primal Path",
+        "Extra Attack",
+        "Brutal Movement",
+        "Feral Instinct",
+        "Relentless Rage",
+        "Brutal Critical",
+        "Danger Sense",
+        "Persistent Rage",
+        "Indomitable Might",
+        "Primal Champion",
+        "Wizard Spellcasting",
+        "Arcane Recovery",
+        "Arcane Tradition",
+        "Spell Mastery",
+        "Signature Spells",
+        "Action Surge",
+        "Martial Archetype",
+        "Extra Feat",
+        "Two Extra Attacks",
+        "Three Extra Attacks",
+        "Indomitable",
+        "Druid Spellcasting",
+        "Wildshape",
+        "Druid Circle",
+        "Timeless Body",
+        "Beast Spells",
+        "Archdruid",
+        "Sorcerer Spellcasting",
+        "Sorcerer Origin",
+        "Font of Magic",
+        "Metamagic",
+        "Sorcerous Restoration"
+      ],
+      "true": [
+        "Ability Score Improvement"
+      ]
+    }
+  },
+  "spells": {
+    "data": {
+      "Shield": {
+        "name": "Shield",
+        "level": "1st",
+        "school": "abjuration",
+        "classes": [
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 1,
+        "range": "self",
+        "target": "The caster",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": 1,
+        "description": "An invisible barrier of magical force appears and protects you. Until the start of your next turn, you have a +5 bonus to AC, including against the triggering attack, and you take no damage from magic missile.",
+        "description_higher_levels": ""
+      },
+      "Misty Step": {
+        "name": "Misty Step",
+        "level": "2nd",
+        "school": "conjuration",
+        "classes": [
+          "sorcerer",
+          "warlock",
+          "wizard"
+        ],
+        "cast_time": 2,
+        "range": 30,
+        "target": "Self",
+        "components": [
+          "vocal"
+        ],
+        "duration": 0,
+        "description": "Briefly surrounded by silvery mist, you teleport up to 30 feet to an unoccupied space that you can see.",
+        "description_higher_levels": ""
+      },
+      "Detect Magic": {
+        "name": "Detect Magic",
+        "level": "1st",
+        "school": "divination",
+        "classes": [
+          "bard",
+          "cleric",
+          "druid",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 1,
+        "range": "self",
+        "target": "The caster and an area within 30 feet",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": 100,
+        "description": "For the duration, you sense the presence of magic within 30 feet of you. If you sense magic in this way, you can use your action to see a faint aura around any visible creature or object in the area that bears magic, and you learn its school of magic, if any.",
+        "description_higher_levels": ""
+      },
+      "Sleep": {
+        "name": "Sleep",
+        "level": "1st",
+        "school": "enchantment",
+        "classes": [
+          "bard",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 1,
+        "range": 90,
+        "target": "Creatures within a 20-foot radius of a point",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": 10,
+        "description": "This spell sends creatures into a magical slumber. Roll 5d8; the total is how many hit points of creatures this spell can affect. Creatures within 20 feet of a point you choose within range are affected in ascending order of their current hit points (ignoring unconscious creatures).",
+        "description_higher_levels": "When you cast this spell using a spell slot of 2nd level or higher, roll an additional 2d8 for each slot level above 1st."
+      },
+      "Invisibility": {
+        "name": "Invisibility",
+        "level": "2nd",
+        "school": "illusion",
+        "classes": [
+          "bard",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 2,
+        "range": "touch",
+        "target": "One creature",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": 600,
+        "description": "A creature you touch becomes invisible until the spell ends. Anything the target is wearing or carrying is invisible as long as it is on the target's person. The spell ends for a target that attacks or casts a spell.",
+        "description_higher_levels": "When you cast this spell using a spell slot of 3rd level or higher, you can target one additional creature for each slot level above 2nd."
+      },
+      "Animate Dead": {
+        "name": "Animate Dead",
+        "level": "3rd",
+        "school": "necromancy",
+        "classes": [
+          "cleric",
+          "wizard"
+        ],
+        "cast_time": 3,
+        "range": 10,
+        "target": "One or more corpses within range",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": 14400,
+        "description": "This spell creates undead servants. Choose a pile of bones or a corpse of a Medium or Small humanoid within range. Your spell imbues the target with a foul mimicry of life, raising it as an undead creature.",
+        "description_higher_levels": "When you cast this spell using a spell slot of 4th level or higher, you animate or reassert control over two additional undead creatures for each slot level above 3rd."
+      },
+      "Polymorph": {
+        "name": "Polymorph",
+        "level": "4th",
+        "school": "transmutation",
+        "classes": [
+          "bard",
+          "druid",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 4,
+        "range": 60,
+        "target": "One creature",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": 600,
+        "description": "This spell transforms a creature that you can see within range into a new form. An unwilling creature must make a Wisdom saving throw to avoid the effect. The transformation lasts for the duration, or until the target drops to 0 hit points or dies.",
+        "description_higher_levels": ""
+      },
+      "Fireball": {
+        "name": "Fireball",
+        "level": "3rd",
+        "school": "evocation",
+        "classes": [
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": 3,
+        "range": 150,
+        "target": "A point you choose within range",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": 0,
+        "description": "A bright streak flashes from your pointing finger to a point you choose within range then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one. The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried.",
+        "description_higher_levels": "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd."
+      }
+    },
+    "level": {
+      "cantrip": [],
+      "1st": [
+        "Shield",
+        "Detect Magic",
+        "Sleep"
+      ],
+      "2nd": [
+        "Misty Step",
+        "Invisibility"
+      ],
+      "3rd": [
+        "Animate Dead",
+        "Fireball"
+      ],
+      "4th": [
+        "Polymorph"
+      ],
+      "5th": [],
+      "6th": [],
+      "7th": [],
+      "8th": [],
+      "9th": []
+    },
+    "class": {
+      "bard": [
+        "Detect Magic",
+        "Sleep",
+        "Invisibility",
+        "Polymorph"
+      ],
+      "cleric": [
+        "Detect Magic",
+        "Animate Dead"
+      ],
+      "druid": [
+        "Detect Magic",
+        "Polymorph"
+      ],
+      "sorcerer": [
+        "Shield",
+        "Misty Step",
+        "Detect Magic",
+        "Sleep",
+        "Invisibility",
+        "Polymorph",
+        "Fireball"
+      ],
+      "warlock": [
+        "Misty Step"
+      ],
+      "wizard": [
+        "Shield",
+        "Misty Step",
+        "Detect Magic",
+        "Sleep",
+        "Invisibility",
+        "Animate Dead",
+        "Polymorph",
+        "Fireball"
+      ]
+    },
+    "school": {
+      "abjuration": [
+        "Shield"
+      ],
+      "conjuration": [
+        "Misty Step"
+      ],
+      "divination": [
+        "Detect Magic"
+      ],
+      "enchantment": [
+        "Sleep"
+      ],
+      "evocation": [
+        "Fireball"
+      ],
+      "illusion": [
+        "Invisibility"
+      ],
+      "necromancy": [
+        "Animate Dead"
+      ],
+      "transmutation": [
+        "Polymorph"
+      ]
+    }
+  },
+  "items": {
+    "data": {},
+    "type": {}
+  }
+}
