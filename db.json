@@ -413,14 +413,6 @@
         "optional": "false",
         "description": "You choose to identify with a circle of druids, such as the Circle of the Land. Your choice grants you features at 2nd level and again at 6th, 10th, and 14th level."
       },
-      "Timeless Body": {
-        "name": "Timeless Body",
-        "type": "class",
-        "subtype": "druid",
-        "level": "18",
-        "optional": "false",
-        "description": "The primal magic that you wield causes you to age more slowly. For every 10 years that pass, your body ages only 1 year."
-      },
       "Beast Spells": {
         "name": "Beast Spells",
         "type": "class",
@@ -628,6 +620,502 @@
         "level": "10",
         "optional": "false",
         "description": "You can call on your deity to intervene on your behalf when your need is great.\n\nImploring your deity's aid requires you to use your action. Describe the assistance you seek, and roll percentile dice. If you roll a number equal to or lower than your cleric level, your deity intervenes. The DM chooses the nature of the intervention; the effect of any cleric spell or cleric domain spell would be appropriate. If your deity intervenes, you can't use this feature again for 7 days. Otherwise, you can use it again after you finish a long rest.\n\nAt 20th level, your call for intervention succeeds automatically, no roll required."
+      },
+      "Remarkable Athlete": {
+        "name": "Remarkable Athlete",
+        "type": "class",
+        "subtype": "Champion",
+        "level": "7",
+        "optional": "false",
+        "description": "You can add half your proficiency bonus (rounded up) to any Strength, Dexterity, or Constitution check you make that doesn't already use your proficiency bonus.\n\nIn addition, when you make a running long jump, the distance you can cover increases by a number of feet equal to your Strength modifier."
+      },
+      "Improved Critical": {
+        "name": "Improved Critical",
+        "type": "class",
+        "subtype": "Champion",
+        "level": "3",
+        "optional": "false",
+        "description": "Your weapon attacks's minimum roll for a critical hit is reduced by 1. It is reduced by a further 1 at level 15."
+      },
+      "Survivor": {
+        "name": "Survivor",
+        "type": "class",
+        "subtype": "Champion",
+        "level": "18",
+        "optional": "false",
+        "description": "You attain the pinnacle of resilience in battle. At the start of each of your turns, you regain hit points equal to 5 + your Constitution modifier if you have no more than half of your hit points left. You don't gain this benefit if you have 0 hit points."
+      },
+      "Combat Superiority": {
+        "name": "Combat Superiority",
+        "type": "class",
+        "subtype": "Battle Master",
+        "level": "3",
+        "optional": "false",
+        "description": "You learn maneuvers that are fueled by special dice called superiority dice.\n\nManeuvers. You learn three maneuvers of your choice. Many maneuvers enhance an attack in some way. You can use only one maneuver per attack. You learn two additional maneuvers of your choice at 7th, 10th, and 15th level. Each time you learn new maneuvers, you can also replace one maneuver you know with a different one.\n\nSuperiority Dice. You have four superiority dice, which are d8s. A superiority die is expended when you use it. You regain all of your expended superiority dice when you finish a short or long rest. You gain another superiority die at 7th level and one more at 15th level.\n\nSaving Throws. Some of your maneuvers require your target to make a saving throw to resist the maneuver's effects. The saving throw DC is calculated as follows:\n\nManeuver save DC = 8 + your proficiency bonus + your Strength or Dexterity modifier (your choice)"
+      },
+      "Student of War": {
+        "name": "Student of War",
+        "type": "class",
+        "subtype": "Battle Master",
+        "level": "3",
+        "optional": "false",
+        "description": "You gain proficiency with one type of artisan's tools of your choice."
+      },
+      "Know Your Enemy": {
+        "name": "Know Your Enemy",
+        "type": "class",
+        "subtype": "Battle Master",
+        "level": "7",
+        "optional": "false",
+        "description": "If you spend at least 1 minute observing or interacting with another creature outside combat, you can learn certain information about its capabilities compared to your own. The DM tells you if the creature is your equal, superior, or inferior in regard to two of the following characteristics of your choice:\n\n- Strength score\n- Dexterity score\n- Constitution score\n- Armor Class\n- Current hit points\n- Total class levels, if any\n- Fighter class levels, if any"
+      },
+      "Relentless": {
+        "name": "Relentless",
+        "type": "class",
+        "subtype": "Battle Master",
+        "level": "15",
+        "optional": "false",
+        "description": "When you roll initiative and have no superiority dice remaining, you regain 1 superiority die."
+      },
+      "Eldritch Knight Spellcasting": {
+        "name": "Eldritch Knight Spellcasting",
+        "type": "class",
+        "subtype": "Eldritch Knight",
+        "level": "3",
+        "optional": "false",
+        "description": "You augment your martial prowess with the ability to cast spells.\n\nCantrips\nYou learn two cantrips of your choice from the wizard spell list. You learn an additional wizard cantrip of your choice at 10th level.\n\nSpell Slots\nThe Eldritch Knight Spellcasting table shows how many spell slots you have to cast your wizard spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nFor example, if you know the 1st-level spell Shield and have a 1st-level and a 2nd-level spell slot available, you can cast Shield using either slot.\n\nSpells Known of 1st Level and Higher\nYou know three 1st-level wizard spells of your choice, two of which you must choose from the abjuration and evocation spells on the wizard spell list.\n\nThe Spells Known column of the Eldritch Knight Spellcasting table shows when you learn more wizard spells of 1st level or higher. Each of these spells must be an abjuration or evocation spell of your choice, and must be of a level for which you have spell slots. For instance, when you reach 7th level in this class, you can learn one new spell of 1st or 2nd level.\n\nThe spells you learn at 8th, 14th, and 20th level can come from any school of magic.\n\nWhenever you gain a level in this class, you can replace one of the wizard spells you know with another spell of your choice from the wizard spell list. The new spell must be of a level for which you have spell slots, and it must be an abjuration or evocation spell, unless you're replacing the spell you gained at 3rd, 8th, 14th, or 20th level from any school of magic.\n\nSpellcasting Ability\nIntelligence is your spellcasting ability for your wizard spells, since you learn your spells through study and memorization. You use your Intelligence whenever a spell refers to your spellcasting ability. In addition, you use your Intelligence modifier when setting the saving throw DC for a wizard spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Intelligence modifier\n\nSpell attack modifier = your proficiency bonus + your Intelligence modifier"
+      },
+      "Weapon Bond": {
+        "name": "Weapon Bond",
+        "type": "class",
+        "subtype": "Eldritch Knight",
+        "level": "3",
+        "optional": "false",
+        "description": "You learn a ritual that creates a magical bond between yourself and one weapon. You perform the ritual over the course of 1 hour, which can be done during a short rest. The weapon must be within your reach throughout the ritual, at the conclusion of which you touch the weapon and forge the bond.\n\nOnce you have bonded a weapon to yourself, you can't be disarmed of that weapon unless you are incapacitated. If it is on the same plane of existence, you can summon that weapon as a bonus action on your turn, causing it to teleport instantly to your hand.\n\nYou can have up to two bonded weapons, but can summon only one at a time with your bonus action. If you attempt to bond with a third weapon, you must break the bond with one of the other two."
+      },
+      "War Magic": {
+        "name": "War Magic",
+        "type": "class",
+        "subtype": "Eldritch Knight",
+        "level": "7",
+        "optional": "false",
+        "description": "When you use your action to cast a spell, you can make one weapon attack as a bonus action."
+      },
+      "Eldritch Strike": {
+        "name": "Eldritch Strike",
+        "type": "class",
+        "subtype": "Eldritch Knight",
+        "level": "10",
+        "optional": "false",
+        "description": "You learn how to make your weapon strikes undercut a creature's resistance to your spells. When you hit a creature with a weapon attack, that creature has disadvantage on the next saving throw it makes against a spell you cast before the end of your next turn."
+      },
+      "Arcane Charge": {
+        "name": "Arcane Charge",
+        "type": "class",
+        "subtype": "Eldritch Knight",
+        "level": "15",
+        "optional": "false",
+        "description": "You gain the ability to teleport up to 30 feet to an unoccupied space you can see when you use your Action Surge. You can teleport before or after the additional action."
+      },
+      "Monk Toughness": {
+        "name": "Monk Toughness",
+        "type": "class",
+        "subtype": "monk",
+        "level": "1",
+        "optional": "false",
+        "description": "While you are wearing no armor and not wielding a shield, your AC equals 10 + your Dexterity modifier + your Wisdom modifier."
+      },
+      "Martial Arts": {
+        "name": "Martial Arts",
+        "type": "class",
+        "subtype": "monk",
+        "level": "1",
+        "optional": "false",
+        "description": "Your practice of martial arts gives you mastery of combat styles that use unarmed strikes and monk weapons, which are shortswords and any simple melee weapons that don't have the two-handed or heavy property.\n\nYou gain the following benefits while you are unarmed or wielding only monk weapons and you aren't wearing armor or wielding a shield:\n\nYou can use Dexterity instead of Strength for the attack and damage rolls of your unarmed strikes and monk weapons.\nYou can roll a d4 in place of the normal damage of your unarmed strike or monk weapon. This die changes as you gain monk levels, as shown in the Martial Arts column of the Monk table.\nWhen you use the Attack action with an unarmed strike or a monk weapon on your turn, you can make one unarmed strike as a bonus action. For example, if you take the Attack action and attack with a quarterstaff, you can also make an unarmed strike as a bonus action, assuming you haven't already taken a bonus action this turn.\nCertain monasteries use specialized forms of the monk weapons. For example, you might use a club that is two lengths of wood connected by a short chain (called a nunchaku) or a sickle with a shorter, straighter blade (called a kama). Whatever name you use for a monk weapon, you can use the game statistics provided for the weapon on the Weapons page."
+      },
+      "Ki": {
+        "name": "Ki",
+        "type": "class",
+        "subtype": "monk",
+        "level": "2",
+        "optional": "false",
+        "description": "Your training allows you to harness the mystic energy of ki. Your access to this energy is represented by a number of ki points. Your monk level determines the number of points you have, as shown in the Ki Points column of the Monk table.\n\nYou can spend these points to fuel various ki features. You start knowing three such features: Flurry of Blows, Patient Defense, and Step of the Wind. You learn more ki features as you gain levels in this class.\n\nWhen you spend a ki point, it is unavailable until you finish a short or long rest, at the end of which you draw all of your expended ki back into yourself. You must spend at least 30 minutes of the rest meditating to regain your ki points.\n\nSome of your ki features require your target to make a saving throw to resist the feature's effects. The saving throw DC is calculated as follows:\n\nKi save DC = 8 + your proficiency bonus + your Wisdom modifier\n\nFlurry of Blows. Immediately after you take the Attack action on your turn, you can spend 1 ki point to make two unarmed strikes as a bonus action.\nPatient Defense. You can spend 1 ki point to take the Dodge action as a bonus action on your turn.\nStep of the Wind. You can spend 1 ki point to take the Disengage or Dash action as a bonus action on your turn, and your jump distance is doubled for the turn."
+      },
+      "Monk Movement": {
+        "name": "Monk Movement",
+        "type": "class",
+        "subtype": "monk",
+        "level": "2",
+        "optional": "false",
+        "description": "Your speed increases by 10 feet while you are not wearing armor or wielding a shield. This bonus increases when you reach certain monk levels, as shown in the Monk table.\n\nAt 9th level, you gain the ability to move along vertical surfaces and across liquids on your turn without falling during the move."
+      },
+      "Deflect Missiles": {
+        "name": "Deflect Missiles",
+        "type": "class",
+        "subtype": "monk",
+        "level": "3",
+        "optional": "false",
+        "description": "You can use your reaction to deflect or catch the missile when you are hit by a ranged weapon attack. When you do so, the damage you take from the attack is reduced by 1d10 + your Dexterity modifier + your monk level.\n\nIf you reduce the damage to 0, you can catch the missile if it is small enough for you to hold in one hand and you have at least one hand free. If you catch a missile in this way, you can spend 1 ki point to make a ranged attack with a range of 20/60 using the weapon or piece of ammunition you just caught, as part of the same reaction. You make this attack with proficiency, regardless of your weapon proficiencies, and the missile counts as a monk weapon for the attack."
+      },
+      "Ki-Fueled Attack": {
+        "name": "Ki-Fueled Attack",
+        "type": "class",
+        "subtype": "monk",
+        "level": "3",
+        "optional": "false",
+        "description": "If you spend 1 ki point or more as part of your action on your turn, you can make one attack with an unarmed strike or a monk weapon as a bonus action before the end of the turn."
+      },
+      "Slow Fall": {
+        "name": "Slow Fall",
+        "type": "class",
+        "subtype": "monk",
+        "level": "4",
+        "optional": "false",
+        "description": "You can use your reaction when you fall to reduce any falling damage you take by an amount equal to five times your monk level."
+      },
+      "Quickened Healing": {
+        "name": "Quickened Healing",
+        "type": "class",
+        "subtype": "monk",
+        "level": "4",
+        "optional": "false",
+        "description": "As an action, you can spend 2 ki points and roll a Martial Arts die. You regain a number of hit points equal to the number rolled plus your proficiency bonus."
+      },
+      "Stunning Strike": {
+        "name": "Stunning Strike",
+        "type": "class",
+        "subtype": "monk",
+        "level": "5",
+        "optional": "false",
+        "description": "You can interfere with the flow of ki in an opponent's body. When you hit another creature with a melee weapon attack, you can spend 1 ki point to attempt a stunning strike. The target must succeed on a Constitution saving throw or be stunned until the end of your next turn"
+      },
+      "Focused Aim": {
+        "name": "Focused Aim",
+        "type": "class",
+        "subtype": "monk",
+        "level": "5",
+        "optional": "false",
+        "description": "When you miss with an attack roll, you can spend 1 to 3 ki points to increase your attack roll by 2 for each of these ki points you spend, potentially turning the miss into a hit."
+      },
+      "Ki-Empowered Strikes": {
+        "name": "Ki-Empowered Strikes",
+        "type": "class",
+        "subtype": "monk",
+        "level": "6",
+        "optional": "false",
+        "description": "Your unarmed strikes count as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage."
+      },
+      "Monk Evasion": {
+        "name": "Monk Evasion",
+        "type": "class",
+        "subtype": "monk",
+        "level": "7",
+        "optional": "false",
+        "description": "Your instinctive agility lets you dodge out of the way of certain area effects, such as a blue dragon's lightning breath or a fireball spell. When you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you instead take no damage if you succeed on the saving throw, and only half damage if you fail."
+      },
+      "Stillness of Mind": {
+        "name": "Stillness of Mind",
+        "type": "class",
+        "subtype": "monk",
+        "level": "7",
+        "optional": "false",
+        "description": "You can use your action to end one effect on yourself that is causing you to be charmed or frightened."
+      },
+      "Tongue of the Sun and the Moon": {
+        "name": "Tongue of the Sun and the Moon",
+        "type": "class",
+        "subtype": "monk",
+        "level": "13",
+        "optional": "false",
+        "description": "You learn to touch the ki of other minds so that you understand all spoken languages. Moreover, any creature that can understand a language can understand what you say."
+      },
+      "Purity of Body": {
+        "name": "Purity of Body",
+        "type": "class",
+        "subtype": "monk",
+        "level": "10",
+        "optional": "false",
+        "description": "Your mastery of the ki flowing through you makes you immune to disease and poison."
+      },
+      "Diamond Soul": {
+        "name": "Diamond Soul",
+        "type": "class",
+        "subtype": "monk",
+        "level": "14",
+        "optional": "false",
+        "description": "Your mastery of ki grants you proficiency in all saving throws.\n\nAdditionally, whenever you make a saving throw and fail, you can spend 1 ki point to reroll it and take the second result."
+      },
+      "Timeless Body": {
+        "name": "Timeless Body",
+        "type": "class",
+        "subtype": "monk",
+        "level": "15",
+        "optional": "false",
+        "description": "Your ki sustains you so that you suffer none of the frailty of old age, and you can't be aged magically. You can still die of old age, however. In addition, you no longer need food or water."
+      },
+      "Empty Body": {
+        "name": "Empty Body",
+        "type": "class",
+        "subtype": "monk",
+        "level": "18",
+        "optional": "false",
+        "description": "You can use your action to spend 4 ki points to become invisible for 1 minute. During that time, you also have resistance to all damage but force damage.\n\nAdditionally, you can spend 8 ki points to cast the astral projection spell, without needing material components. When you do so, you can't take any other creatures with you."
+      },
+      "Perfect Self": {
+        "name": "Perfect Self",
+        "type": "class",
+        "subtype": "monk",
+        "level": "20",
+        "optional": "false",
+        "description": "When you roll for initiative and have no ki points remaining, you regain 4 ki points."
+      },
+      "Divine Sense": {
+        "name": "Divine Sense",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "1",
+        "optional": "false",
+        "description": "The presence of strong evil registers on your senses like a noxious odor, and powerful good rings like heavenly music in your ears. As an action, you can open your awareness to detect such forces. Until the end of your next turn, you know the location of any celestial, fiend, or undead within 60 feet of you that is not behind total cover. You know the type (celestial, fiend, or undead) of any being whose presence you sense, but not its identity (the vampire Count Strahd von Zarovich, for instance). Within the same radius, you also detect the presence of any place or object that has been consecrated or desecrated, as with the Hallow spell.\n\nYou can use this feature a number of times equal to 1 + your Charisma modifier. When you finish a long rest, you regain all expended uses."
+      },
+      "Lay on Hands": {
+        "name": "Lay on Hands",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "1",
+        "optional": "false",
+        "description": "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. With that pool, you can restore a total number of hit points equal to your paladin level x 5.\n\nAs an action, you can touch a creature and draw power from the pool to restore a number of hit points to that creature, up to the maximum amount remaining in your pool.\n\nAlternatively, you can expend 5 hit points from your pool of healing to cure the target of one disease or neutralize one poison affecting it. You can cure multiple diseases and neutralize multiple poisons with a single use of Lay on Hands, expending hit points separately for each one.\n\nThis feature has no effect on undead and constructs."
+      },
+      "Divine Smite": {
+        "name": "Divine Smite",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "2",
+        "optional": "false",
+        "description": "When you hit a creature with a melee weapon attack, you can expend one spell slot to deal radiant damage to the target, in addition to the weapon's damage. The extra damage is 2d8 for a 1st-level spell slot, plus 1d8 for each spell level higher than 1st, to a maximum of 5d8. The damage increases by 1d8 if the target is an undead or a fiend, to a maximum of 6d8."
+      },
+      "Paladin Spellcasting": {
+        "name": "Paladin Spellcasting",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "2",
+        "optional": "false",
+        "description": "You have learned to draw on divine magic through meditation and prayer to cast spells as a cleric does.\n\nPreparing and Casting Spells\nThe Paladin table shows how many spell slots you have to cast your paladin spells. To cast one of your paladin spells of 1st level or higher, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nYou prepare the list of paladin spells that are available for you to cast, choosing from the paladin spell list. When you do so, choose a number of paladin spells equal to your Charisma modifier + half your paladin level, rounded down (minimum of one spell). The spells must be of a level for which you have spell slots.\n\nFor example, if you are a 5th-level paladin, you have four 1st-level and two 2nd-level spell slots. With a Charisma of 14, your list of prepared spells can include four spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell Cure Wounds, you can cast it using a 1st-level or a 2nd-level slot. Casting the spell doesn't remove it from your list of prepared spells.\n\nYou can change your list of prepared spells when you finish a long rest. Preparing a new list of paladin spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.\n\nSpellcasting Ability\nCharisma is your spellcasting ability for your paladin spells, since their power derives from the strength of your convictions. You use your Charisma whenever a spell refers to your spellcasting ability. In addition, you use your Charisma modifier when setting the saving throw DC for a paladin spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Charisma modifier\n\nSpell attack modifier = your proficiency bonus + your Charisma modifier\n\nSpellcasting Focus\nYou can use a holy symbol as a spellcasting focus for your paladin spells."
+      },
+      "Divine Health": {
+        "name": "Divine Health",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "3",
+        "optional": "false",
+        "description": "The divine magic flowing through you makes you immune to disease."
+      },
+      "Sacred Oath": {
+        "name": "Sacred Oath",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "3",
+        "optional": "false",
+        "description": "You swear the oath that binds you as a paladin forever. Up to this time you have been in a preparatory stage, committed to the path but not yet sworn to it. Your choice grants you features at 3rd level and again at 7th, 15th, and 20th level. Those features include oath spells and the Channel Divinity feature.\n\nOath Spells\nEach oath has a list of associated spells. You gain access to these spells at the levels specified in the oath description. Once you gain access to an oath spell, you always have it prepared. Oath spells don't count against the number of spells you can prepare each day.\n\nIf you gain an oath spell that doesn't appear on the paladin spell list, the spell is nonetheless a paladin spell for you.\n\nChannel Divinity\nYour oath allows you to channel divine energy to fuel magical effects. Each Channel Divinity option provided by your oath explains how to use it.\n\nWhen you use your Channel Divinity, you choose which option to use. You must then finish a short or long rest to use your Channel Divinity again.\n\nSome Channel Divinity effects require saving throws. When you use such an effect from this class, the DC equals your paladin spell save DC."
+      },
+      "Aura of Protection": {
+        "name": "Aura of Protection",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "6",
+        "optional": "false",
+        "description": "Whenever you or a friendly creature within 10 feet of you must make a saving throw, the creature gains a bonus to the saving throw equal to your Charisma modifier (with a minimum bonus of +1). You must be conscious to grant this bonus.\n\nAt 18th level, the range of this aura increases to 30 feet."
+      },
+      "Aura of Courage": {
+        "name": "Aura of Courage",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "10",
+        "optional": "false",
+        "description": "You and friendly creatures within 10 feet of you can't be frightened while you are conscious.\n\nAt 18th level, the range of this aura increases to 30 feet."
+      },
+      "Improved Divine Smite": {
+        "name": "Improved Divine Smite",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "11",
+        "optional": "false",
+        "description": "You are so suffused with righteous might that all your melee weapon strikes carry divine power with them. Whenever you hit a creature with a melee weapon, the creature takes an extra 1d8 radiant damage."
+      },
+      "Cleansing Touch": {
+        "name": "Cleansing Touch",
+        "type": "class",
+        "subtype": "paladin",
+        "level": "14",
+        "optional": "false",
+        "description": "You can use your action to end one spell on yourself or on one willing creature that you touch.\n\nYou can use this feature a number of times equal to your Charisma modifier (a minimum of once). You regain expended uses when you finish a long rest."
+      },
+      "Canny": {
+        "name": "Canny",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "1",
+        "optional": "false",
+        "description": "Choose one of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make using the chosen skill.\n\nYou can also speak, read, and write 2 additional languages of your choice."
+      },
+      "Roving": {
+        "name": "Roving",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "6",
+        "optional": "false",
+        "description": "Your walking speed increases by 5, and you gain a climbing speed and a swimming speed equal to your walking speed."
+      },
+      "Tireless": {
+        "name": "Tireless",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "10",
+        "optional": "false",
+        "description": "As an action, you can give yourself a number of temporary hit points equal to 1d8 + your Wisdom modifier (minimum of 1 temporary hit point). You can use this action a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest.\n\nIn addition, whenever you finish a short rest, your exhaustion level, if any, is decreased by 1."
+      },
+      "Ranger Spellcasting": {
+        "name": "Ranger Spellcasting",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "2",
+        "optional": "false",
+        "description": "You have learned to use the magical essence of nature to cast spells, much as a druid does.\n\nSpell Slots\nThe Ranger table shows how many spell slots you have to cast your ranger spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell's level or higher. You regain all expended spell slots when you finish a long rest.\n\nFor example, if you know the 1st-level spell Animal Friendship and have a 1st-level and a 2nd-level spell slot available, you can cast Animal Friendship using either slot.\n\nSpells Known of 1st Level and Higher\nYou know two 1st-level spells of your choice from the ranger spell list.\n\nThe Spells Known column of the Ranger table shows when you learn more ranger spells of your choice. Each of these spells must be of a level for which you have spell slots. For instance, when you reach 5th level in this class, you can learn one new spell of 1st or 2nd level.\n\nAdditionally, when you gain a level in this class, you can choose one of the ranger spells you know and replace it with another spell from the ranger spell list, which also must be of a level for which you have spell slots.\n\nSpellcasting Ability\nWisdom is your spellcasting ability for your ranger spells, since your magic draws on your attunement to nature. You use your Wisdom whenever a spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a ranger spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Wisdom modifier\n\nSpell attack modifier = your proficiency bonus + your Wisdom modifier"
+      },
+      "Primeval Awareness": {
+        "name": "Primeval Awareness",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "3",
+        "optional": "false",
+        "description": "You can use your action and expend one ranger spell slot to focus your awareness on the region around you. For 1 minute per level of the spell slot you expend, you can sense whether the following types of creatures are present within 1 mile of you (or within up to 6 miles if you are in your favored terrain): aberrations, celestials, dragons, elementals, fey, fiends, and undead. This feature doesn’t reveal the creatures’ location or number."
+      },
+      "Ranger Conclave": {
+        "name": "Ranger Conclave",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "3",
+        "optional": "false",
+        "description": "You choose to emulate the ideals and training of a ranger conclave. Your choice grants you features at 3rd level and again at 7th, 11th, and 15th level."
+      },
+      "Land's Stride": {
+        "name": "Land's Stride",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "8",
+        "optional": "false",
+        "description": "Moving through nonmagical difficult terrain costs you no extra movement. You can also pass through nonmagical plants without being slowed by them and without taking damage from them if they have thorns, spines, or a similar hazard.\n\nIn addition, you have advantage on saving throws against plants that are magically created or manipulated to impede movement, such as those created by the Entangle spell."
+      },
+      "Nature's Veil": {
+        "name": "Nature's Veil",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "10",
+        "optional": "false",
+        "description": "You draw on the powers of nature to hide yourself from view briefly. As a bonus action, you can magically become invisible, along with any equipment you are wearing or carrying, until the start of your next turn.\n\nYou can use this feature a number of times equal to your proficiency bonus, and you regain all expended uses when you finish a long rest."
+      },
+      "Vanish": {
+        "name": "Vanish",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "14",
+        "optional": "false",
+        "description": "You can use the Hide action as a bonus action on your turn. Also, you can't be tracked by nonmagical means, unless you choose to leave a trail."
+      },
+      "Feral Senses": {
+        "name": "Feral Senses",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "18",
+        "optional": "false",
+        "description": "You gain preternatural senses that help you fight creatures you can't see. When you attack a creature you can't see, your inability to see it doesn't impose disadvantage on your attack rolls against it.\n\nYou are also aware of the location of any invisible creature within 30 feet of you, provided that the creature isn't hidden from you and you aren't blinded or deafened."
+      },
+      "Favored Enemy": {
+        "name": "Favored Enemy",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "1",
+        "optional": "false",
+        "description": "You have significant experience studying, tracking, hunting, and even talking to a certain type of enemy.\n\nChoose a type of favored enemy: aberrations, beasts, celestials, constructs, dragons, elementals, fey, fiends, giants, monstrosities, oozes, plants, or undead. Alternatively, you can select two races of humanoid (such as gnolls and orcs) as favored enemies.\n\nYou have advantage on Wisdom (Survival) checks to track your favored enemies, as well as on Intelligence checks to recall information about them.\n\nWeapon attacks made to hit favored enemies gain a bonus to damage equal to your wisdom modifier.\n\nYou choose one additional favored enemy, as well as an associated language, at 6th and 14th level. As you gain levels, your choices should reflect the types of monsters you have encountered on your adventures."
+      },
+      "Foe Slayer": {
+        "name": "Foe Slayer",
+        "type": "class",
+        "subtype": "ranger",
+        "level": "20",
+        "optional": "false",
+        "description": "You become an unparalleled hunter of your enemies. When attacking one of your favored enemies, you can add your wisdom modifier as a bonus to hit.\n\nAdittionally weapon attacks against favored foes deal an extra 1d8 damage."
+      },
+      "Otherwordly Patron": {
+        "name": "Otherwordly Patron",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "1",
+        "optional": "false",
+        "description": "You have struck a bargain with an otherworldly being of your choice. Your choice grants you features at 1st level and again at 6th, 10th, and 14th level."
+      },
+      "Pact Magic": {
+        "name": "Pact Magic",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "1",
+        "optional": "false",
+        "description": "Your arcane research and the magic bestowed on you by your patron have given you facility with spells.\n\nCantrips\nYou know two cantrips of your choice from the warlock spell list. You learn additional warlock cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Warlock table.\n\nSpell Slots\nThe Warlock table shows how many spell slots you have to cast your warlock spells of 1st through 5th level. The table also shows what the level of those slots is; all of your spell slots are the same level. To cast one of your warlock spells of 1st level or higher, you must expend a spell slot. You regain all expended spell slots when you finish a short or long rest.\n\nFor example, when you are 5th level, you have two 3rd-level spell slots. To cast the 1st-level spell witch bolt, you must spend one of those slots, and you cast it as a 3rd-level spell.\n\nSpells Known of 1st Level and Higher\nAt 1st level, you know two 1st-level spells of your choice from the warlock spell list.\n\nThe Spells Known column of the Warlock table shows when you learn more warlock spells of your choice of 1st level or higher. A spell you choose must be of a level no higher than what's shown in the table's Slot Level column for your level. When you reach 6th level, for example, you learn a new warlock spell, which can be 1st, 2nd, or 3rd level.\n\nAdditionally, when you gain a level in this class, you can choose one of the warlock spells you know and replace it with another spell from the warlock spell list, which also must be of a level for which you have spell slots.\n\nSpellcasting Ability\nCharisma is your spellcasting ability for your warlock spells, so you use your Charisma whenever a spell refers to your spellcasting ability. In addition, you use your Charisma modifier when setting the saving throw DC for a warlock spell you cast and when making an attack roll with one.\n\nSpell save DC = 8 + your proficiency bonus + your Charisma modifier\n\nSpell attack modifier = your proficiency bonus + your Charisma modifier\n\nSpellcasting Focus\nYou can use an arcane focus as a spellcasting focus for your warlock spells."
+      },
+      "Eldritch Invocations": {
+        "name": "Eldritch Invocations",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "2",
+        "optional": "false",
+        "description": "You gain two eldritch invocations of your choice. When you gain certain warlock levels, you gain additional invocations of your choice, as shown in the Invocations Known column of the Warlock table. A level prerequisite refers to your level in this class.\n\nAdditionally, when you gain a level in this class, you can choose one of the invocations you know and replace it with another invocation that you could learn at that level."
+      },
+      "Pact of the Blade": {
+        "name": "Pact of the Blade",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "3",
+        "optional": "true",
+        "description": "You can use your action to create a pact weapon in your empty hand. You can choose the form that this melee weapon takes each time you create it. You are proficient with it while you wield it. This weapon counts as magical for the purpose of overcoming resistance and immunity to nonmagical attacks and damage.\n\nYour pact weapon disappears if it is more than 5 feet away from you for 1 minute or more. It also disappears if you use this feature again, if you dismiss the weapon (no action required), or if you die\n\nYou can transform one magic weapon into your pact weapon by performing a special ritual while you hold the weapon. You perform the ritual over the course of 1 hour, which can be done during a short rest.\n\nYou can then dismiss the weapon, shunting it into an extradimensional space, and it appears whenever you create your pact weapon thereafter. You can't affect an artifact or a sentient weapon in this way. The weapon ceases being your pact weapon if you die, if you perform the 1-hour ritual on a different weapon, or if you use a 1-hour ritual to break your bond to it. The weapon appears at your feet if it is in the extradimensional space when the bond breaks."
+      },
+      "Pact of the Chain": {
+        "name": "Pact of the Chain",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "3",
+        "optional": "true",
+        "description": "You learn the find familiar spell and can cast it as a ritual. The spell doesn't count against your number of spells known.\n\nWhen you cast the spell, you can choose one of the normal forms for your familiar or one of the following special forms: imp, pseudodragon, quasit, or sprite."
+      },
+      "Pact of the Tome": {
+        "name": "Pact of the Tome",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "3",
+        "optional": "true",
+        "description": "Your patron gives you a grimoire called a Book of Shadows. When you gain this feature, choose three cantrips from any class's spell list (the three needn't be from the same list). While the book is on your person, you can cast those cantrips at will. They don't count against your number of cantrips known. If they don't appear on the warlock spell list, they are nonetheless warlock spells for you.\n\nIf you lose your Book of Shadows, you can perform a 1-hour ceremony to receive a replacement from your patron. This ceremony can be performed during a short or long rest, and it destroys the previous book. The book turns to ash when you die."
+      },
+      "Pact of the Talisman": {
+        "name": "Pact of the Talisman",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "3",
+        "optional": "true",
+        "description": "Your patron gives you an amulet, a talisman that can aid the wearer when the need is great. When the wearer fails an ability check, they can add a d4 to the roll, potentially turning the roll into a success. This benefit can be used a number of times equal to your proficiency bonus, and all expended uses are restored when you finish a long rest.\n\nIf you lose the talisman, you can perform a 1-hour ceremony to receive a replacement from your patron. This ceremony can be performed during a short or long rest, and it destroys the previous amulet. The talisman turns to ash when you die."
+      },
+      "Mystic Arcanum": {
+        "name": "Mystic Arcanum",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "11",
+        "optional": "true",
+        "description": "Your patron bestows upon you a magical secret called an arcanum. Choose one 6th-level spell from the warlock spell list as this arcanum.\n\nYou can cast your arcanum spell once without expending a spell slot. You must finish a long rest before you can do so again.\n\nAt higher levels, you gain more warlock spells of your choice that can be cast in this way: one 7th-level spell at 13th level, one 8th-level spell at 15th level, and one 9th-level spell at 17th level. You regain all uses of your Mystic Arcanum when you finish a long rest."
+      },
+      "Eldritch Master": {
+        "name": "Eldritch Master",
+        "type": "class",
+        "subtype": "warlock",
+        "level": "20",
+        "optional": "true",
+        "description": "You can draw on your inner reserve of mystical power while entreating your patron to regain expended spell slots. You can spend 1 minute entreating your patron for aid to regain all your expended spell slots from your Pact Magic feature. Once you regain spell slots with this feature, you must finish a long rest before you can do so again."
       }
     },
     "type": {
@@ -646,7 +1134,6 @@
         "Primal Champion",
         "Druid Spellcasting",
         "Druid Circle",
-        "Timeless Body",
         "Beast Spells",
         "Archdruid",
         "Action Surge",
@@ -694,7 +1181,69 @@
         "Channel Divinity",
         "Channel Divinity: Turn Undead",
         "Destroy Undead",
-        "Divine Intervention"
+        "Divine Intervention",
+        "Remarkable Athlete",
+        "Improved Critical",
+        "Survivor",
+        "Combat Superiority",
+        "Student of War",
+        "Know Your Enemy",
+        "Relentless",
+        "Eldritch Knight Spellcasting",
+        "Weapon Bond",
+        "War Magic",
+        "Eldritch Strike",
+        "Arcane Charge",
+        "Monk Toughness",
+        "Martial Arts",
+        "Ki",
+        "Monk Movement",
+        "Deflect Missiles",
+        "Ki-Fueled Attack",
+        "Slow Fall",
+        "Quickened Healing",
+        "Stunning Strike",
+        "Focused Aim",
+        "Ki-Empowered Strikes",
+        "Monk Evasion",
+        "Stillness of Mind",
+        "Tongue of the Sun and the Moon",
+        "Purity of Body",
+        "Diamond Soul",
+        "Timeless Body",
+        "Empty Body",
+        "Perfect Self",
+        "Divine Sense",
+        "Lay on Hands",
+        "Divine Smite",
+        "Paladin Spellcasting",
+        "Divine Health",
+        "Sacred Oath",
+        "Aura of Protection",
+        "Aura of Courage",
+        "Improved Divine Smite",
+        "Cleansing Touch",
+        "Canny",
+        "Roving",
+        "Tireless",
+        "Ranger Spellcasting",
+        "Primeval Awareness",
+        "Ranger Conclave",
+        "Land's Stride",
+        "Nature's Veil",
+        "Vanish",
+        "Feral Senses",
+        "Favored Enemy",
+        "Foe Slayer",
+        "Otherwordly Patron",
+        "Pact Magic",
+        "Eldritch Invocations",
+        "Pact of the Blade",
+        "Pact of the Chain",
+        "Pact of the Tome",
+        "Pact of the Talisman",
+        "Mystic Arcanum",
+        "Eldritch Master"
       ],
       "feat": [
         "Ability Score Improvement"
@@ -760,7 +1309,6 @@
       "druid": [
         "Druid Spellcasting",
         "Druid Circle",
-        "Timeless Body",
         "Beast Spells",
         "Archdruid",
         "Wildshape"
@@ -784,6 +1332,85 @@
         "Channel Divinity: Turn Undead",
         "Destroy Undead",
         "Divine Intervention"
+      ],
+      "path of the berserker": [],
+      "Path of the Berserker": [],
+      "Path of the Totem Warrior": [],
+      "Champion": [
+        "Remarkable Athlete",
+        "Improved Critical",
+        "Survivor"
+      ],
+      "Battle Master": [
+        "Combat Superiority",
+        "Student of War",
+        "Know Your Enemy",
+        "Relentless"
+      ],
+      "Eldritch Knight": [
+        "Eldritch Knight Spellcasting",
+        "Weapon Bond",
+        "War Magic",
+        "Eldritch Strike",
+        "Arcane Charge"
+      ],
+      "monk": [
+        "Monk Toughness",
+        "Martial Arts",
+        "Ki",
+        "Monk Movement",
+        "Deflect Missiles",
+        "Ki-Fueled Attack",
+        "Slow Fall",
+        "Quickened Healing",
+        "Stunning Strike",
+        "Focused Aim",
+        "Ki-Empowered Strikes",
+        "Monk Evasion",
+        "Stillness of Mind",
+        "Tongue of the Sun and the Moon",
+        "Purity of Body",
+        "Diamond Soul",
+        "Timeless Body",
+        "Empty Body",
+        "Perfect Self"
+      ],
+      "paladin": [
+        "Divine Sense",
+        "Lay on Hands",
+        "Divine Smite",
+        "Paladin Spellcasting",
+        "Divine Health",
+        "Sacred Oath",
+        "Aura of Protection",
+        "Aura of Courage",
+        "Improved Divine Smite",
+        "Cleansing Touch"
+      ],
+      "ranger": [
+        "Canny",
+        "Roving",
+        "Tireless",
+        "Ranger Spellcasting",
+        "Primeval Awareness",
+        "Ranger Conclave",
+        "Land's Stride",
+        "Nature's Veil",
+        "Vanish",
+        "Feral Senses",
+        "Favored Enemy",
+        "Foe Slayer"
+      ],
+      "warlock": [
+        "Otherwordly Patron",
+        "Pact Magic",
+        "Eldritch Invocations",
+        "Pact of the Blade",
+        "Pact of the Chain",
+        "Pact of the Tome",
+        "Pact of the Talisman",
+        "Mystic Arcanum",
+        "Eldritch Master"
       ]
     },
     "level": {
@@ -801,7 +1428,15 @@
         "Bard Spellcasting",
         "Rogue Expertise",
         "Cleric Spellcasting",
-        "Divine Domain"
+        "Divine Domain",
+        "Monk Toughness",
+        "Martial Arts",
+        "Divine Sense",
+        "Lay on Hands",
+        "Canny",
+        "Favored Enemy",
+        "Otherwordly Patron",
+        "Pact Magic"
       ],
       "2": [
         "Cunning Action",
@@ -816,17 +1451,40 @@
         "Jack of All Trades",
         "Song of Rest",
         "Channel Divinity",
-        "Channel Divinity: Turn Undead"
+        "Channel Divinity: Turn Undead",
+        "Ki",
+        "Monk Movement",
+        "Divine Smite",
+        "Paladin Spellcasting",
+        "Ranger Spellcasting",
+        "Eldritch Invocations"
       ],
       "3": [
         "Roguish Archetype",
         "Primal Path",
         "Martial Archetype",
         "Bard College",
-        "Bard Expertise"
+        "Bard Expertise",
+        "Improved Critical",
+        "Combat Superiority",
+        "Student of War",
+        "Eldritch Knight Spellcasting",
+        "Weapon Bond",
+        "Deflect Missiles",
+        "Ki-Fueled Attack",
+        "Divine Health",
+        "Sacred Oath",
+        "Primeval Awareness",
+        "Ranger Conclave",
+        "Pact of the Blade",
+        "Pact of the Chain",
+        "Pact of the Tome",
+        "Pact of the Talisman"
       ],
       "4": [
-        "Ability Score Improvement"
+        "Ability Score Improvement",
+        "Slow Fall",
+        "Quickened Healing"
       ],
       "5": [
         "Uncanny Dodge",
@@ -834,14 +1492,27 @@
         "Extra Attack",
         "Brutal Movement",
         "Font of Inspiration",
-        "Destroy Undead"
+        "Destroy Undead",
+        "Stunning Strike",
+        "Focused Aim"
       ],
       "6": [
         "Extra Feat",
-        "Countercharm"
+        "Countercharm",
+        "Ki-Empowered Strikes",
+        "Aura of Protection",
+        "Roving"
       ],
       "7": [
-        "Feral Instinct"
+        "Feral Instinct",
+        "Remarkable Athlete",
+        "Know Your Enemy",
+        "War Magic",
+        "Monk Evasion",
+        "Stillness of Mind"
+      ],
+      "8": [
+        "Land's Stride"
       ],
       "9": [
         "Brutal Critical",
@@ -849,27 +1520,45 @@
       ],
       "10": [
         "Magical Secrets",
-        "Divine Intervention"
+        "Divine Intervention",
+        "Eldritch Strike",
+        "Purity of Body",
+        "Aura of Courage",
+        "Tireless",
+        "Nature's Veil"
       ],
       "11": [
         "Reliable Talent",
         "Relentless Rage",
-        "Two Extra Attacks"
+        "Two Extra Attacks",
+        "Improved Divine Smite",
+        "Mystic Arcanum"
+      ],
+      "13": [
+        "Tongue of the Sun and the Moon"
       ],
       "14": [
-        "Rogue Blindsense"
+        "Rogue Blindsense",
+        "Diamond Soul",
+        "Cleansing Touch",
+        "Vanish"
       ],
       "15": [
         "Slippery Mind",
-        "Persistent Rage"
+        "Persistent Rage",
+        "Relentless",
+        "Arcane Charge",
+        "Timeless Body"
       ],
       "18": [
         "Elusive",
         "Indomitable Might",
         "Spell Mastery",
-        "Timeless Body",
         "Beast Spells",
-        "Archdruid"
+        "Archdruid",
+        "Survivor",
+        "Empty Body",
+        "Feral Senses"
       ],
       "20": [
         "Stroke of Luck",
@@ -877,7 +1566,10 @@
         "Signature Spells",
         "Three Extra Attacks",
         "Sorcerous Restoration",
-        "Superior Inspiration"
+        "Superior Inspiration",
+        "Perfect Self",
+        "Foe Slayer",
+        "Eldritch Master"
       ]
     },
     "optional": {
@@ -918,7 +1610,6 @@
         "Indomitable",
         "Druid Spellcasting",
         "Druid Circle",
-        "Timeless Body",
         "Beast Spells",
         "Archdruid",
         "Sorcerer Spellcasting",
@@ -944,10 +1635,72 @@
         "Channel Divinity",
         "Channel Divinity: Turn Undead",
         "Destroy Undead",
-        "Divine Intervention"
+        "Divine Intervention",
+        "Remarkable Athlete",
+        "Improved Critical",
+        "Survivor",
+        "Combat Superiority",
+        "Student of War",
+        "Know Your Enemy",
+        "Relentless",
+        "Eldritch Knight Spellcasting",
+        "Weapon Bond",
+        "War Magic",
+        "Eldritch Strike",
+        "Arcane Charge",
+        "Monk Toughness",
+        "Martial Arts",
+        "Ki",
+        "Monk Movement",
+        "Deflect Missiles",
+        "Ki-Fueled Attack",
+        "Slow Fall",
+        "Quickened Healing",
+        "Stunning Strike",
+        "Focused Aim",
+        "Ki-Empowered Strikes",
+        "Monk Evasion",
+        "Stillness of Mind",
+        "Tongue of the Sun and the Moon",
+        "Purity of Body",
+        "Diamond Soul",
+        "Timeless Body",
+        "Empty Body",
+        "Perfect Self",
+        "Divine Sense",
+        "Lay on Hands",
+        "Divine Smite",
+        "Paladin Spellcasting",
+        "Divine Health",
+        "Sacred Oath",
+        "Aura of Protection",
+        "Aura of Courage",
+        "Improved Divine Smite",
+        "Cleansing Touch",
+        "Canny",
+        "Roving",
+        "Tireless",
+        "Ranger Spellcasting",
+        "Primeval Awareness",
+        "Ranger Conclave",
+        "Land's Stride",
+        "Nature's Veil",
+        "Vanish",
+        "Feral Senses",
+        "Favored Enemy",
+        "Foe Slayer",
+        "Otherwordly Patron",
+        "Pact Magic",
+        "Eldritch Invocations"
       ],
       "true": [
-        "Ability Score Improvement"
+        "Ability Score Improvement",
+        "Pact of the Blade",
+        "Pact of the Chain",
+        "Pact of the Tome",
+        "Pact of the Talisman",
+        "Mystic Arcanum",
+        "Eldritch Master"
       ]
     }
   },
@@ -1105,21 +1858,145 @@
           "sorcerer",
           "wizard"
         ],
-        "cast_time": 3,
-        "range": 150,
+        "cast_time": "3",
+        "range": "150",
         "target": "A point you choose within range",
+        "components": [],
+        "duration": "0",
+        "description": "A bright streak flashes from your pointing finger to a point you choose within range then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save,  or half as much damage on a successful one. The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried.",
+        "description_higher_levels": "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 each slot level above 3rd."
+      },
+      "Eldritch Blast": {
+        "name": "Eldritch Blast",
+        "level": "cantrip",
+        "school": "evocation",
+        "classes": [
+          "warlock"
+        ],
+        "cast_time": "1",
+        "range": "60",
+        "target": "A creature within range",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": "0",
+        "description": "A beam of crackling energy streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, the target takes 1d8 force damage. The damage dealt by this spell is increased by your spellcasting modifier.",
+        "description_higher_levels": "The spell creates more than one beam when you reach higher levels: two beams at 5th level, three beams at 11th level, and four beams at 17th level. You can direct the beams at the same target or at different ones. Make a separate attack roll for each beam."
+      },
+      "Fire Bolt": {
+        "name": "Fire Bolt",
+        "level": "cantrip",
+        "school": "evocation",
+        "classes": [
+          "sorcerer",
+          "warlock",
+          "wizard"
+        ],
+        "cast_time": "1",
+        "range": "60",
+        "target": "A creature within range",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": "0",
+        "description": "You hurl a mote of fire at a creature or object within range. Make a ranged spell attack against the target. On a hit, the target takes 1d6 fire damage. A flammable object hit by this spell ignites if it isn’t being worn or carried. The damage dealt by this spell is increased by your spellcasting modifier.",
+        "description_higher_levels": ""
+      },
+      "Lightning Streak": {
+        "name": "Lightning Streak",
+        "level": "cantrip",
+        "school": "evocation",
+        "classes": [
+          "druid",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": "3",
+        "range": "30",
+        "target": "A creature within range",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": "0",
+        "description": "Lightning jumps from your hand to a target within range, the target must succeed on a DC 10 + your spell modifier, on a fail the target receives 1d4 lightning damage, and the lightning jumps to the closest creature within 15ft. \n\nThe lightning can't jump twice on the same creature, and will only stop on a successful saving throw, or if there are no more creatures within range.\n\nThe damage dealt by this spell is increased by your spellcasting modifier.",
+        "description_higher_levels": ""
+      },
+      "Ray of Frost": {
+        "name": "Ray of Frost",
+        "level": "cantrip",
+        "school": "conjuration",
+        "classes": [
+          "sorcerer",
+          "warlock",
+          "wizard"
+        ],
+        "cast_time": "2",
+        "range": "30",
+        "target": "A creature within range",
+        "components": [
+          "vocal",
+          "somatic"
+        ],
+        "duration": "1",
+        "description": "A frigid beam of blue-white light streaks toward a creature within range. Make a ranged spell attack against the target. On a hit, it takes 1d4 cold damage, and its speed is halved until the start of your next turn. The damage dealt by this spell is increased by your spellcasting modifier.",
+        "description_higher_levels": ""
+      },
+      "Light": {
+        "name": "Light",
+        "level": "cantrip",
+        "school": "conjuration",
+        "classes": [
+          "bard",
+          "cleric",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": "6",
+        "range": "touch",
+        "target": "One object that is no larger than 10 feet in any dimension",
+        "components": [
+          "vocal",
+          "material"
+        ],
+        "duration": "600",
+        "description": "You touch one object that is no larger than 10 feet in any dimension. Until the spell ends, the object sheds bright light in a 10-foot radius and dim light for an additional 10 feet. The light can be colored as you like. Completely covering the object with something opaque blocks the light. The spell ends if you cast it again or dismiss it as an action.\n\nIf you target an object held or worn by a hostile creature, that creature must succeed on a Dexterity DC of 10 + your spell modifier to avoid the spell.",
+        "description_higher_levels": ""
+      },
+      "Imbue Weapon": {
+        "name": "Imbue Weapon",
+        "level": "cantrip",
+        "school": "transmutation",
+        "classes": [
+          "druid",
+          "sorcerer",
+          "warlock",
+          "wizard"
+        ],
+        "cast_time": "6",
+        "range": "touch",
+        "target": "One weapon",
         "components": [
           "vocal",
           "somatic",
           "material"
         ],
-        "duration": 0,
-        "description": "A bright streak flashes from your pointing finger to a point you choose within range then blossoms with a low roar into an explosion of flame. Each creature in a 20-foot radius sphere centered on that point must make a Dexterity saving throw. A target takes 8d6 fire damage on a failed save, or half as much damage on a successful one. The fire spreads around corners. It ignites flammable objects in the area that aren't being worn or carried.",
-        "description_higher_levels": "When you cast this spell using a spell slot of 4th level or higher, the damage increases by 1d6 for each slot level above 3rd."
+        "duration": "10",
+        "description": "You touch a weapon you or a willing creature holds. Until the spell ends, the weapon is imbued with an element of your choice of either fire, cold or lightning. The spell ends if you cast it again or dismiss it as an action.\n\nWhile the spell is in effect, the imbued weapon does additional damage equal to your spellcasting modifier.",
+        "description_higher_levels": ""
       }
     },
     "level": {
-      "cantrip": [],
+      "cantrip": [
+        "Eldritch Blast",
+        "Fire Bolt",
+        "Lightning Streak",
+        "Ray of Frost",
+        "Light",
+        "Imbue Weapon"
+      ],
       "1st": [
         "Shield",
         "Detect Magic",
@@ -1147,15 +2024,19 @@
         "Detect Magic",
         "Sleep",
         "Invisibility",
-        "Polymorph"
+        "Polymorph",
+        "Light"
       ],
       "cleric": [
         "Detect Magic",
-        "Animate Dead"
+        "Animate Dead",
+        "Light"
       ],
       "druid": [
         "Detect Magic",
-        "Polymorph"
+        "Polymorph",
+        "Lightning Streak",
+        "Imbue Weapon"
       ],
       "sorcerer": [
         "Shield",
@@ -1164,10 +2045,19 @@
         "Sleep",
         "Invisibility",
         "Polymorph",
-        "Fireball"
+        "Fireball",
+        "Fire Bolt",
+        "Lightning Streak",
+        "Ray of Frost",
+        "Light",
+        "Imbue Weapon"
       ],
       "warlock": [
-        "Misty Step"
+        "Misty Step",
+        "Eldritch Blast",
+        "Fire Bolt",
+        "Ray of Frost",
+        "Imbue Weapon"
       ],
       "wizard": [
         "Shield",
@@ -1177,7 +2067,12 @@
         "Invisibility",
         "Animate Dead",
         "Polymorph",
-        "Fireball"
+        "Fireball",
+        "Fire Bolt",
+        "Lightning Streak",
+        "Ray of Frost",
+        "Light",
+        "Imbue Weapon"
       ]
     },
     "school": {
@@ -1185,7 +2080,9 @@
         "Shield"
       ],
       "conjuration": [
-        "Misty Step"
+        "Misty Step",
+        "Ray of Frost",
+        "Light"
       ],
       "divination": [
         "Detect Magic"
@@ -1194,7 +2091,10 @@
         "Sleep"
       ],
       "evocation": [
-        "Fireball"
+        "Fireball",
+        "Eldritch Blast",
+        "Fire Bolt",
+        "Lightning Streak"
       ],
       "illusion": [
         "Invisibility"
@@ -1203,12 +2103,40 @@
         "Animate Dead"
       ],
       "transmutation": [
-        "Polymorph"
+        "Polymorph",
+        "Imbue Weapon"
       ]
     }
   },
   "items": {
-    "data": {},
-    "type": {}
+    "data": {
+      "Dagger": {
+        "name": "Dagger",
+        "image": "",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "A dagger",
+        "weight": 2,
+        "rarity": "common",
+        "price": 10,
+        "stackable": false,
+        "equippable": true,
+        "properties": [],
+        "bonus": {},
+        "conditions": [],
+        "damage": [
+          {
+            "ammount": 1,
+            "size": 4,
+            "type": "piercing"
+          }
+        ]
+      }
+    },
+    "type": {
+      "equipment": [
+        "Dagger"
+      ]
+    }
   }
 }
