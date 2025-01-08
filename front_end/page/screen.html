@@ -1,8 +1,14 @@
 [h:id = getImpersonated()]
+[h:abort(arg(0) != id)]
 
 [overlay("Screen"), code: {
 <head>
-<link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/all/impersonated?'>
+<link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/impersonated/impersonated?{id}'>
+<script>
+    const id = "{id}";
+    const gm = "{isGM()}" == "1"
+    const character_image = `{getTokenPortrait("",id)}`
+</script>
 [r:style()]
 [r:script()]
 [r:'
@@ -10,27 +16,39 @@
     body {
         all:unset;
     }
-    .bottom-center {
-        width: 400px;
-        height: 50px;
-        position:fixed;
-        bottom: 10px;
-        left:50%;
-        transform: translate(-50%);
-        text-align:center;
+
+    #health {
+        position: fixed;
+        bottom: 5px;
+        left: 10px;
+        width: 125px;
+        height: 125px;
+        background: rgba(0,0,0,0);
+        border-radius: 50%; /* Makes it a circle */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%; /* Optional, keeps image as a circle */
+        border: 2px solid #444;
     }
+
     button {
-        width:40px;height:40px;
+        width:35px;height:35px;
         text-align:center;
-        padding: 10px;
+        padding: 0px;
+        margin:0px;
         border-width: 2px;
         background-color: #333;
-        color:#ddd;
         cursor:default;
     }
     button:hover, button:active {
-        color: #333;
         cursor:default;
+    }
+    button:hover {
+        background-color: #444;
+    }
+    button:active {
+        background-color: #555;
     }
 
 
@@ -41,28 +59,149 @@
 <script>
 
     //=====================================================================================================
-    // Execution
+    // Helper functions
     //=====================================================================================================
 
-    function onWindowLoad() {
+    function getColor(value) {
 
-        getId("info").addEventListener("click",()=>{
-            openClosePage("" , "Character", "creature_info.html")
+        // Ensure value is within the range 0 to 100
+        value = Number(value)
+        value = Math.max(0, Math.min(100, value));
+
+        // Calculate the proportion for interpolation
+        let red, green;
+
+        if (value >= 50) {
+            // From yellow (50) to green (100)
+            green = 255;
+            red = Math.round(255 * (1 - (value - 50) / 50));
+        } else {
+            // From red (0) to yellow (50)
+            red = 255;
+            green = Math.round(255 * (value / 50));
+        }
+
+        // Adjust color intensity based on toneFactor
+        red = Math.round(red * 0.7);
+        green = Math.round(green * 0.7);
+
+        // Clamp the values to ensure they stay within 0-255
+        red = Math.min(255, Math.max(0, red));
+        green = Math.min(255, Math.max(0, green));
+
+        // Return the color in RGB format
+        return `rgba(`+red+`, `+green+`, 80, 0.8)`;
+    }
+
+    //=====================================================================================================
+    // Components
+    //=====================================================================================================
+
+    function creature_image(hp_percent) {
+
+        return `
+        <div id="health">
+            <img src="`+character_image+`"
+                height="108px" 
+                style="
+                    border-radius: 50%; /* Optional, keeps image as a circle */
+                    border: 2px solid #444;
+                ">
+        </div>`
+    }
+
+    function menus(children = "") {
+
+    return `
+    <div style="
+        position: fixed;
+        bottom: 15px;
+        left: 145px;
+    ">
+    `+children+`
+    </div>
+    `
+    }
+
+    function gm_menus(children = "") {
+
+    return `
+    <div style="
+        position: fixed;
+        bottom: 15px;
+        right: 15px;
+    ">
+    `+children+`
+    </div>
+    `
+    }
+
+    function button(id="", image="") {
+
+    return `
+    <button id="`+id+`" style="">
+        <img src="`+image+`" height=24px>
+    </button>
+    `
+    }
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+    function updateHealth() {
+        const health_div = getId("health")
+
+        toBackend(`
+            var creature = new Creature("`+id+`");
+            [creature.health, creature.max_health]
+        `, (response)=>{ response = JSON.parse(response)
+
+            health = Number(response[0])
+            max_health = Number(response[1])
+            hp_percent = health/max_health * 100
+
+            start_hp = Number(hp_percent)
+            end_hp = hp_percent != 0 ? Number(hp_percent) + 2 : 0;
+
+            health_div.setAttribute("style", 
+                `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0) `+end_hp+`%);`
+            )
+        })
+    }
+
+    function loadPage() {
+        if(character_image != "") {
+            getId("content").innerHTML +=
+                creature_image() +
+
+                menus(
+                    button("info","asset://3432c572c31826e72dedd81ef4a10c5b") +
+                    button("inventory","asset://711c8f12938d7ef430fbcf7e2e5845ae") +
+                    button("journal", "asset://4e98be9419bf1ce960319891b66add73") +
+                    button("abilities", "asset://65479d57a2b1ffc116a12a5c731d91a7")
+                )
+        }
+
+        if (gm) {
+            getId("content").innerHTML +=
+                gm_menus(
+                    button("database", "asset://f218b6ad34fe8564e0553dc2bba91cc8")
+                )
+
+        }
+        
+        getId("info").addEventListener("click", ()=>{
+            openClosePage("", "Character", "creature_info.html")
         })
 
-        updateHealth(75)
+        getId("database").addEventListener("click", ()=>{
+            openClosePage("", "Database", "database.html")
+        })
+    }
 
-        let keysPressed = {};
-
-        document.addEventListener("keydown", (event) => {
-            keysPressed[event.key] = true;
-            console.log(keysPresseds)
-            
-        });
-        document.addEventListener("keyup", (event) => {
-            delete keysPressed[event.key];
-            console.log(keysPresseds)
-        });
+    function onWindowLoad() {
+        loadPage()
+        updateHealth(); setInterval(updateHealth, 200)
 
     }
 
@@ -76,22 +215,10 @@
 ']
 </head>
 
-<input type="text" class="hidden" id="id" value="{id}"></input>
-
 <body>
 
     
-    <div class="top-left" style="margin: 30px">
-        <img src="{getTokenPortrait(108,id)}" height="108px" style="
-        border-radius: 108px;
-        border: 2px solid #888;
-    ">
-    <br>
-    <button id="info" style="margin-top: 30px; margin-left: 37px">C</button>
-    </div>
-    <div class="bottom-center">
-        
-    </div>
+    <div id="content"></div>
 
 </body>
 

@@ -1,883 +1,883 @@
 [dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
-    <head>
-    [r:style()]
-    [r:script()]
-    [r:'
-    <style>
-        img {
-            margin: 0px;
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+    img {
+        margin: 0px;
+    }
+
+    img:hover {
+        opacity: 0.5;
+    }
+
+    img:active {
+        opacity: 0.3;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .action-button {
+        font-size: 75%;
+        min-height: 0px;
+        min-width: 0px;
+        padding: 3px 3px;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .action-button:hover {
+        background-color: #0056b3;
+    }
+
+    .table-container {
+        margin: 10px;
+    }
+
+    .table-header {
+        display: grid;
+        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+        gap: 10px;
+        color: white;
+        padding: 0px 10px;
+        border-radius: 10px;
+        font-weight: bold;
+        align-items: center;
+        text-align: left;
+    }
+
+    .table-row {
+        position:relative;
+
+        display: grid;
+        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
+        gap: 10px;
+        padding: 2px 10px;
+        padding-top: 7px;
+        margin: 10px 0px;
+
+        background-color: #444;
+        border-radius: 5px;
+
+        align-items: center;
+        text-align: left;
+        font-weight: bold;
+        z-index: 3;
+    }
+
+    .table-row:hover {
+        background-color: #555;
+    }
+
+    .collapsible-content {
+        position:relative;
+        visibility: hidden;
+        opacity: 0;
+        display: none;
+
+        position: relative;
+        height: 0px;
+        z-index: 0;
+
+        margin: 0px 3px;
+        padding: 10px;
+        padding-top: 15px;
+
+        background-color: #333;
+        border: 1px solid #444;
+        border-radius: 5px;
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+    }
+
+    .table-row.open + .collapsible-content {
+        display:block;
+        height: fit-content;
+        margin-bottom: -20px;
+        opacity: 1; /* Fully visible */
+        visibility: visible; /* Make it interactable */
+        transform: translateY(-20px); /* Final position */
+    }
+
+    .outer {
+        margin-top: 20px;
+    }
+
+    .tab-switch-div {
+        display: flex;                     /* Use flexbox for layout */
+        justify-content: space-between;    /* Distribute tabs with space between them */
+        align-items: center;               /* Vertically center the tabs */
+        position: relative;
+        margin-bottom: -2px;
+        height: 30px;                      /* Min height */
+    }
+
+    .tab-switch {
+        z-index: 0;
+        min-height: 20px;
+        padding: 3px;                 /* Adjust padding */
+        text-align: center;
+        background-color: #292929;
+        color: #ddd;
+        border: 2px solid #414141;
+        border-radius: 7px;
+        font-size: 75%;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .tab-switch:hover {
+        background-color: #444;
+    }
+
+    .tab-switch.active {
+        background-color: #414141;
+    }
+
+    .tab-switch-div .tab-switch {
+        flex: 1;                           /* Make each tab take equal space */
+        margin: 0 5px;                     /* Add spacing between tabs */
+        text-align: center;                /* Ensure text is centered */
+    }
+
+    .tab-switch-div .tab-switch:first-child {
+        margin-left: 15px;                    /* Remove left margin for the first tab */
+    }
+
+    .tab-switch-div .tab-switch:last-child {
+        margin-right: 15px;                   /* Remove right margin for the last tab */
+    }
+
+</style>
+<script>
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function runCurrentTab() {
+        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+        let current_tab
+        let tab_function
+
+
+        if(getId("damage-tab").style.display != "none") {
+            current_tab = "damage" ; tab_function = damageTab }
+        else if (getId("features-tab").style.display != "none") {
+            current_tab = "features" ; tab_function = featuresTab}
+        else if (getId("spells-tab").style.display != "none") {
+            current_tab = "spells" ; tab_function = spellsTab 
         }
-    
-        img:hover {
-            opacity: 0.5;
+        else if (getId("items-tab").style.display != "none") {
+            current_tab = "items" ; tab_function = itemsTab 
         }
-    
-        img:active {
-            opacity: 0.3;
+
+
+        tab_list = tab_list.filter(item => item != current_tab)
+        for (const tab of tab_list) {
+            if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
         }
+
+        tab_function()
+    }
     
-        .action-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
+    function timeUnit(time) {
+        const units = [
+            { threshold: 14400, unit: "Day" },
+            { threshold: 600, unit: "Hour" },
+            { threshold: 10, unit: "Minute" },
+            { threshold: 1, unit: "Round" }
+        ];
+
+        for (const { threshold, unit } of units) {
+            if (time >= threshold) {
+                const value = Math.round(time / threshold);
+                return value + " " + unit + (value > 1 ? "s" : "");
+            }
         }
-    
-        .action-button {
-            font-size: 75%;
-            min-height: 0px;
-            min-width: 0px;
-            padding: 3px 3px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+
+        return "1 Round"; // Default case if time is <= 1
+    }
+
+    function hash(string) {
+        
+        let hash = 0;
+
+        if (string.length == 0) return hash;
+
+        for (i = 0; i < string.length; i++) {
+            char = string.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
         }
-    
-        .action-button:hover {
-            background-color: #0056b3;
+
+        return hash;
+    }
+
+    function addTabFunctionality() {
+        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+
+        tab_list.forEach((tab_name) => {
+            getId(tab_name+"-switch").addEventListener("click", () => {
+                tab_list.forEach((value) => {
+                    let button = getId(value+"-switch")
+                    let div = getId(value+"-tab")
+                    if (tab_name == value) {
+                        button.setAttribute("class", "tab-switch active")
+                        div.setAttribute("style", "")
+                    } else {
+                        button.setAttribute("class", "tab-switch")
+                        div.setAttribute("style", "display:none")
+                    }
+                })
+            })
+        })
+        
+    }
+
+    function updateColapsible() {
+        document.querySelectorAll(".table-row").forEach(row => {
+            row.addEventListener("click", () => {
+                const isOpen = row.classList.contains("open");
+                document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
+
+                if (!isOpen) {
+                    row.classList.add("open");
+                }
+            });
+        });
+
+        document.querySelectorAll(".action-buttons img").forEach(button => {
+            button.addEventListener("click", event => {
+                event.stopPropagation(); // Prevent triggering row click
+            });
+    });
+    }
+
+
+
+    //=====================================================================================================
+    // Components
+    //=====================================================================================================
+
+    function row(
+        id,
+        columns = ["Name", "Type"], 
+        description=`<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"></pre>`, 
+        image="", 
+        tab_id="", 
+        config="30px 1fr 1fr 100px"
+    ){
+
+        let div_columns = ""
+        for (const value of columns) {
+            div_columns += `<div>`+value+`</div>`
         }
-    
-        .table-container {
-            margin: 10px;
+
+        return `
+        <div class="table-row" style="grid-template-columns: `+config+`;">
+            <div><img src=`+image+` height=24px style="opacity:1"></div>
+            `+div_columns+`
+            <div class="action-buttons">
+                <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" height=24px src=asset://f218b6ad34fe8564e0553dc2bba91cc8>
+                <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" height=24px src=asset://e984745ad793f4ca43bc3c5f14cb317d>
+            </div>
+        </div>
+        <div class="collapsible-content">
+            `+description+`
+            
+        </div>
+        `
+    }
+
+    function table(
+        headers = ["Name", "Type"],
+        rows=row(),
+        hash="",
+        tab_id="",
+        config="30px 1fr 1fr 100px"
+    ){
+
+        let div_headers = ""
+        for (const value of headers) {
+            div_headers += `<div>`+value+`</div>`
         }
-    
-        .table-header {
-            display: grid;
-            grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-            gap: 10px;
-            color: white;
-            padding: 0px 10px;
-            border-radius: 10px;
-            font-weight: bold;
-            align-items: center;
-            text-align: left;
-        }
-    
-        .table-row {
-            position:relative;
-    
-            display: grid;
-            grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-            gap: 10px;
-            padding: 2px 10px;
-            padding-top: 7px;
-            margin: 10px 0px;
-    
-            background-color: #444;
-            border-radius: 5px;
-    
-            align-items: center;
-            text-align: left;
-            font-weight: bold;
-            z-index: 3;
-        }
-    
-        .table-row:hover {
-            background-color: #555;
-        }
-    
-        .collapsible-content {
-            position:relative;
-            visibility: hidden;
-            opacity: 0;
-            display: none;
-    
-            position: relative;
-            height: 0px;
-            z-index: 0;
-    
-            margin: 0px 3px;
-            padding: 10px;
-            padding-top: 15px;
-    
-            background-color: #333;
-            border: 1px solid #444;
-            border-radius: 5px;
-            border-top-left-radius: 0px;
-            border-top-right-radius: 0px;
-        }
-    
-        .table-row.open + .collapsible-content {
-            display:block;
-            height: fit-content;
-            margin-bottom: -20px;
-            opacity: 1; /* Fully visible */
-            visibility: visible; /* Make it interactable */
-            transform: translateY(-20px); /* Final position */
-        }
-    
-        .outer {
-            margin-top: 20px;
-        }
-    
-        .tab-switch-div {
-            display: flex;                     /* Use flexbox for layout */
-            justify-content: space-between;    /* Distribute tabs with space between them */
-            align-items: center;               /* Vertically center the tabs */
-            position: relative;
-            margin-bottom: -2px;
-            height: 30px;                      /* Min height */
-        }
-    
-        .tab-switch {
-            z-index: 0;
-            min-height: 20px;
-            padding: 3px;                 /* Adjust padding */
-            text-align: center;
+
+        return `
+        <div class="table-container" id="`+tab_id+`-table" hash="`+hash+`">
+            <div class="table-header" style="grid-template-columns: `+config+`;">
+                <div></div>
+                `+div_headers+`
+                <div style="text-align:right;">Actions</div>
+            </div>
+
+            `+rows+`
+
+        </div>
+        `
+    }
+
+    function button_create_new(tab_id) {
+        return `
+        <button id="`+tab_id+`-create-new" style="
+            position: sticky;
+            bottom:0px;
+            z-index: 20;
             background-color: #292929;
             color: #ddd;
-            border: 2px solid #414141;
-            border-radius: 7px;
-            font-size: 75%;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-    
-        .tab-switch:hover {
-            background-color: #444;
-        }
-    
-        .tab-switch.active {
-            background-color: #414141;
-        }
-    
-        .tab-switch-div .tab-switch {
-            flex: 1;                           /* Make each tab take equal space */
-            margin: 0 5px;                     /* Add spacing between tabs */
-            text-align: center;                /* Ensure text is centered */
-        }
-    
-        .tab-switch-div .tab-switch:first-child {
-            margin-left: 15px;                    /* Remove left margin for the first tab */
-        }
-    
-        .tab-switch-div .tab-switch:last-child {
-            margin-right: 15px;                   /* Remove right margin for the last tab */
-        }
-
-    </style>
-    <script>
-
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
-    
-        function runCurrentTab() {
-            let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
-            let current_tab
-            let tab_function
-    
-    
-            if(getId("damage-tab").style.display != "none") {
-                current_tab = "damage" ; tab_function = damageTab }
-            else if (getId("features-tab").style.display != "none") {
-                current_tab = "features" ; tab_function = featuresTab}
-            else if (getId("spells-tab").style.display != "none") {
-                current_tab = "spells" ; tab_function = spellsTab 
-            }
-            else if (getId("items-tab").style.display != "none") {
-                current_tab = "items" ; tab_function = itemsTab 
-            }
-    
-    
-            tab_list = tab_list.filter(item => item != current_tab)
-            for (const tab of tab_list) {
-                if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
-            }
-    
-            tab_function()
-        }
-        
-        function timeUnit(time) {
-            const units = [
-                { threshold: 14400, unit: "Day" },
-                { threshold: 600, unit: "Hour" },
-                { threshold: 10, unit: "Minute" },
-                { threshold: 1, unit: "Round" }
-            ];
-    
-            for (const { threshold, unit } of units) {
-                if (time > threshold) {
-                    const value = Math.round(time / threshold);
-                    return value + " " + unit + (value > 1 ? "s" : "");
-                }
-            }
-    
-            return "1 Round"; // Default case if time is <= 1
-        }
-    
-        function hash(string) {
-            
-            let hash = 0;
-    
-            if (string.length == 0) return hash;
-    
-            for (i = 0; i < string.length; i++) {
-                char = string.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-    
-            return hash;
-        }
-    
-        function addTabFunctionality() {
-            let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
-    
-            tab_list.forEach((tab_name) => {
-                getId(tab_name+"-switch").addEventListener("click", () => {
-                    tab_list.forEach((value) => {
-                        let button = getId(value+"-switch")
-                        let div = getId(value+"-tab")
-                        if (tab_name == value) {
-                            button.setAttribute("class", "tab-switch active")
-                            div.setAttribute("style", "")
-                        } else {
-                            button.setAttribute("class", "tab-switch")
-                            div.setAttribute("style", "display:none")
-                        }
-                    })
-                })
-            })
-            
-        }
-    
-        function updateColapsible() {
-            document.querySelectorAll(".table-row").forEach(row => {
-                row.addEventListener("click", () => {
-                    const isOpen = row.classList.contains("open");
-                    document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
-    
-                    if (!isOpen) {
-                        row.classList.add("open");
-                    }
-                });
-            });
-    
-            document.querySelectorAll(".action-buttons img").forEach(button => {
-                button.addEventListener("click", event => {
-                    event.stopPropagation(); // Prevent triggering row click
-                });
-        });
-        }
-
-
-
-        //=====================================================================================================
-        // Components
-        //=====================================================================================================
-    
-        function row(
-            id,
-            columns = ["Name", "Type"], 
-            description=`<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"></pre>`, 
-            image="", 
-            tab_id="", 
-            config="30px 1fr 1fr 100px"
-        ){
-    
-            let div_columns = ""
-            for (const value of columns) {
-                div_columns += `<div>`+value+`</div>`
-            }
-    
-            return `
-            <div class="table-row" style="grid-template-columns: `+config+`;">
-                <div><img src=`+image+` height=24px style="opacity:1"></div>
-                `+div_columns+`
-                <div class="action-buttons">
-                    <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" height=24px src=asset://f218b6ad34fe8564e0553dc2bba91cc8>
-                    <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" height=24px src=asset://e984745ad793f4ca43bc3c5f14cb317d>
-                </div>
-            </div>
-            <div class="collapsible-content">
-                `+description+`
-                
-            </div>
-            `
-        }
-    
-        function table(
-            headers = ["Name", "Type"],
-            rows=row(),
-            hash="",
-            tab_id="",
-            config="30px 1fr 1fr 100px"
-        ){
-    
-            let div_headers = ""
-            for (const value of headers) {
-                div_headers += `<div>`+value+`</div>`
-            }
-    
-            return `
-            <div class="table-container" id="`+tab_id+`-table" hash="`+hash+`">
-                <div class="table-header" style="grid-template-columns: `+config+`;">
-                    <div></div>
-                    `+div_headers+`
-                    <div style="text-align:right;">Actions</div>
-                </div>
-    
-                `+rows+`
-    
-            </div>
-            `
-        }
-    
-        function button_create_new(tab_id) {
-            return `
-            <button id="`+tab_id+`-create-new" style="
-                position: sticky;
-                bottom:0px;
-                z-index: 20;
-                background-color: #292929;
-                color: #ddd;
-                border: 2px solid #ddd;
-                font-size:100%;
-                transform: translate(42vw);
-    
-            ">
-                Create New
-            </button>
-            `
-        }
-
-        function search_bar(tab_id) {
-            return `
-            <input id="`+tab_id+`-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
-            `
-        }
-
-        function div(id, content="") {
-            return `
-            <div id="`+id+`">
-                `+content+`
-            </div>
-            `
-        }
-
-        function select(id = "", title = "", options = []) {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value.toLowerCase()+`>`+capitalize(value)+`</option>`
-            }
-
-            return `
-            <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
-                <option value="" selected>`+title+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function select_same_id(id = "", title = "", options = []) {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
-            }
-
-            return `
-            <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
-                <option value="" selected>`+title+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-    
-
-
-        //=====================================================================================================
-        // Tabs
-        //=====================================================================================================
-    
-        const dnd_classes = [
-            "barbarian", "Path of the Berserker", "Path of the Totem Warrior",
-            "bard", "College of Lore", "College of Valor",
-            "cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
-            "druid", "Circle of the Land", "Circle of the Moon",
-            "fighter", "Champion", "Battle Master", "Eldritch Knight",
-            "monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
-            "paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
-            "ranger", "Hunter", "Beast Master",
-            "rogue", "Thief", "Assassin", "Arcane Trickster",
-            "sorcerer", "Draconic Bloodline", "Wild Magic",
-            "warlock", "The Archfey", "The Fiend", "The Great Old One",
-            "wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
-        ]
-        const one_to_twenty = [
-            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
-        ]
-        const subtypeImages = {
-            "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
-            "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
-            "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
-            "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
-            "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
-                "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
-                "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
-                "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
-            "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
-            "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
-            "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
-            "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
-            "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
-            "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
-            "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
-        };
-        const typeImages = {
-            "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
-            "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
-            "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
-        };
-        const schoolImages = {
-            "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
-            "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
-            "divination": "asset://4aad8d5a0358701909aea571612a2485",
-            "enchantment": "asset://8d2464a3ae0afde2ce0ec69abd65aa2f",
-            "evocation": "asset://79f5407b61a5d7cf13137910bb0cf3fc",
-            "illusion": "asset://d0a8db9574e38703b490746c17d91560",
-            "necromancy": "asset://4e7caf122839630f94575156850cf067",
-            "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
-        };
-  
-        function featuresTab() {
-            
-            // Parameters
-            const edit_page = "feature_set.html"
-            const database_data = "database.features.data"
-            const database_get_list = "database.get_features_list"
-            const remove_function = "database.remove_feature"
-            const tab_id = "features"
-            const first_time_tab_execution = !getId(tab_id + "-search-bar")
-
-            // Component config
-            const table_headers = ["Name", "Type", "", "Level"]
-            const table_config = "30px 1fr 50px 1fr 50px 100px"
-
-            // Row component translation
-            function render_row(name, type, subtype, level, description, image) {
-                id = name
-                if (!subtype) {subtype = ""}
-                
-
-                columns = [capitalize(name), capitalize(type), capitalize(subtype), level]
-                description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
-
-                // Image
-                image = subtypeImages[subtype] || typeImages[type] || "";
-
-                return row(id, columns, description, image, tab_id, table_config)
-            }
-
-            // Creates div base content
-            if(first_time_tab_execution) {
-                getId(tab_id + "-tab").innerHTML += 
-
-                    search_bar(tab_id) +
-
-                    select(tab_id + "-type", "Type", ["racial", "feat", "class"]) +
-
-                    select_same_id(tab_id + "-subtype", "Subtype", dnd_classes) +
-
-                    select(tab_id + "-level", "Level", one_to_twenty) +
-
-                    div(tab_id + "-tab-content") +
-
-                    button_create_new(tab_id)
-
-                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
-            }
-
-            // Get filter data
-            const search = getId(tab_id + "-search-bar").value
-            const type = getId(tab_id + "-type").value
-            const subtype = getId(tab_id + "-subtype").value
-            const level = getId(tab_id + "-level").value
-
-            // Get data
-            toBackend(database_get_list+`({"type":"`+type+`", "subtype":"`+subtype+`", "level":"`+level+`"}, "", "`+search+`")`, (list) => {
-                list = JSON.parse(list)
-
-                toBackend(database_data, (data) => {
-                    data = JSON.parse(data)
-
-                    // Hashing
-                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                    if (new_hash == previous_hash) { return }
-
-                    // Row creation
-                    let rows = "" // Stores HTML for all of the rows
-                    let items = [] // Stores the name of each value added to the table
-                    for (const key of list) {
-                        feature = data[key]
-                    
-                        // Creating row, and adding key to items for later use
-                        items.push(feature.name)
-                        rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
-                    }
-
-                    // Creating table in tab
-                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-
-                    // Adding behavior to buttons
-                    for (const value of items) {
-                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                    }
-
-                    // Updates collapsible behavior for table
-                    updateColapsible()
-                })
-            })
-        }
-
-        function itemsTab() {
-            
-            // Parameters
-            const edit_page = "item_set.html"
-            const database_data = "database.items.data"
-            const database_get_list = "database.get_items_list"
-            const remove_function = "database.remove_item"
-            const tab_id = "items"
-            const first_time_tab_execution = !getId(tab_id + "-search-bar")
-
-            // Component config
-            const table_headers = ["Name", "Type", "Subtype"]
-            const table_config = "30px 1fr 1fr 1fr 100px"
-
-            // Row component translation
-            function render_row(name, type, subtype="", description, image) {
-                id = name
-
-                columns = [capitalize(name), capitalize(type), capitalize(subtype)]
-                description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
-
-                // Image
-                image = image || subtypeImages[subtype] || typeImages[type] || "";
-
-                return row(id, columns, description, image, tab_id, table_config)
-            }
-
-            // Creates div base content
-            if(first_time_tab_execution) {
-                getId(tab_id + "-tab").innerHTML += 
-
-                    search_bar(tab_id) +
-
-                    select(tab_id + "-type", "Type", ["equipment"]) +
-
-                    div(tab_id + "-tab-content") +
-
-                    button_create_new(tab_id)
-
-                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
-            }
-
-            // Get filter data
-            const search = getId(tab_id + "-search-bar").value
-            const type = getId(tab_id + "-type").value
-
-            // Get data
-            toBackend(database_get_list+`({"type":"`+type+`"}, "", "`+search+`")`, (list) => {
-                list = JSON.parse(list)
-
-                toBackend(database_data, (data) => {
-                    data = JSON.parse(data)
-
-                    // Hashing
-                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                    if (new_hash == previous_hash) { return }
-
-                    // Row creation
-                    let rows = "" // Stores HTML for all of the rows
-                    let items = [] // Stores the name of each value added to the table
-                    for (const key of list) {
-                        item = data[key]
-                    
-                        // Creating row, and adding key to items for later use
-                        items.push(item.name)
-                        rows += render_row(item.name, item.type, item.subtype, item.description, item.image)
-                    }
-
-                    // Creating table in tab
-                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-
-                    // Adding behavior to buttons
-                    for (const value of items) {
-                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                    }
-
-                    // Updates collapsible behavior for table
-                    updateColapsible()
-                })
-            })
-        }
-
-        function damageTab() {
-
-            // Parameters
-            const edit_page = "damage_set.html"
-            const database_data = "database.damage_types.data"
-            const database_get_list = "database.get_damage_type_list"
-            const remove_function = "database.remove_damage_type"
-            const tab_id = "damage"
-            const first_time_tab_execution = !getId(tab_id + "-search-bar")
-
-            // Components
-            const table_headers = ["Name", "Type"]
-            const table_config = "30px 1fr 1fr 100px"
-            function render_row(name, type, description, image) {
-                id = name
-                columns = [capitalize(name), capitalize(type)]
-                description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
-
-                return row(id, columns, description, image, tab_id, table_config)
-            }
-
-            // Creates div base content
-            if(first_time_tab_execution) {
-                getId(tab_id + "-tab").innerHTML += 
-
-                    search_bar(tab_id) +
-
-                    select(tab_id + "-type", "Type", ["elemental", "physical", "special"]) +
-
-                    div(tab_id + "-tab-content") + 
-
-                    button_create_new(tab_id)
-
-                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
-            }
-
-            // Filters
-            const search = getId(tab_id + "-search-bar").value
-            const type = getId(tab_id + "-type").value
-
-            // Get data
-            toBackend(database_get_list+`({"type":"`+type+`"}, "level", "`+search+`")`, (list) => {
-                list = JSON.parse(list)
-
-                toBackend(database_data, (data) => {
-                    data = JSON.parse(data)
-
-                    // Hashing
-                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                    if (new_hash == previous_hash) { return }
-
-                    // Row creation
-                    let rows = "" // Stores HTML for all of the rows
-                    let items = [] // Stores the name of each value added to the table
-                    for (const key of list) { 
-                        damage = data[key]
-                        
-                        // Creating row, and adding key to items for later use
-                        items.push(damage.name)
-                        rows += render_row(damage.name, damage.type, damage.description, damage.image)
-                    }
-
-                    // Creating table in tab
-                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-
-                    // Adding behavior to buttons
-                    for (const value of items) {
-                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                    }
-
-                    // Updates collapsible behavior for table
-                    updateColapsible()
-                })
-            })
-        }
-
-        function spellsTab() {
-
-            // Parameters
-            const edit_page = "spell_set.html"
-            const database_data = "database.spells.data"
-            const database_get_list = "database.get_spells_list"
-            const remove_function = "database.remove_spell"
-            const tab_id = "spells"
-            const first_time_tab_execution = !getId(tab_id + "-search-bar")
-
-            // Components
-            const table_headers = ["Name", "Level", "School", "Duration"]
-            const table_config = "30px 1fr 1fr 1fr 1fr 100px"
-            function render_row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
-                id = name
-
-                duration = duration == 0 ? "Instantaneous" : timeUnit(duration);
-                cast_time = cast_time/2+" seconds"
-
-                // Components
-                components_string = ""
-                for (const i in components) {
-                    components_string += components[i]
-                    if (i != components.length-1) {
-                        components_string += ", "
-                    }
-                }
-                components_string = capitalize(components_string)
-
-                // Classes
-                classes_string = ""
-                for (const i in classes) {
-                    classes_string += capitalize(classes[i])
-                    if (i != classes.length-1) {
-                        classes_string += ", "
-                    }
-                }
-
-                // Range
-                if (!isNaN(Number(range))) {
-                    range = range + " feet"
-                } else {
-                    range = capitalize(range)
-                }
-
-                // Higher levels description
-                if (description_higher_levels != "") {
-                description_higher_levels = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
-                ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>`
-                }
-
-                columns = [capitalize(name), capitalize(level), capitalize(school), duration]
-
-                description = `
-                    <div style="line-height: 1.5;text-align:left;padding-top:10px;">
-                    <b>Classes</b>: `+classes_string+`
-                    <br><b>Components</b>: `+components_string+`
-                    <br><b>Target</b>: `+target+`
-                    <br><b>Range</b>: `+range+`
-                    <br><b>Casting Time</b>: `+cast_time+`
-                    <br><b>Duration</b>: `+duration+`</div>
-                    <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
-                        >`+description+`</pre>
-                    `+description_higher_levels
-
-                // Image
-                image = schoolImages[school] || "";
-
-                return row(id, columns, description, image, tab_id, table_config)
-            }
-
-            // Creates div base content
-            if(first_time_tab_execution){
-                getId(tab_id + "-tab").innerHTML += 
-
-                    search_bar(tab_id) +
-
-                    select(tab_id + "-level", "Level", [
-                    "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
-
-                    select(tab_id + "-school", "School", [
-                        "abjuration","conjuration","divination","enchantment",
-                        "evocation","illusion","necromancy","transmutation"]) +
-
-                    select(tab_id + "-player_class", "Class", [
-                        "bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]) +
-
-                    div(tab_id + "-tab-content") + 
-                    
-                    button_create_new(tab_id)
-
-                getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
-            }
-
-            // Filters
-            const search = getId(tab_id + "-search-bar").value
-            const level = getId(tab_id + "-level").value
-            const school = getId(tab_id + "-school").value
-            const player_class = getId(tab_id + "-player_class").value
-
-            // Data
-            toBackend(database_get_list+`({"school":"`+school+`", "level":"`+level+`", "player_class":"`+player_class+`"}, "level", "`+search+`")`, (list) => {
-                list = JSON.parse(list)
-
-                toBackend(database_data, (data) => {
-                    data = JSON.parse(data)
-
-                    // Hashing
-                    let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                    let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                    if (new_hash == previous_hash) { return }
-
-                    // Row creation
-                    let rows = "" // Stores HTML for all of the rows
-                    let items = [] // Stores the name of each value added to the table
-                    for (const key of list) { 
-                        spell = data[key]
-                        
-                        // Creating row, and adding key to items for later use
-                        items.push(spell.name)
-                        rows += render_row(
-                            spell.name, spell.level, spell.school, 
-                            spell.cast_time, spell.range, spell.target,
-                            spell.components, spell.duration, spell.classes,
-                            spell.description, spell.description_higher_levels)
-                    }
-
-                    // Creating table in tab
-                    getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
-
-                    // Adding behavior to buttons
-                    for (const value of items) {
-                        getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                        getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                    }
-
-                    // Updates collapsible behavior for table
-                    updateColapsible()
-                })
-            })
-        }
-
-
-        //=====================================================================================================
-        // Execution
-        //=====================================================================================================
-    
-        function onWindowLoad() {
-            
-            addTabFunctionality()
-            runCurrentTab() ; setInterval(runCurrentTab, 200)
-
-        }
-
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        //=====================================================================================================
-    </script>
-    ']
-    </head>
-    
-    <body>
-        <div class="tab-switch-div">
-            <button class="tab-switch" id="classes-switch">Classes</button>
-            <button class="tab-switch" id="races-switch">Races</button>
-            <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
-            <button class="tab-switch" id="conditions-switch">Conditions</button>
-            <button class="tab-switch" id="features-switch">Features</button>
-            <button class="tab-switch" id="items-switch">Items</button>
-            <button class="tab-switch active" id="damage-switch">Damage</button>
-            <button class="tab-switch" id="resources-switch">Resources</button>
-            <button class="tab-switch" id="spells-switch">Spells</button>
+            border: 2px solid #ddd;
+            font-size:100%;
+            transform: translate(42vw);
+
+        ">
+            Create New
+        </button>
+        `
+    }
+
+    function search_bar(tab_id) {
+        return `
+        <input id="`+tab_id+`-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+        `
+    }
+
+    function div(id, content="") {
+        return `
+        <div id="`+id+`">
+            `+content+`
         </div>
-        <div class="outer" id="classes-tab" style="display:none"></div>
-        <div class="outer" id="races-tab" style="display:none"></div>
-        <div class="outer" id="proficiencies-tab" style="display:none"></div>
-        <div class="outer" id="conditions-tab" style="display:none"></div>
-        <div class="outer" id="features-tab" style="display:none"></div>
-        <div class="outer" id="items-tab" style="display:none"></div>
-        <div class="outer" id="damage-tab"></div>
-        <div class="outer" id="resources-tab" style="display:none"></div>
-        <div class="outer" id="spells-tab" style="display:none"></div>
-    </body>
-    
-    }]
+        `
+    }
+
+    function select(id = "", title = "", options = []) {
+        options_string = ""
+        for (const value of options) {
+            options_string += `<option value=`+value.toLowerCase()+`>`+capitalize(value)+`</option>`
+        }
+
+        return `
+        <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+            <option value="" selected>`+title+`</option>
+            `+options_string+`
+        </select>
+        `
+    }
+
+    function select_same_id(id = "", title = "", options = []) {
+        options_string = ""
+        for (const value of options) {
+            options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
+        }
+
+        return `
+        <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+            <option value="" selected>`+title+`</option>
+            `+options_string+`
+        </select>
+        `
+    }
+
+
+
+    //=====================================================================================================
+    // Tabs
+    //=====================================================================================================
+
+    const dnd_classes = [
+        "barbarian", "Path of the Berserker", "Path of the Totem Warrior",
+        "bard", "College of Lore", "College of Valor",
+        "cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
+        "druid", "Circle of the Land", "Circle of the Moon",
+        "fighter", "Champion", "Battle Master", "Eldritch Knight",
+        "monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
+        "paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
+        "ranger", "Hunter", "Beast Master",
+        "rogue", "Thief", "Assassin", "Arcane Trickster",
+        "sorcerer", "Draconic Bloodline", "Wild Magic",
+        "warlock", "The Archfey", "The Fiend", "The Great Old One",
+        "wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
+    ]
+    const one_to_twenty = [
+        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"
+    ]
+    const subtypeImages = {
+        "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
+        "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+        "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
+        "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+        "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+            "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
+            "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
+            "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
+        "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
+        "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+        "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
+        "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
+        "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
+        "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
+        "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
+    };
+    const typeImages = {
+        "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
+        "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
+        "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
+    };
+    const schoolImages = {
+        "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+        "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
+        "divination": "asset://4aad8d5a0358701909aea571612a2485",
+        "enchantment": "asset://8d2464a3ae0afde2ce0ec69abd65aa2f",
+        "evocation": "asset://79f5407b61a5d7cf13137910bb0cf3fc",
+        "illusion": "asset://d0a8db9574e38703b490746c17d91560",
+        "necromancy": "asset://4e7caf122839630f94575156850cf067",
+        "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
+    };
+
+    function featuresTab() {
+        
+        // Parameters
+        const edit_page = "feature_set.html"
+        const database_data = "database.features.data"
+        const database_get_list = "database.get_features_list"
+        const remove_function = "database.remove_feature"
+        const tab_id = "features"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Component config
+        const table_headers = ["Name", "Type", "", "Level"]
+        const table_config = "30px 1fr 50px 1fr 50px 100px"
+
+        // Row component translation
+        function render_row(name, type, subtype, level, description, image) {
+            id = name
+            if (!subtype) {subtype = ""}
+            
+
+            columns = [capitalize(name), capitalize(type), capitalize(subtype), level]
+            description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+
+            // Image
+            image = subtypeImages[subtype] || typeImages[type] || "";
+
+            return row(id, columns, description, image, tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id) +
+
+                select(tab_id + "-type", "Type", ["racial", "feat", "class"]) +
+
+                select_same_id(tab_id + "-subtype", "Subtype", dnd_classes) +
+
+                select(tab_id + "-level", "Level", one_to_twenty) +
+
+                div(tab_id + "-tab-content") +
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Get filter data
+        const search = getId(tab_id + "-search-bar").value
+        const type = getId(tab_id + "-type").value
+        const subtype = getId(tab_id + "-subtype").value
+        const level = getId(tab_id + "-level").value
+
+        // Get data
+        toBackend(database_get_list+`({"type":"`+type+`", "subtype":"`+subtype+`", "level":"`+level+`"}, "", "`+search+`")`, (list) => {
+            list = JSON.parse(list)
+
+            toBackend(database_data, (data) => {
+                data = JSON.parse(data)
+
+                // Hashing
+                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of list) {
+                    feature = data[key]
+                
+                    // Creating row, and adding key to items for later use
+                    items.push(feature.name)
+                    rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
+                }
+
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        })
+    }
+
+    function itemsTab() {
+        
+        // Parameters
+        const edit_page = "item_set.html"
+        const database_data = "database.items.data"
+        const database_get_list = "database.get_items_list"
+        const remove_function = "database.remove_item"
+        const tab_id = "items"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Component config
+        const table_headers = ["Name", "Type", "Subtype"]
+        const table_config = "30px 1fr 1fr 1fr 100px"
+
+        // Row component translation
+        function render_row(name, type, subtype="", description, image) {
+            id = name
+
+            columns = [capitalize(name), capitalize(type), capitalize(subtype)]
+            description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+
+            // Image
+            image = image || subtypeImages[subtype] || typeImages[type] || "";
+
+            return row(id, columns, description, image, tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id) +
+
+                select(tab_id + "-type", "Type", ["equipment"]) +
+
+                div(tab_id + "-tab-content") +
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Get filter data
+        const search = getId(tab_id + "-search-bar").value
+        const type = getId(tab_id + "-type").value
+
+        // Get data
+        toBackend(database_get_list+`({"type":"`+type+`"}, "", "`+search+`")`, (list) => {
+            list = JSON.parse(list)
+
+            toBackend(database_data, (data) => {
+                data = JSON.parse(data)
+
+                // Hashing
+                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of list) {
+                    item = data[key]
+                
+                    // Creating row, and adding key to items for later use
+                    items.push(item.name)
+                    rows += render_row(item.name, item.type, item.subtype, item.description, item.image)
+                }
+
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        })
+    }
+
+    function damageTab() {
+
+        // Parameters
+        const edit_page = "damage_set.html"
+        const database_data = "database.damage_types.data"
+        const database_get_list = "database.get_damage_type_list"
+        const remove_function = "database.remove_damage_type"
+        const tab_id = "damage"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Components
+        const table_headers = ["Name", "Type"]
+        const table_config = "30px 1fr 1fr 100px"
+        function render_row(name, type, description, image) {
+            id = name
+            columns = [capitalize(name), capitalize(type)]
+            description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+
+            return row(id, columns, description, image, tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id) +
+
+                select(tab_id + "-type", "Type", ["elemental", "physical", "special"]) +
+
+                div(tab_id + "-tab-content") + 
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Filters
+        const search = getId(tab_id + "-search-bar").value
+        const type = getId(tab_id + "-type").value
+
+        // Get data
+        toBackend(database_get_list+`({"type":"`+type+`"}, "level", "`+search+`")`, (list) => {
+            list = JSON.parse(list)
+
+            toBackend(database_data, (data) => {
+                data = JSON.parse(data)
+
+                // Hashing
+                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of list) { 
+                    damage = data[key]
+                    
+                    // Creating row, and adding key to items for later use
+                    items.push(damage.name)
+                    rows += render_row(damage.name, damage.type, damage.description, damage.image)
+                }
+
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        })
+    }
+
+    function spellsTab() {
+
+        // Parameters
+        const edit_page = "spell_set.html"
+        const database_data = "database.spells.data"
+        const database_get_list = "database.get_spells_list"
+        const remove_function = "database.remove_spell"
+        const tab_id = "spells"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Components
+        const table_headers = ["Name", "Level", "School", "Duration"]
+        const table_config = "30px 1fr 1fr 1fr 1fr 100px"
+        function render_row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
+            id = name
+
+            duration = duration == 0 ? "Instantaneous" : timeUnit(duration);
+            cast_time = cast_time/2+" seconds"
+
+            // Components
+            components_string = ""
+            for (const i in components) {
+                components_string += components[i]
+                if (i != components.length-1) {
+                    components_string += ", "
+                }
+            }
+            components_string = capitalize(components_string)
+
+            // Classes
+            classes_string = ""
+            for (const i in classes) {
+                classes_string += capitalize(classes[i])
+                if (i != classes.length-1) {
+                    classes_string += ", "
+                }
+            }
+
+            // Range
+            if (!isNaN(Number(range))) {
+                range = range + " feet"
+            } else {
+                range = capitalize(range)
+            }
+
+            // Higher levels description
+            if (description_higher_levels != "") {
+            description_higher_levels = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+            ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>`
+            }
+
+            columns = [capitalize(name), capitalize(level), capitalize(school), duration]
+
+            description = `
+                <div style="line-height: 1.5;text-align:left;padding-top:10px;">
+                <b>Classes</b>: `+classes_string+`
+                <br><b>Components</b>: `+components_string+`
+                <br><b>Target</b>: `+target+`
+                <br><b>Range</b>: `+range+`
+                <br><b>Casting Time</b>: `+cast_time+`
+                <br><b>Duration</b>: `+duration+`</div>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                    >`+description+`</pre>
+                `+description_higher_levels
+
+            // Image
+            image = schoolImages[school] || "";
+
+            return row(id, columns, description, image, tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution){
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id) +
+
+                select(tab_id + "-level", "Level", [
+                "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
+
+                select(tab_id + "-school", "School", [
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"]) +
+
+                select(tab_id + "-player_class", "Class", [
+                    "bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]) +
+
+                div(tab_id + "-tab-content") + 
+                
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Filters
+        const search = getId(tab_id + "-search-bar").value
+        const level = getId(tab_id + "-level").value
+        const school = getId(tab_id + "-school").value
+        const player_class = getId(tab_id + "-player_class").value
+
+        // Data
+        toBackend(database_get_list+`({"school":"`+school+`", "level":"`+level+`", "player_class":"`+player_class+`"}, "level", "`+search+`")`, (list) => {
+            list = JSON.parse(list)
+
+            toBackend(database_data, (data) => {
+                data = JSON.parse(data)
+
+                // Hashing
+                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+                if (new_hash == previous_hash) { return }
+
+                // Row creation
+                let rows = "" // Stores HTML for all of the rows
+                let items = [] // Stores the name of each value added to the table
+                for (const key of list) { 
+                    spell = data[key]
+                    
+                    // Creating row, and adding key to items for later use
+                    items.push(spell.name)
+                    rows += render_row(
+                        spell.name, spell.level, spell.school, 
+                        spell.cast_time, spell.range, spell.target,
+                        spell.components, spell.duration, spell.classes,
+                        spell.description, spell.description_higher_levels)
+                }
+
+                // Creating table in tab
+                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+                // Adding behavior to buttons
+                for (const value of items) {
+                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+                }
+
+                // Updates collapsible behavior for table
+                updateColapsible()
+            })
+        })
+    }
+
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function onWindowLoad() {
+        
+        addTabFunctionality()
+        runCurrentTab() ; setInterval(runCurrentTab, 200)
+
+    }
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+    //=====================================================================================================
+</script>
+']
+</head>
+
+<body>
+    <div class="tab-switch-div">
+        <button class="tab-switch" id="classes-switch">Classes</button>
+        <button class="tab-switch" id="races-switch">Races</button>
+        <button class="tab-switch" id="proficiencies-switch">Proficiencies</button>
+        <button class="tab-switch" id="conditions-switch">Conditions</button>
+        <button class="tab-switch" id="features-switch">Features</button>
+        <button class="tab-switch" id="items-switch">Items</button>
+        <button class="tab-switch active" id="damage-switch">Damage</button>
+        <button class="tab-switch" id="resources-switch">Resources</button>
+        <button class="tab-switch" id="spells-switch">Spells</button>
+    </div>
+    <div class="outer" id="classes-tab" style="display:none"></div>
+    <div class="outer" id="races-tab" style="display:none"></div>
+    <div class="outer" id="proficiencies-tab" style="display:none"></div>
+    <div class="outer" id="conditions-tab" style="display:none"></div>
+    <div class="outer" id="features-tab" style="display:none"></div>
+    <div class="outer" id="items-tab" style="display:none"></div>
+    <div class="outer" id="damage-tab"></div>
+    <div class="outer" id="resources-tab" style="display:none"></div>
+    <div class="outer" id="spells-tab" style="display:none"></div>
+</body>
+
+}]

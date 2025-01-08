@@ -1,401 +1,401 @@
-    [h:id = arg(0)]
+[h:id = arg(0)]
 
-    [dialog5("Spell", "width=500; height=900; temporary=1; input=1; noframe=0"), code: {
-    <head>
-    [r:style()]
-    [r:script()]
-    [r:'
-    <style>
-        .checkbox-container {
-        display: flex;
-        align-items: center;       /* Vertically center the items */
-        justify-content: center;    /* Horizontally center the items */
+[dialog5("Spell", "width=400; height=900; temporary=1; input=1; noframe=0"), code: {
+<head>
+[r:style()]
+[r:script()]
+[r:'
+<style>
+    .checkbox-container {
+    display: flex;
+    align-items: center;       /* Vertically center the items */
+    justify-content: center;    /* Horizontally center the items */
+    width: 100%;
+    margin: 5px;
+    }
+
+    .checkbox-grid {
+        display: grid; /* Enable grid layout */
+        grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+        gap: 0px; /* Add space between items */
         width: 100%;
-        margin: 5px;
+        margin: 10px 0px;
+    }
+
+    .checkbox-text {
+    font-size: 90%;
+    min-width: 40px;
+    padding-bottom: 3px;
+    margin-right: 8px;
+    }
+
+    .checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    }
+
+    .checkbox[data-checked="true"] {
+    background-color: #ddd;
+    color: white;
+    }
+
+    .checkbox[data-checked="true"]::after {
+    font-size: 14px;
+    font-weight: bold;
+    }
+</style>
+<script>
+
+    //=====================================================================================================
+    // Components
+    //=====================================================================================================
+
+    function title(title = "") {
+        return `
+        <h4>`+title+`</h4>
+        `
+    }
+
+    function input(id = "", title = "", placeholder = "", style = "") {
+        return `
+        <h4 id="`+id+`-title">`+title+`</h4>
+        <input style="`+style+`" id="`+id+`" placeholder="`+placeholder+`"></input>
+        `
+    }
+
+    function select(id = "", title = "", options = [], placeholder="", style = "") {
+        options_string = ""
+        for (const value of options) {
+            options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
         }
+        return `
+        <h4 id="`+id+`-title">`+title+`</h4>
+        <select required style="`+style+`" id="`+id+`">
+            <option disabled selected value="" hidden>`+placeholder+`</option>
+            `+options_string+`
+        </select>
+        `
+    }
 
-        .checkbox-grid {
-            display: grid; /* Enable grid layout */
-            grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-            gap: 0px; /* Add space between items */
-            width: 100%;
-            margin: 10px 0px;
+    function inline_select(id = "", options = [], placeholder="", style = "") {
+        options_string = ""
+        for (const value of options) {
+            options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
         }
-
-        .checkbox-text {
-        font-size: 90%;
-        min-width: 40px;
-        padding-bottom: 3px;
-        margin-right: 8px;
-        }
-
-        .checkbox {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #333;
-        border-radius: 4px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        user-select: none;
-        }
-
-        .checkbox[data-checked="true"] {
-        background-color: #ddd;
-        color: white;
-        }
-
-        .checkbox[data-checked="true"]::after {
-        font-size: 14px;
-        font-weight: bold;
-        }
-    </style>
-    <script>
-
-        //=====================================================================================================
-        // Components
-        //=====================================================================================================
-
-        function title(title = "") {
-            return `
-            <h4>`+title+`</h4>
-            `
-        }
-
-        function input(id = "", title = "", placeholder = "", style = "") {
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <input style="`+style+`" id="`+id+`" placeholder="`+placeholder+`"></input>
-            `
-        }
-
-        function select(id = "", title = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <select required style="`+style+`" id="`+id+`">
-                <option disabled selected value="" hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function inline_select(id = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <select required style="`+style+`" id="`+id+`">
-                <option value="" disabled selected hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function checkbox(id = "", title = "", min_width = "40") {
-            if (id == "" && title == "") {
-                style = `style="display:none"`
-            } else {style = ""}
-
-            return `
-            <div class="checkbox-container">
-                <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
-                <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
-            </div>
-            `
-        }
-
-        function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
-            let checkboxes_string = ""
-            for (const box of checkboxes) {
-                checkboxes_string += checkbox(box[0], box[1], min_width)
-            }
-
-            return `
-            <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
-                `+checkboxes_string+`
-            </div>
-            `
-        }
-
-        function text_area(id = "", title = "", size = "7") {
-            return `
-            <h4>`+title+`</h4>
-            <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
-            `
-        }
-
-        function container(title="", children="") {
-
-            return `
-            <div class="spacer"></div>
-            <div class="container center-horizontal" style="padding-bottom:0px;">
-                <h3 class="container-title">`+title+`</h3>
-                <div class="spacer" ></div>
-                `+children+`
-                <div class="spacer"></div>
-            </div>
-            <div class="spacer"></div>
-            `
-        }
-
-
-
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
-
-        function updateRange() {
-            let range = getId("range")
-            let range_distance = getId("range-distance")
-            let range_distance_title = getId("range-distance-title")
-
-            range_distance.setAttribute("style","display:none")
-            range_distance_title.setAttribute("style","display:none")
-
-            if (range.value == "distance") {
-                    range_distance.setAttribute("style","")
-                    range_distance_title.setAttribute("style","")
-                } else {
-                    range_distance.setAttribute("style","display:none")
-                    range_distance_title.setAttribute("style","display:none")
-                }
-
-            range.addEventListener("input",()=>{
-                if (range.value == "distance") {
-                    range_distance.setAttribute("style","")
-                    range_distance_title.setAttribute("style","")
-                } else {
-                    range_distance.setAttribute("style","display:none")
-                    range_distance_title.setAttribute("style","display:none")
-                }
-            })
-        }
-
-        function updateFields() {
-            id = getId("id").value
-
-            if(id == "") {return}
-
-            toBackend("database.spells.data", (response) => {
-                response = JSON.parse(response)
-                
-                getId("name").value = capitalize(response[id].name)
-                getId("level").value = response[id].level
-                getId("school").value = response[id].school
-
-                getId("cast_time").value = response[id].cast_time
-                getId("target").value = response[id].target
-
-                getId("description").value = response[id].description
-                getId("description-higher-levels").value = response[id].description_higher_levels
-
-                getId("duration").value = response[id].duration
-                getId("duration-unit").value = "rounds"
-
-                getId("bard").setAttribute("data-checked", response[id].classes.includes("bard"))
-                getId("cleric").setAttribute("data-checked", response[id].classes.includes("cleric"))
-                getId("druid").setAttribute("data-checked", response[id].classes.includes("druid"))
-                getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("sorcerer"))
-                getId("warlock").setAttribute("data-checked", response[id].classes.includes("warlock"))
-                getId("wizard").setAttribute("data-checked", response[id].classes.includes("wizard"))
-
-                getId("vocal").setAttribute("data-checked", response[id].components.includes("vocal"))
-                getId("somatic").setAttribute("data-checked", response[id].components.includes("somatic"))
-                getId("material").setAttribute("data-checked", response[id].components.includes("material"))
-                getId("concentration").setAttribute("data-checked", response[id].components.includes("concentration"))
-
-                getId("range").value = response[id].range
-                if (Number(response[id].range)) {
-                    getId("range").value = "distance"
-                    updateRange()
-                    getId("range-distance").value = response[id].range
-                }
-            })
-        }
-
-        function loadCheckboxes() {
-            // Select all elements with the class checkbox
-            const checkboxes = document.querySelectorAll(".checkbox");
-
-            checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("click", () => {
-                // Toggle the data-checked attribute
-                const isChecked = checkbox.getAttribute("data-checked") === "true";
-                checkbox.setAttribute("data-checked", !isChecked);
-            });
-            });
-        }
-
-        function submit() {
-            // Get values from form
-            let name = getId("name").value;
-            let level = getId("level").value;
-            let school = getId("school").value;
-
-            let cast_time = getId("cast_time").value;
-            let target = getId("target").value;
-
-            let description = getId("description").value;
-            let description_higher_levels = getId("description-higher-levels").value;
-
-            let duration;
-            let duration_rounds = getId("duration").value;
-            let duration_unit = getId("duration-unit").value;
-            switch (duration_unit) {
-                case "days":
-                    duration = duration_rounds * 14400
-                    break
-                case "hours":
-                    duration = duration_rounds * 600
-                    break
-                case "minutes":
-                    duration = duration_rounds * 10
-                    break
-                default:
-                    duration = duration_rounds
-                    break
-            }
-
-
-            let range = getId("range").value;
-            if (range == "distance") {
-                range = getId("range-distance").value
-            }
-
-            let classes = []
-            for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {
-                    classes.push(value)
-                }
-            }
-            classes = JSON.stringify(classes)
-
-            let components = []
-            for (const value of ["vocal", "somatic", "material", "concentration"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {
-                    components.push(value)
-                }
-            }
-            components = JSON.stringify(components)
-            
-
-            // Send data to backend
-            toBackend(
-                "database.set_spell("+
-                    "`"+name+"`,"+
-                    "`"+level+"`,"+
-                    "`"+school+"`,"+
-                    ""+classes+","+
-                    "`"+cast_time+"`,"+
-                    "`"+range+"`,"+
-                    "`"+target+"`,"+
-                    ""+components+","+
-                    "`"+duration+"`,"+
-                    "`"+description+"`,"+
-                    "`"+description_higher_levels+"`,"+
-                ")"
-            )
-        }
-
-
-
-        //=====================================================================================================
-        // Execution
-        //=====================================================================================================
-
-        function loadPage() {
-
-            getId("content").innerHTML += 
-
-                container("Basic",
-                    input("name", "Name", "Spell name") +
-
-                    select("level", "Level", [
-                        "cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"], "Spell level, can be cantrip") +
-
-                    select("school", "School of Magic", [
-                        "abjuration","conjuration","divination","enchantment",
-                        "evocation","illusion","necromancy","transmutation"], "School of the spell")
-                ) +
-                
-                container("Classes",
-                    checkbox_grid([
-                        ["bard", "Bard"], ["druid", "Druid"], ["cleric", "Cleric"],
-                        ["sorcerer", "Sorcerer"], ["warlock", "Warlock"], ["wizard", "Wizard"],
-                    ])
-                ) +
-
-                container("Casting",
-                    select("cast_time", "Cast Time", [
-                        "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"], "Cast time in half seconds") +
-
-                    select("range", "Range Type", [
-                        "self", "touch", "sight", "unlimited", "special", "distance"], "Range type") +
-
-                    input("range-distance", "Distance in Feet", "100") +
-
-                    input("target", "Target", "A creature within range") +
-
-                    input("duration", "Duration", "Time", "width: 70%") + 
-                    inline_select("duration-unit", ["rounds", "minutes", "hours", "days"], "Unit", "width:20%")
-
-
-                ) +
-
-                container("Components",
-                    checkbox_grid([
-                        ["vocal", "Vocal"], ["somatic", "Somatic"], 
-                        ["material", "Material"], ["concentration", "Concentration"]
-                    ], "2", "80")
-                ) +
-
-                container("Information",
-                    text_area("description", "Description", "10") +
-
-                    text_area("description-higher-levels", "Description for Upcasting", "5")
-                )
-
-                updateRange()
-        }
-
-        function onWindowLoad() {
-            loadPage()
-
-            let close_button = getId("close")
-            let submit_button = getId("submit")
-
-            close_button.addEventListener("click", () => { closePage("Spell") })
-            submit_button.addEventListener("click", () => { submit() })
-
-            loadCheckboxes()
-            updateFields()
-        }
-
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        //=====================================================================================================
-
-    </script>
-    ']
-    </head>
-
-    <input type="text" class="hidden" id="id" value="{id}"></input>
-
-    <body>
-        <div class="outer">
-
-            <div id="content"></div>
-
-            <button id="close">Close</button>
-            <button id="submit">Save</button>
-
+        return `
+        <select required style="`+style+`" id="`+id+`">
+            <option value="" disabled selected hidden>`+placeholder+`</option>
+            `+options_string+`
+        </select>
+        `
+    }
+
+    function checkbox(id = "", title = "", min_width = "40") {
+        if (id == "" && title == "") {
+            style = `style="display:none"`
+        } else {style = ""}
+
+        return `
+        <div class="checkbox-container">
+            <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
+            <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
         </div>
-    </body>
+        `
+    }
 
-    }]
+    function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
+        let checkboxes_string = ""
+        for (const box of checkboxes) {
+            checkboxes_string += checkbox(box[0], box[1], min_width)
+        }
+
+        return `
+        <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
+            `+checkboxes_string+`
+        </div>
+        `
+    }
+
+    function text_area(id = "", title = "", size = "7") {
+        return `
+        <h4>`+title+`</h4>
+        <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
+        `
+    }
+
+    function container(title="", children="") {
+
+        return `
+        <div class="spacer"></div>
+        <div class="container center-horizontal" style="padding-bottom:0px;">
+            <h3 class="container-title">`+title+`</h3>
+            <div class="spacer" ></div>
+            `+children+`
+            <div class="spacer"></div>
+        </div>
+        <div class="spacer"></div>
+        `
+    }
+
+
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function updateRange() {
+        let range = getId("range")
+        let range_distance = getId("range-distance")
+        let range_distance_title = getId("range-distance-title")
+
+        range_distance.setAttribute("style","display:none")
+        range_distance_title.setAttribute("style","display:none")
+
+        if (range.value == "distance") {
+                range_distance.setAttribute("style","")
+                range_distance_title.setAttribute("style","")
+            } else {
+                range_distance.setAttribute("style","display:none")
+                range_distance_title.setAttribute("style","display:none")
+            }
+
+        range.addEventListener("input",()=>{
+            if (range.value == "distance") {
+                range_distance.setAttribute("style","")
+                range_distance_title.setAttribute("style","")
+            } else {
+                range_distance.setAttribute("style","display:none")
+                range_distance_title.setAttribute("style","display:none")
+            }
+        })
+    }
+
+    function updateFields() {
+        id = getId("id").value
+
+        if(id == "") {return}
+
+        toBackend("database.spells.data", (response) => {
+            response = JSON.parse(response)
+            
+            getId("name").value = capitalize(response[id].name)
+            getId("level").value = response[id].level
+            getId("school").value = response[id].school
+
+            getId("cast_time").value = response[id].cast_time
+            getId("target").value = response[id].target
+
+            getId("description").value = response[id].description
+            getId("description-higher-levels").value = response[id].description_higher_levels
+
+            getId("duration").value = response[id].duration
+            getId("duration-unit").value = "rounds"
+
+            getId("bard").setAttribute("data-checked", response[id].classes.includes("bard"))
+            getId("cleric").setAttribute("data-checked", response[id].classes.includes("cleric"))
+            getId("druid").setAttribute("data-checked", response[id].classes.includes("druid"))
+            getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("sorcerer"))
+            getId("warlock").setAttribute("data-checked", response[id].classes.includes("warlock"))
+            getId("wizard").setAttribute("data-checked", response[id].classes.includes("wizard"))
+
+            getId("vocal").setAttribute("data-checked", response[id].components.includes("vocal"))
+            getId("somatic").setAttribute("data-checked", response[id].components.includes("somatic"))
+            getId("material").setAttribute("data-checked", response[id].components.includes("material"))
+            getId("concentration").setAttribute("data-checked", response[id].components.includes("concentration"))
+
+            getId("range").value = response[id].range
+            if (Number(response[id].range)) {
+                getId("range").value = "distance"
+                updateRange()
+                getId("range-distance").value = response[id].range
+            }
+        })
+    }
+
+    function loadCheckboxes() {
+        // Select all elements with the class checkbox
+        const checkboxes = document.querySelectorAll(".checkbox");
+
+        checkboxes.forEach(checkbox => {
+        checkbox.addEventListener("click", () => {
+            // Toggle the data-checked attribute
+            const isChecked = checkbox.getAttribute("data-checked") === "true";
+            checkbox.setAttribute("data-checked", !isChecked);
+        });
+        });
+    }
+
+    function submit() {
+        // Get values from form
+        let name = getId("name").value;
+        let level = getId("level").value;
+        let school = getId("school").value;
+
+        let cast_time = getId("cast_time").value;
+        let target = getId("target").value;
+
+        let description = getId("description").value;
+        let description_higher_levels = getId("description-higher-levels").value;
+
+        let duration;
+        let duration_rounds = getId("duration").value;
+        let duration_unit = getId("duration-unit").value;
+        switch (duration_unit) {
+            case "days":
+                duration = duration_rounds * 14400
+                break
+            case "hours":
+                duration = duration_rounds * 600
+                break
+            case "minutes":
+                duration = duration_rounds * 10
+                break
+            default:
+                duration = duration_rounds
+                break
+        }
+
+
+        let range = getId("range").value;
+        if (range == "distance") {
+            range = getId("range-distance").value
+        }
+
+        let classes = []
+        for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
+            if(getId(value).getAttribute("data-checked") == "true") {
+                classes.push(value)
+            }
+        }
+        classes = JSON.stringify(classes)
+
+        let components = []
+        for (const value of ["vocal", "somatic", "material", "concentration"]) {
+            if(getId(value).getAttribute("data-checked") == "true") {
+                components.push(value)
+            }
+        }
+        components = JSON.stringify(components)
+        
+
+        // Send data to backend
+        toBackend(
+            "database.set_spell("+
+                "`"+name+"`,"+
+                "`"+level+"`,"+
+                "`"+school+"`,"+
+                ""+classes+","+
+                "`"+cast_time+"`,"+
+                "`"+range+"`,"+
+                "`"+target+"`,"+
+                ""+components+","+
+                "`"+duration+"`,"+
+                "`"+description+"`,"+
+                "`"+description_higher_levels+"`,"+
+            ")"
+        )
+    }
+
+
+
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
+
+    function loadPage() {
+
+        getId("content").innerHTML += 
+
+            container("Basic",
+                input("name", "Name", "Spell name") +
+
+                select("level", "Level", [
+                    "cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"], "Spell level, can be cantrip") +
+
+                select("school", "School of Magic", [
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"], "School of the spell")
+            ) +
+            
+            container("Classes",
+                checkbox_grid([
+                    ["bard", "Bard"], ["druid", "Druid"], ["cleric", "Cleric"],
+                    ["sorcerer", "Sorcerer"], ["warlock", "Warlock"], ["wizard", "Wizard"],
+                ])
+            ) +
+
+            container("Casting",
+                select("cast_time", "Cast Time", [
+                    "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"], "Cast time in half seconds") +
+
+                select("range", "Range Type", [
+                    "self", "touch", "sight", "unlimited", "special", "distance"], "Range type") +
+
+                input("range-distance", "Distance in Feet", "100") +
+
+                input("target", "Target", "A creature within range") +
+
+                input("duration", "Duration", "Time", "width: 70%") + 
+                inline_select("duration-unit", ["rounds", "minutes", "hours", "days"], "Unit", "width:20%")
+
+
+            ) +
+
+            container("Components",
+                checkbox_grid([
+                    ["vocal", "Vocal"], ["somatic", "Somatic"], 
+                    ["material", "Material"], ["concentration", "Concentration"]
+                ], "2", "80")
+            ) +
+
+            container("Information",
+                text_area("description", "Description", "10") +
+
+                text_area("description-higher-levels", "Description for Upcasting", "5")
+            )
+
+            updateRange()
+    }
+
+    function onWindowLoad() {
+        loadPage()
+
+        let close_button = getId("close")
+        let submit_button = getId("submit")
+
+        close_button.addEventListener("click", () => { closePage("Spell") })
+        submit_button.addEventListener("click", () => { submit() })
+
+        loadCheckboxes()
+        updateFields()
+    }
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+    //=====================================================================================================
+
+</script>
+']
+</head>
+
+<input type="text" class="hidden" id="id" value="{id}"></input>
+
+<body>
+    <div class="outer">
+
+        <div id="content"></div>
+
+        <button id="close">Close</button>
+        <button id="submit">Save</button>
+
+    </div>
+</body>
+
+}]
