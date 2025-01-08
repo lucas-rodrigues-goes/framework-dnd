@@ -15,9 +15,11 @@ try {
         //=====================================================================================================
 
         #token;
+        #portrait;
 
         constructor(id) {
             this.#token = MapTool.tokens.getTokenByID(id)
+            this.#portrait = MTScript.evalMacro(`[r:getTokenPortrait("","`+id+`")]`)
         }
 
 
@@ -27,6 +29,7 @@ try {
         //=====================================================================================================
 
         get token() { return this.#token;}
+        get portrait() { return this.#portrait;}
 
 
 

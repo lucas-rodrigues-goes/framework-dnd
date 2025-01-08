@@ -497,40 +497,40 @@
         const level = getId(tab_id + "-level").value
 
         // Get data
-        toBackend(database_get_list+`({"type":"`+type+`", "subtype":"`+subtype+`", "level":"`+level+`"}, "", "`+search+`")`, (list) => {
-            list = JSON.parse(list)
+        toBackend(`[
+            `+database_get_list+`({"type":"`+type+`", "subtype":"`+subtype+`", "level":"`+level+`"}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
 
-            toBackend(database_data, (data) => {
-                data = JSON.parse(data)
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
 
-                // Hashing
-                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) {
+                feature = data[key]
+            
+                // Creating row, and adding key to items for later use
+                items.push(feature.name)
+                rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
+            }
 
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of list) {
-                    feature = data[key]
-                
-                    // Creating row, and adding key to items for later use
-                    items.push(feature.name)
-                    rows += render_row(feature.name, feature.type, feature.subtype, feature.level, feature.description)
-                }
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
 
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
 
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-
-                // Updates collapsible behavior for table
-                updateColapsible()
-            })
+            // Updates collapsible behavior for table
+            updateColapsible()
         })
     }
 
@@ -581,40 +581,40 @@
         const type = getId(tab_id + "-type").value
 
         // Get data
-        toBackend(database_get_list+`({"type":"`+type+`"}, "", "`+search+`")`, (list) => {
-            list = JSON.parse(list)
+        toBackend(`[
+            `+database_get_list+`({"type":"`+type+`"}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
 
-            toBackend(database_data, (data) => {
-                data = JSON.parse(data)
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
 
-                // Hashing
-                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) {
+                item = data[key]
+            
+                // Creating row, and adding key to items for later use
+                items.push(item.name)
+                rows += render_row(item.name, item.type, item.subtype, item.description, item.image)
+            }
 
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of list) {
-                    item = data[key]
-                
-                    // Creating row, and adding key to items for later use
-                    items.push(item.name)
-                    rows += render_row(item.name, item.type, item.subtype, item.description, item.image)
-                }
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
 
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
 
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-
-                // Updates collapsible behavior for table
-                updateColapsible()
-            })
+            // Updates collapsible behavior for table
+            updateColapsible()
         })
     }
 
@@ -659,40 +659,40 @@
         const type = getId(tab_id + "-type").value
 
         // Get data
-        toBackend(database_get_list+`({"type":"`+type+`"}, "level", "`+search+`")`, (list) => {
-            list = JSON.parse(list)
+        toBackend(`[
+            `+database_get_list+`({"type":"`+type+`"}, "level", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
 
-            toBackend(database_data, (data) => {
-                data = JSON.parse(data)
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
 
-                // Hashing
-                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) { 
+                damage = data[key]
+                
+                // Creating row, and adding key to items for later use
+                items.push(damage.name)
+                rows += render_row(damage.name, damage.type, damage.description, damage.image)
+            }
 
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of list) { 
-                    damage = data[key]
-                    
-                    // Creating row, and adding key to items for later use
-                    items.push(damage.name)
-                    rows += render_row(damage.name, damage.type, damage.description, damage.image)
-                }
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
 
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
 
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-
-                // Updates collapsible behavior for table
-                updateColapsible()
-            })
+            // Updates collapsible behavior for table
+            updateColapsible()
         })
     }
 
@@ -797,44 +797,44 @@
         const player_class = getId(tab_id + "-player_class").value
 
         // Data
-        toBackend(database_get_list+`({"school":"`+school+`", "level":"`+level+`", "player_class":"`+player_class+`"}, "level", "`+search+`")`, (list) => {
-            list = JSON.parse(list)
+        toBackend(`[
+            `+database_get_list+`({"school":"`+school+`", "level":"`+level+`", "player_class":"`+player_class+`"}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
 
-            toBackend(database_data, (data) => {
-                data = JSON.parse(data)
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
 
-                // Hashing
-                let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
-                let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
-                if (new_hash == previous_hash) { return }
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) { 
+                spell = data[key]
+                
+                // Creating row, and adding key to items for later use
+                items.push(spell.name)
+                rows += render_row(
+                    spell.name, spell.level, spell.school, 
+                    spell.cast_time, spell.range, spell.target,
+                    spell.components, spell.duration, spell.classes,
+                    spell.description, spell.description_higher_levels)
+            }
 
-                // Row creation
-                let rows = "" // Stores HTML for all of the rows
-                let items = [] // Stores the name of each value added to the table
-                for (const key of list) { 
-                    spell = data[key]
-                    
-                    // Creating row, and adding key to items for later use
-                    items.push(spell.name)
-                    rows += render_row(
-                        spell.name, spell.level, spell.school, 
-                        spell.cast_time, spell.range, spell.target,
-                        spell.components, spell.duration, spell.classes,
-                        spell.description, spell.description_higher_levels)
-                }
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
 
-                // Creating table in tab
-                getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
 
-                // Adding behavior to buttons
-                for (const value of items) {
-                    getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
-                    getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
-                }
-
-                // Updates collapsible behavior for table
-                updateColapsible()
-            })
+            // Updates collapsible behavior for table
+            updateColapsible()
         })
     }
 

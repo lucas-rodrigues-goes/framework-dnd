@@ -724,8 +724,14 @@ try {
                     
                         const numericLevelA = convertLevel(levelA);
                         const numericLevelB = convertLevel(levelB);
-                    
-                        return numericLevelA - numericLevelB;
+                        
+                        if (numericLevelA != numericLevelB) {
+                            return numericLevelA - numericLevelB;
+                        }
+
+                        const schoolA = database.data[a].school || '';
+                        const schoolB = database.data[b].school || '';
+                        return schoolA.localeCompare(schoolB);
                     });
                     break;
             }
