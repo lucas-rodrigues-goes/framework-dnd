@@ -109,7 +109,7 @@
     }
 
     #party-characters > .circular-health > img {
-        height: 5.25vh;
+        height: 5.5vh;
         min-height: 0;
     }
 
@@ -308,6 +308,9 @@
             let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
 
             let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
+            if(hp_percent == 100) {
+                style = "background: rgba(0,0,0,0) ; border-color: rgba(0,0,0,0)"
+            }
 
             getId("current-character").innerHTML += 
                 current_character(style)
@@ -316,7 +319,7 @@
 
     function updateTarget() {
         toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
-            const invalid_ids = []
+            const invalid_ids = ["CD63A98070EB4D2792D8AAC3F9504EE4", "969831346EDF4C29A6504A7A77C13AB2"]
             selected_tokens = JSON.parse(response)
 
             if (selected_tokens.length != 1) {
@@ -324,7 +327,11 @@
                 getId("current-target").innerHTML = ""
                 return
             }
-            if (invalid_ids.includes(selected_tokens[0])) { return }
+            if (invalid_ids.includes(selected_tokens[0])) {
+                getId("current-target").setAttribute("hash", "")
+                getId("current-target").innerHTML = ""
+                return 
+            }
 
             toBackend(`
                 var target = new Creature("`+selected_tokens[0]+`"); 
@@ -382,10 +389,12 @@
                 let health = member[0]
                 let max_health = member[1]
                 let hp_percent = health/max_health * 100
-                let start_hp = hp_percent
                 let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
 
-                let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
+                let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
+                if(hp_percent == 100) {
+                    style = "background: rgba(0,0,0,0) ; border-color: rgba(0,0,0,0)"
+                }
 
                 items.push(member_id)
                 getId("party-characters").innerHTML +=
