@@ -1,360 +1,459 @@
-    [h:id = getImpersonated()]
-    [h:abort(arg(0) != id)]
+[h:id = getImpersonated()]
+[h:abort(arg(0) != id)]
 
-    [overlay("Screen"), code: {
-    <head>
-    <link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/impersonated/impersonated?{id}'>
-    <script>
-        const id = "{id}";
-        const gm = "{isGM()}" == "1"
-        const character_image = `{getTokenPortrait("",id)}`
-    </script>
-    [r:style()]
-    [r:script()]
-    [r:'
-    <style>
+[overlay("Screen"), code: {
+<head>
+<link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/impersonated/impersonated?{id}'>
+<script>
+    const id = "{id}";
+    const gm = "{isGM()}" == "1"
+    const character_image = `{getTokenPortrait("",id)}`
+</script>
+[r:style()]
+[r:script()]
+[r:'
+<style>
 
-        body {
-            all:unset;
-            font-size: 1.7vh;
+    body {
+        all:unset;
+        font-size: 1.7vh;
+    }
+
+    .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+
+    .menu {
+        position: fixed;
+
+        padding: 1vh 0.5vw;
+        margin: 0.5vh;
+
+        display: flex;
+        align-items: end;
+        gap: 1vh;
+    }
+
+    .button-background {
+        background-color: #333;
+        border: 0.2vh solid #444;
+        border-radius: 1vh;
+        padding: 0.3vh;
+        padding-left: 0.4vh;
+        display:flex;
+
+        background-color: rgba(0,0,0,0);
+        border: none;
+    }
+
+    .button-background img {
+        background-color: #333;
+        border: 0.2vh solid #444;
+        border-radius: 0.5vh;
+        display:block;
+        height: 3vh;
+        padding: 0.5vh;
+        margin: 0 0.25vh;
+        min-height:29px;
+    }
+
+    .button-background img:hover {
+        background-color: #444;
+        border: 0.2vh solid #555;
+        opacity:1;
+    }
+    .button-background img:active {
+        background-color: #555;
+        opacity:1;
+    }
+
+    
+    .circular-health {
+        position: relative;
+        width: 12.5vh;
+        height: 12.5vh;
+        min-height: 91px;
+        min-width: 91px;
+        margin: -0.5vh 0px;
+
+        background: rgba(0,0,0,0.15);
+        border-radius: 50%;
+        border: 0.2vh solid #444;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .circular-health > img {
+        border-radius: 50%;
+        border: 0.3vh solid #444;
+        height: 11vh;
+        min-height: 80px;
+    }
+    
+    .circular-health > img:hover {
+        filter: brightness(1.1)
+    }
+
+    .circular-health > img:active {
+        filter: brightness(1.3)
+    }
+
+    #party-characters {
+        position: absolute;
+        bottom: 12.5vh;
+    }
+
+    #party-characters > .circular-health {
+        width: 6.5vh;
+        height: 6.5vh;
+        min-height: 0;
+        min-width: 0;
+        margin: 1vh 0vh;
+    }
+
+    #party-characters > .circular-health > img {
+        height: 5.5vh;
+        min-height: 0;
+    }
+
+    #target {
+        top: 1vh;
+    }
+
+    #target > .top {
+        width: fit-content;
+        position: relative;
+
+        bottom: -1vh;
+        height: 6vh;
+
+        color: #ddd;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #target img {
+        position: absolute;
+        height: 4vh;
+        left: -5vh;
+        border-radius: 50%;
+        border: 0.1vh solid #444;
+    }
+
+    #target-health {
+        position: relative;
+        width: 35vh;
+        
+        height: 1.5vh;
+        bottom: 0px;
+        background-color: rgba(0,0,0,0.15);
+        border-radius: 1vh;
+        border: 0.1vh solid #444;
+    }
+
+    #target .armor-class {
+        position:relative;
+        display:inline;
+
+        color:#ddd;
+        text-align: center;
+        font-weight: bold;
+        font-size: 110%;
+
+        background-color: #444;
+        border: 0.3vh solid #555;
+        border-radius: 50%;
+        border-top-right-radius: 0;
+        border-top-left-radius: 0;
+
+        padding: 0.5vh;
+        width:2vh;
+        left: 1vh;
+    }
+
+</style>
+<script>
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+
+    function getColor(value) {
+
+        // Ensure value is within the range 0 to 100
+        value = Number(value)
+        value = Math.max(0, Math.min(100, value));
+
+        // Calculate the proportion for interpolation
+        let red, green;
+
+        if (value >= 50) {
+            // From yellow (50) to green (100)
+            green = 255;
+            red = Math.round(255 * (1 - (value - 50) / 50));
+        } else {
+            // From red (0) to yellow (50)
+            red = 255;
+            green = Math.round(255 * (value / 50));
         }
 
-        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
-        .left { left: 0; }
-        .right { right: 0; }
-        .bottom { bottom: 0; }
-        .top { top: 0; }
-        .center-horizontal { left: 50%; transform:translate(-50%)}
+        // Adjust color intensity based on toneFactor
+        red = Math.round(red * 0.7);
+        green = Math.round(green * 0.7);
 
-        .menu {
-            position: fixed;
+        // Clamp the values to ensure they stay within 0-255
+        red = Math.min(255, Math.max(0, red));
+        green = Math.min(255, Math.max(0, green));
 
-            padding: 1vh 0.5vw;
+        // Return the color in RGB format
+        //return `#ddd`
+        return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
+    }
 
-            display: flex;
-            align-items: end;
-            gap: 1vh;
+    function hash(string) {
+        
+        let hash = 0;
+
+        if (string.length == 0) return hash;
+
+        for (i = 0; i < string.length; i++) {
+            char = string.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
         }
 
-        .circular-health {
-            position: relative;
-            width: 12.5vh;
-            height: 12.5vh;
-            min-height: 91px;
-            min-width: 91px;
-            margin: -0.5vh 0px;
+        return hash;
+    }
 
-            background: rgba(0,0,0,0);
-            border-radius: 50%;
-            border: 0.2vh solid #444;
+    //=====================================================================================================
+    // Components
+    //=====================================================================================================
 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .circular-health > img {
-            border-radius: 50%;
-            border: 0.3vh solid #444;
-            height: 11vh;
-            min-height: 80px;
-        }
-
-        button {
-            width:4vh;height:4vh;
-            min-height:29px;min-width:29px;
-            text-align:center;
-            padding: 0px;
-            margin:0px;
-            border-width: 1px;
-            background-color: #333;
-            cursor:default;
-        }
-
-        button:hover {
-            cursor:default;
-            background-color: #444;
-        }
-
-        button:active {
-            cursor:default;
-            background-color: #555;
-        }
-
-        button > img {
-            height: 3vh;
-            min-height:22px;
-        }
-
-        #target {
-            top: 1vh;
-        }
-
-        #target > .top {
-            width: fit-content;
-            position: relative;
-
-            bottom: -1vh;
-            height: 6vh;
-
-            color: #ddd;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #target img {
-            position: absolute;
-            height: 4vh;
-            left: -5vh;
-            border-radius: 50%;
-            border: 0.1vh solid #444;
-        }
-
-        #target-health {
-            position: relative;
-
-            min-width: 25vh;
-            width: 150%;
-            left: -25%;
-            
-            height: 1.5vh;
-            bottom: 0px;
-            background-color: #b44;
-            border-radius: 1vh;
-            border: 0.1vh solid #444;
-        }
-
-
-
-
-
-    </style>
-    <script>
-
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
-
-        function getColor(value) {
-
-            // Ensure value is within the range 0 to 100
-            value = Number(value)
-            value = Math.max(0, Math.min(100, value));
-
-            // Calculate the proportion for interpolation
-            let red, green;
-
-            if (value >= 50) {
-                // From yellow (50) to green (100)
-                green = 255;
-                red = Math.round(255 * (1 - (value - 50) / 50));
-            } else {
-                // From red (0) to yellow (50)
-                red = 255;
-                green = Math.round(255 * (value / 50));
-            }
-
-            // Adjust color intensity based on toneFactor
-            red = Math.round(red * 0.7);
-            green = Math.round(green * 0.7);
-
-            // Clamp the values to ensure they stay within 0-255
-            red = Math.min(255, Math.max(0, red));
-            green = Math.min(255, Math.max(0, green));
-
-            // Return the color in RGB format
-            //return `#ddd`
-            return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
-        }
-
-        //=====================================================================================================
-        // Components
-        //=====================================================================================================
-
-        function target_character(name="", type="", image="", token_id="") {
-            if (image != "") {
-                image = `
-                <img src="`+image+`"">
-                `
-            }
-
-            return `
-            <div id="target" token="`+token_id+`" class="center-horizontal">
-                <div class="top center-horizontal">
-                    `+image+`
-                    <p>
-                        <span style="font-size:120%; font-weight:bold">`+name+`</span><br>
-                        <span style="color:#aaa">`+type+`</span>
-                    </p>
-                </div>
-                <div id="target-health"></div>
-            </div>
+    function target_character(name="", type="", image="", style="", armor_class="12") {
+        if (image != "") {
+            image = `
+            <img src="`+image+`">
             `
         }
 
-        function current_character() {
-            return `
-            <div id="health" class="circular-health">
-                <img src="`+character_image+`">
-            </div>`
-        }
+        return `
+        <div id="target" class="center-horizontal">
+            <div class="top center-horizontal">
+                `+image+`
+                <p>
+                    <span style="font-size:120%; font-weight:bold">`+name+`</span><br>
+                    <span style="color:#aaa">`+type+`</span>
+                </p>
+            </div>
+            <div id="target-health" style="`+style+`"></div>
+            <div style="display:flex; gap: 1vh">
+                <div class="armor-class">`+armor_class+`</div>
+            </div>
+        </div>
+        `
+    }
 
-        function div(id = "", classes = "", children = "") {
+    function current_character(style="") {
+        click = "toBackend(`creature.go_to();creature.select()`)"
+        return `
+        <div id="health" class="circular-health" style="`+style+`">
+            <img id="character-image" src="`+character_image+`" onclick="`+click+`">
+        </div>`
+    }
+
+    function party_character(id="", image="", style="") {
+        return `
+        <div id="party-health-`+id+`" class="circular-health" style="`+style+`">
+            <img id="party-image-`+id+`" src="`+image+`">
+        </div>`
+    }
+
+    function div(id = "", classes = "", children = "") {
 
         return `
         <div id="`+id+`" class="`+classes+`">
         `+children+`
         </div>
         `
-        }
+    }
 
-        function button(id="", image="") {
+    function image(id="", image="") {
 
         return `
-        <button id="`+id+`" style="">
-            <img src="`+image+`">
-        </button>
+        <img id="`+id+`" src="`+image+`">
         `
-        }
+    }
 
-        //=====================================================================================================
-        // Execution
-        //=====================================================================================================
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
 
-        function updateHealth() {
-            const health_div = getId("health")
+    function updateCharacter() {
+        toBackend(`
+            var creature = new Creature("`+id+`");
+            [creature.health, creature.max_health]`
+        , (response)=>{
+            new_hash = hash(response)
+            old_hash = getId("current-character").getAttribute("hash")
+            if(old_hash == new_hash) {return}
+
+            getId("current-character").setAttribute("hash", new_hash)
+            getId("current-character").innerHTML = ""
+
+            character = JSON.parse(response)
+
+            let health = character[0]
+            let max_health = character[1]
+            let hp_percent = health/max_health * 100
+            let start_hp = hp_percent
+            let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+
+            let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
+
+            getId("current-character").innerHTML += 
+                current_character(style)
+        })
+    }
+
+    function updateTarget() {
+        toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
+            selected_tokens = JSON.parse(response)
+
+            if (selected_tokens.length != 1) {
+                getId("current-target").setAttribute("hash", "")
+                getId("current-target").innerHTML = ""
+                return
+            }
 
             toBackend(`
-                var creature = new Creature("`+id+`");
-                [creature.health, creature.max_health]
-            `, (response)=>{ response = JSON.parse(response)
+                var target = new Creature("`+selected_tokens[0]+`"); 
+                [target.health, target.max_health, target.name, target.type, target.race, target.portrait, target.player, target.armor_class]`
+            , (response)=>{
+                new_hash = hash(response)
+                old_hash = getId("current-target").getAttribute("hash")
+                if(old_hash == new_hash) {return}
 
-                health = Number(response[0])
-                max_health = Number(response[1])
-                hp_percent = health/max_health * 100
+                getId("current-target").setAttribute("hash", new_hash)
+                getId("current-target").innerHTML = ""
 
-                start_hp = Number(hp_percent)
-                end_hp = hp_percent != 0 ? Number(hp_percent) + 2 : 0;
+                target = JSON.parse(response)
 
-                health_div.setAttribute("style", 
-                    `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0) `+end_hp+`%);`
+                let name = target[2]
+                let type = target[4] || target[3]
+                let image = target[5]
+                let armor_class = target[7]
+
+                let health = target[0]
+                let max_health = target[1]
+                let hp_percent = health/max_health * 100
+
+                let color = target[6] == "true" ? "#5ab350" : "#b44"
+
+                let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.15) `+hp_percent+`%);`
+
+                getId("current-target").innerHTML += 
+                    target_character(name, type, image, style, armor_class)
+            })
+        })
+    }
+
+    function updateParty() {
+        toBackend(`
+            party_info()`
+        , (response) => {
+            new_hash = hash(response)
+            old_hash = getId("party-characters").getAttribute("hash")
+            if(old_hash == new_hash) {return}
+
+            party_members = JSON.parse(response)
+            
+
+            getId("party-characters").setAttribute("hash", new_hash)
+            getId("party-characters").innerHTML = ""
+            
+            items = []
+            for (const member of party_members) {
+                let member_id = member[3]
+                if(member_id == id) {continue}
+                
+                let image = member[2]
+
+                let health = member[0]
+                let max_health = member[1]
+                let hp_percent = health/max_health * 100
+                let start_hp = hp_percent
+                let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+
+                let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
+
+                items.push(member_id)
+                getId("party-characters").innerHTML +=
+                    party_character(member_id, image, style)
+            }
+
+            for(const member_id of items) {
+                getId("party-image-"+member_id).addEventListener("click",()=>{
+                    toBackend(`
+                        var creature = new Creature("`+member_id+`");
+                        creature.go_to();
+                        creature.select();
+                    `)
+                })
+            }
+        })
+    }
+
+    function loadPage() {
+        getId("content").innerHTML +=
+            div("character-menu", "menu bottom left", 
+                div("current-character", "", "") +
+                div("party-characters", "", "") +
+                div("","button-background",
+                    image("info","asset://3432c572c31826e72dedd81ef4a10c5b") +
+                    image("inventory","asset://711c8f12938d7ef430fbcf7e2e5845ae") +
+                    image("journal", "asset://4e98be9419bf1ce960319891b66add73") +
+                    image("abilities", "asset://65479d57a2b1ffc116a12a5c731d91a7")
+                
                 )
-            })
-        }
-
-        function updateTarget() {
-            toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
-                selected_tokens = JSON.parse(response)
-
-                if(selected_tokens.length == 1) {
-                    token_id = selected_tokens[0]
-
-                    if (token_id == "CD63A98070EB4D2792D8AAC3F9504EE4") {
-                        if (getId("target")) { getId("target").remove()}
-                        return
-                    }
-
-                    function createElement() {
-                        toBackend(`var target = new Creature("`+token_id+`"); [target.name, target.type, target.race, target.portrait]`, (response)=>{
-                            target = JSON.parse(response)
-
-                            type = target[2] || target[1]
-
-                            getId("content").innerHTML +=
-                                target_character(target[0], type, target[3], token_id)
-                            updatePageListeners()
-                            updateHealth()
-                        })
-                    }
-
-                    function updateHealth() {
-                        toBackend(`var target = new Creature("`+token_id+`");[target.health, target.max_health]`, (response)=>{
-                            target = JSON.parse(response)
-                            health = Number(response[0])
-                            max_health = Number(response[1])
-
-                            start_hp = Number(hp_percent)
-                            end_hp = hp_percent != 0 ? Number(hp_percent) + 2 : 0;
-
-                            getId("target-health").setAttribute("style", 
-                                `background: linear-gradient(90deg, #b44 `+start_hp+`%, rgba(0,0,0,0) `+end_hp+`%);`
-                            )
-                        })
-                    }
-
-                    if (!getId("target")) {
-                        createElement()}
-                    else if (getId("target").getAttribute("token") != token_id) {
-                        if (getId("target")) { getId("target").remove()}
-                        createElement()
-                    } else {
-                        updateHealth()
-                    }
-                } else {
-                    if (getId("target")) { getId("target").remove()}
-                }
-            })
-        }
-
-        function loadPage() {
-            if(character_image != "") {
-                getId("content").innerHTML +=
-                    div("character-menu", "menu bottom left", 
-                        current_character() +
-                        button("info","asset://3432c572c31826e72dedd81ef4a10c5b") +
-                        button("inventory","asset://711c8f12938d7ef430fbcf7e2e5845ae") +
-                        button("journal", "asset://4e98be9419bf1ce960319891b66add73") +
-                        button("abilities", "asset://65479d57a2b1ffc116a12a5c731d91a7")
-                    )
-            }
-
-            if (gm) {
-                getId("content").innerHTML +=
-                    div("master-menu", "menu bottom right", 
-                        button("database", "asset://f218b6ad34fe8564e0553dc2bba91cc8")
-                    )
-            }
-
-            updatePageListeners()
-        }
-
-        function updatePageListeners() {
-            if(getId("info")){
-                getId("info").addEventListener("click", ()=>{
-                    openClosePage("", "Character", "creature_info.html")
-                })
-            }
-            if (getId("database")) {
-                getId("database").addEventListener("click", ()=>{
-                    openClosePage("", "Database", "database.html")
-                })
-            }
-        }
-
-        function onWindowLoad() {
-            loadPage()
-            updateHealth(); setInterval(updateHealth, 200)
-            updateTarget(); setInterval(updateTarget, 200)
-
-        }
-
-
-
-        //=====================================================================================================
-
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-    </script>
-    ']
-    </head>
-
-    <body>
-
+            ) +
+            div("gm-menu", "menu bottom right", 
+                div("", "button-background",
+                    image("database", "asset://f218b6ad34fe8564e0553dc2bba91cc8")
+                )
+            ) +
+            div("current-target")
         
-        <div id="content"></div>
+        if(character_image == "") {getId("character-menu").setAttribute("style", "display:none")}
+        if (!gm) {getId("gm-menu").setAttribute("style", "display:none")}
 
-    </body>
+        getId("info").addEventListener("click",()=>{ openClosePage("", "Character", "creature_info.html") })
+        getId("database").addEventListener("click",()=>{ openClosePage("", "Database", "database.html") })
+    }
 
-    }]
+    function onWindowLoad() {
+        loadPage()
+        updateCharacter(); setInterval(updateCharacter, 200)
+        updateParty(); setInterval(updateParty, 200)
+        updateTarget(); setInterval(updateTarget, 200)
+
+    }
+
+
+
+    //=====================================================================================================
+
+    document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+</script>
+']
+</head>
+
+<body>
+    
+    <div id="content"></div>
+
+</body>
+
+}]

@@ -1,162 +1,13 @@
-[dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Database",  "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 [r:style()]
 [r:script()]
 [r:'
 <style>
-    img {
-        margin: 0px;
-    }
-
-    img:hover {
-        opacity: 0.5;
-    }
-
-    img:active {
-        opacity: 0.3;
-    }
-
-    .action-buttons {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .action-button {
-        font-size: 75%;
-        min-height: 0px;
-        min-width: 0px;
-        padding: 3px 3px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .action-button:hover {
-        background-color: #0056b3;
-    }
-
-    .table-container {
-        margin: 10px;
-    }
-
-    .table-header {
-        display: grid;
-        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-        gap: 10px;
-        color: white;
-        padding: 0px 10px;
-        border-radius: 10px;
-        font-weight: bold;
-        align-items: center;
-        text-align: left;
-    }
-
-    .table-row {
-        position:relative;
-
-        display: grid;
-        grid-template-columns: min-content 1fr 1fr 100px; /* Adjusts columns for minimal space */
-        gap: 10px;
-        padding: 2px 10px;
-        padding-top: 7px;
-        margin: 10px 0px;
-
-        background-color: #444;
-        border-radius: 5px;
-
-        align-items: center;
-        text-align: left;
-        font-weight: bold;
-        z-index: 3;
-    }
-
-    .table-row:hover {
-        background-color: #555;
-    }
-
-    .collapsible-content {
-        position:relative;
-        visibility: hidden;
-        opacity: 0;
-        display: none;
-
-        position: relative;
-        height: 0px;
-        z-index: 0;
-
-        margin: 0px 3px;
-        padding: 10px;
-        padding-top: 15px;
-
-        background-color: #333;
-        border: 1px solid #444;
-        border-radius: 5px;
-        border-top-left-radius: 0px;
-        border-top-right-radius: 0px;
-    }
-
-    .table-row.open + .collapsible-content {
-        display:block;
-        height: fit-content;
-        margin-bottom: -20px;
-        opacity: 1; /* Fully visible */
-        visibility: visible; /* Make it interactable */
-        transform: translateY(-20px); /* Final position */
-    }
-
-    .outer {
-        margin-top: 20px;
-    }
-
-    .tab-switch-div {
-        display: flex;                     /* Use flexbox for layout */
-        justify-content: space-between;    /* Distribute tabs with space between them */
-        align-items: center;               /* Vertically center the tabs */
-        position: relative;
-        margin-bottom: -2px;
-        height: 30px;                      /* Min height */
-    }
-
-    .tab-switch {
-        z-index: 0;
-        min-height: 20px;
-        padding: 3px;                 /* Adjust padding */
-        text-align: center;
-        background-color: #292929;
-        color: #ddd;
-        border: 2px solid #414141;
-        border-radius: 7px;
-        font-size: 75%;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .tab-switch:hover {
-        background-color: #444;
-    }
-
-    .tab-switch.active {
-        background-color: #414141;
-    }
-
-    .tab-switch-div .tab-switch {
-        flex: 1;                           /* Make each tab take equal space */
-        margin: 0 5px;                     /* Add spacing between tabs */
-        text-align: center;                /* Ensure text is centered */
-    }
-
-    .tab-switch-div .tab-switch:first-child {
-        margin-left: 15px;                    /* Remove left margin for the first tab */
-    }
-
-    .tab-switch-div .tab-switch:last-child {
-        margin-right: 15px;                   /* Remove right margin for the last tab */
-    }
-
+    img { margin: 0; }
+    img:hover { opacity: 0.5; }
+    img:active { opacity: 0.3; }
+    .outer { margin-top: 4vh }
 </style>
 <script>
 
@@ -169,17 +20,10 @@
         let current_tab
         let tab_function
 
-
-        if(getId("damage-tab").style.display != "none") {
-            current_tab = "damage" ; tab_function = damageTab }
-        else if (getId("features-tab").style.display != "none") {
-            current_tab = "features" ; tab_function = featuresTab}
-        else if (getId("spells-tab").style.display != "none") {
-            current_tab = "spells" ; tab_function = spellsTab 
-        }
-        else if (getId("items-tab").style.display != "none") {
-            current_tab = "items" ; tab_function = itemsTab 
-        }
+        if(getId("damage-tab").style.display != "none") { current_tab = "damage" ; tab_function = damageTab }
+        else if (getId("features-tab").style.display != "none") { current_tab = "features" ; tab_function = featuresTab }
+        else if (getId("spells-tab").style.display != "none") { current_tab = "spells" ; tab_function = spellsTab }
+        else if (getId("items-tab").style.display != "none") { current_tab = "items" ; tab_function = itemsTab }
 
 
         tab_list = tab_list.filter(item => item != current_tab)
@@ -275,7 +119,7 @@
         description=`<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"></pre>`, 
         image="", 
         tab_id="", 
-        config="30px 1fr 1fr 100px"
+        config="3vh 1fr 1fr 10vh"
     ){
 
         let div_columns = ""
@@ -285,16 +129,15 @@
 
         return `
         <div class="table-row" style="grid-template-columns: `+config+`;">
-            <div><img src=`+image+` height=24px style="opacity:1"></div>
+            <div><img src=`+image+` style="opacity:1;height:2.4vh"></div>
             `+div_columns+`
             <div class="action-buttons">
-                <img style="filter:brightness(0.87)" id="`+tab_id+`-edit-`+id+`" height=24px src=asset://f218b6ad34fe8564e0553dc2bba91cc8>
-                <img style="filter:brightness(0.87)" id="`+tab_id+`-remove-`+id+`" height=24px src=asset://e984745ad793f4ca43bc3c5f14cb317d>
+                <img id="`+tab_id+`-edit-`+id+`" src=asset://f218b6ad34fe8564e0553dc2bba91cc8>
+                <img id="`+tab_id+`-remove-`+id+`" src=asset://e984745ad793f4ca43bc3c5f14cb317d>
             </div>
         </div>
         <div class="collapsible-content">
-            `+description+`
-            
+            `+description+`    
         </div>
         `
     }
@@ -304,7 +147,7 @@
         rows=row(),
         hash="",
         tab_id="",
-        config="30px 1fr 1fr 100px"
+        config="3vh 1fr 1fr 10vh"
     ){
 
         let div_headers = ""
@@ -330,23 +173,22 @@
         return `
         <button id="`+tab_id+`-create-new" style="
             position: sticky;
-            bottom:0px;
+            bottom:0;
             z-index: 20;
             background-color: #292929;
             color: #ddd;
-            border: 2px solid #ddd;
+            border: 0.2vh solid #ddd;
             font-size:100%;
             transform: translate(42vw);
-
         ">
             Create New
         </button>
         `
     }
 
-    function search_bar(tab_id) {
+    function search_bar(tab_id, style="width:50%;") {
         return `
-        <input id="`+tab_id+`-search-bar" value="" placeholder="Search..." style="width:50%;"></input>
+        <input id="`+tab_id+`-search-bar" value="" placeholder="Search..." style="`+style+`"></input>
         `
     }
 
@@ -358,28 +200,28 @@
         `
     }
 
-    function select(id = "", title = "", options = []) {
+    function select(id = "", title = "", options = [], style="width:fit-content;") {
         options_string = ""
         for (const value of options) {
             options_string += `<option value=`+value.toLowerCase()+`>`+capitalize(value)+`</option>`
         }
 
         return `
-        <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+        <select required id="`+id+`" style="padding: 0.5vh 1vh;`+style+`">
             <option value="" selected>`+title+`</option>
             `+options_string+`
         </select>
         `
     }
 
-    function select_same_id(id = "", title = "", options = []) {
+    function select_same_id(id = "", title = "", options = [], style="width:fit-content;") {
         options_string = ""
         for (const value of options) {
             options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
         }
 
         return `
-        <select required id="`+id+`" style="width:fit-content;padding: 5px 10px">
+        <select required id="`+id+`" style="padding: 0.5vh 1vh;`+style+`">
             <option value="" selected>`+title+`</option>
             `+options_string+`
         </select>
@@ -454,7 +296,7 @@
 
         // Component config
         const table_headers = ["Name", "Type", "", "Level"]
-        const table_config = "30px 1fr 50px 1fr 50px 100px"
+        const table_config = "3vh 1fr 5vh 1fr 5vh 10vh"
 
         // Row component translation
         function render_row(name, type, subtype, level, description, image) {
@@ -477,11 +319,11 @@
 
                 search_bar(tab_id) +
 
-                select(tab_id + "-type", "Type", ["racial", "feat", "class"]) +
+                select(tab_id + "-type", "Type", ["racial", "feat", "class"], "width:10%") +
 
-                select_same_id(tab_id + "-subtype", "Subtype", dnd_classes) +
+                select_same_id(tab_id + "-subtype", "Subtype", dnd_classes, "width:25%") +
 
-                select(tab_id + "-level", "Level", one_to_twenty) +
+                select(tab_id + "-level", "Level", one_to_twenty, "width:10%") +
 
                 div(tab_id + "-tab-content") +
 
@@ -546,7 +388,7 @@
 
         // Component config
         const table_headers = ["Name", "Type", "Subtype"]
-        const table_config = "30px 1fr 1fr 1fr 100px"
+        const table_config = "3vh 1fr 1fr 1fr 10vh"
 
         // Row component translation
         function render_row(name, type, subtype="", description, image) {
@@ -565,9 +407,9 @@
         if(first_time_tab_execution) {
             getId(tab_id + "-tab").innerHTML += 
 
-                search_bar(tab_id) +
+                search_bar(tab_id, "width:85%") +
 
-                select(tab_id + "-type", "Type", ["equipment"]) +
+                select(tab_id + "-type", "Type", ["equipment"], "width:10%") +
 
                 div(tab_id + "-tab-content") +
 
@@ -630,7 +472,7 @@
 
         // Components
         const table_headers = ["Name", "Type"]
-        const table_config = "30px 1fr 1fr 100px"
+        const table_config = "3vh 1fr 1fr 10vh"
         function render_row(name, type, description, image) {
             id = name
             columns = [capitalize(name), capitalize(type)]
@@ -643,9 +485,9 @@
         if(first_time_tab_execution) {
             getId(tab_id + "-tab").innerHTML += 
 
-                search_bar(tab_id) +
+                search_bar(tab_id, "width:85%") +
 
-                select(tab_id + "-type", "Type", ["elemental", "physical", "special"]) +
+                select(tab_id + "-type", "Type", ["elemental", "physical", "special"], "width:10%") +
 
                 div(tab_id + "-tab-content") + 
 
@@ -708,7 +550,7 @@
 
         // Components
         const table_headers = ["Name", "Level", "School", "Duration"]
-        const table_config = "30px 1fr 1fr 1fr 1fr 100px"
+        const table_config = "3vh 1fr 1fr 1fr 1fr 10vh"
         function render_row(name, level, school, cast_time, range, target, components, duration, classes, description, description_higher_levels) {
             id = name
 
@@ -750,7 +592,7 @@
             columns = [capitalize(name), capitalize(level), capitalize(school), duration]
 
             description = `
-                <div style="line-height: 1.5;text-align:left;padding-top:10px;">
+                <div style="line-height: 1.5;text-align:left;padding-top:1vh;">
                 <b>Classes</b>: `+classes_string+`
                 <br><b>Components</b>: `+components_string+`
                 <br><b>Target</b>: `+target+`
@@ -771,17 +613,17 @@
         if(first_time_tab_execution){
             getId(tab_id + "-tab").innerHTML += 
 
-                search_bar(tab_id) +
+                search_bar(tab_id, "width:60%") +
 
                 select(tab_id + "-level", "Level", [
-                "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) +
+                "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"], "width:10%") +
 
                 select(tab_id + "-school", "School", [
                     "abjuration","conjuration","divination","enchantment",
-                    "evocation","illusion","necromancy","transmutation"]) +
+                    "evocation","illusion","necromancy","transmutation"], "width:15%") +
 
                 select(tab_id + "-player_class", "Class", [
-                    "bard", "cleric", "druid", "sorcerer", "warlock", "wizard"]) +
+                    "bard", "cleric", "druid", "sorcerer", "warlock", "wizard"], "width:10%") +
 
                 div(tab_id + "-tab-content") + 
                 

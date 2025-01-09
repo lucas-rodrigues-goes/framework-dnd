@@ -9,9 +9,9 @@
 [r:'
 <style>
     .content-left, .content-right{
-        min-height: 0px;
+        min-height: 0;
         display:block;
-        margin: 0px;
+        margin: 0;
     }
     .content-left {
         width: 60%;
@@ -27,60 +27,15 @@
     }
     .background {
         background-color:#333;
-        border-radius: 5px;
-        padding: 10px;
+        border-radius: 0.5vh;
+        padding: 1vh;
     }
     .background:hover {
         background-color:#444;
     }
 
     .outer {
-        margin-top: 20px;
-    }
-
-    .tab-switch-div {
-        display: flex;                     /* Use flexbox for layout */
-        justify-content: space-between;    /* Distribute tabs with space between them */
-        align-items: center;               /* Vertically center the tabs */
-        position: relative;
-        margin-bottom: -2px;
-        height: 30px;                      /* Min height */
-    }
-
-    .tab-switch {
-        z-index: 0;
-        min-height: 20px;
-        padding: 3px;                 /* Adjust padding */
-        text-align: center;
-        background-color: #292929;
-        color: #ddd;
-        border: 2px solid #414141;
-        border-radius: 7px;
-        font-size: 75%;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .tab-switch:hover {
-        background-color: #444;
-    }
-
-    .tab-switch.active {
-        background-color: #414141;
-    }
-
-    .tab-switch-div .tab-switch {
-        flex: 1;                           /* Make each tab take equal space */
-        margin: 0 5px;                     /* Add spacing between tabs */
-        text-align: center;                /* Ensure text is centered */
-    }
-
-    .tab-switch-div .tab-switch:first-child {
-        margin-left: 15px;                    /* Remove left margin for the first tab */
-    }
-
-    .tab-switch-div .tab-switch:last-child {
-        margin-right: 15px;                   /* Remove right margin for the last tab */
+        margin-top: 4vh;
     }
 
 </style>
@@ -390,9 +345,10 @@
     <div class="outer" id="character-tab">
 
         <h2 id="name"></h2>
-        <img src="{getTokenPortrait(108,id)}" height="108px" style="
-            border-radius: 108px;
-            border: 2px solid #888;
+        <img src="{getTokenPortrait('',id)}" style="
+            height:10vh;
+            border-radius: 50%;
+            border: 0.2vh solid #888;
         ">
         
         <div class="spacer"></div>

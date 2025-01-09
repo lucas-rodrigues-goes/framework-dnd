@@ -1257,6 +1257,24 @@ try {
         //=====================================================================================================
     }
 
+    var party_info = function () {
+        let tokens = MapTool.tokens.getMapTokens()
+        let party_info = []
+
+        for (let i = 0; i < tokens.length; i++) {
+            let token = tokens[i]
+
+            if(token.isPC()) {
+                let party_member = new Creature(token.getId())
+
+                let object = [party_member.health, party_member.max_health, party_member.portrait, token.getId()]
+                party_info.push(object)
+            }
+        }
+
+        return party_info
+    }
+
     var database = new Database()
 
     database.set_weapon(
