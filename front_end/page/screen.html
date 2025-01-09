@@ -13,54 +13,117 @@
     [r:script()]
     [r:'
     <style>
+
         body {
             all:unset;
+            font-size: 1.7vh;
         }
 
-        #health {
+        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+        .left { left: 0; }
+        .right { right: 0; }
+        .bottom { bottom: 0; }
+        .top { top: 0; }
+        .center-horizontal { left: 50%; transform:translate(-50%)}
+
+        .menu {
             position: fixed;
-            bottom: 5px;
-            left: 10px;
-            width: 120px;
-            height: 120px;
+
+            padding: 1vh 0.5vw;
+
+            display: flex;
+            align-items: end;
+            gap: 1vh;
+        }
+
+        .circular-health {
+            position: relative;
+            width: 12.5vh;
+            height: 12.5vh;
+            min-height: 91px;
+            min-width: 91px;
+            margin: -0.5vh 0px;
+
             background: rgba(0,0,0,0);
-            border-radius: 50%; /* Makes it a circle */
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 50%; /* Optional, keeps image as a circle */
-            border: 2px solid #444;
         }
 
-        #health-horizontal {
-            position: relative;
-            min-width: 225px;
-            width: 150%;
-            left: -25%;
-            height: 15px;
-            bottom: 0px;
-            background-color: #b44;
-            border-radius: 10px;
-            border: 1px solid #444;
+        .circular-health > img {
+            border-radius: 50%;
+            border: 0.3vh solid #444;
+            height: 11vh;
+            min-height: 80px;
         }
 
         button {
-            width:35px;height:35px;
+            width:4vh;height:4vh;
+            min-height:29px;min-width:29px;
             text-align:center;
             padding: 0px;
             margin:0px;
-            border-width: 2px;
+            border-width: 1px;
             background-color: #333;
             cursor:default;
         }
-        button:hover, button:active {
-            cursor:default;
-        }
+
         button:hover {
+            cursor:default;
             background-color: #444;
         }
+
         button:active {
+            cursor:default;
             background-color: #555;
+        }
+
+        button > img {
+            height: 3vh;
+            min-height:22px;
+        }
+
+        #target {
+            top: 1vh;
+        }
+
+        #target > .top {
+            width: fit-content;
+            position: relative;
+
+            bottom: -1vh;
+            height: 6vh;
+
+            color: #ddd;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #target img {
+            position: absolute;
+            height: 4vh;
+            left: -5vh;
+            border-radius: 50%;
+            border: 0.1vh solid #444;
+        }
+
+        #target-health {
+            position: relative;
+
+            min-width: 25vh;
+            width: 150%;
+            left: -25%;
+            
+            height: 1.5vh;
+            bottom: 0px;
+            background-color: #b44;
+            border-radius: 1vh;
+            border: 0.1vh solid #444;
         }
 
 
@@ -102,7 +165,7 @@
             green = Math.min(255, Math.max(0, green));
 
             // Return the color in RGB format
-            return `#ddd`
+            //return `#ddd`
             return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
         }
 
@@ -110,80 +173,38 @@
         // Components
         //=====================================================================================================
 
-        function impersonated_image() {
+        function target_character(name="", type="", image="", token_id="") {
+            if (image != "") {
+                image = `
+                <img src="`+image+`"">
+                `
+            }
 
             return `
-            <div id="health">
-                <img src="`+character_image+`"
-                    height="108px" 
-                    style="
-                        border-radius: 50%; /* Optional, keeps image as a circle */
-                        border: 2px solid #444;
-                    ">
+            <div id="target" token="`+token_id+`" class="center-horizontal">
+                <div class="top center-horizontal">
+                    `+image+`
+                    <p>
+                        <span style="font-size:120%; font-weight:bold">`+name+`</span><br>
+                        <span style="color:#aaa">`+type+`</span>
+                    </p>
+                </div>
+                <div id="target-health"></div>
+            </div>
+            `
+        }
+
+        function current_character() {
+            return `
+            <div id="health" class="circular-health">
+                <img src="`+character_image+`">
             </div>`
         }
 
-        function target_character(name="", type="", image="", token_id="") {
+        function div(id = "", classes = "", children = "") {
 
         return `
-        <div id="target" token="`+token_id+`" style="
-            position: fixed;
-            left: 50%;
-            transform: translate(-50%, 10vh);
-            text-align: center;
-        ">
-            <div style="
-                width: fit-content;
-                position: relative;
-                left: 50%;
-                bottom: -8px;
-                transform: translate(-50%);
-                color: #ddd;
-                height: 60px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            ">
-                <img src="`+image+`"
-                    height="40.5px"
-                    style="
-                        position: absolute;
-                        left: -55px;
-                        border-radius: 50%;
-                        border: 1px solid #444;
-                ">
-                <p>
-                    <span style="font-size:120%; font-weight:bold">`+name+`</span><br>
-                    <span style="color:#aaa">`+type+`</span>
-                </p>
-            </div>
-            <div id="health-horizontal" style="">
-            </div>
-        </div>
-        `
-        }
-
-        function menus(children = "") {
-
-        return `
-        <div style="
-            position: fixed;
-            bottom: 15px;
-            left: 145px;
-        ">
-        `+children+`
-        </div>
-        `
-        }
-
-        function gm_menus(children = "") {
-
-        return `
-        <div style="
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-        ">
+        <div id="`+id+`" class="`+classes+`">
         `+children+`
         </div>
         `
@@ -193,7 +214,7 @@
 
         return `
         <button id="`+id+`" style="">
-            <img src="`+image+`" height=24px>
+            <img src="`+image+`">
         </button>
         `
         }
@@ -230,6 +251,11 @@
                 if(selected_tokens.length == 1) {
                     token_id = selected_tokens[0]
 
+                    if (token_id == "CD63A98070EB4D2792D8AAC3F9504EE4") {
+                        if (getId("target")) { getId("target").remove()}
+                        return
+                    }
+
                     function createElement() {
                         toBackend(`var target = new Creature("`+token_id+`"); [target.name, target.type, target.race, target.portrait]`, (response)=>{
                             target = JSON.parse(response)
@@ -244,7 +270,7 @@
                     }
 
                     function updateHealth() {
-                        toBackend(`[target.health, target.max_health]`, (response)=>{
+                        toBackend(`var target = new Creature("`+token_id+`");[target.health, target.max_health]`, (response)=>{
                             target = JSON.parse(response)
                             health = Number(response[0])
                             max_health = Number(response[1])
@@ -252,8 +278,8 @@
                             start_hp = Number(hp_percent)
                             end_hp = hp_percent != 0 ? Number(hp_percent) + 2 : 0;
 
-                            getId("content").setAttribute("style", 
-                                `background: linear-gradient(180deg, #b44 `+start_hp+`%, rgba(0,0,0,0) `+end_hp+`%);`
+                            getId("target-health").setAttribute("style", 
+                                `background: linear-gradient(90deg, #b44 `+start_hp+`%, rgba(0,0,0,0) `+end_hp+`%);`
                             )
                         })
                     }
@@ -275,9 +301,8 @@
         function loadPage() {
             if(character_image != "") {
                 getId("content").innerHTML +=
-                    impersonated_image() +
-
-                    menus(
+                    div("character-menu", "menu bottom left", 
+                        current_character() +
                         button("info","asset://3432c572c31826e72dedd81ef4a10c5b") +
                         button("inventory","asset://711c8f12938d7ef430fbcf7e2e5845ae") +
                         button("journal", "asset://4e98be9419bf1ce960319891b66add73") +
@@ -287,7 +312,7 @@
 
             if (gm) {
                 getId("content").innerHTML +=
-                    gm_menus(
+                    div("master-menu", "menu bottom right", 
                         button("database", "asset://f218b6ad34fe8564e0553dc2bba91cc8")
                     )
             }
