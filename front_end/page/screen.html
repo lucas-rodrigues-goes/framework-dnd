@@ -68,10 +68,8 @@
     
     .circular-health {
         position: relative;
-        width: 12.5vh;
-        height: 12.5vh;
-        min-height: 91px;
-        min-width: 91px;
+        width: 13vh;
+        height: 13vh;
         margin: -0.5vh 0px;
 
         background: rgba(0,0,0,0.15);
@@ -86,8 +84,7 @@
     .circular-health > img {
         border-radius: 50%;
         border: 0.3vh solid #444;
-        height: 11vh;
-        min-height: 80px;
+        height: 11.5vh;
     }
     
     .circular-health > img:hover {
@@ -100,7 +97,7 @@
 
     #party-characters {
         position: absolute;
-        bottom: 12.5vh;
+        bottom: 13.5vh;
     }
 
     #party-characters > .circular-health {
@@ -112,7 +109,7 @@
     }
 
     #party-characters > .circular-health > img {
-        height: 5.5vh;
+        height: 5.25vh;
         min-height: 0;
     }
 
@@ -319,6 +316,7 @@
 
     function updateTarget() {
         toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
+            const invalid_ids = []
             selected_tokens = JSON.parse(response)
 
             if (selected_tokens.length != 1) {
@@ -326,6 +324,7 @@
                 getId("current-target").innerHTML = ""
                 return
             }
+            if (invalid_ids.includes(selected_tokens[0])) { return }
 
             toBackend(`
                 var target = new Creature("`+selected_tokens[0]+`"); 
