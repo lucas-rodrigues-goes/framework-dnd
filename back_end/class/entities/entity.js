@@ -59,6 +59,7 @@ try {
 
         go_to() { MTScript.evalMacro(`[r:goTo("`+this.#id+`")]`) }
         select() { MTScript.evalMacro(`[r:selectTokens("`+this.#id+`")]`) }
+        impersonate() { MTScript.evalMacro(`[r:impersonate("`+this.#id+`")]`) }
         
         
 

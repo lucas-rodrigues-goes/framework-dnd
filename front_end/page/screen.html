@@ -14,6 +14,10 @@
 [r:'
 <style>
 
+    /*===================================================================================================*/
+    /* Document */
+    /*===================================================================================================*/
+
     body {
         all:unset;
         font-size: 1.7vh;
@@ -31,6 +35,12 @@
         align-items: end;
         gap: 1vh;
     }
+
+
+
+    /*===================================================================================================*/
+    /* Button */
+    /*===================================================================================================*/
 
     .button-background {
         background-color: #333;
@@ -65,7 +75,12 @@
         opacity:1;
     }
 
-    
+
+
+    /*===================================================================================================*/
+    /* Circular Health Bar */
+    /*===================================================================================================*/
+
     .circular-health {
         position: relative;
         width: 13vh;
@@ -112,6 +127,12 @@
         height: 5.5vh;
         min-height: 0;
     }
+
+
+
+    /*===================================================================================================*/
+    /* Target */
+    /*===================================================================================================*/
 
     #target {
         top: 1vh;
@@ -170,6 +191,10 @@
         left: 1vh;
     }
 
+
+
+    /*===================================================================================================*/
+
 </style>
 <script>
 
@@ -210,7 +235,6 @@
     }
 
     function hash(string) {
-        
         let hash = 0;
 
         if (string.length == 0) return hash;
@@ -228,7 +252,7 @@
     // Components
     //=====================================================================================================
 
-    function target_character(name="", type="", image="", style="", armor_class="12") {
+    function target_character(name="", type="", image="", style="", armor_class="10") {
         if (image != "") {
             image = `
             <img src="`+image+`">
@@ -268,7 +292,6 @@
     }
 
     function div(id = "", classes = "", children = "") {
-
         return `
         <div id="`+id+`" class="`+classes+`">
         `+children+`
@@ -277,7 +300,6 @@
     }
 
     function image(id="", image="") {
-
         return `
         <img id="`+id+`" src="`+image+`">
         `
@@ -287,7 +309,7 @@
     // Execution
     //=====================================================================================================
 
-    function updateCharacter() {
+    function currentCharacter() {
         toBackend(`
             var creature = new Creature("`+id+`");
             [creature.health, creature.max_health]`
@@ -308,16 +330,13 @@
             let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
 
             let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-            if(hp_percent == 100) {
-                style = "background: rgba(0,0,0,0) ; border-color: rgba(0,0,0,0)"
-            }
 
             getId("current-character").innerHTML += 
                 current_character(style)
         })
     }
 
-    function updateTarget() {
+    function currentTarget() {
         toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
             const invalid_ids = ["CD63A98070EB4D2792D8AAC3F9504EE4", "969831346EDF4C29A6504A7A77C13AB2"]
             selected_tokens = JSON.parse(response)
@@ -347,7 +366,7 @@
                 target = JSON.parse(response)
 
                 let name = target[2]
-                let type = target[4] || target[3]
+                let type = target[4] || target[3] || "Creature"
                 let image = target[5]
                 let armor_class = target[7]
 
@@ -365,7 +384,7 @@
         })
     }
 
-    function updateParty() {
+    function currentParty() {
         toBackend(`
             party_info()`
         , (response) => {
@@ -392,9 +411,6 @@
                 let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
 
                 let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-                if(hp_percent == 100) {
-                    style = "background: rgba(0,0,0,0) ; border-color: rgba(0,0,0,0)"
-                }
 
                 items.push(member_id)
                 getId("party-characters").innerHTML +=
@@ -404,10 +420,13 @@
             for(const member_id of items) {
                 getId("party-image-"+member_id).addEventListener("click",()=>{
                     toBackend(`
-                        var creature = new Creature("`+member_id+`");
-                        creature.go_to();
-                        creature.select();
+                        var party_member = new Creature("`+member_id+`");
+                        party_member.go_to();
+                        party_member.select();
                     `)
+                    if(gm) {
+                        toBackend(`party_member.impersonate();`)
+                    }
                 })
             }
         })
@@ -442,10 +461,10 @@
 
     function onWindowLoad() {
         loadPage()
-        updateCharacter(); setInterval(updateCharacter, 200)
-        updateParty(); setInterval(updateParty, 200)
-        updateTarget(); setInterval(updateTarget, 200)
 
+        currentCharacter(); setInterval(currentCharacter, 200)
+        currentParty(); setInterval(currentParty, 200)
+        currentTarget(); setInterval(currentTarget, 200)
     }
 
 
