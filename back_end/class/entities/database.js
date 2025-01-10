@@ -26,6 +26,104 @@ try {
 
         get proficiencies() {return this.#proficiencies}
 
+        get_proficiency(name) {
+            const database = this.#proficiencies;
+            
+            // Check if the resource exists
+            if (name in database.data) {
+                return database.data[name];
+            } else {
+                return null;  // Return null if the resource doesn't exist
+            }
+        }
+
+        get_proficiencies_list(filters = {}, sortBy = null, searchString = null) {
+            const { type } = filters;
+            const database = this.#proficiencies;
+            let object_names = Object.keys(database.data);
+        
+            // Apply type filter if provided
+            if (type) {
+                if (database.type[type]) {
+                    object_names = database.type[type];
+                } else {
+                    return []; // Return empty array if type doesn't exist
+                }
+            }
+        
+            // Filter by searchString if provided
+            if (searchString) {
+                const lowerSearchString = searchString.toLowerCase();
+                object_names = object_names.filter(name => {
+                    const resource = database.data[name];
+                    return Object.values(resource).some(value =>
+                        String(value).toLowerCase().includes(lowerSearchString)
+                    );
+                });
+            }
+        
+            // Sort the object names if a sortBy parameter is provided
+            switch (sortBy) {
+                case "name":
+                    object_names.sort((a, b) => a.localeCompare(b));
+                    break;
+                case "type":
+                    object_names.sort((a, b) => {
+                        const typeA = database.data[a].type || '';
+                        const typeB = database.data[b].type || '';
+                        return typeA.localeCompare(typeB);
+                    });
+                    break;
+                default:
+                    // Default sorting: by type
+                    object_names.sort((a, b) => {
+                        const typeA = database.data[a].type || '';
+                        const typeB = database.data[b].type || '';
+                        return typeA.localeCompare(typeB);
+                    });
+                    break;
+            }
+        
+            return object_names;
+        }
+
+        set_proficiency(name, type, description=[]) {
+            const database = this.#proficiencies
+            const object = new Proficiency(name, type, description)
+
+            // Verify if already exists
+            if(name in database.data) {this.remove_proficiency(name)}
+
+
+            // Type
+            if (!database.type[object.type]) { 
+                database.type[object.type] = [] 
+            }
+            database.type[object.type].push(object.name)
+            
+
+            // Data
+            database.data[object.name] = object.object()
+
+
+            this.save()
+        }
+
+        remove_proficiency(name) {
+            const database = this.#proficiencies
+            const object = database.data[name]
+
+            // Data
+            delete database.data[object.name]
+
+            // Type
+            database.type[object.type] = database.type[object.type].filter(
+                value => value != object.name
+            )
+
+            this.save()
+        }
+
 
 
         //=====================================================================================================
