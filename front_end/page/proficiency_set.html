@@ -1,6 +1,6 @@
 [h:id = arg(0)]
 
-[dialog5("Proficiency", "width=400; height=900; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Proficiency", "width=400; height=900; temporary=0; input=1; noframe=0"), code: {
 <head>
 [r:style()]
 [r:script()]
@@ -191,12 +191,13 @@
         let description_master = getId("description-master").value;
         let description_grandmaster = getId("description-grandmaster").value;
         
-        let description = "`"+ description_proficient + "`, " + "`"+ description_expert + "`, " + "`" + description_master + "`, " + "`" + description_grandmaster + "`, "
-
-        toBackend("database.set_feature("+
+        toBackend("database.set_proficiency("+
             "`"+name+"`,"+
             "`"+type+"`,"+
-            "["+description+"],"+
+            "`"+description_proficient+"`,"+
+            "`"+description_expert+"`,"+
+            "`"+description_master+"`,"+
+            "`"+description_grandmaster+"`"+
         ")")
     }
 
@@ -214,7 +215,7 @@
                 input("name", "Name", "Proficiency name") +
 
                 select("type", "Type", [
-                    "skill", "weapon", "save", "tool"], "Proficiency type")
+                    "skill", "combat", "save", "tool"], "Proficiency type")
             ) +
 
             container("Information",

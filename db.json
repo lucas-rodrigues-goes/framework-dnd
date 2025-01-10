@@ -1,11 +1,124 @@
 {
   "proficiencies": {
-    "data": {},
+    "data": {
+      "Mundane Weapon": {
+        "name": "Mundane Weapon",
+        "type": "combat",
+        "description": [
+          "You are proficient with clubs, daggers, quarterstaffs, light crossbows, darts, and slings.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Simple Weapon": {
+        "name": "Simple Weapon",
+        "type": "combat",
+        "description": [
+          "You are proficient with clubs, daggers, greatclubs, handaxes, javelins, light hammers, maces, quarterstaffs, sickles, light crossbows, darts, shortbows, and slings.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Martial Weapon": {
+        "name": "Martial Weapon",
+        "type": "combat",
+        "description": [
+          "You are proficient with all polearms, swords, axes, blunt weapons, missile weapons, bows, and crossbows.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Crossbow": {
+        "name": "Crossbow",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to crossbows you are proficient with.",
+          "Your attacks made with crossbows do not receive penalties from attacking in melee range.",
+          "While wielding heavy crossbows, your attacks that would be blocked by armor, deal half damage instead.",
+          ""
+        ]
+      },
+      "Sword": {
+        "name": "Sword",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to swords you are proficient with.",
+          "While wielding swords you can make attacks of opportunity when opponents miss you with melee weapon attacks.",
+          "You gain the following bonuses when wielding the following polearms:\n\n- Greatsword: Your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.\n\n- Longsword: You can use your weapon for thrusting, gaining the same bonus as small swords on those attacks.\n\n- Rapier: After attacking an opponent, your provoke no opportunity attacks from them.\n\n- Scimitar: You can make two opportunity attacks per round",
+          ""
+        ]
+      },
+      "Small Sword": {
+        "name": "Small Sword",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to small swords you are proficient with.",
+          "While wielding small swords you can add your dexterity modifier as an additional bonus to damage against unnarmored or lightly armored enemies",
+          "You gain the following bonuses when wielding the following small swords:\n\n- Shortsword: If all of your main hand attacks this round hit, you can make an additional attack\n\n- Dagger: Hits against grappled opponents are critical hits.",
+          ""
+        ]
+      },
+      "Polearm": {
+        "name": "Polearm",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to polearms you are proficient with.",
+          "While wielding pikes, halberds, glaives, spears, and tridents you can make attacks of opportunity when opponents first step into your range, or when opponents within range make attack rolls against a creature other than you.",
+          "You gain the following bonuses when wielding the following polearms:\n\n- Pike: If you move at least 10ft before making an attack, it deals an additional 1d10 damage\n\n- Halberd: Opportunity attacks force opponents on a DC STR check, knocking them down on a fail\n\n- Glaive: Your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.\n\n- Spear / Trident: You can make two opportunity attacks per round",
+          ""
+        ]
+      },
+      "Blunt Weapon": {
+        "name": "Blunt Weapon",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to blunt weapons you are proficient with.",
+          "While wielding mauls, warhammers, maces, and flails your attacks that would be blocked by metal armor, deal half damage instead",
+          "You gain the following bonuses when wielding the following blunt weapons:\n\n- Maul: Your first hit on a round forces the opponent on a DC STR Check, on a fail they are stunned\n\n- Warhammer: Your first hit on a round forces the opponent on a DC STR Check, on a fail they are knocked down\n\n- Mace: Your first hit on a round forces the opponent on a DC STR Check, on a fail they are dazed\n\n- Flail: Your first hit on a round forces the opponent on a DC STR Check, on a fail they are disarmed",
+          ""
+        ]
+      },
+      "Axe": {
+        "name": "Axe",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to axes you are proficient with.",
+          "While wielding greataxes and battleaxes your attacks that would be blocked by leather or hide armor, deal half damage instead",
+          "You gain the following bonuses when wielding the following axes:\n\n- Greataxe: Your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.\n\n- Battleaxe: Your first hit in combat against a shielded opponent forces them on a DC STR Check on a fail their shield is dropped to the ground.",
+          ""
+        ]
+      },
+      "Bow": {
+        "name": "Bow",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to bows you are proficient with.",
+          "While wielding bows your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.",
+          "You gain the following bonuses when wielding the following bows:\n\n- Longbow: At the beginning of your round, you can choose to spend your movement, doing so allows you to add your dexterity modifier as a bonus to damage for the round.\n\n- Shortbow: Your recovery time is halved with shortbows.",
+          ""
+        ]
+      }
+    },
     "type": {
       "skill": [],
       "weapon": [],
       "save": [],
-      "tool": []
+      "tool": [],
+      "combat": [
+        "Mundane Weapon",
+        "Simple Weapon",
+        "Martial Weapon",
+        "Crossbow",
+        "Sword",
+        "Small Sword",
+        "Polearm",
+        "Blunt Weapon",
+        "Axe",
+        "Bow"
+      ]
     }
   },
   "resources": {
@@ -20,12 +133,6 @@
         "type": "physical",
         "description": "Bludgeoning damage crushes and batters, leaving behind bruises, fractures, and broken bones. The impact resonates like thunder, as though the earth itself rises to meet the blow.\n\nA barbarian swings their greatsword in a massive arc, landing a crushing blow against a giant's leg. The heavy force causes the giant to stumble, while the ground beneath trembles with the sheer weight of the strike. The giant roars in pain, staggering as it feels the brute force of the blow reverberate through its bones.",
         "image": "asset://5be7c85b6eff402cdd533bea7517d564"
-      },
-      "cold": {
-        "name": "cold",
-        "type": "elemental",
-        "description": "Cold damage freezes and numbs, enshrouding the target in biting frost. The air becomes brittle, and frost crystals creep across surfaces, leaving behind icy scars and a deathly chill.\n\nA wizard casts Cone of Cold, sending a blast of freezing air toward a group of enemies. As the icy wind hits them, their movements slow, and frostbite marks appear on their exposed skin. Those caught in the blast struggle to move, their muscles stiff and slow from the numbing cold, as the ice creeps into their joints.",
-        "image": "asset://3bec73de34380eaa439b63ed4a081909"
       },
       "fire": {
         "name": "fire",
@@ -92,6 +199,12 @@
         "type": "elemental",
         "description": "Acid damage corrodes and dissolves materials, leaving behind smoking remnants and searing wounds. The air fills with the acrid stench of sulfur, and whatever it touches seems to bubble and hiss in agony.\n\nA green dragon's acidic breath sweeps over the battlefield, dissolving the armor of its enemies and leaving deep, burning holes in their skin. A character caught in the breath must struggle to avoid the corrosive effects, feeling their armor and weapons start to melt away under the acid's relentless assault.",
         "image": "asset://2dec258f2f1c8012f4cf58b457fbd459"
+      },
+      "cold": {
+        "name": "cold",
+        "type": "elemental",
+        "description": "Cold damage freezes and numbs, enshrouding the target in biting frost. The air becomes brittle, and frost crystals creep across surfaces, leaving behind icy scars and a deathly chill.\n\nA wizard casts Cone of Cold, sending a blast of freezing air toward a group of enemies. As the icy wind hits them, their movements slow, and frostbite marks appear on their exposed skin. Those caught in the blast struggle to move, their muscles stiff and slow from the numbing cold, as the ice creeps into their joints.",
+        "image": "asset://3bec73de34380eaa439b63ed4a081909"
       }
     },
     "type": {
@@ -101,10 +214,10 @@
         "slashing"
       ],
       "elemental": [
-        "cold",
         "fire",
         "lightning",
-        "acid"
+        "acid",
+        "cold"
       ],
       "special": [
         "force",
@@ -1116,6 +1229,13 @@
         "level": "20",
         "optional": "false",
         "description": "You can use your Wild Shape an unlimited number of times.\n\nAdditionally, you can ignore the verbal and somatic components of your druid spells, as well as any material components that lack a cost and aren't consumed by a spell. You gain this benefit in both your normal shape and your beast shape from Wild Shape."
+      },
+      "": {
+        "name": "",
+        "type": "",
+        "level": 0,
+        "optional": true,
+        "description": ""
       }
     },
     "type": {
@@ -1247,6 +1367,13 @@
       ],
       "feat": [
         "Ability Score Improvement"
+      ],
+      "": [
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     },
     "subtype": {
@@ -1279,7 +1406,12 @@
         "Rage"
       ],
       "undefined": [
-        "Ability Score Improvement"
+        "Ability Score Improvement",
+        "",
+        "",
+        "",
+        "",
+        ""
       ],
       "sorcerer": [
         "Sorcerer Spellcasting",
@@ -1414,6 +1546,13 @@
       ]
     },
     "level": {
+      "0": [
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
       "1": [
         "Sneak Attack",
         "Thieves' Cant",
@@ -1700,7 +1839,12 @@
         "Pact of the Tome",
         "Pact of the Talisman",
         "Mystic Arcanum",
-        "Eldritch Master"
+        "Eldritch Master",
+        "",
+        "",
+        "",
+        "",
+        ""
       ]
     }
   },
@@ -2541,7 +2685,10 @@
       ],
       "7th": [],
       "8th": [],
-      "9th": []
+      "9th": [],
+      "undefined": [
+        null
+      ]
     },
     "class": {
       "bard": [
@@ -2723,6 +2870,9 @@
         "Darkvision",
         "Haste",
         "Magnify Gravity"
+      ],
+      "undefined": [
+        null
       ]
     }
   },

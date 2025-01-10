@@ -14,11 +14,9 @@ try {
         }
 
         reset_proficiencies() {
-            this.#resources = {
+            this.#proficiencies = {
                 "data":{},
                 "type":{},
-                "subtype":{},
-                "level":{}
             }
 
             this.save()
@@ -87,9 +85,10 @@ try {
             return object_names;
         }
 
-        set_proficiency(name, type, description=[]) {
+        set_proficiency(name, type, prof="",exp="",master="",gm="") {
+
             const database = this.#proficiencies
-            const object = new Proficiency(name, type, description)
+            const object = new Proficiency(name, type, [prof, exp, master, gm])
 
             // Verify if already exists
             if(name in database.data) {this.remove_proficiency(name)}
@@ -1335,6 +1334,8 @@ try {
             this.#features = object.features
             this.#spells = object.spells;
             this.#items = object.items;
+
+            this.token.setProperty("class", "Database");
         }
 
         save() {
@@ -1348,29 +1349,12 @@ try {
             };
 
             this.token.setProperty("object", JSON.stringify(object));
+            this.token.setProperty("class", "Database");
         }
 
 
 
         //=====================================================================================================
-    }
-
-    var party_info = function () {
-        let tokens = MapTool.tokens.getMapTokens()
-        let party_info = []
-
-        for (let i = 0; i < tokens.length; i++) {
-            let token = tokens[i]
-
-            if(token.isPC()) {
-                let party_member = new Creature(token.getId())
-
-                let object = [party_member.health, party_member.max_health, party_member.portrait, token.getId()]
-                party_info.push(object)
-            }
-        }
-
-        return party_info
     }
 
     var database = new Database()

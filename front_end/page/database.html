@@ -303,8 +303,8 @@
             columns = [capitalize(name), capitalize(type)]
 
             description_string = ""
+            title_arr = ["Proficiency", "Expertise", "Mastery", "Grandmastery"]
             first_elem = true
-            console.log(desc_arr[0])
             for (let i = 0; i < desc_arr.length; i++) {
                 if (desc_arr[i]) {
                     if (first_elem == false) {
@@ -312,6 +312,7 @@
 
 `
                     }
+                    description_string += `<span style="font-weight:bold">`+title_arr[i]+`: </span>`
                     description_string += desc_arr[i]
                     first_elem = false
                 }
@@ -328,7 +329,7 @@
 
                 search_bar(tab_id, "width:85%") +
 
-                select(tab_id + "-type", "Type", ["skill", "weapon", "save", "tool"], "width:10%") +
+                select(tab_id + "-type", "Type", ["skill", "combat", "save", "tool"], "width:10%") +
 
                 div(tab_id + "-tab-content") + 
 

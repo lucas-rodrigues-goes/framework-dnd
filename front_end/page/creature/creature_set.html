@@ -1,8 +1,11 @@
-[h:id = getImpersonated()]
+[h:id = arg(0)]
 
 [dialog5("Character", "width=400; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 <link rel='onChangeImpersonated' type='macro' href='macro://creature_info.html@lib:main/all/impersonated?'>
+<script>
+    const id = "{id}"
+</script>
 [r:style()]
 [r:script()]
 [r:'
@@ -79,14 +82,14 @@
 
     function onWindowLoad() {
 
-        let id = getId("id")
-
-        loadCurrentFieldValue("name", "creature.name")
-        loadCurrentFieldValue("type", "creature.type")
-        loadCurrentFieldValue("race", "creature.race")
-
         addSubmitBehavior()
         addAbilityScoresBehavior()
+
+        getId("name").value = id;
+
+        toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(response)=>{
+            getId("name").value = response
+        })
 
         getId("cancel").addEventListener("click", () => {
             openPage("creature_info.html")
@@ -110,19 +113,6 @@
     //=====================================================================================================
     // Helper functions
     //=====================================================================================================
-
-    function updateFields() {
-        loadCurrentFieldInnerHTML("name","creature.name")
-        loadCurrentFieldInnerHTML("type","creature.type")
-        loadCurrentFieldInnerHTML("race","creature.race")
-
-        loadCurrentFieldInnerHTML("str", "creature.attributes.strength");
-        loadCurrentFieldInnerHTML("dex", "creature.attributes.dexterity");
-        loadCurrentFieldInnerHTML("con", "creature.attributes.constitution");
-        loadCurrentFieldInnerHTML("int", "creature.attributes.intelligence");
-        loadCurrentFieldInnerHTML("wis", "creature.attributes.wisdom");
-        loadCurrentFieldInnerHTML("cha", "creature.attributes.charisma");
-    }
 
     function getId(id) {return document.getElementById(id)}
 
@@ -154,7 +144,7 @@
 
             // Send data to backend
             toBackend(
-                "var creature = new Creature(`"+id.value+"`, true);"+
+                "var creature = new Creature(`"+id+"`, true);"+
                 "creature.create("+
                     "`"+name.value+"`,"+
                     "`"+type.value+"`,"+
@@ -168,7 +158,7 @@
                 ")"
             )
 
-            openPage("creature_info.html")
+            closePage("Character")
 
         })
     }
@@ -374,8 +364,6 @@
 </script>
 ']
 </head>
-
-<input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
     <div class="outer">

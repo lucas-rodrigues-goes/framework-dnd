@@ -252,12 +252,16 @@
     // Components
     //=====================================================================================================
 
-    function target_character(name="", type="", image="", style="", armor_class="10") {
+    function target_character(name="", type="", image="", style="", armor_class="") {
         if (image != "") {
             image = `
             <img src="`+image+`">
             `
         }
+
+        armor_class = armor_class ? `
+            <div class="armor-class">`+armor_class+`</div>
+        ` : "";
 
         return `
         <div id="target" class="center-horizontal">
@@ -270,7 +274,7 @@
             </div>
             <div id="target-health" style="`+style+`"></div>
             <div style="display:flex; gap: 1vh">
-                <div class="armor-class">`+armor_class+`</div>
+                `+armor_class+`
             </div>
         </div>
         `
@@ -311,8 +315,8 @@
 
     function currentCharacter() {
         toBackend(`
-            var creature = new Creature("`+id+`");
-            [creature.health, creature.max_health]`
+            var current = instance("`+id+`");
+            [current.health, current.max_health]`
         , (response)=>{
             new_hash = hash(response)
             old_hash = getId("current-character").getAttribute("hash")
@@ -338,24 +342,23 @@
 
     function currentTarget() {
         toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
-            const invalid_ids = ["CD63A98070EB4D2792D8AAC3F9504EE4", "969831346EDF4C29A6504A7A77C13AB2"]
+            const valid_class = ["Creature"]
             selected_tokens = JSON.parse(response)
 
-            if (selected_tokens.length != 1) {
+            if (selected_tokens.length != 1) { 
                 getId("current-target").setAttribute("hash", "")
                 getId("current-target").innerHTML = ""
                 return
             }
-            if (invalid_ids.includes(selected_tokens[0])) {
-                getId("current-target").setAttribute("hash", "")
-                getId("current-target").innerHTML = ""
-                return 
-            }
 
             toBackend(`
-                var target = new Creature("`+selected_tokens[0]+`"); 
-                [target.health, target.max_health, target.name, target.type, target.race, target.portrait, target.player, target.armor_class]`
+                var target = instance("`+selected_tokens[0]+`"); 
+                [target.health, target.max_health, target.name,
+                 target.type, target.race, target.portrait, 
+                 target.player, target.armor_class, target.token.getProperty("class")]`
             , (response)=>{
+                target = JSON.parse(response)
+                
                 new_hash = hash(response)
                 old_hash = getId("current-target").getAttribute("hash")
                 if(old_hash == new_hash) {return}
@@ -363,18 +366,17 @@
                 getId("current-target").setAttribute("hash", new_hash)
                 getId("current-target").innerHTML = ""
 
-                target = JSON.parse(response)
-
-                let name = target[2]
-                let type = target[4] || target[3] || "Creature"
-                let image = target[5]
+                let name = target[2] || ""
+                let type = target[4] || target[3] || target[8] || "Entity"
+                let image = target[5] || ""
                 let armor_class = target[7]
 
-                let health = target[0]
-                let max_health = target[1]
+                let health = target[0] || 100
+                let max_health = target[1] || 100
                 let hp_percent = health/max_health * 100
 
                 let color = target[6] == "true" ? "#5ab350" : "#b44"
+                color = !valid_class.includes(target[8]) ? "#666" : color
 
                 let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.15) `+hp_percent+`%);`
 

@@ -549,6 +549,8 @@ try {
             this.#conditions = object.conditions;
             this.#equipment = object.equipment;
             this.#inventory = object.inventory;
+
+            this.token.setProperty("class", "Creature");
         }
 
         save() {
@@ -566,9 +568,10 @@ try {
                 "equipment": this.#equipment,
                 "inventory": this.#inventory,
             };
-
+            
             this.token.setName(this.#name);
             this.token.setProperty("object", JSON.stringify(object));
+            this.token.setProperty("class", "Creature");
         }
 
         //=====================================================================================================
