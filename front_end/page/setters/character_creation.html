@@ -1,6 +1,6 @@
 [h:id = arg(0)]
 
-[dialog5("Character Creation", "width=400; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character Creation", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
 <script>
     const id = "{id}"
@@ -156,17 +156,13 @@
         `
     }
 
-    function container(title="", children="") {
+    function container(title="", children="", id="") {
 
         return `
-        <div class="spacer"></div>
-        <div class="container center-horizontal" style="padding-bottom:0px;">
+        <div id="`+id+`" class="container center-horizontal" style="`+""+`">
             <h3 class="container-title">`+title+`</h3>
-            <div class="spacer" ></div>
-            `+children+`
-            <div class="spacer"></div>
+            <div id="`+id+`-content">`+children+`</div>
         </div>
-        <div class="spacer"></div>
         `
     }
 
@@ -411,77 +407,27 @@
             }
         })
 
-        switch (getId("race").value) {
-            case "Hill Dwarf":
-                con.innerHTML = Number(con.innerHTML) + 2;
-                wis.innerHTML = Number(wis.innerHTML) + 1;
-                break;
+        toBackend(`database.get_race("`+getId("race").value+`")`, (response) => {
+            race = JSON.parse(response)
 
-            case "Mountain Dwarf":
-                con.innerHTML = Number(con.innerHTML) + 2;                                                             
-                str.innerHTML = Number(str.innerHTML) + 2;
-                break;
+            str.innerHTML = Number(str.innerHTML) + Number(race.ability_scores["strength"]);
+            dex.innerHTML = Number(dex.innerHTML) + Number(race.ability_scores["dexterity"]);
+            con.innerHTML = Number(con.innerHTML) + Number(race.ability_scores["constitution"]);
+            wis.innerHTML = Number(wis.innerHTML) + Number(race.ability_scores["wisdom"]);
+            int.innerHTML = Number(int.innerHTML) + Number(race.ability_scores["intelligence"]);
+            cha.innerHTML = Number(cha.innerHTML) + Number(race.ability_scores["charisma"]);
 
-            case "High Elf":
-                dex.innerHTML = Number(dex.innerHTML) + 2;
-                int.innerHTML = Number(int.innerHTML) + 1;
-                break;
+            new_hash = hash(JSON.stringify(race))
+            old_hash = getId("race-description").getAttribute("hash")
+            if (new_hash == old_hash) { return }
 
-            case "Wood Elf":
-                dex.innerHTML = Number(dex.innerHTML) + 2;
-                wis.innerHTML = Number(wis.innerHTML) + 1;
-                break;
-
-            case "Drow":
-                dex.innerHTML = Number(dex.innerHTML) + 2;
-                cha.innerHTML = Number(cha.innerHTML) + 1;
-                break;
-
-            case "Lightfoot Halfling":
-                dex.innerHTML = Number(dex.innerHTML) + 2;
-                cha.innerHTML = Number(cha.innerHTML) + 1;
-                break;
-
-            case "Stout Halfling":
-                dex.innerHTML = Number(dex.innerHTML) + 2;
-                con.innerHTML = Number(con.innerHTML) + 1;
-                break;
-
-            case "Half-Orc":
-                str.innerHTML = Number(str.innerHTML) + 2;
-                con.innerHTML = Number(con.innerHTML) + 1;
-                break;
-
-            case "Human":
-                str.innerHTML = Number(str.innerHTML) + 1;
-                dex.innerHTML = Number(dex.innerHTML) + 1;
-                con.innerHTML = Number(con.innerHTML) + 1;
-                wis.innerHTML = Number(wis.innerHTML) + 1;
-                int.innerHTML = Number(int.innerHTML) + 1;
-                cha.innerHTML = Number(cha.innerHTML) + 1;
-                break;
-
-            case "Half-Elf":
-                dex.innerHTML = Number(dex.innerHTML) + 1;
-                int.innerHTML = Number(int.innerHTML) + 1;
-                wis.innerHTML = Number(wis.innerHTML) + 1;
-                cha.innerHTML = Number(cha.innerHTML) + 1;
-                break;
-
-            case "Gnome":
-                int.innerHTML = Number(int.innerHTML) + 2;
-                break;
-
-            case "Rock Gnome":
-                int.innerHTML = Number(int.innerHTML) + 2;
-                con.innerHTML = Number(con.innerHTML) + 1;
-                break;
-
-            case "Forest Gnome":
-                int.innerHTML = Number(int.innerHTML) + 2;
-                dex.innerHTML = Number(dex.innerHTML) + 1;
-                break;
-        }
+            getId("race-description").setAttribute("hash", new_hash)
+            getId("race-description-content").innerHTML = `
+            <pre style="
+                white-space: pre-wrap; word-wrap: break-word; font-family:inherit;
+                overflow-y:scroll; overflow-x:hidden; max-height:45vh; padding-left: 2vh; padding-right:3vh;
+            ">`+race.description+`</pre>`
+        })
 
     }
 
@@ -496,36 +442,54 @@
         getId("race-tab").innerHTML += 
             container("Basic",
                 input("name", "Name", "Creature name") +
-                select("race", "Race", [
-                    "Hill Dwarf", "Mountain Dwarf", "High Elf", "Wood Elf", "Drow", "Lightfoot Halfling",
-                    "Stout Halfling", "Half-Orc", "Human", "Half-Elf", "Gnome", "Rock Gnome", "Forest Gnome"
-                ], "Humanoid Race")
+                select("race", "Race", [], "Humanoid Race")
             ) +
-            container("Attributes",
-                pointBuyInput()
-            )+
+            container("Description", "<p>Choose a race to see its description.<p>", "race-description") +
+
             button("race-tab-next-page", "Next", "bottom right page-turner", "")
         
 
         // Class tab
         getId("class-tab").innerHTML +=
-            button("class-tab-previous-page", "Previous", "bottom left page-turner", "")
+            button("class-tab-previous-page", "Previous", "bottom left page-turner", "") +
+            button("class-tab-next-page", "Previous", "bottom right page-turner", "")
         
+
+        // Attributes tab
+        getId("attributes-tab").innerHTML +=
+            container("Attributes",
+                    pointBuyInput()
+            ) +
+            button("attributes-tab-previous-page", "Previous", "bottom left page-turner", "")
 
         // Add events
         getId("race-tab-next-page").addEventListener("click", ()=>{ getId("class-switch").click() })
         getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() })
+        getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() })
+        getId("attributes-tab-previous-page").addEventListener("click", ()=>{ getId("class-switch").click() })
 
         
         // Update Name
         toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(response)=>{
             getId("name").value = response
         })
+
+        // Update Races
+        toBackend(`database.get_races_list()`, (response)=>{
+            races = JSON.parse(response)
+            
+            options_string = ""
+            for (const value of races) {
+                options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
+            }
+            
+            getId("race").innerHTML += options_string
+        })
     }
 
     function onWindowLoad() {
         loadPage()
-        addTabFunctionality(["race","class"])
+        addTabFunctionality(["race","class","attributes"])
         addAbilityScoresBehavior()
 
         updateRaceBonus();setInterval(updateRaceBonus, 200)
@@ -547,9 +511,11 @@
     <div class="tab-switch-div">
         <button class="tab-switch active" id="race-switch">Race</button>
         <button class="tab-switch" id="class-switch">Class</button>
+        <button class="tab-switch" id="attributes-switch">Attributes</button>
     </div>
     <div class="outer" id="race-tab"></div>
     <div class="outer" id="class-tab" style="display:none"></div>
+    <div class="outer" id="attributes-tab" style="display:none"></div>
 
 </body>
 

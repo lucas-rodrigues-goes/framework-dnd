@@ -54,7 +54,6 @@ try {
                     object_names.sort((a, b) => a.localeCompare(b));
                     break;
                 default:
-                    // Default sorting: by type
                     object_names.sort((a, b) => a.localeCompare(b));
                     break;
             }
@@ -63,7 +62,6 @@ try {
         }
 
         set_race(name, features, proficiencies, ability_scores, description) {
-
             const database = this.#races
             const object = new Race(name, features, proficiencies, ability_scores, description)
 
@@ -79,7 +77,7 @@ try {
         }
 
         remove_race(name) {
-            const database = this.#proficiencies
+            const database = this.#races
             const object = database.data[name]
 
             // Data

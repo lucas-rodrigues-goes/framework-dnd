@@ -160,10 +160,33 @@
         toBackend(`database.get_race("`+id+`")`, (response) => {
             object = JSON.parse(response)
             
-            getId("name").value = capitalize(object.name)
-            getId("type").value = object.type
+            getId("name").value = object.name
             getId("description").value = object.description
-            getId("duration").value = object.duration
+
+            getId("strength").value = object.ability_scores.strength
+            getId("dexterity").value = object.ability_scores.dexterity
+            getId("constitution").value = object.ability_scores.constitution
+            getId("wisdom").value = object.ability_scores.wisdom
+            getId("intelligence").value = object.ability_scores.intelligence
+            getId("charisma").value = object.ability_scores.charisma
+
+            features = ""
+            for (const i in object.features) {
+                features += object.features[i]
+                if (i != object.features.length - 1) {
+                    features += ", "
+                }
+            }
+            getId("features").value = features
+
+            proficiencies = ""
+            for (const i in object.proficiencies) {
+                proficiencies += object.proficiencies[i]["name"] + ":" + object.proficiencies[i]["level"]
+                if (i != object.proficiencies.length - 1) {
+                    proficiencies += ", "
+                }
+            }
+            getId("proficiencies").value = proficiencies
             
         })
     }
@@ -188,34 +211,41 @@
 
         let features_string = getId("features").value;
         let features = features_string.split(", ")
+        features = JSON.stringify(features)
         
         let proficiencies_string = getId("proficiencies").value;
-        if(proficiencies_string) {
-            let proficiencies_parts = proficiencies_string.split(", ")
-            let proficiencies = proficiencies_parts.map(part => {
-                let [key, value] = part.split(":"); // Split by ":" and trim any extra spaces
-                return [key, parseInt(value)]; // Convert value to an integer
-            });
-        } else {proficiencies = []}
+        let proficiencies_array = proficiencies_string.split(", ")
+        proficiencies = []
+        for (let value of proficiencies_array) {
+            value = value.split(":")
+            object = {
+                "name": value[0],
+                "level": value[1]
+            }
+            proficiencies.push(object)
+        }
+        proficiencies = JSON.stringify(proficiencies)
+        if (!proficiencies_string) { proficiencies = JSON.stringify({}) }
 
         let ability_scores = {
-            "strength":getId("strength").value,
-            "dexterity":getId("dexterity").value,
-            "constitution":getId("constitution").value,
-            "wisdom":getId("wisdom").value,
-            "intelligence":getId("intelligence").value,
-            "charisma":getId("charisma").value,
+            "strength":getId("strength").value || "0",
+            "dexterity":getId("dexterity").value || "0",
+            "constitution":getId("constitution").value || "0",
+            "wisdom":getId("wisdom").value || "0",
+            "intelligence":getId("intelligence").value || "0",
+            "charisma":getId("charisma").value || "0",
         }
+        ability_scores = JSON.stringify(ability_scores)
 
         // Send data
-        toBackend(`
-            database.set_race(
-                "`+name+`",
-                `+JSON.stringify(features)+`,
-                `+JSON.stringify(proficiencies)+`,
-                `+JSON.stringify(ability_scores)+`,
-                "`+description+`"
-            )`
+        toBackend(
+            "database.set_race("+
+                "`"+name+"`,"+
+                ""+features+","+
+                ""+proficiencies+","+
+                ""+ability_scores+","+
+                "`"+description+"`,"+
+            ")"
         )
 
         //closePage("Race")

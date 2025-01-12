@@ -18,6 +18,7 @@
     function runCurrentTab() {
         const tabList = ["classes", "races", "proficiencies", "conditions", "features", "items", "damage", "resources", "spells"];
         const tabFunctions = {
+            races: racesTab,
             proficiencies: proficienciesTab,
             conditions: conditionsTab,
             damage: damageTab,
@@ -301,6 +302,224 @@
         "necromancy": "asset://4e7caf122839630f94575156850cf067",
         "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
     };
+
+    function racesTab() {
+
+        // Parameters
+        const edit_page = "race_set.html"
+        const database_data = "database.races.data"
+        const database_get_list = "database.get_races_list"
+        const remove_function = "database.remove_race"
+        const tab_id = "races"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Components
+        const table_headers = ["Name"]
+        const table_config = "3vh 1fr 10vh"
+        function render_row(name, features, proficiencies, ability_scores, description) {
+            id = name
+
+            // Features
+            features_string = ""
+            for (const i in features) {
+                features_string += features[i]
+                if (i != features.length-1) {
+                    features_string += ", "
+                }
+            }
+
+            // Proficiencies
+            proficiency_names = {
+                "0":"Proficiency",
+                "1":"Expertise",
+                "2":"Mastery",
+                "3":"Grandmastery",
+            }
+            proficiencies_string = ""
+            for (const i in proficiencies) {
+                proficiencies_string += proficiencies[i]["name"] + " " + proficiency_names[proficiencies[i]["level"]]
+                if (i != proficiencies.length-1) {
+                    proficiencies_string += ", "
+                }
+            }
+
+            // Ability Scores
+            ability_scores_string = ""
+            for (const score in ability_scores) {
+                bonus = Number(ability_scores[score])
+
+                if (bonus != 0) {
+                    if (bonus > 0) {bonus = "+" + bonus}
+                    ability_scores_string += capitalize(score) + " " + bonus
+                    if (i != ability_scores.length-1) {
+                        ability_scores_string += ", "
+                    }
+                }
+            }
+
+            columns = [capitalize(name)]
+
+            description = `
+                <div style="line-height: 1.5;text-align:left;padding-top:1vh;">
+                    <b>Ability Scores</b>: `+ability_scores_string+`
+                    <br><b>Features</b>: `+features_string+`
+                    <br><b>Proficiencies</b>: `+proficiencies_string+`
+                </div>
+                <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
+                    >`+description+`</pre>
+                `
+
+            return row(id, columns, description, "", tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id, "width:95%") +
+
+                div(tab_id + "-tab-content") + 
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Filters
+        const search = getId(tab_id + "-search-bar").value
+
+        // Get data
+        toBackend(`[
+            `+database_get_list+`({}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
+
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
+
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) { 
+                race = data[key]
+                
+                // Creating row, and adding key to items for later use
+                items.push(race.name)
+                rows += render_row(race.name, race.features, race.proficiencies, race.ability_scores, race.description)
+            }
+
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
+
+            // Updates collapsible behavior for table
+            updateColapsible()
+        })
+    }
+
+    function proficienciesTab() {
+
+        // Parameters
+        const edit_page = "proficiency_set.html"
+        const database_data = "database.proficiencies.data"
+        const database_get_list = "database.get_proficiencies_list"
+        const remove_function = "database.remove_proficiency"
+        const tab_id = "proficiencies"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Components
+        const table_headers = ["Name", "Type"]
+        const table_config = "3vh 1fr 1fr 10vh"
+        function render_row(name, type, desc_arr) {
+            id = name
+            columns = [capitalize(name), capitalize(type)]
+
+            description_string = ""
+            title_arr = ["Proficiency", "Expertise", "Mastery", "Grandmastery"]
+            first_elem = true
+            for (let i = 0; i < desc_arr.length; i++) {
+                if (desc_arr[i]) {
+                    if (first_elem == false) {
+                        description_string += `
+
+`
+                    }
+                    description_string += `<span style="font-weight:bold">`+title_arr[i]+`: </span>`
+                    description_string += desc_arr[i]
+                    first_elem = false
+                }
+            }
+            
+            description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description_string+`</pre>`
+
+            return row(id, columns, description, "", tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id, "width:85%") +
+
+                select(tab_id + "-type", "Type", ["skill", "combat", "save", "tool"], "width:10%") +
+
+                div(tab_id + "-tab-content") + 
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Filters
+        const search = getId(tab_id + "-search-bar").value
+        const type = getId(tab_id + "-type").value
+
+        // Get data
+        toBackend(`[
+            `+database_get_list+`({"type":"`+type+`"}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
+
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
+
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) { 
+                proficiency = data[key]
+                
+                // Creating row, and adding key to items for later use
+                items.push(proficiency.name)
+                rows += render_row(proficiency.name, proficiency.type, proficiency.description)
+            }
+
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
+
+            // Updates collapsible behavior for table
+            updateColapsible()
+        })
+    }
 
     function proficienciesTab() {
 
