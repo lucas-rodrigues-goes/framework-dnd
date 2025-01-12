@@ -3,6 +3,92 @@ try {
 
     var Database = class extends Entity {
 
+        //=====================================================================================================
+        // Race management
+        //=====================================================================================================
+
+        #races = {
+            "data":{},
+        }
+
+        reset_races() {
+            this.#races = {
+                "data":{},
+            }
+
+            this.save()
+        }
+
+        get races() {return this.#races}
+
+        get_race(name) {
+            const database = this.#races;
+            
+            // Check if the resource exists
+            if (name in database.data) {
+                return database.data[name];
+            } else {
+                return null;  // Return null if the resource doesn't exist
+            }
+        }
+
+        get_races_list(filters = {}, sortBy = null, searchString = null) {
+            const { } = filters;
+            const database = this.#races;
+            let object_names = Object.keys(database.data);
+        
+            // Filter by searchString if provided
+            if (searchString) {
+                const lowerSearchString = searchString.toLowerCase();
+                object_names = object_names.filter(name => {
+                    const resource = database.data[name];
+                    return Object.values(resource).some(value =>
+                        String(value).toLowerCase().includes(lowerSearchString)
+                    );
+                });
+            }
+        
+            // Sort the object names if a sortBy parameter is provided
+            switch (sortBy) {
+                case "name":
+                    object_names.sort((a, b) => a.localeCompare(b));
+                    break;
+                default:
+                    // Default sorting: by type
+                    object_names.sort((a, b) => a.localeCompare(b));
+                    break;
+            }
+        
+            return object_names;
+        }
+
+        set_race(name, features, proficiencies, ability_scores, description) {
+
+            const database = this.#races
+            const object = new Race(name, features, proficiencies, ability_scores, description)
+
+            // Verify if already exists
+            if(name in database.data) {this.remove_race(name)}
+            
+
+            // Data
+            database.data[object.name] = object.object()
+
+
+            this.save()
+        }
+
+        remove_race(name) {
+            const database = this.#proficiencies
+            const object = database.data[name]
+
+            // Data
+            delete database.data[object.name]
+
+            this.save()
+        }
+
+
 
         //=====================================================================================================
         // Proficiency management
@@ -1328,6 +1414,7 @@ try {
         load() {
             let object = JSON.parse(this.token.getProperty("object"));
 
+            this.#races = object.races
             this.#proficiencies = object.proficiencies
             this.#conditions = object.conditions
             this.#resources = object.resources
@@ -1341,6 +1428,7 @@ try {
 
         save() {
             let object = {
+                "races": this.#races,
                 "proficiencies": this.#proficiencies,
                 "conditions": this.#conditions,
                 "resources": this.#resources,

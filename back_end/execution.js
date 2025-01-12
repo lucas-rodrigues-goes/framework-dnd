@@ -29,7 +29,7 @@ try {
             return new constructor(id)
         }
         catch {
-            MTScript.evalMacro(`[r,if(!isDialogVisible("Character")):creature_set("`+id+`")]`)
+            //MTScript.evalMacro(`[r,if(!isDialogVisible("Character")):creature_set("`+id+`")]`)
             return
         }
     }
@@ -48,6 +48,10 @@ try {
         if(MapTool.tokens.getSelected()) {
             return MapTool.tokens.getSelected().getId()
         }
+    }
+
+    var getSelectedImage = function() {
+        return MTScript.evalMacro(`[r:getTokenImage("","`+getSelected()+`")]`)
     }
 
     var selected = function () {

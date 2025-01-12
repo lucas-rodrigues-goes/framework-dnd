@@ -146,6 +146,21 @@ try {
             return calculated_max_health
         }
 
+        get speed() {
+            let speed = this.#speed.walk
+
+            if (this.has_feature("Barbaric Movement")) { speed += 10 }
+            if (this.has_feature("Monk Movement")) { speed += 10 }
+            if (this.has_feature("Roving")) { speed += 5 }
+
+            if (this.has_condition("Haste")) {speed *= 2}
+            if (this.has_condition("Slow")) {speed /= 2}
+
+            speed = Math.floor(speed)
+
+            return speed
+        }
+
         get skills() {
             let str_bonus = this.attr_bonus('strength')
             let dex_bonus = this.attr_bonus('dexterity')
@@ -250,6 +265,10 @@ try {
                 this.save()
                 log(this.#name + " lost the condition " + condition + ".");
             }
+        }
+
+        has_condition(name) {
+            return name in this.#conditions
         }
 
 
@@ -359,14 +378,17 @@ try {
 
         // Add a feature to the creature (checking feature type and duplication)
         set_proficiency(name, level) {
+            return
         }
 
         // Remove a feature from the creature
         remove_proficiency(name) {
+            return
         }
 
         // Check if the creature has a specific feature
         get_proficiency_level(name) {
+            return
         }
 
 
@@ -526,7 +548,7 @@ try {
 
             // Check for undefined values and raise an error
             const keysToCheck = [
-                "name", "type", "race", "attributes", "health",
+                "name", "type", "race", "attributes", "speed", "health",
                 "resources", "resistances", "features", "spells",
                 "conditions", "equipment", "inventory"
             ];
@@ -541,6 +563,7 @@ try {
             this.#type = object.type;
             this.#race = object.race;
             this.#attributes = object.attributes;
+            this.#speed = object.speed;
             this.#health = object.health
             this.#resources = object.resources;
             this.#resistances = object.resistances;
@@ -559,6 +582,7 @@ try {
                 "type": this.#type,
                 "race": this.#race,
                 "attributes": this.#attributes,
+                "speed": this.#speed,
                 "health": this.#health,
                 "resources": this.#resources,
                 "resistances": this.#resistances,

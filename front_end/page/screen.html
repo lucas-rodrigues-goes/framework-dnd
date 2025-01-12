@@ -459,6 +459,7 @@
             ) +
             div("gm-menu", "menu bottom right", 
                 div("", "button-background",
+                    image("create-character","asset://3432c572c31826e72dedd81ef4a10c5b") +
                     image("database", "asset://f218b6ad34fe8564e0553dc2bba91cc8")
                 )
             ) +
@@ -467,6 +468,11 @@
         if (!gm) {getId("gm-menu").setAttribute("style", "display:none")}
 
         getId("info").addEventListener("click",()=>{ openClosePage("", "Character", "creature_info.html") })
+        getId("create-character").addEventListener("click", ()=>{
+            toBackend(`getImpersonated()`, (response)=>{
+                openClosePage(response, "Character Creation", "character_creation.html")
+            })
+        })
         getId("database").addEventListener("click",()=>{ openClosePage("", "Database", "database.html") })
     }
 

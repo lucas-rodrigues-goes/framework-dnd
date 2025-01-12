@@ -30,10 +30,10 @@ try {
         //=====================================================================================================
 
         constructor(
-            name = "",
-            type,
-            duration = 0,
-            description = ""
+            name = "", // String
+            type = "", // String
+            duration = 0, // Number
+            description = "" // String
         ) {
 
             // Validate Type

@@ -237,7 +237,7 @@
 
         close_button.addEventListener("click", () => { closePage("Damage Type") })
         get_image_button.addEventListener("click", ()=>{
-            toBackend(`selected().image`, (image) => {
+            toBackend(`getSelectedImage()`, (image) => {
                 getId("image").value = image;
             })
         })

@@ -32,11 +32,11 @@ try {
         //=====================================================================================================
 
         constructor(
-            name,
-            type,
-            subtype,
-            level = 0,
-            description
+            name = "", // String
+            type = "", // String
+            subtype = "", // String
+            level = 0, // Number
+            description = "" // String
         ) {
 
             // Validate Type

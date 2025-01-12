@@ -28,9 +28,9 @@ try {
         //=====================================================================================================
 
         constructor(
-            name = "",
-            type,
-            description = ["Proficient", "Expert", "Master", "Grandmaster"]
+            name = "", // String
+            type = "", // String
+            description = ["Proficient", "Expert", "Master", "Grandmaster"] // Array of descriptions
         ) {
 
             // Validate Type

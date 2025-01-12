@@ -7,12 +7,12 @@ try {
         // Feature parameters
         //=====================================================================================================
 
-        #name = "" // 
-        #type = "" // racial, feat, class
-        #subtype = undefined // specifies class
-        #level = 0 // 0 if no level requirement
-        #optional = true // whether it is automatically added (for races and classes)
-        #description = ""
+        #name
+        #type 
+        #subtype 
+        #level
+        #optional
+        #description
 
         
         //=====================================================================================================
@@ -33,12 +33,12 @@ try {
         //=====================================================================================================
 
         constructor(
-            name, 
-            type,
-            subtype,
-            level = 0,
-            optional = true,
-            description
+            name = "", // String 
+            type = "", // String 
+            subtype = "", // String for classes in case of type class
+            level = 0, // Number 
+            optional = true, // Boolean 
+            description = "" // String
         ) {
 
             // Validate Type

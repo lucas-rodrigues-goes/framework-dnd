@@ -97,7 +97,7 @@
         request.send(arguments + ";" + page_link);
     }
 
-    function openClosePage(id, page_name, page_link) {
+    function openClosePage(arguments, page_name, page_link) {
         let request = new XMLHttpRequest();
         request.open("POST", "macro:openClosePage@lib:main", true);
 
@@ -106,7 +106,7 @@
                 valueCallback(request.response);
             }
         };
-        request.send(id + ";" + page_name + ";" + page_link);
+        request.send(arguments + ";" + page_name + ";" + page_link);
     }
     
 

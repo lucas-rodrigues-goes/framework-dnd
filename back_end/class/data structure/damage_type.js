@@ -30,10 +30,10 @@ try {
         //=====================================================================================================
 
         constructor(
-            name = "", 
-            type,
-            description = "",
-            image = "",
+            name = "", // String 
+            type = "", // String 
+            description = "", // String 
+            image = "", // String of asset address
         ) {
 
             // Validate Level
