@@ -31,8 +31,8 @@ try {
 
         constructor(
             name = "",
-            duration = 0,
             type,
+            duration = 0,
             description = ""
         ) {
 

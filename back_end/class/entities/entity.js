@@ -17,11 +17,13 @@ try {
         #id;
         #token;
         #portrait;
+        #image;
 
         constructor(id) {
             this.#id = id
             this.#token = MapTool.tokens.getTokenByID(id)
             this.#portrait = MTScript.evalMacro(`[r:getTokenPortrait("","`+id+`")]`)
+            this.#image = MTScript.evalMacro(`[r:getTokenImage("","`+id+`")]`)
         }
 
 
@@ -32,6 +34,7 @@ try {
 
         get token() { return this.#token;}
         get portrait() { return this.#portrait;}
+        get image() { return this.#image;}
         
         get player() {
             return this.#token.isPC()

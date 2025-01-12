@@ -932,7 +932,7 @@ try {
             "type":{}
         }
 
-        reset_condition() {
+        reset_conditions() {
             this.#conditions = {
                 "data":{},
                 "type":{}
@@ -944,7 +944,7 @@ try {
         get conditions() {return this.#conditions}
 
         get_condition(name) {
-            const database = this.#damage_types;
+            const database = this.#conditions;
             
             // Check if the resource exists
             if (name in database.data) {
@@ -1329,6 +1329,7 @@ try {
             let object = JSON.parse(this.token.getProperty("object"));
 
             this.#proficiencies = object.proficiencies
+            this.#conditions = object.conditions
             this.#resources = object.resources
             this.#damage_types = object.damage_types
             this.#features = object.features
@@ -1341,6 +1342,7 @@ try {
         save() {
             let object = {
                 "proficiencies": this.#proficiencies,
+                "conditions": this.#conditions,
                 "resources": this.#resources,
                 "damage_types": this.#damage_types,
                 "features": this.#features,

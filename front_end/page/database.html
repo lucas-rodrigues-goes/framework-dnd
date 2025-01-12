@@ -16,23 +16,41 @@
     //=====================================================================================================
 
     function runCurrentTab() {
-        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
-        let current_tab
-        let tab_function = function () {return}
+        const tabList = ["classes", "races", "proficiencies", "conditions", "features", "items", "damage", "resources", "spells"];
+        const tabFunctions = {
+            proficiencies: proficienciesTab,
+            conditions: conditionsTab,
+            damage: damageTab,
+            features: featuresTab,
+            spells: spellsTab,
+            items: itemsTab,
+        };
 
-        if(getId("proficiencies-tab").style.display != "none") { current_tab = "proficiencies" ; tab_function = proficienciesTab }
-        else if(getId("damage-tab").style.display != "none") { current_tab = "damage" ; tab_function = damageTab }
-        else if (getId("features-tab").style.display != "none") { current_tab = "features" ; tab_function = featuresTab }
-        else if (getId("spells-tab").style.display != "none") { current_tab = "spells" ; tab_function = spellsTab }
-        else if (getId("items-tab").style.display != "none") { current_tab = "items" ; tab_function = itemsTab }
+        // Determine the current tab and the corresponding function
+        let currentTab = null;
+        let tabFunction = () => {};
 
-
-        tab_list = tab_list.filter(item => item != current_tab)
-        for (const tab of tab_list) {
-            if (getId(tab+"-table")) {getId(tab+"-table").setAttribute("hash", "")}
+        for (const tab of tabList) {
+            const tabElement = getId(tab+`-tab`);
+            if (tabElement && tabElement.style.display !== "none") {
+                currentTab = tab;
+                tabFunction = tabFunctions[tab] || (() => {});
+                break;
+            }
         }
 
-        tab_function()
+        // Clear "hash" attribute for all other tabs
+        for (const tab of tabList) {
+            if (tab !== currentTab) {
+                const tableElement = getId(tab+`-table`);
+                if (tableElement) {
+                    tableElement.setAttribute("hash", "");
+                }
+            }
+        }
+
+            // Execute the function for the current tab
+            tabFunction();
     }
     
     function timeUnit(time) {
@@ -68,8 +86,7 @@
         return hash;
     }
 
-    function addTabFunctionality() {
-        let tab_list  = ["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]
+    function addTabFunctionality(tab_list=["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]) {
 
         tab_list.forEach((tab_name) => {
             getId(tab_name+"-switch").addEventListener("click", () => {
@@ -364,6 +381,85 @@
                 // Creating row, and adding key to items for later use
                 items.push(proficiency.name)
                 rows += render_row(proficiency.name, proficiency.type, proficiency.description)
+            }
+
+            // Creating table in tab
+            getId(tab_id + "-tab-content").innerHTML = table(table_headers, rows, new_hash, tab_id, table_config)
+
+            // Adding behavior to buttons
+            for (const value of items) {
+                getId(tab_id + "-edit-" + value).addEventListener("click", ()=>{ openPage(edit_page, value) }) // Edit
+                getId(tab_id + "-remove-" + value).addEventListener("click", ()=>{ toBackend(remove_function + `("`+value+`")`) }) // Remove
+            }
+
+            // Updates collapsible behavior for table
+            updateColapsible()
+        })
+    }
+
+    function conditionsTab() {
+
+        // Parameters
+        const edit_page = "condition_set.html"
+        const database_data = "database.conditions.data"
+        const database_get_list = "database.get_conditions_list"
+        const remove_function = "database.remove_condition"
+        const tab_id = "conditions"
+        const first_time_tab_execution = !getId(tab_id + "-search-bar")
+
+        // Components
+        const table_headers = ["Name", "Type"]
+        const table_config = "3vh 1fr 1fr 10vh"
+        function render_row(name, type, description) {
+            id = name
+            columns = [capitalize(name), capitalize(type)]
+            
+            description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
+
+            return row(id, columns, description, "", tab_id, table_config)
+        }
+
+        // Creates div base content
+        if(first_time_tab_execution) {
+            getId(tab_id + "-tab").innerHTML += 
+
+                search_bar(tab_id, "width:85%") +
+
+                select(tab_id + "-type", "Type", ["spell", "natural", "curse", "poison", "special"], "width:10%") +
+
+                div(tab_id + "-tab-content") + 
+
+                button_create_new(tab_id)
+
+            getId(tab_id + "-create-new").addEventListener("click", ()=>{ openPage(edit_page,"") }) 
+        }
+
+        // Filters
+        const search = getId(tab_id + "-search-bar").value
+        const type = getId(tab_id + "-type").value
+
+        // Get data
+        toBackend(`[
+            `+database_get_list+`({"type":"`+type+`"}, "", "`+search+`"),
+            `+database_data+`
+            ]`, (response) => {
+            list = JSON.parse(response)[0]
+            data = JSON.parse(response)[1]
+
+            // Hashing
+            let new_hash = hash(JSON.stringify(data)) + hash(JSON.stringify(list))
+            let previous_hash = getId(tab_id + "-table") != undefined ? getId(tab_id + "-table").getAttribute("hash") : undefined;
+            if (new_hash == previous_hash) { return }
+
+            // Row creation
+            let rows = "" // Stores HTML for all of the rows
+            let items = [] // Stores the name of each value added to the table
+            for (const key of list) { 
+                condition = data[key]
+                
+                // Creating row, and adding key to items for later use
+                items.push(condition.name)
+                rows += render_row(condition.name, condition.type, condition.description)
             }
 
             // Creating table in tab

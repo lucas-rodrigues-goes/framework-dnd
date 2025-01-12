@@ -34,6 +34,26 @@ try {
         }
     }
 
+    var getImpersonated = function () {
+        return MTScript.evalMacro(`[r:getImpersonated()]`)
+    }
+
+    var impersonated = function () {
+        if(getImpersonated()) {
+            return instance(getImpersonated())
+        }
+    }
+
+    var getSelected = function () {
+        if(MapTool.tokens.getSelected()) {
+            return MapTool.tokens.getSelected().getId()
+        }
+    }
+
+    var selected = function () {
+        return instance(getSelected())
+    }
+
 
 
 } catch (e) {

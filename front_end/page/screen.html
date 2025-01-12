@@ -1,13 +1,7 @@
-[h:id = getImpersonated()]
-[h:abort(arg(0) != id)]
-
 [overlay("Screen"), code: {
 <head>
-<link rel='onChangeImpersonated' type='macro' href='macro://screen.html@lib:main/impersonated/impersonated?{id}'>
 <script>
-    const id = "{id}";
     const gm = "{isGM()}" == "1"
-    const character_image = `{getTokenPortrait("",id)}`
 </script>
 [r:style()]
 [r:script()]
@@ -55,8 +49,8 @@
     }
 
     .button-background img {
-        background-color: #333;
-        border: 0.2vh solid #444;
+        background-color: #292929;
+        border: 0.3vh solid #444;
         border-radius: 0.5vh;
         display:block;
         height: 3vh;
@@ -67,7 +61,7 @@
 
     .button-background img:hover {
         background-color: #444;
-        border: 0.2vh solid #555;
+        border: 0.3vh solid #555;
         opacity:1;
     }
     .button-background img:active {
@@ -168,7 +162,7 @@
         bottom: 0px;
         background-color: rgba(0,0,0,0.15);
         border-radius: 1vh;
-        border: 0.1vh solid #444;
+        border: 0.3vh solid #444;
     }
 
     #target .armor-class {
@@ -189,6 +183,10 @@
         padding: 0.5vh;
         width:2vh;
         left: 1vh;
+    }
+
+    .text-shadow {
+        text-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
     }
 
 
@@ -268,8 +266,12 @@
             <div class="top center-horizontal">
                 `+image+`
                 <p>
-                    <span style="font-size:120%; font-weight:bold">`+name+`</span><br>
-                    <span style="color:#aaa">`+type+`</span>
+                    <span class="text-shadow" style="font-size:120%;font-weight:bold; ">
+                        `+name+`
+                    </span><br>
+                    <span class="text-shadow" style="color:#aaa;">
+                        `+type+`
+                    </span>
                 </p>
             </div>
             <div id="target-health" style="`+style+`"></div>
@@ -280,11 +282,11 @@
         `
     }
 
-    function current_character(style="") {
-        click = "toBackend(`creature.go_to();creature.select()`)"
+    function current_character(style="", image="") {
+        click = "toBackend(`impersonated().go_to() ; impersonated().select()`)"
         return `
         <div id="health" class="circular-health" style="`+style+`">
-            <img id="character-image" src="`+character_image+`" onclick="`+click+`">
+            <img id="character-image" src="`+image+`" onclick="`+click+`">
         </div>`
     }
 
@@ -314,9 +316,16 @@
     //=====================================================================================================
 
     function currentCharacter() {
+        toBackend(`impersonated()`, (response)=>{
+            if (!response) {
+                getId("character-menu").setAttribute("style", "display:none")
+                return
+            } else {
+                getId("character-menu").setAttribute("style", "")
+            }
+        })
         toBackend(`
-            var current = instance("`+id+`");
-            [current.health, current.max_health]`
+            [impersonated().health, impersonated().max_health, impersonated().portrait]`
         , (response)=>{
             new_hash = hash(response)
             old_hash = getId("current-character").getAttribute("hash")
@@ -333,10 +342,11 @@
             let start_hp = hp_percent
             let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
 
+            let image = character[2]
             let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
 
             getId("current-character").innerHTML += 
-                current_character(style)
+                current_character(style, image)
         })
     }
 
@@ -378,7 +388,7 @@
                 let color = target[6] == "true" ? "#5ab350" : "#b44"
                 color = !valid_class.includes(target[8]) ? "#666" : color
 
-                let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.15) `+hp_percent+`%);`
+                let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%);`
 
                 getId("current-target").innerHTML += 
                     target_character(name, type, image, style, armor_class)
@@ -388,14 +398,14 @@
 
     function currentParty() {
         toBackend(`
-            party_info()`
+            [party_info(), getImpersonated()]`
         , (response) => {
             new_hash = hash(response)
             old_hash = getId("party-characters").getAttribute("hash")
             if(old_hash == new_hash) {return}
 
-            party_members = JSON.parse(response)
-            
+            party_members = JSON.parse(response)[0]
+            current_id = JSON.parse(response)[1]
 
             getId("party-characters").setAttribute("hash", new_hash)
             getId("party-characters").innerHTML = ""
@@ -403,7 +413,7 @@
             items = []
             for (const member of party_members) {
                 let member_id = member[3]
-                if(member_id == id) {continue}
+                if(member_id == current_id) {continue}
                 
                 let image = member[2]
 
@@ -454,7 +464,6 @@
             ) +
             div("current-target")
         
-        if(character_image == "") {getId("character-menu").setAttribute("style", "display:none")}
         if (!gm) {getId("gm-menu").setAttribute("style", "display:none")}
 
         getId("info").addEventListener("click",()=>{ openClosePage("", "Character", "creature_info.html") })
