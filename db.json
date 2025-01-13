@@ -1,4 +1,132 @@
 {
+  "races": {
+    "data": {
+      "Dwarf": {
+        "name": "Dwarf",
+        "features": [
+          "Dwarven Toughness",
+          "Dwarven Resilience",
+          "Bulky"
+        ],
+        "proficiencies": [
+          {
+            "name": "Blunt Weapon",
+            "level": "1"
+          },
+          {
+            "name": "History",
+            "level": "0"
+          }
+        ],
+        "ability_scores": {
+          "strength": "1",
+          "dexterity": "-1",
+          "constitution": "1",
+          "wisdom": "1",
+          "intelligence": "0",
+          "charisma": "1"
+        },
+        "description": "Kingdoms rich in ancient grandeur, halls carved into the roots of mountains, the echoing of picks and hammers in deep mines and blazing forges, a commitment to clan and tradition, and a burning hatred of goblins and orcs – these common threads unite all dwarves."
+      },
+      "Elf": {
+        "name": "Elf",
+        "features": [
+          "Fleet of Foot",
+          "Darkvision",
+          "Fey Ancestry",
+          "Trance"
+        ],
+        "proficiencies": [
+          {
+            "name": "Bow",
+            "level": "1"
+          },
+          {
+            "name": "Perception",
+            "level": "0"
+          }
+        ],
+        "ability_scores": {
+          "strength": "0",
+          "dexterity": "2",
+          "constitution": "-1",
+          "wisdom": "1",
+          "intelligence": "1",
+          "charisma": "0"
+        },
+        "description": "Elves are a magical people of otherworldly grace, living in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light, where soft music drifts through the air and gentle fragrances waft on the breeze. Elves love nature and magic, art and artistry, music and poetry."
+      },
+      "Half-Orc": {
+        "name": "Half-Orc",
+        "features": [
+          "Savage Attacks",
+          "Relentless Endurance"
+        ],
+        "proficiencies": [
+          {
+            "name": "Axe",
+            "level": "1"
+          },
+          {
+            "name": "Intimidation",
+            "level": "0"
+          }
+        ],
+        "ability_scores": {
+          "strength": "2",
+          "dexterity": "0",
+          "constitution": "1",
+          "wisdom": "0",
+          "intelligence": "-1",
+          "charisma": "0"
+        },
+        "description": "When alliances between humans and orcs are sealed by marriages, half-orcs are born. Some half-orcs rise to become proud chiefs of orc tribes, their human blood giving them an edge over their full-blooded orc rivals. Some venture into the world to prove their worth among humans and other more civilized races. Many of these become adventurers, achieving greatness for their mighty deeds and notoriety for their barbaric customs and savage fury."
+      },
+      "Human": {
+        "name": "Human",
+        "features": [
+          "Extra Feat"
+        ],
+        "proficiencies": [
+          {
+            "name": "Sword",
+            "level": "1"
+          }
+        ],
+        "ability_scores": {
+          "strength": "1",
+          "dexterity": "1",
+          "constitution": "1",
+          "wisdom": "1",
+          "intelligence": "1",
+          "charisma": "1"
+        },
+        "description": "In the reckonings of most worlds, humans are the youngest of the common races, late to arrive on the world scene and short-lived in comparison to dwarves, elves, and dragons. Perhaps it is because of their shorter lives that they strive to achieve as much as they can in the years they are given. Or maybe they feel they have something to prove to the elder races, and that's why they build their mighty empires on the foundation of conquest and trade. Whatever drives them, humans are the innovators, the achievers, and the pioneers of the worlds."
+      },
+      "Half-Elf": {
+        "name": "Half-Elf",
+        "features": [
+          "Fey Ancestry",
+          "Extra Feat"
+        ],
+        "proficiencies": [
+          {
+            "name": "Small Sword",
+            "level": "1"
+          }
+        ],
+        "ability_scores": {
+          "strength": "0",
+          "dexterity": "1",
+          "constitution": "0",
+          "wisdom": "0",
+          "intelligence": "1",
+          "charisma": "0"
+        },
+        "description": "Walking in two worlds but truly belonging to neither, half-elves combine what some say are the best qualities of their elf and human parents: human curiosity, inventiveness, and ambition tempered by the refined senses, love of nature, and artistic tastes of the elves."
+      }
+    }
+  },
   "proficiencies": {
     "data": {
       "Mundane Weapon": {
@@ -118,6 +246,21 @@
         "Blunt Weapon",
         "Axe",
         "Bow"
+      ]
+    }
+  },
+  "conditions": {
+    "data": {
+      "Mage Armor": {
+        "name": "Mage Armor",
+        "type": "spell",
+        "duration": "14400",
+        "description": "None"
+      }
+    },
+    "type": {
+      "spell": [
+        "Mage Armor"
       ]
     }
   },
@@ -358,14 +501,6 @@
         "optional": "false",
         "description": "You can attack twice, instead of once, whenever you take the Attack action on your turn."
       },
-      "Brutal Movement": {
-        "name": "Brutal Movement",
-        "type": "class",
-        "subtype": "barbarian",
-        "level": "5",
-        "optional": "false",
-        "description": "Your speed increases by 10 feet while you aren't wearing heavy armor."
-      },
       "Feral Instinct": {
         "name": "Feral Instinct",
         "type": "class",
@@ -477,14 +612,6 @@
         "level": "3",
         "optional": "false",
         "description": "You choose an archetype that you strive to emulate in your combat styles and techniques, such as Champion. The archetype you choose grants you features at 3rd level and again at 7th, 10th, 15th, and 18th level."
-      },
-      "Extra Feat": {
-        "name": "Extra Feat",
-        "type": "class",
-        "subtype": "fighter",
-        "level": "6",
-        "optional": "false",
-        "description": "You receive an extra feat, you receive this feature again at 14th level."
       },
       "Two Extra Attacks": {
         "name": "Two Extra Attacks",
@@ -1230,12 +1357,83 @@
         "optional": "false",
         "description": "You can use your Wild Shape an unlimited number of times.\n\nAdditionally, you can ignore the verbal and somatic components of your druid spells, as well as any material components that lack a cost and aren't consumed by a spell. You gain this benefit in both your normal shape and your beast shape from Wild Shape."
       },
-      "": {
-        "name": "",
-        "type": "",
-        "level": 0,
-        "optional": true,
-        "description": ""
+      "Barbaric Movement": {
+        "name": "Barbaric Movement",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "5",
+        "optional": "false",
+        "description": "Your speed increases by 10 feet while you aren't wearing heavy armor."
+      },
+      "Darkvision": {
+        "name": "Darkvision",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "You can see in dim light within 30 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray."
+      },
+      "Fleet of Foot": {
+        "name": "Fleet of Foot",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "Your walking speed increases by 5ft"
+      },
+      "Fey Ancestry": {
+        "name": "Fey Ancestry",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "You have advantage on saving throws against being charmed, and magic can't put you to sleep."
+      },
+      "Trance": {
+        "name": "Trance",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "Elves do not sleep. Instead they meditate deeply, remaining semi-conscious, for 4 hours a day. After resting in this way, you gain the same benefit a human would from 8 hours of sleep."
+      },
+      "Dwarven Toughness": {
+        "name": "Dwarven Toughness",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "Your hit point maximum increases by 1 every time you gain a level."
+      },
+      "Dwarven Resilience": {
+        "name": "Dwarven Resilience",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "Poison damage you receive is reduced by 10."
+      },
+      "Bulky": {
+        "name": "Bulky",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "Your walking speed is reduced by 5ft"
+      },
+      "Savage Attacks": {
+        "name": "Savage Attacks",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "When you score a critical hit with a melee weapon attack, the damage multiplier is increased by 1x."
+      },
+      "Relentless Endurance": {
+        "name": "Relentless Endurance",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest."
+      },
+      "Extra Feat": {
+        "name": "Extra Feat",
+        "type": "racial",
+        "level": "0",
+        "optional": "false",
+        "description": "You learn a new feat at level 1."
       }
     },
     "type": {
@@ -1245,7 +1443,6 @@
         "Reckless Attack",
         "Danger Sense",
         "Primal Path",
-        "Brutal Movement",
         "Feral Instinct",
         "Brutal Critical",
         "Relentless Rage",
@@ -1257,7 +1454,6 @@
         "Beast Spells",
         "Action Surge",
         "Martial Archetype",
-        "Extra Feat",
         "Indomitable",
         "Two Extra Attacks",
         "Three Extra Attacks",
@@ -1363,17 +1559,24 @@
         "Pact of the Talisman",
         "Mystic Arcanum",
         "Eldritch Master",
-        "Archdruid"
+        "Archdruid",
+        "Barbaric Movement"
       ],
       "feat": [
         "Ability Score Improvement"
       ],
-      "": [
-        "",
-        "",
-        "",
-        "",
-        ""
+      "": [],
+      "racial": [
+        "Darkvision",
+        "Fleet of Foot",
+        "Fey Ancestry",
+        "Trance",
+        "Dwarven Toughness",
+        "Dwarven Resilience",
+        "Bulky",
+        "Savage Attacks",
+        "Relentless Endurance",
+        "Extra Feat"
       ]
     },
     "subtype": {
@@ -1395,7 +1598,6 @@
         "Barbarian Toughness",
         "Reckless Attack",
         "Primal Path",
-        "Brutal Movement",
         "Feral Instinct",
         "Relentless Rage",
         "Brutal Critical",
@@ -1403,15 +1605,21 @@
         "Persistent Rage",
         "Indomitable Might",
         "Primal Champion",
-        "Rage"
+        "Rage",
+        "Barbaric Movement"
       ],
       "undefined": [
         "Ability Score Improvement",
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Darkvision",
+        "Fleet of Foot",
+        "Fey Ancestry",
+        "Trance",
+        "Dwarven Toughness",
+        "Dwarven Resilience",
+        "Bulky",
+        "Savage Attacks",
+        "Relentless Endurance",
+        "Extra Feat"
       ],
       "sorcerer": [
         "Sorcerer Spellcasting",
@@ -1433,7 +1641,6 @@
       "fighter": [
         "Action Surge",
         "Martial Archetype",
-        "Extra Feat",
         "Two Extra Attacks",
         "Three Extra Attacks",
         "Indomitable"
@@ -1547,11 +1754,16 @@
     },
     "level": {
       "0": [
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Darkvision",
+        "Fleet of Foot",
+        "Fey Ancestry",
+        "Trance",
+        "Dwarven Toughness",
+        "Dwarven Resilience",
+        "Bulky",
+        "Savage Attacks",
+        "Relentless Endurance",
+        "Extra Feat"
       ],
       "1": [
         "Sneak Attack",
@@ -1629,14 +1841,13 @@
         "Uncanny Dodge",
         "Roguish Evasion",
         "Extra Attack",
-        "Brutal Movement",
         "Font of Inspiration",
         "Destroy Undead",
         "Stunning Strike",
-        "Focused Aim"
+        "Focused Aim",
+        "Barbaric Movement"
       ],
       "6": [
-        "Extra Feat",
         "Countercharm",
         "Ki-Empowered Strikes",
         "Aura of Protection",
@@ -1709,7 +1920,8 @@
         "Foe Slayer",
         "Eldritch Master",
         "Archdruid"
-      ]
+      ],
+      "": []
     },
     "optional": {
       "false": [
@@ -1728,7 +1940,6 @@
         "Reckless Attack",
         "Primal Path",
         "Extra Attack",
-        "Brutal Movement",
         "Feral Instinct",
         "Relentless Rage",
         "Brutal Critical",
@@ -1743,7 +1954,6 @@
         "Signature Spells",
         "Action Surge",
         "Martial Archetype",
-        "Extra Feat",
         "Two Extra Attacks",
         "Three Extra Attacks",
         "Indomitable",
@@ -1830,7 +2040,18 @@
         "Otherwordly Patron",
         "Pact Magic",
         "Eldritch Invocations",
-        "Archdruid"
+        "Archdruid",
+        "Barbaric Movement",
+        "Darkvision",
+        "Fleet of Foot",
+        "Fey Ancestry",
+        "Trance",
+        "Dwarven Toughness",
+        "Dwarven Resilience",
+        "Bulky",
+        "Savage Attacks",
+        "Relentless Endurance",
+        "Extra Feat"
       ],
       "true": [
         "Ability Score Improvement",
@@ -1839,12 +2060,7 @@
         "Pact of the Tome",
         "Pact of the Talisman",
         "Mystic Arcanum",
-        "Eldritch Master",
-        "",
-        "",
-        "",
-        "",
-        ""
+        "Eldritch Master"
       ]
     }
   },
@@ -2836,9 +3052,9 @@
         "See Invisibility"
       ],
       "enchantment": [
+        "Sleep",
         "Hold Person",
-        "Hold Monster",
-        "Sleep"
+        "Hold Monster"
       ],
       "evocation": [
         "Eldritch Blast",

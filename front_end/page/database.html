@@ -315,7 +315,7 @@
 
         // Components
         const table_headers = ["Name"]
-        const table_config = "3vh 1fr 10vh"
+        const table_config = "0 1fr 10vh"
         function render_row(name, features, proficiencies, ability_scores, description) {
             id = name
 
@@ -327,6 +327,7 @@
                     features_string += ", "
                 }
             }
+            features_string = features_string ? `<br><b>Features</b>: `+features_string : ""
 
             // Proficiencies
             proficiency_names = {
@@ -342,6 +343,7 @@
                     proficiencies_string += ", "
                 }
             }
+            proficiencies_string = proficiencies_string ? `<br><b>Proficiencies</b>: `+proficiencies_string : ""
 
             // Ability Scores
             ability_scores_string = ""
@@ -362,8 +364,8 @@
             description = `
                 <div style="line-height: 1.5;text-align:left;padding-top:1vh;">
                     <b>Ability Scores</b>: `+ability_scores_string+`
-                    <br><b>Features</b>: `+features_string+`
-                    <br><b>Proficiencies</b>: `+proficiencies_string+`
+                    `+features_string+`
+                    `+proficiencies_string+`
                 </div>
                 <pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left"
                     >`+description+`</pre>

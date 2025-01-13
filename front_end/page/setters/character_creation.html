@@ -1,6 +1,6 @@
 [h:id = arg(0)]
 
-[dialog5("Character Creation", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Character Creation", "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
 <script>
     const id = "{id}"
@@ -83,6 +83,14 @@
     // Components
     //=====================================================================================================
 
+    function div(id, content="", style="") {
+        return `
+        <div id="`+id+`" style="`+style+`">
+            `+content+`
+        </div>
+        `
+    }
+
     function title(title = "") {
         return `
         <h4>`+title+`</h4>
@@ -156,10 +164,10 @@
         `
     }
 
-    function container(title="", children="", id="") {
+    function container(title="", children="", id="", style="") {
 
         return `
-        <div id="`+id+`" class="container center-horizontal" style="`+""+`">
+        <div id="`+id+`" class="container center-horizontal" style="`+style+`">
             <h3 class="container-title">`+title+`</h3>
             <div id="`+id+`-content">`+children+`</div>
         </div>
@@ -252,48 +260,7 @@
 
     }
 
-    function submit() {
-
-        // Get values from form
-        let name = getId("name");
-        let type = "humanoid";
-        let race = getId("race");
-
-        // Get attribute values from form
-        let str = getId("strength");
-        let dex = getId("dexterity");
-        let con = getId("constitution");
-        let wis = getId("wisdom");
-        let int = getId("intelligence");
-        let cha = getId("charisma");
-
-        // Check if form is valid
-        let valid = true
-        if (name.value == "") {valid = false}
-        if (race.value == "") {valid = false}
-        if (valid == false) {return}
-
-        // Send data to backend
-        toBackend(`
-            var creature = new Creature("`+id+`", true);
-            creature.create(
-                "`+name.value+`",
-                "`+type.value+`",
-                "`+race.value+`",
-                "`+str.getAttribute("value")+`",
-                "`+dex.getAttribute("value")+`",
-                "`+con.getAttribute("value")+`",
-                "`+wis.getAttribute("value")+`",
-                "`+int.getAttribute("value")+`",
-                "`+cha.getAttribute("value")+`",
-            )
-        `)
-
-        closePage("Character Creation")
-
-    }
-
-    function addAbilityScoresBehavior() {
+    function addAbilityScoresFunctionality() {
 
         const ability_score_list = [
             getId("strength"), getId("dexterity"), getId("constitution"),
@@ -374,60 +341,147 @@
         updatePoints()
     }
 
-    function updateRaceVisibility() {
-        let type = getId("type")
-        let race = getId("race")
-        let race_title = getId("race-title")
+    function getRaceInformation() {
 
-        if (type.value == "humanoid") {
-            race.setAttribute("style", "")
-            race_title.setAttribute("style", "")
-        } else {
-            race.setAttribute("style", "display: none")
-            race_title.setAttribute("style", "display: none")
+        const scores_list = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
+
+        function race_description(race_description) {
+            return `
+            <pre style="
+                white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left;
+                overflow-y:scroll; overflow-x:hidden; max-height:45vh; font-style:italic;
+            ">`+race_description+`</pre>`
         }
-    }
+        function race_features(race_features, database_features) {
+            content = ""
+            for (const name of race_features) {
+                if(database_features[name]) {
+                    content += `
+                    <p style="text-align:left">
+                        <b>`+name+`:</b> `+database_features[name].description+`
+                    </p>`
+                }
+            }
 
-    function updateRaceBonus() {
+            return content
+        }
+        function race_proficiencies(race_proficiencies, database_proficiencies) {
+            content = ""
+            level_names = {
+                "0":"Proficiency",
+                "1":"Expertise"
+            }
 
-        let str = getId("strength")
-        let dex = getId("dexterity")
-        let con = getId("constitution")
-        let wis = getId("wisdom")
-        let int = getId("intelligence")
-        let cha = getId("charisma")
+            for (const item of race_proficiencies) {
+                name = item["name"]
+                level = item["level"]
+                proficiency = database_proficiencies[name]
+                if (proficiency) {
+                    content += `<p style=text-align:left>
+                        <b>`+name+` `+level_names[level]+`:</b> `+proficiency.description[0]
+                    if(level == "1") {content += ` `+proficiency.description[1]}
+                    content += `</p>`
+                }
+            }
 
-        const ability_score_list = [
-            str, dex, con, wis, int, cha
-        ]
+            return content
+        }
+        function race_ability_scores(scores) {
+            content = `<p>`
+            first = true
+            created = 0
+            for (const i in scores_list) {
+                const value = scores_list[i]
 
-        ability_score_list.forEach((ability_score) => {
-            if(ability_score.getAttribute("value")) {
-                ability_score.innerHTML = ability_score.getAttribute("value")
+                if (scores[value] != 0) {
+                    if (first) { first = false } else { content += `, `} // insert comma before element if not first
+                    if (created == 3) { content += `<br>`} // if printed 3 skip line
+
+                    content += `<b>`+capitalize(value)+`:</b> ` // title
+
+                    if (Number(scores[value]) > 0) { content += "+" } // plus if positive
+
+                    content += scores[value] // value
+
+                    created += 1 // counter
+                }
+            }
+
+            return content + `</p>`
+        }
+
+        scores_list.forEach((score) => {
+            if(getId(score).getAttribute("value")) {
+                getId(score).innerHTML = getId(score).getAttribute("value")
             }
         })
 
-        toBackend(`database.get_race("`+getId("race").value+`")`, (response) => {
-            race = JSON.parse(response)
+        toBackend(` [ 
+            database.get_race("`+getId("race").value+`"),
+            database.features.data,
+            database.proficiencies.data,
+        ]`, (response) => { response = JSON.parse(response)
+            
+            race = response[0]
+            database_features = response[1]
+            database_proficiencies = response[2]
 
-            str.innerHTML = Number(str.innerHTML) + Number(race.ability_scores["strength"]);
-            dex.innerHTML = Number(dex.innerHTML) + Number(race.ability_scores["dexterity"]);
-            con.innerHTML = Number(con.innerHTML) + Number(race.ability_scores["constitution"]);
-            wis.innerHTML = Number(wis.innerHTML) + Number(race.ability_scores["wisdom"]);
-            int.innerHTML = Number(int.innerHTML) + Number(race.ability_scores["intelligence"]);
-            cha.innerHTML = Number(cha.innerHTML) + Number(race.ability_scores["charisma"]);
+            scores_list.forEach((score) => {
+                getId(score).innerHTML = Number(getId(score).innerHTML) + Number(race.ability_scores[getId(score).getAttribute("id")])
+            })
 
             new_hash = hash(JSON.stringify(race))
             old_hash = getId("race-description").getAttribute("hash")
             if (new_hash == old_hash) { return }
 
             getId("race-description").setAttribute("hash", new_hash)
-            getId("race-description-content").innerHTML = `
-            <pre style="
-                white-space: pre-wrap; word-wrap: break-word; font-family:inherit;
-                overflow-y:scroll; overflow-x:hidden; max-height:45vh; padding-left: 2vh; padding-right:3vh;
-            ">`+race.description+`</pre>`
+
+            getId("race-description-content").innerHTML = race_description(race.description)
+            getId("race-ability-scores-content").innerHTML = race_ability_scores(race.ability_scores)
+            getId("race-features-content").innerHTML = race_features(race.features, database_features)
+            getId("race-proficiencies-content").innerHTML = race_proficiencies(race.proficiencies, database_proficiencies)
         })
+
+    }
+
+    function submit() {
+
+        // Get values from form
+        let name = getId("name");
+        let type = "humanoid";
+        let race = getId("race");
+
+        // Get attribute values from form
+        let str = getId("strength");
+        let dex = getId("dexterity");
+        let con = getId("constitution");
+        let wis = getId("wisdom");
+        let int = getId("intelligence");
+        let cha = getId("charisma");
+
+        // Check if form is valid
+        let valid = true
+        if (name.value == "") {valid = false}
+        if (race.value == "") {valid = false}
+        if (valid == false) {return}
+
+        // Send data to backend
+        toBackend(`
+            var creature = new Creature("`+id+`", true);
+            creature.create(
+                "`+name.value+`",
+                "`+type.value+`",
+                "`+race.value+`",
+                "`+str.getAttribute("value")+`",
+                "`+dex.getAttribute("value")+`",
+                "`+con.getAttribute("value")+`",
+                "`+wis.getAttribute("value")+`",
+                "`+int.getAttribute("value")+`",
+                "`+cha.getAttribute("value")+`",
+            )
+        `)
+
+        closePage("Character Creation")
 
     }
 
@@ -436,25 +490,62 @@
     // Execution
     //=====================================================================================================
 
-    function loadPage() {
+    function raceTab() {
 
-        // Race tab
-        getId("race-tab").innerHTML += 
-            container("Basic",
-                input("name", "Name", "Creature name") +
-                select("race", "Race", [], "Humanoid Race")
-            ) +
-            container("Description", "<p>Choose a race to see its description.<p>", "race-description") +
+        getId("race-tab").innerHTML += (
+            // Left portion of tab
+            div("race-tab-left", (
 
+                container("Basic", (
+                    input("name", "Name", "Creature name") +
+                    select("race", "Race", [], "Humanoid Race")
+                )) +
+
+                container("Description", "<p>Choose a race to see its description.</p>", "race-description", "") +
+                container("Attribute Scores", "<p>Choose a race to see its bonuses to ability scores.</p>", "race-ability-scores", "")
+
+            ), "position:absolute; left:0; width:50%") +
+
+            // Right portion of tab
+            div("race-tab-right", (
+
+                container("Features", "<p>Choose a race to see its features.</p>", "race-features", "") +
+                container("Proficiencies", "<p>Choose a race to see its Proficiencies.</p>", "race-proficiencies", "")
+
+            ), "position:absolute;right:0; width:50%") +
+
+            // Bottom buttons
             button("race-tab-next-page", "Next", "bottom right page-turner", "")
-        
+        )
 
-        // Class tab
+        // Add button onclick
+        getId("race-tab-next-page").addEventListener("click", ()=>{ getId("class-switch").click() })
+        
+        // Update character name
+        toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(response)=>{ getId("name").value = response })
+
+        // Update races selector with backend races
+        toBackend(`database.get_races_list()`, (response)=>{
+            races = JSON.parse(response)
+            options_string = ""
+            for (const value of races) {
+                options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
+            }
+            getId("race").innerHTML += options_string
+        })
+    }
+
+    function classTab() {
         getId("class-tab").innerHTML +=
             button("class-tab-previous-page", "Previous", "bottom left page-turner", "") +
             button("class-tab-next-page", "Previous", "bottom right page-turner", "")
         
+        // Tab Buttons
+        getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() })
+        getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() })
+    }
 
+    function attributesTab() {
         // Attributes tab
         getId("attributes-tab").innerHTML +=
             container("Attributes",
@@ -462,37 +553,27 @@
             ) +
             button("attributes-tab-previous-page", "Previous", "bottom left page-turner", "")
 
-        // Add events
-        getId("race-tab-next-page").addEventListener("click", ()=>{ getId("class-switch").click() })
-        getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() })
-        getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() })
+        // Tab buttons
         getId("attributes-tab-previous-page").addEventListener("click", ()=>{ getId("class-switch").click() })
 
-        
-        // Update Name
-        toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(response)=>{
-            getId("name").value = response
-        })
-
-        // Update Races
-        toBackend(`database.get_races_list()`, (response)=>{
-            races = JSON.parse(response)
-            
-            options_string = ""
-            for (const value of races) {
-                options_string += `<option value="`+value+`">`+capitalize(value)+`</option>`
-            }
-            
-            getId("race").innerHTML += options_string
-        })
+        addAbilityScoresFunctionality()
     }
 
     function onWindowLoad() {
-        loadPage()
-        addTabFunctionality(["race","class","attributes"])
-        addAbilityScoresBehavior()
 
-        updateRaceBonus();setInterval(updateRaceBonus, 200)
+        addTabFunctionality(["race","class","attributes"])
+
+        // Race
+        raceTab()
+
+        // Class
+        classTab()
+
+        // Attributes
+        attributesTab() 
+
+        getRaceInformation(); setInterval(getRaceInformation, 200) // Requires attributes
+
     }
 
 
