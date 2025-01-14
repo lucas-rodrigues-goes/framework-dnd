@@ -6,13 +6,7 @@
 
 function element({content="", id="", tag="", classes="", style="", placeholder="", onclick="", value="", additional=""}={}) {
     return `
-        <`+tag+` id="`+id+`" class="`+classes+`" 
-            style="`+style+`" 
-            placeholder="`+placeholder+`" 
-            onclick="`+onclick+`" 
-            value="`+value+`"
-            `+additional+`
-        >
+        <`+tag+` id="`+id+`" class="`+classes+`" style="`+style+`" placeholder="`+placeholder+`" onclick="`+onclick+`" value="`+value+`" `+additional+`>
             `+content+`
         </`+tag+`>`.trim()
 }
