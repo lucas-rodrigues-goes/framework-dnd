@@ -1,0 +1,43 @@
+[dialog5("Test", "width=400; height=900; temporary=0; input=1; noframe=0"), code: {
+<head>
+
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+    [r:'
+    
+    <script>
+
+        function loadPage() {
+
+            getId("content").innerHTML += (
+                select({
+                    content: ["Apple", "Banana", "Cherry", "Date", "Strawberry"],
+                    required: true,
+                    placeholder: "Fruta"
+                })
+            )
+
+        }
+
+        function onWindowLoad() {
+            loadPage()
+        }
+
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
+
+    </script>
+    ']
+</head>
+
+<body>
+    <div class="outer">
+
+        <div id="content"></div>
+
+    </div>
+</body>
+
+}]
