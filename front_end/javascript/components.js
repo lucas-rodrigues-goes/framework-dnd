@@ -4,15 +4,30 @@
 // Components
 //=====================================================================================================
 
-function element({content="", id="", tag="", classes="", style="", placeholder="", onclick="", value="", additional=""}={}) {
+function element({
+    content="", id="", tag="", classes="", style="", placeholder="", onclick="", value="", src="",
+    additional=""
+}={}) {
+    id = id ? `id="`+id+`"` : ""
+    classes = classes ? `class="`+classes+`"` : ""
+    style = style ? `style="`+style+`"` : ""
+    placeholder = placeholder ? `placeholder="`+placeholder+`"` : ""
+    onclick = onclick ? `onclick="`+onclick+`"` : ""
+    value = value ? `value="`+value+`"` : ""
+    src = src ? `src="`+src+`"` : ""
+
     return `
-        <`+tag+` id="`+id+`" class="`+classes+`" style="`+style+`" placeholder="`+placeholder+`" onclick="`+onclick+`" value="`+value+`" `+additional+`>
+        <`+tag+` `+id+` `+classes+` `+style+` `+placeholder+` `+onclick+` `+value+` `+src+` `+additional+`>
             `+content+`
         </`+tag+`>`.trim()
 }
 
-function div({content, id, classes, style, onclick}={}) {
-    return element({content, id, classes, style, onclick, tag:"div"})
+function div({content, id, classes, style, onclick, additional}={}) {
+    return element({content, id, classes, style, onclick, additional, tag:"div"})
+}
+
+function span({content, id, classes, style}={}) {
+    return element({content, id, classes, style, tag:"span"})
 }
 
 function input({value, id, classes, style, placeholder}={}) {
@@ -25,11 +40,19 @@ function textarea({value, id, classes, style, rows="10", placeholder}={}) {
     return element({value, id, classes, style, placeholder, additional, tag:"textarea"})
 }
 
-function option({content, value, disabled=false, selected=false}={}) {
+function image({id, style, classes, src, onclick}={}) {
+    return element({id, style, classes, src, onclick, tag:"image"})
+}
+
+function button({content, id, classes, style, onclick}={}) {
+    return element({content, id, classes, style, onclick, tag:"button"})
+}
+
+function option({content, value, placeholder=false, disabled=false}={}) {
     let additional = ""
 
-    additional = disabled ? "disabled " : "";
-    additional += selected ? "selected " : "";
+    additional += placeholder ? ` value="" selected ` : "";
+    additional += disabled ? ` disabled ` : "";
 
     return element({content, value, additional, tag:"option"})
 }
@@ -48,86 +71,77 @@ function select({content, id, classes, style, content_type="array", placeholder=
 
     switch(content_type) {
         case "array":
-            content = option({content:placeholder, value:"", selected:true, disabled:required})
-            content += options_from_array(content)
+            content = 
+                option({content:placeholder, placeholder:true, disabled:required}) +
+                options_from_array(content).trim()
             break
     }
 
     return element({content, id, classes, style, tag:"select", additional:"required"})
 }
 
-function checkbox(id = "", title = "", min_width = "40") {
-    if (id == "" && title == "") {
-        style = `style="display:none"`
-    } else {style = ""}
+function container({content, id, title, style, max_height=""}={}) {
+    let content_style = max_height ? "overflow-y:scroll; padding-left:1vh; padding-right:1vh; max-height:"+max_height+"vh" : ""
 
-    return `
-    <div class="checkbox-container">
-        <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
-        <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
-    </div>
-    `
+    return div({id, classes:"container center-horizontal", style, content:(
+        element({tag:"h3", content:title, classes:"container-title"}) +
+        div({id: id+`-content`, content, style:content_style})
+    )})
 }
 
-function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
-    let checkboxes_string = ""
-    for (const box of checkboxes) {
-        checkboxes_string += checkbox(box[0], box[1], min_width)
-    }
+function checkbox({title, id, style}={}) {
 
-    return `
-    <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
-        `+checkboxes_string+`
-    </div>
-    `
+    return div({classes:"checkbox-container", style, content:(
+        span({content:title, classes:"checkbox-text", style:"width: 4vh"}) +
+        div({classes:"checkbox", id, additional:`data-checked="false"`})
+    )})
 }
 
-function container(title="", children="", id="", style="") {
+function grid({content, id, classes, style="", columns = 3, row_height = "auto", gap = "1vh", additional}={}) {
+    style = `
+        display: grid;
+        grid-template-columns: repeat(`+columns+`, 1fr);
+        grid-auto-rows: `+row_height+`;
+        gap: `+gap+`;
+        `+style+`
+    `.trim()
 
-    return `
-    <div id="`+id+`" class="container center-horizontal" style="`+style+`">
-        <h3 class="container-title">`+title+`</h3>
-        <div id="`+id+`-content">`+children+`</div>
-    </div>
-    `
-}
-
-function button(id="", label="", classes="", style="") {
-    return `
-    <button id=`+id+` class="`+classes+`" style="`+style+`">`+label+`</button>
-    `
+    return div({content, id, classes, style, additional});
 }
 
 function pointBuyCalculator() {
-    const scores_list = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
-    content = ""
-    
-    for (const score of scores_list) {
-        content += `
-        <div class="score">
-            <div class="label">`+capitalize(score)+`</div>
-            <div class="score-value" id="`+score+`">10</div>
-            <div class="score-bonus" id="bonus_`+score+`">0</div>
-            <button class="decrease" id="reduce_`+score+`">-</button>
-            <button class="increase" id="increase_`+score+`">+</button>
-        </div>
-        `
+
+    function ability_score_box(score) {
+        return div({classes:"score", content:(
+            div({classes:"score-label", content:capitalize(score)}) +
+            div({classes:"score-value", id:score, content:10}) +
+            div({classes:"score-bonus", id:"bonus_"+score, content:0}) +
+            button({classes:"decrease", id:"reduce_"+score, content:"-"}) +
+            button({classes:"increase", id:"increase_"+score, content:"+"})
+        )})
     }
 
-    return `
-    <h4>Available Points: <span id="points"></span> / 27</h4>
-    <div class="spacer"></div>
-    <div class="score-container">
-        `+content+`
-    </div>
-    `
+    content = ""
+    for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) { 
+        content += ability_score_box(score) 
+    }
+
+    return div({id:"point-buy-calculator", content:(
+                element({tag:"h4", content:(
+                    span({content:`Available Points: `}) + 
+                    span({id:"points"}) +
+                    span({content:" / 27"})
+                )}) +
+                div({classes:"spacer"}) +
+                div({classes:"score-container", content})
+            )})
 }
 
 //=====================================================================================================
 // Functionality
 //=====================================================================================================
 
-function addPointBuyFunctionality() {
+function loadPointBuyCalculator() {
 
     const ability_score_list = [
         getId("strength"), getId("dexterity"), getId("constitution"),
@@ -206,6 +220,19 @@ function addPointBuyFunctionality() {
 
     updateAttributeBonus()
     updatePoints()
+}
+
+function loadCheckboxes() {
+    // Select all elements with the class checkbox
+    const checkboxes = document.querySelectorAll(".checkbox");
+
+    checkboxes.forEach(checkbox => {
+    checkbox.addEventListener("click", () => {
+        // Toggle the data-checked attribute
+        const isChecked = checkbox.getAttribute("data-checked") === "true";
+        checkbox.setAttribute("data-checked", !isChecked);
+    });
+    });
 }
 
 //=====================================================================================================

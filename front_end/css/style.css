@@ -97,6 +97,124 @@ body {
 
 
 /*===================================================================================================*/
+/* Checkboxes */
+/*===================================================================================================*/
+
+.checkbox-container {
+    display: flex;
+    align-items: center;       /* Vertically center the items */
+    justify-content: center;    /* Horizontally center the items */
+    width: 100%;
+    margin: 5px;
+}
+
+.checkbox-grid {
+    display: grid; /* Enable grid layout */
+    grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
+    gap: 0px; /* Add space between items */
+    width: 100%;
+    margin: 10px 0px;
+}
+
+.checkbox-text {
+    font-size: 90%;
+    min-width: 40px;
+    padding-bottom: 3px;
+    margin-right: 8px;
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox[data-checked="true"] {
+    background-color: #ddd;
+    color: white;
+}
+
+.checkbox[data-checked="true"]::after {
+    content: "\f00c"; /* Font Awesome checkmark */
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    color: #333;
+    font-size: 16px;
+}
+
+
+
+/*===================================================================================================*/
+/* Point Buy Calculator */
+/*===================================================================================================*/
+
+.score-container {
+    display: grid;
+    grid-template-columns: repeat(3, 85px);  /* Adjust to fit within 450px */
+    gap: 0.5vh;
+    grid-template-rows: repeat(2, 140px);
+    width: fit-content; /* Set the width to 450px */
+    margin: 0 auto; /* Automatically center horizontally */
+    justify-items: center; /* Ensure items in the grid are centered horizontally */
+    align-items: center; /* Ensure items in the grid are centered vertically */
+}
+
+.score {
+    background-color: #333;
+    width: 8.5vh;
+    border: 0.2vh solid #444;
+    border-radius: 0.5vh;
+    padding: 1vh;
+    padding-bottom: 0.8vh;
+    text-align: center;
+    height: 15vh;  /* Control the height for consistency */
+}
+
+.score-label {
+    font-size: 100%; /* Smaller font size */
+    font-weight: bold;
+}
+
+.score-value {
+    font-size: 200%; /* Adjusted for a smaller look */
+    font-weight: bold;
+    width:fit-content;
+    margin:auto;
+    margin-top: 1vh;
+    margin-bottom: 0;
+    text-align:left;
+}
+
+.score-bonus {
+    font-weight:700;
+    width:fit-content;
+    margin:auto;
+    margin-top: 0;
+    margin-bottom: 1vh;
+    border: 0.2vh solid #999;
+    border-radius: 10vh;
+    padding: 0.3vh;
+    padding-right: 0.4vh;
+    font-size: 80%;
+}
+
+.increase, .decrease {
+    padding: 0;
+    width: 2vh;
+    height: 2vh;
+    min-height: unset;
+    min-width: unset;
+}
+
+
+
+/*===================================================================================================*/
 /* Window and Tabs */
 /*===================================================================================================*/
 
@@ -112,6 +230,7 @@ body {
     border-radius: 1vh;
     text-align: center;
     padding: 1vh 0;
+    overflow-x: hidden;
 }
 
 .tab-switch-div {
@@ -292,7 +411,7 @@ input, select, textarea {
     border-radius: 1vh;
 
     padding:0.5vh;
-    margin-top: 1vh;
+    margin-top: 2vh;
     margin-bottom: 2vh;
 
 }
@@ -304,57 +423,6 @@ select:hover {
 }
 select:invalid {
     color: rgb(173, 173, 173);
-}
-
-/*===================================================================================================*/
-/* Obsolete */
-/*===================================================================================================*/
-
-.row {
-    display: flex;
-    justify-content: center;
-    gap: 2vh; /* Space between columns */
-    margin-bottom: 1vh; /* Space between rows */
-}
-
-.stat, .value {
-    width: 5vh; /* Adjust width as needed */
-    text-align: center;
-    color: #999;
-    font-size: 120%;
-    font-weight: bold;
-}
-
-.value {
-    font-size: 150%;
-    color: #ddd;
-}
-
-h1,h2,h3,h4,h5,h6,p {
-    text-align:center;
-}
-
-div.spacer {
-    height: 1vh;
-    padding: 0;
-    margin: 0;
-
-    border: none;
-}
-
-.center {
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.subtext {
-    position: relative;
-    margin-top: -1vh;
-    margin-bottom: -1vh;
-
-    color: #999;
 }
 
 

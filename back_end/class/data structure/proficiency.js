@@ -35,7 +35,7 @@ try {
 
             // Validate Type
             if ( ! [
-                "skill", "weapon", "combat", "save", "tool"
+                "skill", "weapon", "combat", "save", "tool", "language"
             ].includes(type)) { return }
             
             // Instancing

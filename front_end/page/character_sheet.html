@@ -1,6 +1,7 @@
 [dialog5("Test", "width=400; height=900; temporary=0; input=1; noframe=0"), code: {
 <head>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
@@ -9,7 +10,6 @@
     <script>
 
         function loadPage() {
-
             getId("content").innerHTML += (
                 select({
                     content: ["Apple", "Banana", "Cherry", "Date", "Strawberry"],
@@ -17,11 +17,12 @@
                     placeholder: "Fruta"
                 })
             )
-
         }
 
         function onWindowLoad() {
             loadPage()
+            loadCheckboxes()
+            loadPointBuyCalculator()
         }
 
         document.addEventListener("DOMContentLoaded", onWindowLoad)
@@ -34,9 +35,7 @@
 
 <body>
     <div class="outer">
-
         <div id="content"></div>
-
     </div>
 </body>
 

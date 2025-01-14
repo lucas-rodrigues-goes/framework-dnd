@@ -703,7 +703,6 @@ try {
             return object_names;
         }
         
-
         set_feature(name, type, subtype, level, optional, description) {
             const database = this.#features
             const object = new Feature(name, type, subtype, level, optional, description)
