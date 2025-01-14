@@ -235,6 +235,26 @@ function loadCheckboxes() {
     });
 }
 
+function addTabFunctionality(tab_list) {
+
+    tab_list.forEach((tab_name) => {
+        getId(tab_name+"-switch").addEventListener("click", () => {
+            tab_list.forEach((value) => {
+                let button = getId(value+"-switch")
+                let div = getId(value+"-tab")
+                if (tab_name == value) {
+                    button.setAttribute("class", "tab-switch active")
+                    div.setAttribute("style", "")
+                } else {
+                    button.setAttribute("class", "tab-switch")
+                    div.setAttribute("style", "display:none")
+                }
+            })
+        })
+    })
+
+}
+
 //=====================================================================================================
 
 `']`
