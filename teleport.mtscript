@@ -1,0 +1,32 @@
+[r:id = getSelected()]
+[r:abort(id!="")]
+[r:oldMap = getCurrentMapName()]
+[r:oldZoom = getZoom()]
+
+[r:name_list = json.fromList(getGMName(id),":")]
+[r:abort(json.length(name_list)>1)]
+[r:abort(json.get(name_list,0) == "teleport")]
+
+[r:map_name = json.get(name_list,1)]
+[r:all_maps = json.fromList(getAllMapNames(), ",")]
+
+[r,if(json.contains(all_maps, map_name)):setCurrentMap(map_name)]
+
+[h:token_id_list = json.fromList(getTokens(),",")]
+[h:i = 0]
+[while(i<json.length(token_id_list), ""), code:{
+	[h:current = json.get(token_id_list,i)]
+	[h:name = getGMName(current)]
+
+	[h:name_array = json.fromList(name, ":")]
+	[r:name_is_delimited = json.length(name_array)>1]
+	[r,if(name_is_delimited):is_teleport = json.get(name_array,0) == "teleport";is_teleport=0]
+
+	[r,if(is_teleport):destination=json.get(name_array,1);destination=""]
+	[r,if(destination==oldMap),code:{
+		[goTo(current)]
+		[deselectTokens()]
+		[setZoom(oldZoom)]
+	}]
+	[h:i=i+1]
+}]
