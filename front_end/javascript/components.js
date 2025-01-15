@@ -67,7 +67,7 @@ function options_from_array(array) {
     return content
 }
 
-function select({content, id, classes, style, content_type="array", placeholder="", required=false}={}) {
+function select({content, content_type="array", id, classes, style, placeholder="", required=false}={}) {
 
     switch(content_type) {
         case "array":
@@ -107,6 +107,24 @@ function grid({content, id, classes, style="", columns = 3, row_height = "auto",
     `.trim()
 
     return div({content, id, classes, style, additional});
+}
+
+function table({content, id, headers=["", "Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
+
+    let div_headers = ""
+    for (const i of headers) {
+        const title = headers[i]
+        const style = i == headers.length - 1 ? "text-align:right" : ""
+
+        div_headers += div({content:title, style:style})
+    }
+
+    const table_style = `grid-template-columns:`+config+`;`
+
+    return div({classes:"table-container", id, content:(
+        div({classes:"table-header", style:table_style, content:div_headers}) +
+        div({classes:"table-rows"})
+    )})
 }
 
 function pointBuyCalculator() {
