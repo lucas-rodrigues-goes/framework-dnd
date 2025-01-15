@@ -17,9 +17,9 @@ function element({
     src = src ? `src="`+src+`"` : ""
 
     return `
-        <`+tag+` `+id+` `+classes+` `+style+` `+placeholder+` `+onclick+` `+value+` `+src+` `+additional+`>
-            `+content+`
-        </`+tag+`>`.trim()
+        <`+tag+` `+id+` `+classes+` `+style+` `+placeholder+` `+onclick+` `+value+` `+src+` `+additional+`>`+
+            ``+content+``+
+        `</`+tag+`>`.trim()
 }
 
 function div({content, id, classes, style, onclick, additional}={}) {
@@ -28,6 +28,14 @@ function div({content, id, classes, style, onclick, additional}={}) {
 
 function span({content, id, classes, style}={}) {
     return element({content, id, classes, style, tag:"span"})
+}
+
+function paragraph({content, id, classes, style}={}) {
+    return element({content, id, classes, style, tag:"p"})
+}
+
+function pre({content, id, classes, style}={}) {
+    return element({content, id, classes, style, tag:"pre"})
 }
 
 function input({value, id, classes, style, placeholder}={}) {
@@ -145,6 +153,25 @@ function table({content, id, headers=["", "Name", "Type", "Actions"], config="3v
     )})
 }
 
+function tabs({content=[]}={}) {
+    let tab_switches = ""
+    for (const i in content) {
+        const tab = content[i]
+        const button_classes = i == 0 ? "tab-switch active" : "tab-switch"
+        tab_switches += button({classes:button_classes, id:tab+"-switch", content:capitalize(tab)})
+    }
+
+    let tabs = ""
+    for (const i in content) {
+        const tab = content[i]
+        const tab_style = i == 0 ? "" : "display:none"
+        tabs += div({classes:"outer tab", id:tab+"-tab", style:tab_style})
+    }
+
+
+    return div({classes:"tab-switch-div", content:tab_switches}) + tabs
+}
+
 function pointBuyCalculator() {
 
     function ability_score_box(score) {
@@ -165,8 +192,8 @@ function pointBuyCalculator() {
     return div({id:"point-buy-calculator", content:(
                 element({tag:"h4", content:(
                     span({content:`Available Points: `}) + 
-                    span({id:"points"}) +
-                    span({content:" / 27"})
+                    span({id:"points"}) //+
+                    //span({content:" / 27"})
                 )}) +
                 div({classes:"spacer"}) +
                 div({classes:"score-container", content})
@@ -272,6 +299,34 @@ function loadCheckboxes() {
 }
 
 function addTabFunctionality(tab_list) {
+
+    tab_list.forEach((tab_name) => {
+        getId(tab_name+"-switch").addEventListener("click", () => {
+            tab_list.forEach((value) => {
+                let button = getId(value+"-switch")
+                let div = getId(value+"-tab")
+                if (tab_name == value) {
+                    button.setAttribute("class", "tab-switch active")
+                    div.setAttribute("style", "")
+                } else {
+                    button.setAttribute("class", "tab-switch")
+                    div.setAttribute("style", "display:none")
+                }
+            })
+        })
+    })
+
+}
+
+function loadTabs() {
+    const node_list = document.querySelectorAll(".tab-switch");
+
+    let tab_list = []
+    for (const element of node_list) {
+        const tab_id = element.id.split("-switch")[0]
+
+        tab_list.push(tab_id)
+    }
 
     tab_list.forEach((tab_name) => {
         getId(tab_name+"-switch").addEventListener("click", () => {

@@ -1,7 +1,7 @@
     [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
     [h,if(id==""):id = getImpersonated()]
 
-    [dialog5("Character Creation", "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+    [dialog5("Character Creation", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
     <head>
         <script>
             const id = "{id}"
@@ -29,152 +29,50 @@
         //=====================================================================================================
         // Helper functions
         //=====================================================================================================
-
-        function addTabFunctionality(tab_list) {
-
-            tab_list.forEach((tab_name) => {
-                getId(tab_name+"-switch").addEventListener("click", () => {
-                    tab_list.forEach((value) => {
-                        let button = getId(value+"-switch")
-                        let div = getId(value+"-tab")
-                        if (tab_name == value) {
-                            button.setAttribute("class", "tab-switch active")
-                            div.setAttribute("style", "")
-                        } else {
-                            button.setAttribute("class", "tab-switch")
-                            div.setAttribute("style", "display:none")
-                        }
-                    })
-                })
-            })
-
-        }
-
-        function addPointBuyFunctionality() {
-
-            const ability_score_list = [
-                getId("strength"), getId("dexterity"), getId("constitution"),
-                getId("wisdom"), getId("intelligence"), getId("charisma")
-            ]
-
-            function updateAttributeBonus() {
-                ability_score_list.forEach((ability_score) => {
-                    let attribute_bonus = getId("bonus_" + ability_score.id)
-
-                    attribute_bonus.innerHTML = Math.abs(Math.floor((Number(ability_score.innerHTML)-10)/2))
-                    if(Number(ability_score.innerHTML) >= 10) {
-                        attribute_bonus.innerHTML = "+ " + attribute_bonus.innerHTML
-                    }
-                    else if(Number(ability_score.innerHTML) < 10) {
-                        attribute_bonus.innerHTML = "- " + attribute_bonus.innerHTML
-                    }
-                })
-            }
-
-            function availablePoints() {
-                let total_points = 27
-                
-                ability_score_list.forEach((ability_score) => {
-                    let value = 0
-                    value = ability_score.getAttribute("value")
-
-                    let additional_cost = Math.max(value - 13, 0)
-                    let cost = Math.max(value - 8, 0)
-
-                    total_points = total_points - cost - additional_cost
-                })
-
-                return total_points 
-            }
-
-            function updatePoints() {
-                getId("points").innerHTML = availablePoints()
-            }
-
-            // Add ability score value to scores, and behavior to increase/decrease buttons
-            ability_score_list.forEach((ability_score) => {
-                ability_score.setAttribute("value", ability_score.innerHTML)
-                let decrease_button = getId("reduce_" + ability_score.id)
-                let increase_button = getId("increase_" + ability_score.id)
-                
-                decrease_button.addEventListener("click", () => {
-                    let value = Number(ability_score.getAttribute("value"))
-
-                    if (value > 8) {
-                        ability_score.setAttribute("value", value - 1)
-                        ability_score.innerHTML = Number(ability_score.innerHTML) - 1
-                    }
-
-                    updateAttributeBonus()
-                    updatePoints()
-                })
-                increase_button.addEventListener("click", () => {
-                    let value = Number(ability_score.getAttribute("value"))
-
-                    if (value < 15) {
-                        let cost = 0
-                        if (value >= 13) {cost = 2}
-                        else {cost = 1}
-
-                        if (availablePoints() - cost < 0) {return}
-
-                        ability_score.setAttribute("value", value + 1)
-                        ability_score.innerHTML = Number(ability_score.innerHTML) + 1
-                    }
-
-                    updateAttributeBonus()
-                    updatePoints()
-                })
-            })
-
-            updateAttributeBonus()
-            updatePoints()
-        }
-
-        function getRaceInformation() {
+        
+        function updateRaceInfo() {
 
             const scores_list = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
 
-            function race_description(race_description) {
-                return `
-                <pre style="
-                    white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left;
-                ">`+race_description+`</pre>`
+            function race_description(content) {
+                return pre({content})
             }
             function race_features(race_features, database_features) {
+
                 content = ""
                 for (const name of race_features) {
-                    if(database_features[name]) {
-                        content += `
-                        <p style="text-align:left">
-                            <b>`+name+`:</b> `+database_features[name].description+`
-                        </p>`
+                    const feature = database_features[name]
+
+                    if(feature) {
+                        const description = `<b>`+name+`:</b> `+ feature.description
+
+                        content += paragraph({style:"text-align:left", content:description})
                     }
                 }
 
                 return content
             }
             function race_proficiencies(race_proficiencies, database_proficiencies) {
+                const level_names = {"0":"Proficiency", "1":"Expertise"}
+
                 content = ""
-                level_names = {
-                    "0":"Proficiency",
-                    "1":"Expertise"
-                }
-
                 for (const item of race_proficiencies) {
-                    name = item["name"]
-                    level = item["level"]
-
-                    proficiency = database_proficiencies[name]
+                    // Data from race
+                    const name = item["name"]
+                    const level = item["level"]
+                    const proficiency = database_proficiencies[name]
 
                     if (proficiency) {
-                        type = database_proficiencies[name].type
-                        title = type == "language" ? "Language" : level_names[level]
+                        // Data from database
+                        const type = database_proficiencies[name].type
+                        const title = type == "language" ? "Language" : level_names[level]
 
-                        content += `<p style=text-align:left>
-                            <b>`+name+` `+title+`:</b> `+proficiency.description[0]
-                        if(level == "1") {content += ` `+proficiency.description[1]}
-                        content += `</p>`
+                        // Construct description based on race proficiency level
+                        let description = `<b>`+name+` `+title+`:</b>`
+                        description += Number(level) >= 0 ? ` `+proficiency.description[0] : ""
+                        description += Number(level) >= 1 ? ` `+proficiency.description[1] : ""
+
+                        content += paragraph({style:"text-align:left", content:description})
                     }
                 }
 
@@ -230,22 +128,28 @@
                 }
 
                 getId("race-tab").setAttribute("hash", new_hash)
-
+                
+                // Updates to race tab
                 getId("race-description-content").innerHTML = race_description(race.description)
                 getId("race-ability-scores-content").innerHTML = race_ability_scores(race.ability_scores)
-                getId("attributes-race-ability-scores-content").innerHTML = race_ability_scores(race.ability_scores)
                 getId("race-features-content").innerHTML = race_features(race.features, database_features)
                 getId("race-proficiencies-content").innerHTML = race_proficiencies(race.proficiencies, database_proficiencies)
+
+                // Updates to attributes tab
+                getId("attributes-race-bonus-content").innerHTML = race_ability_scores(race.ability_scores)
             })
 
         }
 
         function submit() {
-
+            let request = `var creature = new Creature(getImpersonated(), true);creature.create(`
+            
             // Get values from form
             let name = getId("name").value;
             let type = "Humanoid";
             let race = getId("race").value;
+
+            request += `"`+name+`","`+type+`","`+race+`"`
 
             // Get attribute values from form
             let str = getId("strength").getAttribute("value");
@@ -255,23 +159,13 @@
             let int = getId("intelligence").getAttribute("value");
             let cha = getId("charisma").getAttribute("value");
 
-            // Send data to backend
-            toBackend(`
-                var creature = new Creature(getImpersonated(), true);
-                creature.create(
-                    "`+name+`",
-                    "`+type+`",
-                    "`+race+`",
+            request += `,`+str+`,`+dex+`,`+con+`,`+wis+`,`+int+`,`+cha+`,`
 
-                    `+str+`,
-                    `+dex+`,
-                    `+con+`,
-                    `+wis+`,
-                    `+int+`,
-                    `+cha+`,
-                )
-            `.trim())
+            request += `);`
 
+            console.log(request)
+
+            toBackend(request)
             closePage("Character Creation")
 
         }
@@ -281,97 +175,118 @@
         // Execution
         //=====================================================================================================
 
+        function loadPage() {
+            document.body.innerHTML = tabs({content:["race","class","attributes"]})
+            loadTabs()
+        }
+
         function raceTab() {
 
+            // HTML content
             getId("race-tab").innerHTML += (
-                // Left portion of tab
-                div({id:"race-tab-left", style:"position:absolute; left:0; width:50%", content:(
+
+                div({id:"race-tab-left", style:"position:absolute; left:0; width:50%", content:( // Left side of screen
+
                     container({title:"Basic", content:(
                         input({id:"name", placeholder:"Name"}) +
                         select({id:"race", placeholder:"Race", required:true, content:[]})
                     )})+
+
                     container({title:"Description", id:"race-description", max_height:40, content:(
                         element({tag:"p", content:"Choose a race to see its description."})
                     )}) +
+
                     container({title:"Attribute Scores", id:"race-ability-scores", content:(
                         element({tag:"p", content:"Choose a race to see its bonuses to ability scores."}) 
                     )})
+
                 )}) +
-                div({id:"race-tab-right", style:"position:absolute; right:0; width:50%", content:(
+
+                div({id:"race-tab-right", style:"position:absolute; right:0; width:50%", content:( // Right side of screen
+
                     container({title:"Features", id:"race-features", content:(
                         element({tag:"p", content:"Choose a race to see its features."})
                     )}) +
+
                     container({title:"Proficiencies", id:"race-proficiencies", content:(
                         element({tag:"p", content:"Choose a race to see its Proficiencies."}) 
                     )})
+
                 )}) +
+
                 button({id:"race-tab-next-page", content:"Next", classes:"bottom right page-turner"})
             )
-
-            // Add button onclick
-            getId("race-tab-next-page").addEventListener("click", ()=>{ getId("class-switch").click() })
             
-            // Update character name
-            toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(response)=>{ getId("name").value = response })
+            // Updates
+            toBackend(`MapTool.tokens.getTokenByID("`+id+`").getName()`,(name) => { getId("name").value = name }) // Update name
+            toBackend(`database.get_races_list()`, (races) => { getId("race").innerHTML += options_from_array(JSON.parse(races)) }) // Update race options
 
-            // Update races selector with backend races
-            toBackend(`database.get_races_list()`, (response)=>{
-                races = JSON.parse(response)
+            // Event listeners
+            getId("race-tab-next-page").addEventListener("click", () => { getId("class-switch").click() }) // Button next page event
 
-                getId("race").innerHTML += options_from_array(races).trim()
-            })
         }
 
         function classTab() {
 
-            getId("class-tab").innerHTML +=
+            // HTML content
+            getId("class-tab").innerHTML += (
+
                 button({id:"class-tab-previous-page", content: "Previous", classes:"bottom left page-turner"}) +
                 button({id:"class-tab-next-page", content:"Next", classes: "bottom right page-turner"})
-            
-            // Tab Buttons
-            getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() })
-            getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() })
+
+            )
+
+            // Event listeners
+            getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() }) // Button previous page
+            getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() }) // Button next page
         }
 
         function attributesTab() {
 
+            // HTML Content
             getId("attributes-tab").innerHTML += (
+
                 div({id:"attributes-tab-left", style:"position:absolute; left:0; width:50%", content:(
+                    
                     container({title:"Attributes", content:(
                         pointBuyCalculator()
                     )}) +
-                    container({title:"Race Bonus", id:"attributes-race-ability-scores", content:(
+
+                    container({title:"Race Bonus", id:"attributes-race-bonus", content:(
                         element({tag:"p", content:"Choose a race to receive bonuses to ability scores."}) 
                     )})
+
                 )}) +
+
                 div({id:"attributes-tab-right", style:"position:absolute; left:0; width:50%", content:(
                     ""
                 )}) +
+
                 button({id:"attributes-tab-previous-page", content:"Previous", classes: "bottom left page-turner"}) +
                 button({id:"submit", content:"Finish", classes: "bottom right page-turner"})
+
             )
 
-            // Tab buttons
+            // Event listeners
             getId("attributes-tab-previous-page").addEventListener("click", ()=>{ getId("class-switch").click() })
-            getId("submit").addEventListener("click", ()=>{ submit() })
+            getId("submit").addEventListener("click", submit)
 
+            // Start component
             loadPointBuyCalculator()
         }
 
         function onWindowLoad() {
 
-            addTabFunctionality(["race","class","attributes"])
+            // Body HTML
+            loadPage()
 
-            // Race
+            // Tabs
             raceTab()
-
-            // Class
             classTab()
-
-            // Attributes
             attributesTab() 
 
-            getRaceInformation(); setInterval(getRaceInformation, 200) // Requires attributes
+            // Constant updates
+            updateRaceInfo(); setInterval(updateRaceInfo, 200) // Requires attributes
 
         }
 
@@ -386,16 +301,6 @@
     </head>
 
     <body>
-
-        <div class="tab-switch-div">
-            <button class="tab-switch active" id="race-switch">Race</button>
-            <button class="tab-switch" id="class-switch">Class</button>
-            <button class="tab-switch" id="attributes-switch">Attributes</button>
-        </div>
-        <div class="outer" id="race-tab"></div>
-        <div class="outer" id="class-tab" style="display:none"></div>
-        <div class="outer" id="attributes-tab" style="display:none"></div>
-
     </body>
 
     }]

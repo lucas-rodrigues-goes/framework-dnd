@@ -26,6 +26,15 @@ body {
 
 }
 
+pre {
+
+    white-space: pre-wrap; 
+    word-wrap: break-word; 
+    font-family:inherit; 
+    text-align:left;
+    
+}
+
 .hidden { display:none; }
 .left { left: 0; }
 .right { right: 0; }
@@ -87,11 +96,6 @@ body {
     transform:translate(-50%);
     background-color: #292929;
     padding: 0 1.5vh;
-}
-
-.container h4 {
-    margin:0;
-    margin-top: 1.5vh;
 }
 
 
@@ -156,10 +160,12 @@ body {
 
 .score-container {
     display: grid;
-    grid-template-columns: repeat(3, 85px);  /* Adjust to fit within 450px */
-    gap: 0.5vh;
-    grid-template-rows: repeat(2, 140px);
-    width: fit-content; /* Set the width to 450px */
+    max-height: 100%;
+    max-width: 100%;
+    grid-template-columns: repeat(3, 1fr);  /* Adjust to fit within 450px */
+    grid-template-rows: repeat(2, 15vh);
+    gap: 1vh;
+    width: 100%;
     margin: 0 auto; /* Automatically center horizontally */
     justify-items: center; /* Ensure items in the grid are centered horizontally */
     align-items: center; /* Ensure items in the grid are centered vertically */
@@ -167,13 +173,13 @@ body {
 
 .score {
     background-color: #333;
-    width: 8.5vh;
     border: 0.2vh solid #444;
     border-radius: 0.5vh;
-    padding: 1vh;
+    padding: 10%;
     padding-bottom: 0.8vh;
     text-align: center;
-    height: 15vh;  /* Control the height for consistency */
+    width: 75%;
+    height: 80%;
 }
 
 .score-label {
@@ -231,6 +237,10 @@ body {
     text-align: center;
     padding: 1vh 0;
     overflow-x: hidden;
+}
+
+.outer.tab {
+    margin-top:4vh
 }
 
 .tab-switch-div {

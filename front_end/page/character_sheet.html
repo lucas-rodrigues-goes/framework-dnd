@@ -1,4 +1,4 @@
-[dialog5("Test", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character Sheet", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -10,18 +10,36 @@
     <script>
 
         function loadPage() {
-            getId("content").innerHTML += (
-                div({class:"tab-switch-div", content:(
-                    button({class:"tab-switch", id:"character-switch"})
+            document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
+            loadTabs()
+        }
+
+        function characterTab() {
+            getId("character-tab").innerHTML += (
+                div({id:"character-tab-left", style:"position:absolute;width:33%;left:0", content:(
+                    ""
                 )}) +
-                div({class:"outer", id:"character-tab", style:"display:none"})
+                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:33%;", content:(
+                    element({tag:"h2", content:"Esdras"}) +
+                    image({
+                        id:"character-portrait", 
+                        src:"asset://da17516d71cd42f03ead407641c11747",
+                        style:"height:18vh; border-radius: 50%; border: 0.3vh solid #444"
+                    }) +
+                    element({tag:"h2", content:"3rd Level"}) +
+                    element({tag:"h2", content:"Wizard: School of Evocation"})
+                )}) +
+                div({id:"character-tab-right", style:"position:absolute;width:33%;right:0", content:(
+                    ""
+                )})
             )
         }
 
         function onWindowLoad() {
             loadPage()
-            loadCheckboxes()
-            loadPointBuyCalculator()
+
+            characterTab()
+
         }
 
         document.addEventListener("DOMContentLoaded", onWindowLoad)
@@ -33,11 +51,6 @@
 </head>
 
 <body>
-    <div id="content"></div>
-    <div class="tab-switch-div">
-        <button class="tab-switch" id="character-switch">Classes</button>
-    </div>
-    <div class="outer" id="character-tab" style="display:none"></div>
 </body>
 
 }]
