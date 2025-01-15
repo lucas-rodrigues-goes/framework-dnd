@@ -6,8 +6,24 @@
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
     [r:'
-    
+    <style>
+        .outer {
+            overflow:hidden;
+        }
+    </style>
     <script>
+        function subtitle({content}) {
+            return paragraph({
+                content, 
+                style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
+            })
+        }
+
+        function title_value({title, value, id}) {
+            return paragraph({style:"text-align:left;font-size:100%",content:(
+                span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
+            )})
+        }
 
         function loadPage() {
             document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
@@ -19,14 +35,61 @@
                 div({id:"character-tab-left", style:"position:absolute;width:33%;left:0", content:(
                     ""
                 )}) +
-                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:33%;", content:(
-                    element({tag:"h2", content:"Esdras"}) +
+                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:34%;", content:(
+                    subtitle({content:"Name"}) +
+                    element({tag:"h2", id:"character-name", content:"Esdras"}) +
                     image({
                         id:"character-portrait", 
                         src:"asset://da17516d71cd42f03ead407641c11747",
                         style:"height:18vh; border-radius: 50%; border: 0.3vh solid #444"
                     }) +
-                    element({tag:"h2", content:"Wizard: School of Evocation"})
+                    subtitle({content:"Class"}) +
+                    element({tag:"h2", id:"character-class", content:"Wizard: School of Evocation"}) +
+                    container({title:"Info", content:(
+                        title_value({
+                            id:"character-level",
+                            title:"Level",
+                            value:"3",
+                        }) +
+                        title_value({
+                            id:"character-experience",
+                            title:"Experience",
+                            value:"1300 / 2700",
+                        }) +
+                        "<br>" +
+                        title_value({
+                            id:"character-type",
+                            title:"Type",
+                            value:"Humanoid",
+                        }) +
+                        title_value({
+                            id:"character-race",
+                            title:"Race",
+                            value:"Human",
+                        }) +
+                        "<br>" +
+                        title_value({
+                            id:"character-health",
+                            title:"Health",
+                            value:"12 / 12",
+                        }) +
+                        title_value({
+                            id:"character-ac",
+                            title:"Armor Class",
+                            value:"12",
+                        }) +
+                        title_value({
+                            id:"character-initiative",
+                            title:"Initiative",
+                            value:"0",
+                        }) +
+                        title_value({
+                            id:"character-speed",
+                            title:"Speed",
+                            value:"30ft",
+                        }) +
+                        ""
+                    )})
                 )}) +
                 div({id:"character-tab-right", style:"position:absolute;width:33%;right:0", content:(
                     ""

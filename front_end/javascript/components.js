@@ -93,7 +93,7 @@ function container({content, id, title, style, max_height=""}={}) {
 
     return div({id, classes:"container center-horizontal", style, content:(
         element({tag:"h3", content:title, classes:"container-title"}) +
-        div({id: id+`-content`, content, style:content_style})
+        div({id: id+`-content`, classes:"container-content",content, style:content_style})
     )})
 }
 
