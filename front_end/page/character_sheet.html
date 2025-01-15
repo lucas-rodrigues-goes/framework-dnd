@@ -6,55 +6,16 @@
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
     [r:'
+
     <style>
-        .outer {
-            overflow:hidden;
+        .outer:{
+            overflow-y:scroll
         }
     </style>
+
     <script>
-
-        function abilityScoresSkills() {
-            function ability_score_box(score) {
-                return div({classes:"score", style:"position:relative;width:3vh", content:(
-                    div({
-                        classes:"score-label center-horizontal", 
-                        style:"position:absolute;top:1vh",
-                        content:capitalize(score)
-                    }) +
-                    div({
-                        classes:"score-value", 
-                        style:"position:absolute;top:40%;left:50%; transform: translate(-50%, -50%)", 
-                        id:score, 
-                        content:10
-                    }) +
-                    div({
-                        classes:"score-bonus", 
-                        style:"position:absolute;bottom:0.5vh",
-                        id:"bonus_"+score, 
-                        content:"+0"
-                    }) +
-                    div({
-                        content: "Saving Throws: +3",
-                        style:`
-                            position:absolute; top:50%; left:104%; transform: translate(0,-50%);
-                            height: 11vh; width:17vw;
-                            background-color:#393939;
-                            border-radius:0.5vh;
-                            border-top-left-radius:0;
-                            border: 0.1vh solid #444;
-                            border-bottom-left-radius:0;
-                            z-index:-2`
-                    })
-                )})
-            }
-
-            return div({
-                style:"display:flex;justify-content:center;height:99%;width:100%;flex-direction:column;transform:translate(-2%,-4%)", 
-                content:(
-                ability_score_box("strength") + ability_score_box("dexterity") + ability_score_box("constitution") +
-                ability_score_box("wisdom") + ability_score_box("intelligence") + ability_score_box("charisma")
-            )})
-        }
+    
+        
 
         function subtitle({content}) {
             return paragraph({
@@ -76,12 +37,9 @@
 
         function characterTab() {
             getId("character-tab").innerHTML += (
-                div({id:"character-tab-left", style:"position:absolute;width:33%;left:0;height:100%", content:(
-                    container({title:"Skills", style:"height:90%;transform:translate(-50%,-2%)", content:(
-                        abilityScoresSkills()
-                    )})                    
+                div({id:"character-tab-left", style:"position:absolute;width:33%;left:0;height:99%", content:(""
                 )}) +
-                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:34%;", content:(
+                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:34%;height:100.1%;transform:translate(-50%,-1.5%);background-color:#2d2d2d; border: 0.2vh solid #444;border-bottom:0px", content:(
                     subtitle({content:"Name"}) +
                     element({tag:"h2", id:"character-name", content:"Esdras"}) +
                     image({
@@ -137,8 +95,8 @@
                         ""
                     )})
                 )}) +
-                div({id:"character-tab-right", style:"position:absolute;width:33%;right:0", content:(
-                    ""
+                div({id:"character-tab-right", style:"position:absolute;width:33%;right:0;height:99%;overflow-y:inherit", content:(
+                        div({content:"test", style:"height:150%"})
                 )})
             )
         }

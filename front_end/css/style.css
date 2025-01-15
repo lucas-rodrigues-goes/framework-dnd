@@ -178,6 +178,7 @@ pre {
     margin: 0 auto; /* Automatically center horizontally */
     justify-items: center; /* Ensure items in the grid are centered horizontally */
     align-items: center; /* Ensure items in the grid are centered vertically */
+    margin-bottom: 3vh;
 }
 
 .score {
