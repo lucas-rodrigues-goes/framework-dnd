@@ -109,10 +109,28 @@ function grid({content, id, classes, style="", columns = 3, row_height = "auto",
     return div({content, id, classes, style, additional});
 }
 
+function row({content, id, columns=["Image","Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
+    
+    let div_columns = ""
+    for (const i in columns) {
+        const text = columns[i]
+        const style = i == headers.length - 1 ? "text-align:right" : ""
+
+        div_columns += div({content: text, style: style})
+    }
+
+    const row_style = `grid-template-columns:`+config+`;`
+
+    return (
+        div({class:"table-row", style:row_style, content:div_columns}) +
+        div({class:"collapsible-content", content})
+    )
+}
+
 function table({content, id, headers=["", "Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
 
     let div_headers = ""
-    for (const i of headers) {
+    for (const i in headers) {
         const title = headers[i]
         const style = i == headers.length - 1 ? "text-align:right" : ""
 
@@ -123,7 +141,7 @@ function table({content, id, headers=["", "Name", "Type", "Actions"], config="3v
 
     return div({classes:"table-container", id, content:(
         div({classes:"table-header", style:table_style, content:div_headers}) +
-        div({classes:"table-rows"})
+        div({classes:"table-rows"}, content)
     )})
 }
 
