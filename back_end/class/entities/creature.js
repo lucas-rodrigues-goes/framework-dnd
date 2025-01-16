@@ -385,19 +385,34 @@ try {
         // Proficiency management
         //=====================================================================================================
 
-        // Add a feature to the creature (checking feature type and duplication)
-        set_proficiency(name, level) {
-            return
+        // Add a proficiency to the creature
+        set_proficiency(name, level, highest=false) {
+            if (isNaN(Number(level))) {
+                log("Invalid number when setting proficiency: "+name+" as level: "+level)
+                return 
+            }
+
+            if(highest && this.proficiencies[name]) {
+                this.proficiencies[name] = Math.max(this.get_proficiency_level(name), level)
+            }
+
+            this.proficiencies[name] = level
+            log(this.#name + " received the proficiency " + name + ".");
         }
 
-        // Remove a feature from the creature
+        // Remove a proficiency from the creature
         remove_proficiency(name) {
-            return
+            if (this.proficiencies[name]) {
+                delete this.proficiencies[name]
+            }
         }
 
-        // Check if the creature has a specific feature
+        // Get level of proficiency
         get_proficiency_level(name) {
-            return
+            if (this.proficiencies[name]) {
+                return this.proficiencies[name]
+            }
+            return -1
         }
 
 
@@ -428,122 +443,43 @@ try {
             }
         }
 
-        // Create a new creature by setting attributes, race, and type
+        // Create character, by attributing basic information, features and proficiencies
         create(name, type, race, str, dex, con, wis, int, cha) {
-            str = Number(str), dex = Number(dex), con = Number(con);
-            wis = Number(wis), int = Number(int), cha = Number(cha);
 
-            // Apply type-specific bonuses and features
-            switch (type) {
+            // Get race information
+            const race_data = database.get_race(race)
+            
 
-                case "Undead":
-                    this.set_resistance("necrotic","immunity")
-                    this.set_resistance("poison", "immunity")
-                    this.set_resistance("radiant", "vulnerability")
-                    break;
-                
-                case "Construct":
-                    this.set_resistance("necrotic","immunity")
-                    this.set_resistance("poison", "immunity")
-                    break;
+            // Set basic information
+            this.name = name, 
+            this.type = type, 
+            this.race = race;
 
-                default:
-                    break;
+
+            // Add features
+            this.add_feature_list("racial", race_data.features)
+
+
+            // Add proficiencies
+            for (const proficiency of race_data.proficiencies) {
+                const name = proficiency["name"]
+                const level = proficiency["level"]
+
+                this.set_proficiency(name, level, true)
             }
 
-            // Apply race-specific bonuses and features
-            switch (race) {
 
-                case "Hill Dwarf":
-                    con += 2, wis += 1;
-                    this.add_feature_list(
-                        "racial", ["Dwarven Resilience", "Stonecunning", "Dwarven Toughness"]);
-                    this.set_resistance("poison", 10);
-                    break;
-
-                case "Mountain Dwarf":
-                    con += 2, str += 2;
-                    this.add_feature_list(
-                        "racial", ["Dwarven Resilience", "Stonecunning", "Dwarven Armor Training"]);
-                    this.set_resistance("poison", 10);
-                    break;
-
-                case "High Elf":
-                    dex += 2, int += 1;
-                    this.add_feature_list(
-                        "racial", ["Keen Senses", "Fey Ancestry", "Trance", "Elf Weapon Training", "Cantrip"]);
-                    break;
-
-                case "Wood Elf":
-                    dex += 2, wis += 1;
-                    this.add_feature_list(
-                        "racial", ["Darkvision", "Keen Senses", "Fey Ancestry", "Trance", "Elf Weapon Training",
-                            "Fleet of Foot", "Mask of the Wild"]);
-                    break;
-
-                case "Drow":
-                    dex += 2, cha += 1;
-                    this.add_feature_list(
-                        "racial", ["Superior Darkvision", "Keen Senses", "Fey Ancestry", "Trance", "Drow Magic",
-                            "Drow Weapon Training", "Sunlight Sensitivity"]);
-                    break;
-
-                case "Lightfoot Halfling":
-                    dex += 2, cha += 1;
-                    this.add_feature_list(
-                        "racial", ["Lucky", "Brave", "Halfling Nimbleness", "Naturally Stealthy"]);
-                    break;
-
-                case "Stout Halfling":
-                    dex += 2, con += 1;
-                    this.add_feature_list(
-                        "racial", ["Lucky", "Brave", "Halfling Nimbleness", "Stout Resilience"]);
-                    break;
-
-                case "Half-Orc":
-                    str += 2, con += 1;
-                    this.add_feature_list(
-                        "racial", ["Menacing", "Relentless Endurance", "Savage Attacks"]);
-                    break;
-
-                case "Human":
-                    str += 1, dex += 1, con += 1, wis += 1, int += 1, cha += 1;
-                    this.add_feature_list(
-                        "racial", []);
-                    break;
-
-                case "Half-Elf":
-                    dex += 1, int += 1, wis += 1, cha += 1;
-                    this.add_feature_list(
-                        "racial", ["Fey Ancestry"]);
-                    break;
-                    
-                case "Gnome":
-                    int += 2;
-                    this.add_feature_list(
-                        "racial", ["Darkvision", "Gnome Cunning"]);
-                    break;
-                case "Rock Gnome":
-                    int += 2, con += 1;
-                    this.add_feature_list(
-                        "racial", ["Darkvision", "Gnome Cunning", "Artificer's Lore", "Tinker"]);
-                    break;
-
-                case "Forest Gnome":
-                    int += 2, dex += 1;
-                    this.add_feature_list(
-                        "racial", ["Darkvision", "Gnome Cunning", "Natural Illusionist", "Speak with Small Beasts"]);
-                    break;
-
-                default:
-                    break;
+            // Ability Scores
+            const scores = race_data.ability_scores;
+            const baseScores = { 
+                strength: str, dexterity: dex, constitution: con, 
+                wisdom: wis, intelligence: int, charisma: cha 
+            };
+            for (const [attribute, baseValue] of Object.entries(baseScores)) {
+                const totalValue = Number(scores[attribute]) + Number(baseValue);
+                this.set_attribute(attribute, totalValue);
             }
 
-            this.name = name, this.type = type, this.race = race;
-
-            this.set_attribute("strength", str); this.set_attribute("dexterity", dex);
-            this.set_attribute("constitution", con); this.set_attribute("wisdom", wis);
-            this.set_attribute("intelligence", int); this.set_attribute("charisma", cha);
         }
 
 
@@ -577,6 +513,7 @@ try {
             this.#resources = object.resources;
             this.#resistances = object.resistances;
             this.#features = object.features;
+            this.#proficiencies = object.proficiencies;
             this.#spells = object.spells;
             this.#conditions = object.conditions;
             this.#equipment = object.equipment;
@@ -596,6 +533,7 @@ try {
                 "resources": this.#resources,
                 "resistances": this.#resistances,
                 "features": this.#features,
+                "proficiencies": this.#proficiencies,
                 "spells": this.#spells,
                 "conditions": this.#conditions,
                 "equipment": this.#equipment,

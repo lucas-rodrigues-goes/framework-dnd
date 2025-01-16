@@ -1,6 +1,6 @@
-[dialog5("Character Sheet", "width=1000; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Character Sheet", "width=750; height=700; temporary=0; input=1; noframe=0"), code: {
     <head>
-    
+        
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
         [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
@@ -189,7 +189,7 @@
                             "conditions":database.conditions,
                             "features":database.features,
                             "proficiencies":database.proficiencies,
-                            "resistances":database.resistances,
+                            "damage_types":database.damage_types
                         })
                     ]
                 `,(response) => {
@@ -204,60 +204,135 @@
                     if (new_hash == old_hash) { return }
                     getId("character-tab-right").setAttribute("hash", new_hash)
 
-                    console.log("here")
+                    function updateFeatures() {
+                        const subtypeImages = {
+                            "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
+                            "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+                            "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
+                            "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+                            "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+                                "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
+                                "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
+                                "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
+                            "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
+                            "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+                            "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
+                            "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
+                            "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
+                            "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
+                            "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
+                        };
+                        const typeImages = {
+                            "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
+                            "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
+                            "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
+                        };
+                        
+                        let features = ""
+                        for (const value of character.features.all) {
+                            const feature = database.features.data[value]
+                            if(feature) {
+                                const description = feature.description
+                                const type = feature.subtype || feature.type
+                                const image_src = subtypeImages[type] || typeImages[type]
 
-                    // Features
-                    const subtypeImages = {
-                        "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
-                        "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
-                        "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
-                        "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
-                        "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
-                            "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
-                            "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
-                            "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
-                        "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
-                        "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
-                        "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
-                        "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
-                        "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
-                        "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
-                        "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
-                    };
-                    const typeImages = {
-                        "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
-                        "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
-                        "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
-                    };
-                    
-                    let features = ""
-                    for (const value of character.features.all) {
-                        const feature = database.features.data[value]
-                        console.log("here")
-                        if(feature) {
-                            const description = feature.description
-                            const type = feature.subtype || feature.type
-                            const image_src = subtypeImages[type] || typeImages[type]
-
-                            features += row({
-                                columns:[
-                                    image({src:image_src, style:"height:2vh"}),
-                                    feature.name,
-                                    capitalize(type),
-                                ], 
-                                config:"min-content 1fr min-content",
-                                content: pre({content:description})
-                            })
+                                features += row({
+                                    columns:[
+                                        image({src:image_src, style:"height:2vh"}),
+                                        feature.name,
+                                        capitalize(type),
+                                    ], 
+                                    config:"min-content 1fr min-content",
+                                    content: pre({content:description})
+                                })
+                            }
+                        }
+                        getId("character-features").children[1].innerHTML = features
+                        if (features) {
+                            getId("character-features-container").setAttribute("style", "")
+                        } else {
+                            getId("character-features-container").setAttribute("style", "display:none")
                         }
                     }
-                    getId("character-features").children[1].innerHTML = features
-                    if (features) {
-                        getId("character-features-container").setAttribute("style", "")
-                    } else {
-                        getId("character-features-container").setAttribute("style", "display:none")
-                    }
-                   
+                    
+                    function updateProficiencies() { 
+                        const level_names = {
+                            0:"Proficiency",
+                            1:"Expertise",
+                            2:"Mastery",
+                            3:"Grandmastery"
+                        }
 
+                        let proficiencies = ""
+                        for (const name in character.proficiencies) {
+                            const level = Number(character.proficiencies[name])
+                            const proficiency = database.proficiencies.data[name]
+
+                            if(proficiency) {
+                                const type = proficiency.type
+                                let description = proficiency.description[0]
+                                description += level >= 1 ? "<br><br>" + proficiency.description[1] : ""
+                                description += level >= 2 ? "<br><br>" + proficiency.description[2] : ""
+                                description += level >= 3 ? "<br><br>" + proficiency.description[3] : ""
+
+                                const level_name = type == "language" ? "" : level_names[level] 
+
+                                proficiencies += row({
+                                    columns:[
+                                        proficiency.name + " " + level_name, capitalize(type)
+                                    ], 
+                                    config:"1fr min-content",
+                                    content: pre({content:description})
+                                })
+                            }
+                        }
+                        getId("character-proficiencies").children[1].innerHTML = proficiencies
+                        if (proficiencies) {
+                            getId("character-proficiencies-container").setAttribute("style", "")
+                        } else {
+                            getId("character-proficiencies-container").setAttribute("style", "display:none")
+                        }
+                    }
+                                        
+                    function updateResistances() { 
+                        const resistance_value_name = {
+                            10:"Lesser Resistance",
+                            20:"Medium Resistance",
+                            30:"Greater Resistance"
+                        }
+
+                        let resistances = ""
+                        for (const name in character.resistances) {
+                            const resistance_value = character.resistances[name]
+                            const damage_type = database.damage_types.data[name]
+
+                            if(damage_type) {
+                                const type = damage_type.type
+                                const image_src = damage_type.image
+
+                                proficiencies += row({
+                                    columns:[
+                                        proficiency.name + " " + level_name, capitalize(type)
+                                    ], 
+                                    config:"1fr min-content",
+                                    content: pre({content:description})
+                                })
+                            }
+                        }
+
+                        getId("character-resistances").children[1].innerHTML = resistances
+                        if (resistances) {
+                            getId("character-resistances-container").setAttribute("style", "")
+                        } else {
+                            getId("character-resistances-container").setAttribute("style", "display:none")
+                        }
+                    }
+                    
+                    console.log(character.resistances)
+
+                    updateFeatures()
+                    updateProficiencies()
+                    updateResistances()
                     updateColapsible()
                 })
             }
