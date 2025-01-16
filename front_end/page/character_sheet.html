@@ -1,240 +1,504 @@
 [dialog5("Character Sheet", "width=1000; height=800; temporary=1; input=1; noframe=0"), code: {
-<head>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
-    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
-    [r:'
-
-    <style>
-        #character-tab-left {
-            position:absolute;
-            width:33%;
-            height:98%;
-            left:0;
-            top:1%;
-
-            overflow-y:inherit
-        }
-        #character-tab-center {
-            position:absolute;
-            width:34%;
-            height:100.5%;
-            bottom: -0.5vh;
-
-            background-color:#2d2d2d; 
-            border: 0.2vh solid #444;
-            border-bottom: none;
-        }
-        #character-tab-right {
-            position:absolute;
-            width:33%;
-            height:98%;
-            right:0;
-            top:1%;
-
-            overflow-y:inherit
-        }
-        #character-portrait {
-            height:15vh; 
-            border-radius: 50%; 
-            border: 0.3vh solid #444;
-        }
-    </style>
-
-    <script>
+    <head>
     
-        
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+        [r:'
+    
+        <style>
+            #character-tab-left {
+                position:absolute;
+                width:33%;
+                height:98%;
+                left:0;
+                top:1%;
+    
+                overflow-y:inherit
+            }
+            #character-tab-center {
+                position:absolute;
+                width:34%;
+                height:100.5%;
+                bottom: -0.5vh;
+    
+                background-color:#2d2d2d; 
+                border: 0.2vh solid #444;
+                border-bottom: none;
+    
+                overflow-y:inherit;
+            }
+            #character-tab-right {
+                position:absolute;
+                width:33%;
+                height:98%;
+                right:0;
+                top:1%;
+    
+                overflow-y:inherit;
+            }
+            #portrait {
+                height:15vh; 
+                border-radius: 50%; 
+                border: 0.3vh solid #444;
+            }
 
-        function subtitle({content}) {
-            return paragraph({
-                content, 
-                style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
-            })
-        }
+            .collapsible-content {
+                margin:0vh 0.67vh;
+            }
 
-        function title_value({title, value, id}) {
-            /* return paragraph({style:"text-align:left;font-size:100%",content:(
-                span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
-            )}) */
-           return div({style:"height:3vh;",content:(
-                paragraph({style:"position:absolute;left:2vh;text-align:left",content:title}) +
-                paragraph({id, style:"position:absolute;right:2vh;text-align:left", content:value})
-           )})
-        }
+            hr {
+                border: 0.1vh solid #444;
+                display:block;
+                width: 85%;
+                margin:auto;
+                margin-top: 2vh;
+                margin-bottom: 0;
+            }
+        </style>
+    
+        <script>
 
-        function loadPage() {
-            document.body.innerHTML = div({classes:"outer",style:"display:flex;justify-content: center;", id:"character-tab",content:(
-                div({id:"character-tab-left"}) + 
-                div({id:"character-tab-center"}) + 
-                div({id:"character-tab-right"})
-            )})
-            //document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
-            //loadTabs()
-        }
+            function updateLeft() {
 
-        function leftArea() {
-            common_style = "margin-bottom:0.5vh;width:70%;"
-            getId("character-tab-left").innerHTML += (
-                container({
-                    title: "Strength Skills (+3)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-strength-saving-throws", title: "Saving Throws", value: "+3" }) +
-                        title_value({ id: "skills-athletics", title: "Athletics", value: "+3" })
-                    )
-                }) +
-                container({
-                    title: "Dexterity Skills (+2)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-dexterity-saving-throws", title: "Saving Throws", value: "+2" }) +
-                        title_value({ id: "skills-acrobatics", title: "Acrobatics", value: "+2" }) +
-                        title_value({ id: "skills-sleight-of-hand", title: "Sleight of Hand", value: "+2" }) +
-                        title_value({ id: "skills-stealth", title: "Stealth", value: "+2" })
-                    )
-                }) +
-                container({
-                    title: "Constitution Skills (+1)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-constitution-saving-throws", title: "Saving Throws", value: "+1" })
-                    )
-                }) +
-                container({
-                    title: "Intelligence Skills (+4)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-intelligence-saving-throws", title: "Saving Throws", value: "+4" }) +
-                        title_value({ id: "skills-arcana", title: "Arcana", value: "+4" }) +
-                        title_value({ id: "skills-history", title: "History", value: "+4" }) +
-                        title_value({ id: "skills-investigation", title: "Investigation", value: "+4" }) +
-                        title_value({ id: "skills-nature", title: "Nature", value: "+4" }) +
-                        title_value({ id: "skills-religion", title: "Religion", value: "+4" })
-                    )
-                }) +
-                container({
-                    title: "Wisdom Skills (+2)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-wisdom-saving-throws", title: "Saving Throws", value: "+2" }) +
-                        title_value({ id: "skills-animal-handling", title: "Animal Handling", value: "+2" }) +
-                        title_value({ id: "skills-insight", title: "Insight", value: "+2" }) +
-                        title_value({ id: "skills-medicine", title: "Medicine", value: "+2" }) +
-                        title_value({ id: "skills-perception", title: "Perception", value: "+2" }) +
-                        title_value({ id: "skills-survival", title: "Survival", value: "+2" })
-                    )
-                }) +
-                container({
-                    title: "Charisma Skills (+0)", 
-                    style: common_style,
-                    content: (
-                        title_value({ id: "skills-charisma-saving-throws", title: "Saving Throws", value: "+0" }) +
-                        title_value({ id: "skills-deception", title: "Deception", value: "+0" }) +
-                        title_value({ id: "skills-intimidation", title: "Intimidation", value: "+0" }) +
-                        title_value({ id: "skills-performance", title: "Performance", value: "+0" }) +
-                        title_value({ id: "skills-persuasion", title: "Persuasion", value: "+0" })
-                    )
-                })
-            );
-        }
-        function centerArea() {
-            getId("character-tab-center").innerHTML += (
+                function bonusOf(number, parenthesis=false) {
+                    number = Number(number) > 0 ? "+"+number : number
+                    number = parenthesis ? "("+number+")" : number
 
-                div({style:"height:1vh;"}) +
-
-                subtitle({content:"Name"}) +
-                element({tag:"h2", id:"character-name", content:"Esdras"}) +
-
-                image({id:"character-portrait", src:"asset://da17516d71cd42f03ead407641c11747"}) +
-
-                subtitle({content:"Class"}) +
-                element({tag:"h2", id:"character-class", content:"Wizard: School of Evocation"}) +
-
-                container({title:"Ability Scores",style:"padding-top:2vh;margin-bottom: 1vh;", content:(
-                    table({
-                        headers:["STR", "DEX", "CON", "WIS", "INT", "CHA"],
-                        config:"1fr 1fr 1fr 1fr 1fr 1fr",
-                        header_style:"text-align:center;font-size:110%;color:#aaa"
-                    }) +
-                    table({
-                        id:"character-ability-scores", 
-                        headers:["10", "10", "10", "10", "10", "10"],
-                        config:"1fr 1fr 1fr 1fr 1fr 1fr",
-                        header_style:"text-align:center;font-size:130%"
-                    }) 
-                )}) +
-
-                container({title:"Info", content:(
-                    title_value({
-                        id:"character-level",
-                        title:"Level",
-                        value:"3",
-                    }) +
-                    title_value({
-                        id:"character-experience",
-                        title:"Experience",
-                        value:"1300 / 2700",
-                    }) +
-                    "<br>" +
-                    title_value({
-                        id:"character-type",
-                        title:"Type",
-                        value:"Humanoid",
-                    }) +
-                    title_value({
-                        id:"character-race",
-                        title:"Race",
-                        value:"Human",
-                    }) +
-                    "<br>" +
-                    title_value({
-                        id:"character-health",
-                        title:"Health",
-                        value:"12 / 12",
-                    }) +
-                    title_value({
-                        id:"character-ac",
-                        title:"Armor Class",
-                        value:"12",
-                    }) +
-                    title_value({
-                        id:"character-initiative",
-                        title:"Initiative",
-                        value:"0",
-                    }) +
-                    title_value({
-                        id:"character-speed",
-                        title:"Speed",
-                        value:"30ft",
-                    }) +
-                    title_value({
-                        id:"character-passive-perception",
-                        title:"Passive Perception",
-                        value:"12",
+                    return number
+                }
+                
+                toBackend(`
+                    var character = impersonated();
+                    JSON.stringify({
+                        "attr_bonus":character.attr_bonus,
+                        "skills":character.skills
                     })
+                `,(response) => {
+                    character = JSON.parse(response)
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("character-tab-left").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("character-tab-left").setAttribute("hash", new_hash)
+
+                    
+
+                    // Attribute Bonuses and Saving Throws
+                    const scores_list = [
+                        "strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"
+                    ]
+                    for (const score of scores_list) {
+                        getId(score + "-bonus").innerHTML = bonusOf(character.attr_bonus[score], true)
+                        getId(score + "-saving-throws").innerHTML = bonusOf(character.attr_bonus[score])
+                    }
+                    
+
+                    // Skills
+                    const skills_list = [
+                        "athletics", "acrobatics", "animal-handling", 
+                        "arcana", "deception", "history", "insight", 
+                        "intimidation", "investigation", "medicine", "nature", 
+                        "perception", "performance", "persuasion", "religion", 
+                        "sleight-of-hand", "stealth", "survival"
+                    ]
+                    for (const skill of skills_list) {
+                        const element = getId("skills-" + skill);
+                        if (element) {
+                            const bonus = character.skills[skill.replace(/-/g, " ")] || 0;
+                            element.innerHTML = bonusOf(bonus);
+                        }
+                    }
+
+                })
+            }
+        
+            function updateCenter() {
+                toBackend(`
+                    var character = impersonated();
+                    JSON.stringify({
+                        "name":character.name,
+                        "portrait":character.portrait,
+                        "attributes":character.attributes,
+                        "type":character.type,
+                        "race":character.race,
+                        "health":character.health,
+                        "max_health":character.max_health,
+                        "armor_class":character.armor_class,
+                        "initiative":character.iniative,
+                        "speed":character.speed,
+                        "passive_perception":character.passive_perception
+                    })
+                `,(response) => {
+                    character = JSON.parse(response)
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("character-tab-center").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("character-tab-center").setAttribute("hash", new_hash)
+
+                    
+                    // Basic
+                    getId("name").innerHTML = character.name
+                    getId("portrait").src = character.portrait
+                    getId("class").innerHTML = "None"
+
+                    // Ability Scores
+                    getId("ability-scores").outerHTML = table({
+                            id:"ability-scores", 
+                            headers:[
+                                character.attributes.strength,
+                                character.attributes.dexterity, 
+                                character.attributes.constitution, 
+                                character.attributes.wisdom, 
+                                character.attributes.intelligence, 
+                                character.attributes.charisma
+                            ],
+                            config:"1fr 1fr 1fr 1fr 1fr 1fr",
+                            header_style:"text-align:center;font-size:130%"
+                        })
+
+                    // Info
+                    getId("type").innerHTML = character.type || "None"
+                    getId("race").innerHTML = character.race || "None"
+                    getId("health").innerHTML = character.health + " / " + character.max_health || "0 / 0"
+                    getId("armor-class").innerHTML = character.armor_class || 0
+                    getId("initiative").innerHTML = character.initiative || 0
+                    getId("walking-speed").innerHTML = character.speed + "ft"
+                    getId("passive-perception").innerHTML = character.passive_perception || 8
+                    getId("level").innerHTML = character.level || 1
+                    getId("experience").innerHTML = character.experience || 0 + " / 300"
+                })
+            }
+    
+            function updateRight() {
+                toBackend(`
+                    var character = impersonated();
+                    [
+                        JSON.stringify({
+                            "conditions":character.conditions,
+                            "features":character.features,
+                            "proficiencies":character.proficiencies,
+                            "resistances":character.resistances,
+                        }),
+
+                        JSON.stringify({
+                            "conditions":database.conditions,
+                            "features":database.features,
+                            "proficiencies":database.proficiencies,
+                            "resistances":database.resistances,
+                        })
+                    ]
+                `,(response) => {
+                    response = JSON.parse(response)
+
+                    character = JSON.parse(response[0])
+                    database = JSON.parse(response[1])
+
+                    // Verify if there is update
+                    const new_hash = hash(JSON.stringify(response))
+                    const old_hash = getId("character-tab-right").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("character-tab-right").setAttribute("hash", new_hash)
+
+                    console.log("here")
+
+                    // Features
+                    const subtypeImages = {
+                        "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
+                        "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+                        "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
+                        "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+                        "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+                            "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
+                            "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
+                            "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
+                        "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
+                        "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+                        "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
+                        "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
+                        "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
+                        "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
+                        "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
+                    };
+                    const typeImages = {
+                        "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
+                        "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
+                        "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
+                    };
+                    
+                    let features = ""
+                    for (const value of character.features.all) {
+                        const feature = database.features.data[value]
+                        console.log("here")
+                        if(feature) {
+                            const description = feature.description
+                            const type = feature.subtype || feature.type
+                            const image_src = subtypeImages[type] || typeImages[type]
+
+                            features += row({
+                                columns:[
+                                    image({src:image_src, style:"height:2vh"}),
+                                    feature.name,
+                                    capitalize(type),
+                                ], 
+                                config:"min-content 1fr min-content",
+                                content: pre({content:description})
+                            })
+                        }
+                    }
+                    getId("character-features").children[1].innerHTML = features
+                    if (features) {
+                        getId("character-features-container").setAttribute("style", "")
+                    } else {
+                        getId("character-features-container").setAttribute("style", "display:none")
+                    }
+                   
+
+                    updateColapsible()
+                })
+            }
+            function subtitle({content}) {
+                return paragraph({
+                    content, 
+                    style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
+                })
+            }
+    
+            function title_value({title, value, id}) {
+                /* return paragraph({style:"text-align:left;font-size:100%",content:(
+                    span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
+                )}) */
+               return div({style:"height:3vh;position:relative;",content:(
+                    paragraph({style:"position:absolute;left:2vh;text-align:left;font-weight:bold",content:title}) +
+                    paragraph({id, style:"position:absolute;right:2vh;text-align:left", content:value})
+               )})
+            }
+    
+            function loadPage() {
+                document.body.innerHTML = div({classes:"outer",style:"display:flex;justify-content: center;", id:"character-tab",content:(
+                    div({id:"character-tab-left"}) + 
+                    div({id:"character-tab-center"}) + 
+                    div({id:"character-tab-right"})
                 )})
-            )
-        }
-
-        function onWindowLoad() {
-            loadPage()
-            
-            centerArea()
-            leftArea()
-
-        }
-
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        //=====================================================================================================
-
-    </script>
-    ']
-</head>
-
-<body>
-</body>
-
-}]
+                //document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
+                //loadTabs()
+            }
+    
+            function leftArea() {
+                common_style = "margin-bottom:0.5vh;width:70%;"
+                getId("character-tab-left").innerHTML += (
+                    container({
+                        title: "Strength "+span({id:"strength-bonus",content:""}), 
+                        style: common_style,
+                        content: (
+                            title_value({ id: "strength-saving-throws", title: "Saving Throws", value: "+3" }) +
+                            title_value({ id: "skills-athletics", title: "Athletics", value: "+3" })
+                        )
+                    }) +
+                    container({
+                        title: "Dexterity "+span({id:"dexterity-bonus",content:""}), 
+                        style: common_style,
+                        content: (
+                            title_value({ id: "dexterity-saving-throws", title: "Saving Throws", value: "+2" }) +
+                            title_value({ id: "skills-acrobatics", title: "Acrobatics", value: "+2" }) +
+                            title_value({ id: "skills-sleight-of-hand", title: "Sleight of Hand", value: "+2" }) +
+                            title_value({ id: "skills-stealth", title: "Stealth", value: "+2" })
+                        )
+                    }) +
+                    container({
+                        title: "Constitution "+span({id:"constitution-bonus",content:""}), 
+                        style: common_style,
+                        content: (
+                            title_value({ id: "constitution-saving-throws", title: "Saving Throws", value: "+1" })
+                        )
+                    }) +
+                    container({
+                        title: "Wisdom "+span({id:"wisdom-bonus",content:""}),
+                        style: common_style,
+                        content: (
+                            title_value({ id: "wisdom-saving-throws", title: "Saving Throws", value: "+2" }) +
+                            title_value({ id: "skills-animal-handling", title: "Animal Handling", value: "+2" }) +
+                            title_value({ id: "skills-insight", title: "Insight", value: "+2" }) +
+                            title_value({ id: "skills-medicine", title: "Medicine", value: "+2" }) +
+                            title_value({ id: "skills-perception", title: "Perception", value: "+2" }) +
+                            title_value({ id: "skills-survival", title: "Survival", value: "+2" })
+                        )
+                    }) +
+                    container({
+                        title: "Intelligence "+span({id:"intelligence-bonus",content:""}), 
+                        style: common_style,
+                        content: (
+                            title_value({ id: "intelligence-saving-throws", title: "Saving Throws", value: "+4" }) +
+                            title_value({ id: "skills-arcana", title: "Arcana", value: "+4" }) +
+                            title_value({ id: "skills-history", title: "History", value: "+4" }) +
+                            title_value({ id: "skills-investigation", title: "Investigation", value: "+4" }) +
+                            title_value({ id: "skills-nature", title: "Nature", value: "+4" }) +
+                            title_value({ id: "skills-religion", title: "Religion", value: "+4" })
+                        )
+                    }) +
+                    container({
+                        title: "Charisma "+span({id:"charisma-bonus",content:""}), 
+                        style: common_style,
+                        content: (
+                            title_value({ id: "charisma-saving-throws", title: "Saving Throws", value: "+0" }) +
+                            title_value({ id: "skills-deception", title: "Deception", value: "+0" }) +
+                            title_value({ id: "skills-intimidation", title: "Intimidation", value: "+0" }) +
+                            title_value({ id: "skills-performance", title: "Performance", value: "+0" }) +
+                            title_value({ id: "skills-persuasion", title: "Persuasion", value: "+0" })
+                        )
+                    })
+                );
+            }
+            function centerArea() {
+                getId("character-tab-center").innerHTML += (
+    
+                    div({style:"height:1vh;"}) +
+    
+                    subtitle({content:"Name"}) +
+                    element({tag:"h2", id:"name", content:""}) +
+    
+                    image({id:"portrait", src:"asset://da17516d71cd42f03ead407641c11747"}) +
+    
+                    subtitle({content:"Class"}) +
+                    element({tag:"h2", id:"class", content:""}) +
+    
+                    container({title:"Ability Scores",style:"padding-top:2vh;margin-bottom: 1vh;", content:(
+                        table({
+                            headers:["STR", "DEX", "CON", "WIS", "INT", "CHA"],
+                            config:"1fr 1fr 1fr 1fr 1fr 1fr",
+                            header_style:"text-align:center;font-size:110%;color:#aaa"
+                        }) +
+                        table({
+                            id:"ability-scores", 
+                            headers:["0", "0", "0", "0", "0", "0"],
+                            config:"1fr 1fr 1fr 1fr 1fr 1fr",
+                            header_style:"text-align:center;font-size:130%"
+                        }) 
+                    )}) +
+    
+                    container({title:"Info", style:"margin-bottom:0", content_style:"height:39vh", content:(""
+                    )}) +
+                    
+                    div({classes: "center-horizontal",style:`;position:absolute;bottom:3vh;width: 85%;height:40vh; overflow-y:inherit;`, content:(
+                        title_value({
+                            id:"type",
+                            title:"Type",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"race",
+                            title:"Race",
+                            value:"",
+                        }) +
+                        "<hr>" +
+                        title_value({
+                            id:"health",
+                            title:"Health",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"armor-class",
+                            title:"Armor Class",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"initiative",
+                            title:"Initiative",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"walking-speed",
+                            title:"Speed",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"passive-perception",
+                            title:"Passive Perception",
+                            value:"",
+                        }) +
+                        "<hr>" +
+                        title_value({
+                            id:"level",
+                            title:"Level",
+                            value:"",
+                        }) +
+                        title_value({
+                            id:"experience",
+                            title:"Experience",
+                            value:"",
+                        })
+                    )})
+    
+                )
+            }
+            function rightArea() {
+                getId("character-tab-right").innerHTML += (
+                    container({title:"Conditions", id:"character-conditions-container", content:(
+                        table({
+                            id:"character-conditions",
+                            headers:["", ""],
+                            config:"1fr min-content",
+                            content:row({content:"A spell", columns:["Mage Armor", "1 round"], config:"1fr 1fr"})
+                        })
+                    )}) +
+                    container({title:"Features", id:"character-features-container", content:(
+                        table({
+                            id:"character-features",
+                            headers:["", ""],
+                            config:"1fr min-content",
+                            content:row({content:"a big description", columns:["Wizard Spellcasting", "Wizard"], config:"1fr 1fr"})
+                        })
+                    )}) +
+                    container({title:"Proficiencies", id:"character-proficiencies-container", content:(
+                        table({
+                            id:"character-proficiencies",
+                            headers:["", ""],
+                            config:"1fr min-content",
+                            content:(
+                                row({content:"a big description", columns:["Sword", "Expertise"], config:"1fr 1fr"})
+                            )
+                        })
+                    )}) +
+                    container({title:"Resistances", id:"character-resistances-container", content:(
+                        table({
+                            id:"character-resistances",
+                            headers:["", ""],
+                            config:"1fr min-content",
+                            content:(
+                                row({content:"a big description", columns:["Fire", "Immunity"], config:"1fr 1fr"})
+                            )
+                        })
+                    )})
+                )
+    
+                updateColapsible()
+            }
+    
+            function onWindowLoad() {
+                loadPage()
+                
+                centerArea()
+                leftArea()
+                rightArea()
+    
+                updateCenter();setInterval(updateCenter, 200)
+                updateLeft();setInterval(updateLeft, 200)
+                updateRight();setInterval(updateRight, 200)
+            }
+    
+            document.addEventListener("DOMContentLoaded", onWindowLoad)
+    
+            //=====================================================================================================
+    
+        </script>
+        ']
+    </head>
+    
+    <body>
+    </body>
+    
+    }]

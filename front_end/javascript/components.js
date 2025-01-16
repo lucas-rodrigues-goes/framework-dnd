@@ -88,11 +88,12 @@ function select({content, content_type="array", id, classes, style, placeholder=
     return element({content, id, classes, style, tag:"select", additional:"required"})
 }
 
-function container({content, id="", title, style, max_height=""}={}) {
-    let content_style = max_height ? "overflow-y:scroll; padding-left:1vh; padding-right:1vh; max-height:"+max_height+"vh" : ""
+function container({content, id="", title, style, content_style="",max_height=""}={}) {
+    let container_content_style = max_height ? "overflow-y:scroll; padding-left:1vh; padding-right:1vh; max-height:"+max_height+"vh" : ""
+    container_content_style = content_style ? content_style : container_content_style
 
     return div({id, classes:"container", style, content:(
-        div({id: id+`-content`, content, style:content_style}) +
+        div({id: id+`-content`, content, style:container_content_style}) +
         element({tag:"h3", content:title, classes:"container-title"})
     )})
 }
@@ -117,22 +118,20 @@ function grid({content, id, classes, style="", columns = 3, row_height = "auto",
     return div({content, id, classes, style, additional});
 }
 
-function row({content, id, columns=["Image","Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
+function row({content, columns=["Image","Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
     
     let div_columns = ""
     for (const i in columns) {
         const text = columns[i]
-        const style = i == headers.length - 1 ? "text-align:right" : ""
+        const style = i == columns.length - 1 ? "text-align:right" : ""
 
         div_columns += div({content: text, style: style})
     }
 
     const row_style = `grid-template-columns:`+config+`;`
 
-    return (
-        div({class:"table-row", style:row_style, content:div_columns}) +
-        div({class:"collapsible-content", content})
-    )
+    return div({classes:"table-row", style:row_style, content:div_columns}) +
+        div({classes:"collapsible-content", content})
 }
 
 function table({content, id, headers=["", "Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh", header_style=""}={}) {
@@ -150,7 +149,7 @@ function table({content, id, headers=["", "Name", "Type", "Actions"], config="3v
 
     return div({classes:"table-container", id, content:(
         div({classes:"table-header", style:table_style, content:div_headers}) +
-        div({classes:"table-rows"}, content)
+        div({classes:"table-rows", content})
     )})
 }
 
@@ -325,6 +324,25 @@ function loadTabs() {
         })
     })
 
+}
+
+function updateColapsible() {
+    document.querySelectorAll(".table-row").forEach(row => {
+        row.addEventListener("click", () => {
+            const isOpen = row.classList.contains("open");
+            document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
+
+            if (!isOpen) {
+                row.classList.add("open");
+            }
+        });
+    });
+
+    document.querySelectorAll(".action-buttons img").forEach(button => {
+        button.addEventListener("click", event => {
+            event.stopPropagation(); // Prevent triggering row click
+        });
+});
 }
 
 //=====================================================================================================

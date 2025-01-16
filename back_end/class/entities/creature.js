@@ -126,17 +126,17 @@ try {
 
         // Calculate the attribute bonuses based on the attribute values
         get attr_bonus() {
-            let calculate_bonus = function (attribute_value) {
+            let bonus = function (attribute_value) {
                 return Math.floor((attribute_value - 10) / 2);
             }
 
             return {
-                "strength": calculate_bonus(this.#attributes.strength),
-                "dexterity": calculate_bonus(this.#attributes.dexterity),
-                "constitution": calculate_bonus(this.#attributes.constitution),
-                "wisdom": calculate_bonus(this.#attributes.wisdom),
-                "intelligence": calculate_bonus(this.#attributes.intelligence),
-                "charisma": calculate_bonus(this.#attributes.charisma)
+                "strength": bonus(this.#attributes.strength),
+                "dexterity": bonus(this.#attributes.dexterity),
+                "constitution": bonus(this.#attributes.constitution),
+                "wisdom": bonus(this.#attributes.wisdom),
+                "intelligence": bonus(this.#attributes.intelligence),
+                "charisma": bonus(this.#attributes.charisma)
             }
         }
 
@@ -162,32 +162,41 @@ try {
         }
 
         get skills() {
-            let str_bonus = this.attr_bonus('strength')
-            let dex_bonus = this.attr_bonus('dexterity')
-            let wis_bonus = this.attr_bonus('wisdom')
-            let int_bonus = this.attr_bonus('intelligence')
-            let cha_bonus = this.attr_bonus('charisma')
+            let str_bonus = this.attr_bonus.strength
+            let dex_bonus = this.attr_bonus.dexterity
+            let wis_bonus = this.attr_bonus.wisdom
+            let int_bonus = this.attr_bonus.intelligence
+            let cha_bonus = this.attr_bonus.charisma
             
             return {
-                "acrobatics": str_bonus,
-                "animal handling": wis_bonus,
-                "arcana": int_bonus,
+                // Strength-based skills
                 "athletics": str_bonus,
-                "deception": cha_bonus,
-                "history": int_bonus,
-                "insight": wis_bonus,
-                "intimidation": Math.max(cha_bonus,str_bonus),
-                "investigation": int_bonus,
-                "medicine": wis_bonus,
-                "nature": int_bonus,
-                "perception": wis_bonus,
-                "performance": cha_bonus,
-                "persuasion": cha_bonus,
-                "religion": int_bonus,
+                "intimidation": Math.max(cha_bonus, str_bonus),
+            
+                // Dexterity-based skills
+                "acrobatics": dex_bonus,
                 "sleight of hand": dex_bonus,
                 "stealth": dex_bonus,
-                "survival": wis_bonus
-            }
+            
+                // Wisdom-based skills
+                "animal handling": wis_bonus,
+                "insight": wis_bonus,
+                "medicine": wis_bonus,
+                "perception": wis_bonus,
+                "survival": wis_bonus,
+            
+                // Intelligence-based skills
+                "arcana": int_bonus,
+                "history": int_bonus,
+                "investigation": int_bonus,
+                "nature": int_bonus,
+                "religion": int_bonus,
+            
+                // Charisma-based skills
+                "deception": cha_bonus,
+                "performance": cha_bonus,
+                "persuasion": cha_bonus
+            };
             
         }
 

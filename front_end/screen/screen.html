@@ -282,7 +282,7 @@
 
     function partyCharacter({id, style, image_src}={}) {
         return div({classes:"circular-health circular-health-small", style, content:(
-            image({id:"character-image", src:image_src})
+            image({id:"party-image-"+id, src:image_src})
         )})
     }
     
@@ -404,16 +404,18 @@
             }
 
             for(const member_id of items) {
-                getId("party-image-"+member_id).addEventListener("click",() => {
-                    toBackend(`
-                        var party_member = new Creature("`+member_id+`");
-                        party_member.go_to();
-                        party_member.select();
-                    `)
-                    if(gm) {
-                        toBackend(`party_member.impersonate();`)
-                    }
-                })
+                if (getId("party-image-"+member_id)) {
+                    getId("party-image-"+member_id).addEventListener("click",() => {
+                        toBackend(`
+                            var party_member = instance("`+member_id+`");
+                            party_member.go_to();
+                            party_member.select();
+                        `)
+                        if(gm) {
+                            toBackend(`party_member.impersonate();`)
+                        }
+                    })
+                }
             }
         })
     }

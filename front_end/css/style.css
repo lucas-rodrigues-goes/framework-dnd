@@ -85,7 +85,7 @@ pre {
     margin-bottom: 5vh;
     padding: 1.5vh;
 
-    border: 0.1vh solid #aaa;
+    border: 0.1vh solid #888;
     background-color: #262626;
     border-radius: 1vh;
 }
@@ -98,7 +98,7 @@ pre {
     background-color: #313131;
     padding: 0.5vh 2vh;
     border-radius:1vh;
-    border: 0.1vh solid #aaa;
+    border: 0.1vh solid #888;
     white-space: nowrap;
 }
 
