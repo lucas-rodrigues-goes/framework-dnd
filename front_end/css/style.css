@@ -78,33 +78,28 @@ pre {
 
 .container {
     position: relative;
-    display: block;
     width: 80%;
-    max-width: 60vh;
+    margin: auto;
 
     margin-top: 3.5vh;
     margin-bottom: 5vh;
     padding: 1.5vh;
 
-    text-align: center;
     border: 0.1vh solid #aaa;
     background-color: #262626;
     border-radius: 1vh;
 }
 
-.container-content {
-    position:static;
-}
-
 .container-title {
     position: absolute;
-    top:-3.25vh;
+    top:-3.5vh;
     left:50%;
     transform:translate(-50%);
     background-color: #313131;
-    padding: 0.2vh 2vh;
+    padding: 0.5vh 2vh;
     border-radius:1vh;
     border: 0.1vh solid #aaa;
+    white-space: nowrap;
 }
 
 
@@ -236,6 +231,7 @@ pre {
 
 .outer {
     position: absolute; /* Allows the div to take full height of the body */
+
     top: 1vh; /* Margin for top */
     left: 1vh; /* Margin for left */
     right: 1vh; /* Margin for right */

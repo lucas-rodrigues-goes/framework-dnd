@@ -8,8 +8,38 @@
     [r:'
 
     <style>
-        .outer:{
-            overflow-y:scroll
+        #character-tab-left {
+            position:absolute;
+            width:33%;
+            height:98%;
+            left:0;
+            top:1%;
+
+            overflow-y:inherit
+        }
+        #character-tab-center {
+            position:absolute;
+            width:34%;
+            height:100.5%;
+            bottom: -0.5vh;
+
+            background-color:#2d2d2d; 
+            border: 0.2vh solid #444;
+            border-bottom: none;
+        }
+        #character-tab-right {
+            position:absolute;
+            width:33%;
+            height:98%;
+            right:0;
+            top:1%;
+
+            overflow-y:inherit
+        }
+        #character-portrait {
+            height:15vh; 
+            border-radius: 50%; 
+            border: 0.3vh solid #444;
         }
     </style>
 
@@ -25,86 +55,174 @@
         }
 
         function title_value({title, value, id}) {
-            return paragraph({style:"text-align:left;font-size:100%",content:(
+            /* return paragraph({style:"text-align:left;font-size:100%",content:(
                 span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
-            )})
+            )}) */
+           return div({style:"height:3vh;",content:(
+                paragraph({style:"position:absolute;left:2vh;text-align:left",content:title}) +
+                paragraph({id, style:"position:absolute;right:2vh;text-align:left", content:value})
+           )})
         }
 
         function loadPage() {
-            document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
-            loadTabs()
+            document.body.innerHTML = div({classes:"outer",style:"display:flex;justify-content: center;", id:"character-tab",content:(
+                div({id:"character-tab-left"}) + 
+                div({id:"character-tab-center"}) + 
+                div({id:"character-tab-right"})
+            )})
+            //document.body.innerHTML = tabs({content:["character","skills","proficiencies"]})
+            //loadTabs()
         }
 
-        function characterTab() {
-            getId("character-tab").innerHTML += (
-                div({id:"character-tab-left", style:"position:absolute;width:33%;left:0;height:99%", content:(""
-                )}) +
-                div({id:"character-tab-center", classes:"center-horizontal", style:"position:absolute;width:34%;height:100.1%;transform:translate(-50%,-1.5%);background-color:#2d2d2d; border: 0.2vh solid #444;border-bottom:0px", content:(
-                    subtitle({content:"Name"}) +
-                    element({tag:"h2", id:"character-name", content:"Esdras"}) +
-                    image({
-                        id:"character-portrait", 
-                        src:"asset://da17516d71cd42f03ead407641c11747",
-                        style:"height:18vh; border-radius: 50%; border: 0.3vh solid #444"
+        function leftArea() {
+            common_style = "margin-bottom:0.5vh;width:70%;"
+            getId("character-tab-left").innerHTML += (
+                container({
+                    title: "Strength Skills (+3)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-strength-saving-throws", title: "Saving Throws", value: "+3" }) +
+                        title_value({ id: "skills-athletics", title: "Athletics", value: "+3" })
+                    )
+                }) +
+                container({
+                    title: "Dexterity Skills (+2)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-dexterity-saving-throws", title: "Saving Throws", value: "+2" }) +
+                        title_value({ id: "skills-acrobatics", title: "Acrobatics", value: "+2" }) +
+                        title_value({ id: "skills-sleight-of-hand", title: "Sleight of Hand", value: "+2" }) +
+                        title_value({ id: "skills-stealth", title: "Stealth", value: "+2" })
+                    )
+                }) +
+                container({
+                    title: "Constitution Skills (+1)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-constitution-saving-throws", title: "Saving Throws", value: "+1" })
+                    )
+                }) +
+                container({
+                    title: "Intelligence Skills (+4)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-intelligence-saving-throws", title: "Saving Throws", value: "+4" }) +
+                        title_value({ id: "skills-arcana", title: "Arcana", value: "+4" }) +
+                        title_value({ id: "skills-history", title: "History", value: "+4" }) +
+                        title_value({ id: "skills-investigation", title: "Investigation", value: "+4" }) +
+                        title_value({ id: "skills-nature", title: "Nature", value: "+4" }) +
+                        title_value({ id: "skills-religion", title: "Religion", value: "+4" })
+                    )
+                }) +
+                container({
+                    title: "Wisdom Skills (+2)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-wisdom-saving-throws", title: "Saving Throws", value: "+2" }) +
+                        title_value({ id: "skills-animal-handling", title: "Animal Handling", value: "+2" }) +
+                        title_value({ id: "skills-insight", title: "Insight", value: "+2" }) +
+                        title_value({ id: "skills-medicine", title: "Medicine", value: "+2" }) +
+                        title_value({ id: "skills-perception", title: "Perception", value: "+2" }) +
+                        title_value({ id: "skills-survival", title: "Survival", value: "+2" })
+                    )
+                }) +
+                container({
+                    title: "Charisma Skills (+0)", 
+                    style: common_style,
+                    content: (
+                        title_value({ id: "skills-charisma-saving-throws", title: "Saving Throws", value: "+0" }) +
+                        title_value({ id: "skills-deception", title: "Deception", value: "+0" }) +
+                        title_value({ id: "skills-intimidation", title: "Intimidation", value: "+0" }) +
+                        title_value({ id: "skills-performance", title: "Performance", value: "+0" }) +
+                        title_value({ id: "skills-persuasion", title: "Persuasion", value: "+0" })
+                    )
+                })
+            );
+        }
+        function centerArea() {
+            getId("character-tab-center").innerHTML += (
+
+                div({style:"height:1vh;"}) +
+
+                subtitle({content:"Name"}) +
+                element({tag:"h2", id:"character-name", content:"Esdras"}) +
+
+                image({id:"character-portrait", src:"asset://da17516d71cd42f03ead407641c11747"}) +
+
+                subtitle({content:"Class"}) +
+                element({tag:"h2", id:"character-class", content:"Wizard: School of Evocation"}) +
+
+                container({title:"Ability Scores",style:"padding-top:2vh;margin-bottom: 1vh;", content:(
+                    table({
+                        headers:["STR", "DEX", "CON", "WIS", "INT", "CHA"],
+                        config:"1fr 1fr 1fr 1fr 1fr 1fr",
+                        header_style:"text-align:center;font-size:110%;color:#aaa"
                     }) +
-                    subtitle({content:"Class"}) +
-                    element({tag:"h2", id:"character-class", content:"Wizard: School of Evocation"}) +
-                    container({title:"Info", content:(
-                        title_value({
-                            id:"character-level",
-                            title:"Level",
-                            value:"3",
-                        }) +
-                        title_value({
-                            id:"character-experience",
-                            title:"Experience",
-                            value:"1300 / 2700",
-                        }) +
-                        "<br>" +
-                        title_value({
-                            id:"character-type",
-                            title:"Type",
-                            value:"Humanoid",
-                        }) +
-                        title_value({
-                            id:"character-race",
-                            title:"Race",
-                            value:"Human",
-                        }) +
-                        "<br>" +
-                        title_value({
-                            id:"character-health",
-                            title:"Health",
-                            value:"12 / 12",
-                        }) +
-                        title_value({
-                            id:"character-ac",
-                            title:"Armor Class",
-                            value:"12",
-                        }) +
-                        title_value({
-                            id:"character-initiative",
-                            title:"Initiative",
-                            value:"0",
-                        }) +
-                        title_value({
-                            id:"character-speed",
-                            title:"Speed",
-                            value:"30ft",
-                        }) +
-                        ""
-                    )})
+                    table({
+                        id:"character-ability-scores", 
+                        headers:["10", "10", "10", "10", "10", "10"],
+                        config:"1fr 1fr 1fr 1fr 1fr 1fr",
+                        header_style:"text-align:center;font-size:130%"
+                    }) 
                 )}) +
-                div({id:"character-tab-right", style:"position:absolute;width:33%;right:0;height:99%;overflow-y:inherit", content:(
-                        div({content:"test", style:"height:150%"})
+
+                container({title:"Info", content:(
+                    title_value({
+                        id:"character-level",
+                        title:"Level",
+                        value:"3",
+                    }) +
+                    title_value({
+                        id:"character-experience",
+                        title:"Experience",
+                        value:"1300 / 2700",
+                    }) +
+                    "<br>" +
+                    title_value({
+                        id:"character-type",
+                        title:"Type",
+                        value:"Humanoid",
+                    }) +
+                    title_value({
+                        id:"character-race",
+                        title:"Race",
+                        value:"Human",
+                    }) +
+                    "<br>" +
+                    title_value({
+                        id:"character-health",
+                        title:"Health",
+                        value:"12 / 12",
+                    }) +
+                    title_value({
+                        id:"character-ac",
+                        title:"Armor Class",
+                        value:"12",
+                    }) +
+                    title_value({
+                        id:"character-initiative",
+                        title:"Initiative",
+                        value:"0",
+                    }) +
+                    title_value({
+                        id:"character-speed",
+                        title:"Speed",
+                        value:"30ft",
+                    }) +
+                    title_value({
+                        id:"character-passive-perception",
+                        title:"Passive Perception",
+                        value:"12",
+                    })
                 )})
             )
         }
 
         function onWindowLoad() {
             loadPage()
-
-            characterTab()
+            
+            centerArea()
+            leftArea()
 
         }
 

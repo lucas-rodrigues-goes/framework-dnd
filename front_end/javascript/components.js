@@ -88,12 +88,12 @@ function select({content, content_type="array", id, classes, style, placeholder=
     return element({content, id, classes, style, tag:"select", additional:"required"})
 }
 
-function container({content, id, title, style, max_height=""}={}) {
+function container({content, id="", title, style, max_height=""}={}) {
     let content_style = max_height ? "overflow-y:scroll; padding-left:1vh; padding-right:1vh; max-height:"+max_height+"vh" : ""
 
-    return div({id, classes:"container center-horizontal", style, content:(
-        element({tag:"h3", content:title, classes:"container-title"}) +
-        div({id: id+`-content`, classes:"container-content",content, style:content_style})
+    return div({id, classes:"container", style, content:(
+        div({id: id+`-content`, content, style:content_style}) +
+        element({tag:"h3", content:title, classes:"container-title"})
     )})
 }
 
@@ -135,12 +135,13 @@ function row({content, id, columns=["Image","Name", "Type", "Actions"], config="
     )
 }
 
-function table({content, id, headers=["", "Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh"}={}) {
+function table({content, id, headers=["", "Name", "Type", "Actions"], config="3vh 1fr 1fr 10vh", header_style=""}={}) {
 
     let div_headers = ""
     for (const i in headers) {
         const title = headers[i]
-        const style = i == headers.length - 1 ? "text-align:right" : ""
+        let style = i == headers.length - 1  ? "text-align:right" : ""
+        style = header_style ? header_style : style
 
         div_headers += div({content:title, style:style})
     }
