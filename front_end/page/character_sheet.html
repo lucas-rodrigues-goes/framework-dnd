@@ -136,8 +136,7 @@
                     }
 
                 })
-            }
-        
+            }    
             function updateCenter() {
                 toBackend(`
                     var character = impersonated();
@@ -196,7 +195,6 @@
                     getId("experience").innerHTML = character.experience || 0 + " / 300"
                 })
             }
-    
             function updateRight() {
                 toBackend(`
                     var character = impersonated();
@@ -445,7 +443,7 @@
                     subtitle({content:"Name"}) +
                     element({tag:"h2", id:"name", content:""}) +
     
-                    image({id:"portrait", src:"asset://da17516d71cd42f03ead407641c11747"}) +
+                    image({id:"portrait", src:""}) +
     
                     subtitle({content:"Class"}) +
                     element({tag:"h2", id:"class", content:""}) +
