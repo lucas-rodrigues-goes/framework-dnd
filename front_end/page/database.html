@@ -56,24 +56,6 @@
                 tabFunction();
         }
 
-        function timeUnit(time) {
-            const units = [
-                { threshold: 14400, unit: "Day" },
-                { threshold: 600, unit: "Hour" },
-                { threshold: 10, unit: "Minute" },
-                { threshold: 1, unit: "Round" }
-            ];
-
-            for (const { threshold, unit } of units) {
-                if (time >= threshold) {
-                    const value = Math.round(time / threshold);
-                    return value + " " + unit + (value > 1 ? "s" : "");
-                }
-            }
-
-            return "1 Round"; // Default case if time is <= 1
-        }
-
         function addTabFunctionality(tab_list=["classes","races","proficiencies","conditions", "features", "items", "damage", "resources", "spells"]) {
 
             tab_list.forEach((tab_name) => {
@@ -352,7 +334,7 @@
                     }
                 }
 
-                columns = [capitalize(name)]
+                columns = [name]
 
                 description = `
                     <div style="line-height: 1.5;text-align:left;padding-top:1vh;">
@@ -436,7 +418,7 @@
             const table_config = "3vh 1fr 1fr 10vh"
             function render_row(name, type, desc_arr) {
                 id = name
-                columns = [capitalize(name), capitalize(type)]
+                columns = [name, capitalize(type)]
 
                 description_string = ""
                 title_arr = ["Proficiency", "Expertise", "Mastery", "Grandmastery"]
@@ -531,7 +513,7 @@
             const table_config = "3vh 1fr 1fr 10vh"
             function render_row(name, type, description) {
                 id = name
-                columns = [capitalize(name), capitalize(type)]
+                columns = [name, capitalize(type)]
                 
                 description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
 
@@ -615,7 +597,7 @@
                 if (!subtype) {subtype = ""}
                 
 
-                columns = [capitalize(name), capitalize(type), capitalize(subtype), level]
+                columns = [name, capitalize(type), capitalize(subtype), level]
                 description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
 
                 // Image
@@ -705,7 +687,7 @@
             function render_row(name, type, subtype="", description, image) {
                 id = name
 
-                columns = [capitalize(name), capitalize(type), capitalize(subtype)]
+                columns = [name, capitalize(type), capitalize(subtype)]
                 description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
 
                 // Image
@@ -786,7 +768,7 @@
             const table_config = "3vh 1fr 1fr 10vh"
             function render_row(name, type, description, image) {
                 id = name
-                columns = [capitalize(name), capitalize(type)]
+                columns = [name, capitalize(type)]
                 description = `<pre style="white-space: pre-wrap; word-wrap: break-word; font-family:inherit; text-align:left">`+description+`</pre>`
 
                 return row(id, columns, description, image, tab_id, table_config)
@@ -900,7 +882,7 @@
                 ><b>At Higher Levels:</b> `+description_higher_levels+`</pre>`
                 }
 
-                columns = [capitalize(name), capitalize(level), capitalize(school), duration]
+                columns = [name, capitalize(level), capitalize(school), duration]
 
                 description = `
                     <div style="line-height: 1.5;text-align:left;padding-top:1vh;">

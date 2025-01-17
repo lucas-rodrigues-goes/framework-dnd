@@ -28,23 +28,6 @@ try {
                 "maximum": 0
             },
         };
-        #resistances = {
-            "non-magical": 0,
-            "non-silvered": 0,
-            "slashing": 0,
-            "piercing": 0,
-            "bludgeoning": 0,
-            "fire": 0,
-            "cold": 0,
-            "lightning": 0,
-            "thunder": 0,
-            "acid": 0,
-            "poison": 0,
-            "psychic": 0,
-            "radiant": 0,
-            "necrotic": 0,
-            "force": 0
-        };
         #features = {
             "all": [], "racial": [], "feat": [],
             "barbarian": [], "bard": [], "cleric": [],
@@ -116,7 +99,6 @@ try {
         get attributes() { return this.#attributes; }
         get health() { return this.#health }
         get resources() { return this.#resources; }
-        get resistances() { return this.#resistances; }
         get features() { return this.#features; }
         get proficiencies() { return this.#proficiencies; }
         get spells() { return this.#spells; }
@@ -141,63 +123,176 @@ try {
         }
 
         get max_health() {
+            const level = this.level || 1
             let calculated_max_health = this.#attributes.constitution
+
+            // Feature-based modifiers
+            const feature_modifiers = {
+                "Dwarven Toughness": { type: "add", value: 1 * level }
+            };
+            for (const [feature, modifier] of Object.entries(feature_modifiers)) {
+                if (this.has_feature(feature)) {
+                    if (modifier.type === "add") { calculated_max_health += modifier.value; } 
+                    else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
+                }
+            }
 
             return calculated_max_health
         }
 
         get speed() {
-            let speed = this.#speed.walk
+            let baseSpeed = this.#speed.walk;
+        
+            // Feature-based modifiers
+            const feature_modifiers = {
+                "Barbaric Movement": { type: "add", value: 10 },
+                "Monk Movement": { type: "add", value: 10 },
+                "Roving":  { type:"add", value: 5 },
+                "Fleet of Foot":  { type:"add", value: 5 },
+                "Bulky":  { type:"add", value: -5 },
+            };
+            for (const [feature, modifier] of Object.entries(feature_modifiers)) {
+                if (this.has_feature(feature)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
+            }
 
-            if (this.has_feature("Barbaric Movement")) { speed += 10 }
-            if (this.has_feature("Monk Movement")) { speed += 10 }
-            if (this.has_feature("Roving")) { speed += 5 }
-
-            if (this.has_condition("Haste")) {speed *= 2}
-            if (this.has_condition("Slow")) {speed /= 2}
-
-            speed = Math.floor(speed)
-
-            return speed
+            // Condition-based modifiers
+            const cnodition_modifiers = {
+                "Haste": { type: "multiply", value: 2 },
+                "Slow": { type: "multiply", value: 0.5 },
+            };
+            for (const [condition, modifier] of Object.entries(cnodition_modifiers)) {
+                if (this.has_condition(condition)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
+            }
+        
+            return Math.floor(baseSpeed);
         }
 
-        get skills() {
-            let str_bonus = this.attr_bonus.strength
-            let dex_bonus = this.attr_bonus.dexterity
-            let wis_bonus = this.attr_bonus.wisdom
-            let int_bonus = this.attr_bonus.intelligence
-            let cha_bonus = this.attr_bonus.charisma
+        get resistances() {
             
-            return {
+            // Features that add/change resistances
+            const feature_modifiers = {
+                "Dwarven Resilience": [{ damage: "Poison", reduction: 10 }]
+            };
+
+            // Conditions that add/change resistances
+            const condition_modifiers = {
+                "Rage": [
+                    { damage: "Slashing", reduction: 5 },
+                    { damage: "Bludgeoning", reduction: 5 },
+                    { damage: "Piercing", reduction: 5 }
+                ]
+            };
+
+            // Default resistance values
+            let resistances = {
+                "Normal": {type:"default", reduction:0},
+                "Nonsilver": {type:"default", reduction:0},
+                "Slashing": {type:"default", reduction:0},
+                "Piercing": {type:"default", reduction:0},
+                "Bludgeoning": {type:"default", reduction:0},
+                "Fire": {type:"default", reduction:0},
+                "Cold": {type:"default", reduction:0},
+                "Lightning": {type:"default", reduction:0},
+                "Thunder": {type:"default", reduction:0},
+                "Acid": {type:"default", reduction:0},
+                "Poison": {type:"default", reduction:0},
+                "Psychic": {type:"default", reduction:0},
+                "Radiant": {type:"default", reduction:0},
+                "Necrotic": {type:"default", reduction:0},
+                "Force": {type:"default", reduction:0},
+            };
+
+            // Type Priority
+            const type_priority = {
+                heals: 4,
+                immunity: 3,
+                weakness: 2,
+                default: 1
+            }
+
+            // Apply Feature Modifiers
+            for (const [feature, modifiers] of Object.entries(feature_modifiers)) {
+                if (this.has_feature(feature)) {
+                    modifiers.forEach(modifier => {
+                        const damage = modifier.damage
+                        const new_reduction = modifier.reduction || 0
+                        const new_type = modifier.type || "default"
+                
+                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
+                            resistances[damage].type = new_type;
+                        }
+                        if (new_reduction > resistances[damage].reduction) {
+                            resistances[damage].reduction = new_reduction;
+                        }
+                    });
+                }
+            }
+        
+            // Apply Condition Modifiers
+            for (const [condition, modifiers] of Object.entries(condition_modifiers)) {
+                if (this.has_condition(condition)) {
+                    modifiers.forEach(modifier => {
+                        const damage = modifier.damage
+                        const new_reduction = modifier.reduction || 0
+                        const new_type = modifier.type || "default"
+                
+                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
+                            resistances[damage].type = new_type;
+                        }
+                        if (new_reduction > resistances[damage].reduction) {
+                            resistances[damage].reduction = new_reduction;
+                        }
+                    });
+                }
+            }
+            
+            return resistances;
+        }
+        
+
+        get skills() {
+            let skills = {
                 // Strength-based skills
-                "athletics": str_bonus,
-                "intimidation": Math.max(cha_bonus, str_bonus),
+                "Athletics": this.attr_bonus.strength,
+                "Intimidation": Math.max(this.attr_bonus.charisma, this.attr_bonus.strength),
             
                 // Dexterity-based skills
-                "acrobatics": dex_bonus,
-                "sleight of hand": dex_bonus,
-                "stealth": dex_bonus,
+                "Acrobatics": this.attr_bonus.dexterity,
+                "Sleight of Hand": this.attr_bonus.dexterity,
+                "Stealth": this.attr_bonus.dexterity,
             
                 // Wisdom-based skills
-                "animal handling": wis_bonus,
-                "insight": wis_bonus,
-                "medicine": wis_bonus,
-                "perception": wis_bonus,
-                "survival": wis_bonus,
+                "Animal Handling": this.attr_bonus.wisdom,
+                "Insight": this.attr_bonus.wisdom,
+                "Medicine": this.attr_bonus.wisdom,
+                "Perception": this.attr_bonus.wisdom,
+                "Survival": this.attr_bonus.wisdom,
             
                 // Intelligence-based skills
-                "arcana": int_bonus,
-                "history": int_bonus,
-                "investigation": int_bonus,
-                "nature": int_bonus,
-                "religion": int_bonus,
+                "Arcana": this.attr_bonus.intelligence,
+                "History": this.attr_bonus.intelligence,
+                "Investigation": this.attr_bonus.intelligence,
+                "Nature": this.attr_bonus.intelligence,
+                "Religion": this.attr_bonus.intelligence,
             
                 // Charisma-based skills
-                "deception": cha_bonus,
-                "performance": cha_bonus,
-                "persuasion": cha_bonus
+                "Deception": this.attr_bonus.charisma,
+                "Performance": this.attr_bonus.charisma,
+                "Persuasion": this.attr_bonus.charisma
             };
+
+            // Apply Proficiency Bonus
+            for (const skill in skills) {
+                skills[skill] += (this.get_proficiency_level(skill) + 1) * 2
+            }
             
+            return skills
         }
 
         // Armor class is determined by 10 + dexterity modifier
@@ -250,30 +345,16 @@ try {
             log(this.#name + " " + attribute + " set to " + value + ".");
         }
 
-        set_resistance(resistance, value) {
-            let validResistances = ["slashing", "piercing", "bludgeoning", "fire", "cold", "lightning", "thunder",
-                "acid", "poison", "psychic", "radiant", "necrotic", "force"]
-            let validValues = [0, 5, 10, 15, 20, 30, "immunity", "vulnerability", "heals"]
-
-            if (!validResistances.includes(resistance)) {return}
-            if (!validValues.includes(value)) {return}
-
-            this.#resistances[resistance] = value;
-            this.save()
-            log(this.#name + " " + resistance + " resistance set to " + value + ".");
-        }
-
         set_condition(condition, value) {
             value = Number(value)
             if (value >= 1) {
                 this.#conditions[condition] = value;
-                this.save()
                 log(this.#name + " received " + condition + " for " + value + " rounds.");
             } else if (value == 0) {
                 delete this.#conditions[condition]
-                this.save()
                 log(this.#name + " lost the condition " + condition + ".");
             }
+            this.save()
         }
 
         has_condition(name) {
@@ -291,11 +372,11 @@ try {
             if (value <= 0) {return}
             if (typeof type != "string") {return}
 
-            let resistance = this.#resistances[type];
+            const resistance = this.resistances[type];
             let damage = 0;
 
             // Calculate damage based on resistance
-            switch (resistance) {
+            switch (resistance.type) {
                 case "immunity":
                     damage = 0;
                     break;
@@ -306,7 +387,7 @@ try {
                     this.receive_healing(value)
                     return
                 default:
-                    damage = Math.max(value - resistance, 0);
+                    damage = Math.max(value - resistance.reduction, 0);
                     break;
             }
 
@@ -398,6 +479,8 @@ try {
 
             this.proficiencies[name] = level
             log(this.#name + " received the proficiency " + name + ".");
+            
+            this.save()
         }
 
         // Remove a proficiency from the creature
@@ -405,6 +488,8 @@ try {
             if (this.proficiencies[name]) {
                 delete this.proficiencies[name]
             }
+
+            this.save()
         }
 
         // Get level of proficiency
@@ -480,6 +565,10 @@ try {
                 this.set_attribute(attribute, totalValue);
             }
 
+            // Fill health
+            this.health = this.max_health
+
+            this.save()
         }
 
 
@@ -494,7 +583,7 @@ try {
             // Check for undefined values and raise an error
             const keysToCheck = [
                 "name", "type", "race", "attributes", "speed", "health",
-                "resources", "resistances", "features", "spells",
+                "resources", "features", "spells",
                 "conditions", "equipment", "inventory"
             ];
 
@@ -511,7 +600,6 @@ try {
             this.#speed = object.speed;
             this.#health = object.health
             this.#resources = object.resources;
-            this.#resistances = object.resistances;
             this.#features = object.features;
             this.#proficiencies = object.proficiencies;
             this.#spells = object.spells;
@@ -531,7 +619,6 @@ try {
                 "speed": this.#speed,
                 "health": this.#health,
                 "resources": this.#resources,
-                "resistances": this.#resistances,
                 "features": this.#features,
                 "proficiencies": this.#proficiencies,
                 "spells": this.#spells,

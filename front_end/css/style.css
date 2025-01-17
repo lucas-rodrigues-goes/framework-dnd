@@ -81,8 +81,8 @@ pre {
     width: 80%;
     margin: auto;
 
-    margin-top: 3.5vh;
-    margin-bottom: 5vh;
+    margin-top: 2.5vh;
+    margin-bottom: 1vh;
     padding: 1.5vh;
 
     border: 0.1vh solid #888;
@@ -96,7 +96,7 @@ pre {
     left:50%;
     transform:translate(-50%);
     background-color: #313131;
-    padding: 0.5vh 2vh;
+    padding: 0.25vh 2vh;
     border-radius:1vh;
     border: 0.1vh solid #888;
     white-space: nowrap;
@@ -321,7 +321,8 @@ pre {
     padding-top: 0.7vh;
     margin: 1vh 0;
 
-    background-color: #444;
+    background-color: #333;
+    border: 0.1vh solid #444;
     border-radius: 0.5vh;
 
     align-items: center;
@@ -335,7 +336,7 @@ pre {
 }
 
 .table-row:hover {
-    background-color: #555;
+    background-color: #383838;
 }
 
 .table-row .action-buttons {
@@ -362,7 +363,7 @@ pre {
     padding: 1vh;
     padding-top: 1.5vh;
 
-    background-color: #333;
+    background-color: #292929;
     border: 0.1vh solid #444;
     border-radius: 0.5vh;
     border-top-left-radius: 0;

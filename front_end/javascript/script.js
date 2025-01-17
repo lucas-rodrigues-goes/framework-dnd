@@ -25,6 +25,24 @@ function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function timeUnit(time) {
+    const units = [
+        { threshold: 14400, unit: "Day" },
+        { threshold: 600, unit: "Hour" },
+        { threshold: 10, unit: "Minute" },
+        { threshold: 1, unit: "Round" }
+    ];
+
+    for (const { threshold, unit } of units) {
+        if (time >= threshold) {
+            const value = Math.round(time / threshold);
+            return value + " " + unit + (value > 1 ? "s" : "");
+        }
+    }
+
+    return "1 Round"; // Default case if time is <= 1
+}
+
 
 
 //=====================================================================================================

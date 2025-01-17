@@ -51,14 +51,44 @@
             hr {
                 border: 0.1vh solid #444;
                 display:block;
-                width: 85%;
+                width: 100%;
                 margin:auto;
                 margin-top: 2vh;
                 margin-bottom: 0;
             }
+
+            #character-tab-right .table-header {
+                margin-bottom: -1.5vh;
+            }
+            #character-tab-left .container {
+                padding-top: 0;
+                padding-bottom: 1vh;
+            }
+
+            #ability-scores-container-content > .table-container {
+                margin-right:-1.5vh;
+                margin-left:-1.5vh;
+            }
         </style>
     
         <script>
+
+            function subtitle({content}) {
+                return paragraph({
+                    content, 
+                    style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
+                })
+            }
+
+            function title_value({title, value, id}) {
+                /* return paragraph({style:"text-align:left;font-size:100%",content:(
+                    span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
+                )}) */
+               return div({style:"height:2.9vh;position:relative;",content:(
+                    paragraph({id:id+"-title", style:"position:absolute;left:1vh;text-align:left;font-weight:bold",content:title}) +
+                    paragraph({id, style:"position:absolute;right:1vh;text-align:left", content:value})
+               )})
+            }
 
             function updateLeft() {
 
@@ -87,28 +117,22 @@
                     
 
                     // Attribute Bonuses and Saving Throws
+                    getId("saving-throws-content").innerHTML = ""
                     const scores_list = [
                         "strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"
                     ]
                     for (const score of scores_list) {
-                        getId(score + "-bonus").innerHTML = bonusOf(character.attr_bonus[score], true)
-                        getId(score + "-saving-throws").innerHTML = bonusOf(character.attr_bonus[score])
+                        title = capitalize(score)
+                        value = bonusOf(character.attr_bonus[score])
+                        getId("saving-throws-content").innerHTML += title_value({title, value})
                     }
 
                     // Skills
-                    const skills_list = [
-                        "athletics", "acrobatics", "animal-handling", 
-                        "arcana", "deception", "history", "insight", 
-                        "intimidation", "investigation", "medicine", "nature", 
-                        "perception", "performance", "persuasion", "religion", 
-                        "sleight-of-hand", "stealth", "survival"
-                    ]
-                    for (const skill of skills_list) {
-                        const element = getId("skills-" + skill);
-                        if (element) {
-                            const bonus = character.skills[skill.replace(/-/g, " ")] || 0;
-                            element.innerHTML = bonusOf(bonus);
-                        }
+                    getId("skills-content").innerHTML = ""
+                    for (const skill in character.skills) {
+                        title = skill
+                        value = bonusOf(character.skills[skill])
+                        getId("skills-content").innerHTML += title_value({title, value})
                     }
 
                 })
@@ -203,6 +227,30 @@
                     if (new_hash == old_hash) { return }
                     getId("character-tab-right").setAttribute("hash", new_hash)
 
+                    function updateConditions() { 
+                        let rows = ""
+                        for (const name in character.conditions) {
+                            const duration = timeUnit(character.conditions[name])
+                            const condition = database.conditions.data[name]
+
+                            let description = condition ? condition.description : "Description unavailable."
+
+                            rows += row({
+                                columns:[
+                                    name, duration
+                                ], 
+                                config:"1fr 1fr",
+                                content: pre({content:description})
+                            })
+                        }
+                        getId("character-conditions").children[1].innerHTML = rows
+                        if (rows) {
+                            getId("character-conditions-container").setAttribute("style", "")
+                        } else {
+                            getId("character-conditions-container").setAttribute("style", "display:none")
+                        }
+                    }
+
                     function updateFeatures() {
                         const subtypeImages = {
                             "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
@@ -227,27 +275,37 @@
                             "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
                         };
                         
-                        let features = ""
-                        for (const value of character.features.all) {
-                            const feature = database.features.data[value]
+                        let rows = ""
+                        for (const name of character.features.all) {
+                            const feature = database.features.data[name]
                             if(feature) {
                                 const description = feature.description
                                 const type = feature.subtype || feature.type
                                 const image_src = subtypeImages[type] || typeImages[type]
 
-                                features += row({
+                                rows += row({
                                     columns:[
                                         image({src:image_src, style:"height:2vh"}),
-                                        feature.name,
+                                        name,
                                         capitalize(type),
                                     ], 
                                     config:"min-content 1fr min-content",
                                     content: pre({content:description})
                                 })
+                            }  else {
+                                rows += row({
+                                    columns:[
+                                        "",
+                                        name,
+                                        "",
+                                    ], 
+                                    config:"min-content 1fr min-content",
+                                    content: pre({content:"Description unavailable."})
+                                })
                             }
                         }
-                        getId("character-features").children[1].innerHTML = features
-                        if (features) {
+                        getId("character-features").children[1].innerHTML = rows
+                        if (rows) {
                             getId("character-features-container").setAttribute("style", "")
                         } else {
                             getId("character-features-container").setAttribute("style", "display:none")
@@ -262,7 +320,7 @@
                             3:"Grandmastery"
                         }
 
-                        let proficiencies = ""
+                        let rows = ""
                         for (const name in character.proficiencies) {
                             const level = Number(character.proficiencies[name])
                             const proficiency = database.proficiencies.data[name]
@@ -276,79 +334,89 @@
 
                                 const level_name = type == "language" ? "" : level_names[level] 
 
-                                proficiencies += row({
+                                rows += row({
                                     columns:[
                                         proficiency.name + " " + level_name, capitalize(type)
                                     ], 
                                     config:"1fr min-content",
                                     content: pre({content:description})
                                 })
+                            } else {
+                                rows += row({
+                                    columns:[
+                                        name + " " + "", ""
+                                    ], 
+                                    config:"1fr min-content",
+                                    content: pre({content:"Description unavailable."})
+                                })
                             }
                         }
-                        getId("character-proficiencies").children[1].innerHTML = proficiencies
-                        if (proficiencies) {
+                        getId("character-proficiencies").children[1].innerHTML = rows
+                        if (rows) {
                             getId("character-proficiencies-container").setAttribute("style", "")
                         } else {
                             getId("character-proficiencies-container").setAttribute("style", "display:none")
                         }
                     }
                                         
-                    /* function updateResistances() { 
-                        const resistance_value_name = {
-                            10:"Lesser Resistance",
-                            20:"Medium Resistance",
-                            30:"Greater Resistance"
-                        }
-
-                        let resistances = ""
+                    function updateResistances() { 
+                        let rows = ""
                         for (const name in character.resistances) {
-                            const resistance_value = character.resistances[name]
-                            const damage_type = database.damage_types.data[name]
+                            const type = character.resistances[name].type
+                            const reduction = character.resistances[name].reduction
 
-                            if(damage_type) {
-                                const type = damage_type.type
+                            const type_not_default = type != "default"
+
+                            if (type_not_default || reduction != 0) {
+                                const damage_type = database.damage_types.data[name]
                                 const image_src = damage_type.image
+                                let show_type
+                                if(type_not_default) {
+                                    show_type = capitalize(type)
+                                } else {
+                                    value = [
+                                        "Bludgeoning", 
+                                        "Piercing", 
+                                        "Slashing"
+                                    ].includes(name) ? Number(reduction) * 2 : reduction
 
-                                proficiencies += row({
+                                    types = {
+                                        10:"Lesser",
+                                        20:"Medium",
+                                        30:"Greater"
+                                    }
+
+                                    show_type = reduction
+                                }
+                                
+                                const description = damage_type.description
+
+                                rows += row({
                                     columns:[
-                                        proficiency.name + " " + level_name, capitalize(type)
-                                    ], 
-                                    config:"1fr min-content",
+                                        image({src:image_src, style:"height:2vh"}),
+                                        capitalize(name),
+                                        show_type,
+                                    ],
+                                    config:"min-content 1fr 1fr",
                                     content: pre({content:description})
                                 })
                             }
                         }
 
-                        getId("character-resistances").children[1].innerHTML = resistances
-                        if (resistances) {
+                        getId("character-resistances").children[1].innerHTML = rows
+                        if (rows) {
                             getId("character-resistances-container").setAttribute("style", "")
                         } else {
                             getId("character-resistances-container").setAttribute("style", "display:none")
                         }
-                    } */
+                    }
                 
-
+                    updateConditions()
                     updateFeatures()
                     updateProficiencies()
-                    //updateResistances()
+                    updateResistances()
                     updateColapsible()
                 })
-            }
-            function subtitle({content}) {
-                return paragraph({
-                    content, 
-                    style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
-                })
-            }
-    
-            function title_value({title, value, id}) {
-                /* return paragraph({style:"text-align:left;font-size:100%",content:(
-                    span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
-                )}) */
-               return div({style:"height:3vh;position:relative;",content:(
-                    paragraph({style:"position:absolute;left:2vh;text-align:left;font-weight:bold",content:title}) +
-                    paragraph({id, style:"position:absolute;right:2vh;text-align:left", content:value})
-               )})
             }
     
             function loadPage() {
@@ -362,68 +430,13 @@
             }
     
             function leftArea() {
-                common_style = "margin-bottom:0.5vh;width:70%;"
                 getId("character-tab-left").innerHTML += (
-                    container({
-                        title: "Strength "+span({id:"strength-bonus",content:""}), 
-                        style: common_style,
-                        content: (
-                            title_value({ id: "strength-saving-throws", title: "Saving Throws", value: "+3" }) +
-                            title_value({ id: "skills-athletics", title: "Athletics", value: "+3" })
-                        )
-                    }) +
-                    container({
-                        title: "Dexterity "+span({id:"dexterity-bonus",content:""}), 
-                        style: common_style,
-                        content: (
-                            title_value({ id: "dexterity-saving-throws", title: "Saving Throws", value: "+2" }) +
-                            title_value({ id: "skills-acrobatics", title: "Acrobatics", value: "+2" }) +
-                            title_value({ id: "skills-sleight-of-hand", title: "Sleight of Hand", value: "+2" }) +
-                            title_value({ id: "skills-stealth", title: "Stealth", value: "+2" })
-                        )
-                    }) +
-                    container({
-                        title: "Constitution "+span({id:"constitution-bonus",content:""}), 
-                        style: common_style,
-                        content: (
-                            title_value({ id: "constitution-saving-throws", title: "Saving Throws", value: "+1" })
-                        )
-                    }) +
-                    container({
-                        title: "Wisdom "+span({id:"wisdom-bonus",content:""}),
-                        style: common_style,
-                        content: (
-                            title_value({ id: "wisdom-saving-throws", title: "Saving Throws", value: "+2" }) +
-                            title_value({ id: "skills-animal-handling", title: "Animal Handling", value: "+2" }) +
-                            title_value({ id: "skills-insight", title: "Insight", value: "+2" }) +
-                            title_value({ id: "skills-medicine", title: "Medicine", value: "+2" }) +
-                            title_value({ id: "skills-perception", title: "Perception", value: "+2" }) +
-                            title_value({ id: "skills-survival", title: "Survival", value: "+2" })
-                        )
-                    }) +
-                    container({
-                        title: "Intelligence "+span({id:"intelligence-bonus",content:""}), 
-                        style: common_style,
-                        content: (
-                            title_value({ id: "intelligence-saving-throws", title: "Saving Throws", value: "+4" }) +
-                            title_value({ id: "skills-arcana", title: "Arcana", value: "+4" }) +
-                            title_value({ id: "skills-history", title: "History", value: "+4" }) +
-                            title_value({ id: "skills-investigation", title: "Investigation", value: "+4" }) +
-                            title_value({ id: "skills-nature", title: "Nature", value: "+4" }) +
-                            title_value({ id: "skills-religion", title: "Religion", value: "+4" })
-                        )
-                    }) +
-                    container({
-                        title: "Charisma "+span({id:"charisma-bonus",content:""}), 
-                        style: common_style,
-                        content: (
-                            title_value({ id: "charisma-saving-throws", title: "Saving Throws", value: "+0" }) +
-                            title_value({ id: "skills-deception", title: "Deception", value: "+0" }) +
-                            title_value({ id: "skills-intimidation", title: "Intimidation", value: "+0" }) +
-                            title_value({ id: "skills-performance", title: "Performance", value: "+0" }) +
-                            title_value({ id: "skills-persuasion", title: "Persuasion", value: "+0" })
-                        )
-                    })
+                    container({title:"Saving Throws", id:"saving-throws", content:(
+                        ""
+                    )}) +
+                    container({title:"Skills", id:"skills", content:(
+                        ""
+                    )})
                 );
             }
             function centerArea() {
@@ -439,7 +452,7 @@
                     subtitle({content:"Class"}) +
                     element({tag:"h2", id:"class", content:""}) +
     
-                    container({title:"Ability Scores",style:"padding-top:2vh;margin-bottom: 1vh;", content:(
+                    container({id:"ability-scores-container", title:"Ability Scores",style:"padding-top:2vh;margin-bottom: 1vh;", content:(
                         table({
                             headers:["STR", "DEX", "CON", "WIS", "INT", "CHA"],
                             config:"1fr 1fr 1fr 1fr 1fr 1fr",
@@ -456,7 +469,9 @@
                     container({title:"Info", style:"margin-bottom:0", content_style:"height:39vh", content:(""
                     )}) +
                     
-                    div({classes: "center-horizontal",style:`;position:absolute;bottom:3vh;width: 85%;height:40vh; overflow-y:inherit;`, content:(
+                    div({classes: "center-horizontal",style:`
+                    position:absolute;bottom:4.5vh;margin-left:0.5vh;width: 80%;height:40vh; overflow-y:inherit;overflow-x:hidden;
+                    `, content:(
                         title_value({
                             id:"type",
                             title:"Type",
@@ -503,7 +518,7 @@
                             id:"experience",
                             title:"Experience",
                             value:"",
-                        })
+                        }) 
                     )})
     
                 )

@@ -162,7 +162,7 @@
             toBackend(`database.get_damage_type("`+id+`")`, (response) => {
                 damage_type = JSON.parse(response)
                 
-                getId("name").value = capitalize(damage_type.name)
+                getId("name").value = damage_type.name
                 getId("type").value = damage_type.type
                 getId("description").value = damage_type.description
                 getId("image").value = damage_type.image

@@ -94,7 +94,7 @@ function container({content, id="", title, style, content_style="",max_height=""
 
     return div({id, classes:"container", style, content:(
         div({id: id+`-content`, content, style:container_content_style}) +
-        element({tag:"h3", content:title, classes:"container-title"})
+        element({tag:"h4", content:title, classes:"container-title"})
     )})
 }
 
