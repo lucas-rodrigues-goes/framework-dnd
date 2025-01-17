@@ -330,8 +330,6 @@
                     const value = proficiencies[i]
                     let name = value["name"]
                     let title = languages.includes(name) ? "Language" : proficiency_names[value["level"]]
-
-                    console.log(title + name)
                     
                     proficiencies_string += name + " " + title
                     if (i != proficiencies.length-1) {

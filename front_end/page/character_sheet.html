@@ -94,7 +94,6 @@
                         getId(score + "-bonus").innerHTML = bonusOf(character.attr_bonus[score], true)
                         getId(score + "-saving-throws").innerHTML = bonusOf(character.attr_bonus[score])
                     }
-                    
 
                     // Skills
                     const skills_list = [
@@ -294,7 +293,7 @@
                         }
                     }
                                         
-                    function updateResistances() { 
+                    /* function updateResistances() { 
                         const resistance_value_name = {
                             10:"Lesser Resistance",
                             20:"Medium Resistance",
@@ -326,13 +325,12 @@
                         } else {
                             getId("character-resistances-container").setAttribute("style", "display:none")
                         }
-                    }
-                    
-                    console.log(character.resistances)
+                    } */
+                
 
                     updateFeatures()
                     updateProficiencies()
-                    updateResistances()
+                    //updateResistances()
                     updateColapsible()
                 })
             }
