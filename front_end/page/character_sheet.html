@@ -61,8 +61,8 @@
                 margin-bottom: -1.5vh;
             }
             #character-tab-left .container {
-                padding-top: 0;
-                padding-bottom: 1vh;
+                padding-top:0vh;
+                padding-bottom: 2vh;
             }
 
             #ability-scores-container-content > .table-container {
@@ -84,7 +84,7 @@
                 /* return paragraph({style:"text-align:left;font-size:100%",content:(
                     span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
                 )}) */
-               return div({style:"height:2.9vh;position:relative;",content:(
+               return div({style:"height:2vh;margin-bottom:1vh;position:relative;",content:(
                     paragraph({id:id+"-title", style:"position:absolute;left:1vh;text-align:left;font-weight:bold",content:title}) +
                     paragraph({id, style:"position:absolute;right:1vh;text-align:left", content:value})
                )})
