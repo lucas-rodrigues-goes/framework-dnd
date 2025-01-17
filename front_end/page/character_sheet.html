@@ -521,40 +521,32 @@
             }
             function rightArea() {
                 getId("character-tab-right").innerHTML += (
-                    container({title:"Conditions", id:"character-conditions-container", content:(
+                    container({title:"Conditions", id:"character-conditions-container", style:"display:none", content:(
                         table({
                             id:"character-conditions",
                             headers:["", ""],
-                            config:"1fr min-content",
-                            content:row({content:"A spell", columns:["Mage Armor", "1 round"], config:"1fr 1fr"})
+                            config:"1fr min-content"
                         })
                     )}) +
-                    container({title:"Features", id:"character-features-container", content:(
+                    container({title:"Features", id:"character-features-container", style:"display:none", content:(
                         table({
                             id:"character-features",
                             headers:["", ""],
-                            config:"1fr min-content",
-                            content:row({content:"a big description", columns:["Wizard Spellcasting", "Wizard"], config:"1fr 1fr"})
+                            config:"1fr min-content"
                         })
                     )}) +
-                    container({title:"Proficiencies", id:"character-proficiencies-container", content:(
+                    container({title:"Proficiencies", id:"character-proficiencies-container", style:"display:none", content:(
                         table({
                             id:"character-proficiencies",
                             headers:["", ""],
-                            config:"1fr min-content",
-                            content:(
-                                row({content:"a big description", columns:["Sword", "Expertise"], config:"1fr 1fr"})
-                            )
+                            config:"1fr min-content"
                         })
                     )}) +
-                    container({title:"Resistances", id:"character-resistances-container", content:(
+                    container({title:"Resistances", id:"character-resistances-container", style:"display:none", content:(
                         table({
                             id:"character-resistances",
                             headers:["", ""],
-                            config:"1fr min-content",
-                            content:(
-                                row({content:"a big description", columns:["Fire", "Immunity"], config:"1fr 1fr"})
-                            )
+                            config:"1fr min-content"
                         })
                     )})
                 )
