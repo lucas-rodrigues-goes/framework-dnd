@@ -436,7 +436,7 @@
             div({id:"gm-menu", classes:"menu bottom right", content:(
                 div({classes:"button-background", content:(
                     image({id:"code-map", src:"asset://ac911ef1f21300a44b3bdadd9bdee8e4"}) +
-                    image({id:"region-map", src:"asset://f9980524cd2aab3c5a9faf165b051ded"}) +
+                    image({id:"map", src:"asset://f9980524cd2aab3c5a9faf165b051ded"}) +
                     image({id:"create-character", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
                     image({id:"database", src:"asset://f218b6ad34fe8564e0553dc2bba91cc8"})
                 )})
@@ -446,7 +446,7 @@
 
         // Events
         getId("code-map").addEventListener("click", () => {teleport("0")})
-        getId("region-map").addEventListener("click", () => {teleport("Region")})
+        getId("map").addEventListener("click", () => {teleport("Map")})
         getId("info").addEventListener("click", () => {openClosePage("", "Character Sheet", "character_sheet.html")})
         getId("database").addEventListener("click",() => { openClosePage("", "Database", "database.html") })
         getId("create-character").addEventListener("click", () => {openClosePage("", "Character Creation", "character_creation.html")})
