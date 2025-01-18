@@ -120,6 +120,18 @@ function openClosePage(arguments, page_name, page_link) {
     request.send(arguments + ";" + page_name + ";" + page_link);
 }
 
+function teleport(arguments) {
+    let request = new XMLHttpRequest();
+    request.open("POST", "macro:teleport@lib:back", true);
+
+    request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+            valueCallback(request.response);
+        }
+    };
+    request.send(arguments);
+}
+
 
 
 //=====================================================================================================
