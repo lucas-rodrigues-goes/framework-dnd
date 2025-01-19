@@ -291,7 +291,8 @@ pre {
 .page-turner {
     position:absolute; 
     margin:1vh; 
-    font-size: 110%
+    font-size: 110%;
+    z-index:20;
 }
 
 
@@ -413,40 +414,93 @@ button:active {
 }
 
 /*===================================================================================================*/
-/* Input Fields, Select and Textareas */
+/* Input, Select and Textarea fields */
 /*===================================================================================================*/
 
-input {
-    cursor: text;
-}
-input, select, textarea {
-    -webkit-user-select: auto; /* Safari */
-    -ms-user-select: auto; /* IE 10 and IE 11 */
-    user-select: auto; /* Standard syntax */
-    -webkit-appearance: none;
-    appearance: none;
-    width:90%;
-    font-size: 1.7vh;
-   
-    background-color: #eee;
-    border: 0.1vh solid #444;
-    border-radius: 1vh;
+  /* General container styling for all fields */
+  .input-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 3vh ;
+    width: 100%;
+  }
 
-    padding:0.5vh;
-    margin-top: 2vh;
-    margin-bottom: 2vh;
-
-}
-input:focus, select:focus, textarea:focus{
+  /* Styling for input, textarea, and select elements */
+  .input-container input,
+  .input-container textarea,
+  .input-container select {
+    width: 100%;
+    padding: 1vh 1vh 0.5vh 0.5vh;
+    border-bottom: 0.2vh solid #888;
+    border-top: none; border-left:none; border-right:none;
+    border-radius: 0;
+    background: transparent;
     outline: none;
-}
-select:hover {
-    cursor: pointer;
-}
-select:invalid {
-    color: rgb(173, 173, 173);
-}
+    transition: border-color 0.3s ease;
 
+    color: #fff;
+  }
+
+  .input-container input:focus,
+  .input-container textarea:focus,
+  .input-container select:focus {
+    border-color: #FFF;
+  }
+
+  /* Label styling */
+  .input-container label {
+    position: absolute;
+    top: 1vh;
+    left: 0;
+    color: #888;
+    background-color: #262626;
+    border-radius: 1vh;
+    padding: 0.5vh;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  /* Move the label up when the field is focused */
+  .input-container input:focus + label,
+  .input-container textarea:focus + label,
+  .input-container select:focus + label{
+    top: -1.75vh;
+    color: #FFF;
+  }
+
+  .input-container input:not(:placeholder-shown) + label,
+  .input-container textarea:not(:placeholder-shown) + label,
+  .input-container select.filled + label {
+    top: -1.75vh;
+  }
+
+  /* Specific styling for <textarea> */
+  .input-container textarea {
+    resize: none; /* Prevent resizing */
+    max-height: 30vh;
+    margin-top: 1vh;
+    /* overflow:hidden; */
+  }
+
+  /* Specific styling for <select> */
+  .input-container select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding-right: 2vh; /* Space for dropdown arrow */
+  }
+
+  /* Dropdown arrow for select */
+  .input-container select::after {
+    content: "▼";
+    position: absolute;
+    right: 1vh;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #ccc;
+  }
 
 
 /*===================================================================================================*/

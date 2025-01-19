@@ -38,29 +38,8 @@ function pre({content, id, classes, style}={}) {
     return element({content, id, classes, style, tag:"pre"})
 }
 
-function input({value, id, classes, style, placeholder}={}) {
-    return element({value, id, classes, style, placeholder, tag:"input"})
-}
-
-function textarea({value, id, classes, style, rows="10", placeholder}={}) {
-    additional = `rows="`+rows+`"`
-
-    return element({value, id, classes, style, placeholder, additional, tag:"textarea"})
-}
-
-function image({id, style, classes, src, onclick}={}) {
-    return element({id, style, classes, src, onclick, tag:"image"})
-}
-
-function button({content, id, classes, style, onclick}={}) {
-    return element({content, id, classes, style, onclick, tag:"button"})
-}
-
-function option({content, value, placeholder=false, disabled=false}={}) {
+function option({content, value}={}) {
     let additional = ""
-
-    additional += placeholder ? ` value="" selected ` : "";
-    additional += disabled ? ` disabled ` : "";
 
     return element({content, value, additional, tag:"option"})
 }
@@ -75,17 +54,58 @@ function options_from_array(array) {
     return content
 }
 
-function select({content, content_type="array", id, classes, style, placeholder="", required=false}={}) {
+function select({content, style, content_type="array", id, placeholder=""}={}) {
 
     switch(content_type) {
         case "array":
             content = 
-                option({content:placeholder, placeholder:true, disabled:required}) +
+                option({content:" ", value:""}) +
                 options_from_array(content).trim()
             break
     }
 
-    return element({content, id, classes, style, tag:"select", additional:"required"})
+    let return_content = (
+        div({classes:"input-container", style, id:id+"-container", content:(
+            element({tag:"select", id, additional:`required`, content}) +
+            element({tag:"label", content:placeholder, additional:`for="`+id+`"`})
+        )})
+    )
+
+    return return_content
+}
+
+function input({id, style, placeholder}={}) {
+    let return_content = (
+        div({classes:"input-container", style, id:id+"-container", content:(
+            element({tag:"input", id, placeholder:" ", additional:`type="text" required`}) +
+            element({tag:"label", content:placeholder, additional:`for="`+id+`"`})
+        )})
+    )
+
+    return return_content
+}
+
+function textarea({id, style, placeholder}={}) {
+    let return_content = (
+        div({classes:"input-container", id:id+"-container", content:(
+            element({tag:"textarea", style, id, placeholder:" ", additional:`
+                type="text" rows="1" required oninput="
+                    this.style.height = &quot;&quot;
+                    this.style.height = this.scrollHeight + 4 + &quot;px&quot;"
+            `}) +
+            element({tag:"label", content:placeholder, additional:`for="`+id+`"`})
+        )})
+    )
+
+    return return_content
+}
+
+function image({id, style, classes, src, onclick}={}) {
+    return element({id, style, classes, src, onclick, tag:"image"})
+}
+
+function button({content, id, classes, style, onclick}={}) {
+    return element({content, id, classes, style, onclick, tag:"button"})
 }
 
 function container({content, id="", title, style, content_style="",max_height=""}={}) {
@@ -343,6 +363,52 @@ function updateColapsible() {
             event.stopPropagation(); // Prevent triggering row click
         });
 });
+}
+
+function loadSelect() {
+    const updateSelectStates = () => {
+      document.querySelectorAll("select").forEach(select => {
+        // Check and add "filled" class on initialization
+        if (select.value) {
+          select.classList.add("filled");
+        }
+  
+        // Add event listener for changes
+        if (!select.dataset.listenerAttached) {
+          select.addEventListener("change", function () {
+            if (this.value) {
+              this.classList.add("filled");
+            } else {
+              this.classList.remove("filled");
+            }
+          });
+          // Mark the select as having a listener attached
+          select.dataset.listenerAttached = true;
+        }
+      });
+    };
+  
+    // Initial call to update all existing <select> elements
+    updateSelectStates();
+  
+    // Observe DOM changes for dynamically added <select> elements
+    const observer = new MutationObserver(() => updateSelectStates());
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function updateInputFields() {
+
+    // Select all input, select, and textarea elements
+    const elements = document.querySelectorAll("input, select, textarea");
+  
+    // Loop through each element and trigger "input" and "change" events
+    elements.forEach(element => {
+      // Trigger the "input" event
+      element.dispatchEvent(new Event("input"));
+  
+      // Trigger the "change" event (for select and input elements)
+      element.dispatchEvent(new Event("change"));
+    });
 }
 
 //=====================================================================================================

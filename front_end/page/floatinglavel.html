@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floating Label Solution</title>
+<style>
+  /* General container styling for all fields */
+  .input-container {
+    position: relative;
+    margin: 20px 0;
+    width: 100%;
+  }
+
+  /* Styling for input, textarea, and select elements */
+  .input-container input,
+  .input-container textarea,
+  .input-container select {
+    width: 100%;
+    padding: 10px 10px 10px 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: transparent;
+    outline: none;
+    transition: border-color 0.3s ease;
+  }
+
+  .input-container input:focus,
+  .input-container textarea:focus,
+  .input-container select:focus {
+    border-color: #007BFF;
+  }
+
+  /* Label styling */
+  .input-container label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 16px;
+    color: #aaa;
+    background: white;
+    padding: 0 5px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  /* Move the label up when the field is focused */
+  .input-container input:focus + label,
+  .input-container textarea:focus + label,
+  .input-container select:focus + label {
+    top: -10px;
+    left: 5px;
+    font-size: 12px;
+    color: #007BFF;
+  }
+
+  /* Move the label up when the field has content */
+  .input-container input:not(:placeholder-shown) + label,
+  .input-container textarea.filled + label,
+  .input-container select.filled + label {
+    top: -10px;
+    left: 5px;
+    font-size: 12px;
+    color: #007BFF;
+  }
+
+  /* Specific styling for <textarea> */
+  .input-container textarea {
+    resize: none; /* Prevent resizing */
+    min-height: 100px;
+  }
+
+  /* Specific styling for <select> */
+  .input-container select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    padding-right: 20px; /* Space for dropdown arrow */
+  }
+
+  /* Dropdown arrow for select */
+  .input-container select::after {
+    content: "▼";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #ccc;
+  }
+</style>
+</head>
+<body>
+
+<div class="input-container">
+  <input id="name" type="text" placeholder=" " required>
+  <label for="name">Name</label>
+</div>
+
+<div class="input-container">
+  <textarea id="message" placeholder=" " required></textarea>
+  <label for="message">Your Message</label>
+</div>
+
+<div class="input-container">
+  <select id="options" required>
+    <option value="" selected></option>
+    <option value="1">Option 1</option>
+    <option value="2">Option 2</option>
+    <option value="3">Option 3</option>
+  </select>
+  <label for="options">Choose an Option</label>
+</div>
+
+<script>
+  // JavaScript to handle filled state for textarea
+  const textarea = document.getElementById('message');
+
+  // Add event listener to track content in the textarea
+  textarea.addEventListener("select", function () {
+    if (this.value.trim() !== "") {
+      this.classList.add("filled");
+    } else {
+      this.classList.remove("filled");
+    }
+  });
+
+  // JavaScript to add support for filled select fields
+  document.querySelectorAll('select').forEach(select => {
+    // Update the 'filled' class on initialization
+    if (select.value) {
+      select.classList.add('filled');
+    }
+
+    // Add event listener for changes
+    select.addEventListener("change", function () {
+      if (this.value) {
+        this.classList.add("filled");
+      } else {
+        this.classList.remove("filled");
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+[dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+
+    [r:'
+    <style>
+        img { margin: 0; }
+        img:hover { opacity: 0.5; }
+        img:active { opacity: 0.3; }
+
+        .input-container label {
+            position: absolute;
+            top: 1vh;
+            left: 0;
+            color: #888;
+            background-color: #292929;
+            border-radius: 1vh;
+            padding: 0.5vh;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+    </style>
+    <script>
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+        
+        const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
+        const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
+
+        function isTabActive(tab_id) {
+            return getId(tab_id).style.display != "none"
+        }
+
+        function updateTabs() {
+            function updateSpells() {
+                function custom_row ({
+                    name, level, school,
+                    cast_time, range, target,
+                    components, duration, classes,
+                    description, description_higher_levels
+                }) {
+
+                    // Duration
+                    duration = duration == 0 ? "Instantaneous" : timeUnit(duration);
+
+                    // Cast Time
+                    cast_time = cast_time/2+" seconds"
+
+                    // Components
+                    components_string = ""
+                    for (const i in components) {
+                        components_string += components[i]
+                        components_string += i != components.length-1 ? ", " : ""
+                    }
+                    components_string = capitalize(components_string)
+
+                    // Classes
+                    classes_string = ""
+                    for (const i in classes) {
+                        classes_string += capitalize(classes[i])
+                        classes_string += i != classes.length-1 ? ", " : ""
+                    }
+
+                    // Range
+                    range = isNaN(Number(range)) ? capitalize(range) : range + " feet"
+
+                    // Higher levels description
+                    description_higher_levels = description_higher_levels ? pre({content:"<b>At Higher Levels:</b> " + description_higher_levels}) : ""
+
+                    description = (
+                        div({style:"line-height: 1.5;text-align:left;padding-top:1vh;", content:(`
+                            <b>Classes</b>: `+classes_string+`
+                            <br><b>Components</b>: `+components_string+`
+                            <br><b>Target</b>: `+target+`
+                            <br><b>Range</b>: `+range+`
+                            <br><b>Casting Time</b>: `+cast_time+`
+                            <br><b>Duration</b>: `+duration+`
+                        `)}) +
+                        pre({content:description}) +
+                        description_higher_levels
+                    )
+
+                    // Image
+                    const schoolImages = {
+                        "abjuration": "asset://610c5852df8ef040a3c1ba678fbd2e3d",
+                        "conjuration": "asset://ac65fdab4c0af0eb6e502ea508c27607",
+                        "divination": "asset://4aad8d5a0358701909aea571612a2485",
+                        "enchantment": "asset://8d2464a3ae0afde2ce0ec69abd65aa2f",
+                        "evocation": "asset://79f5407b61a5d7cf13137910bb0cf3fc",
+                        "illusion": "asset://d0a8db9574e38703b490746c17d91560",
+                        "necromancy": "asset://4e7caf122839630f94575156850cf067",
+                        "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
+                    };
+                    image_src = schoolImages[school] || "";
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(level), 
+                        capitalize(school), 
+                        duration,
+                        image({src:edit_icon, id:"spells-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"spells-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr 10vh"})
+                }
+
+                // Filters
+                const 
+                string_filter = getId("spells-string-filter").value,
+                level_filter = getId("spells-level-filter").value,
+                school_filter = getId("spells-school-filter").value,
+                classes_filter = getId("spells-classes-filter").value
+
+                toBackend(`
+                    [
+                        database.get_spells_list({
+                            "school":"`+school_filter+`", 
+                            "level":"`+level_filter+`", 
+                            "player_class":"`+classes_filter+`"
+                        }, "", "`+string_filter+`"),
+                        database.spells.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("spells-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("spells-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        spell = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...spell})
+                    }
+
+                    // Update Table
+                    getId("spells-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("spells-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("spell_set.html", value) }) // Edit
+                        getId("spells-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_spell("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+            if (isTabActive("spells-tab")) {updateSpells()}
+        }
+
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function damageTab() {
+            getId("damage-tab").innerHTML += (
+                input({id:"damage-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"damage-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "elemental", "physical", "special"
+                ]}) +
+                table({id:"damage-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                button({id:"damage-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("damage-new").addEventListener("click", ()=>{ openPage("damage_set.html","") }) 
+
+            loadSelect()
+        }
+
+        function spellsTab() {
+            getId("spells-tab").innerHTML += (
+                input({id:"spells-string-filter", placeholder:"Search", style:"width:60%"}) +
+                select({id:"spells-level-filter", placeholder:"Level", style:"width:10%", content:[
+                    "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"
+                ]}) +
+                select({id:"spells-school-filter", placeholder:"School", style:"width:15%", content:[
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"
+                ]}) +
+                select({id:"spells-classes-filter", placeholder:"Class", style:"width:10%", content:[
+                    "bard", "cleric", "druid", "sorcerer", "paladin", "ranger", "warlock", "wizard"
+                ]}) +
+                table({id:"spells-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                button({id:"spells-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("spells-new").addEventListener("click", ()=>{ openPage("spell_set.html","") }) 
+
+            loadSelect()
+        }
+
+        function loadPage() {
+            document.body.innerHTML = tabs({content:[
+                //"classes",
+                "races", 
+                "proficiencies", 
+                "conditions", 
+                "features", 
+                "items", 
+                "damage", 
+                //"resources", 
+                "spells",
+            ]})
+            loadTabs()
+
+            damageTab()
+            spellsTab()
+        }
+
+        function onWindowLoad() {
+            loadPage()
+
+            updateTabs; setInterval(updateTabs,200)
+
+        }
+
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
+    </script>
+    ']
+</head>
+
+<body>
+</body>
+
+}]
