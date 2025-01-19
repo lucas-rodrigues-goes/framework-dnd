@@ -110,37 +110,36 @@ pre {
 
 .checkbox-container {
     display: flex;
-    align-items: center;       /* Vertically center the items */
-    justify-content: center;    /* Horizontally center the items */
+    align-items: center; /* Vertically center items */
+    justify-content: flex-start; /* Align text and checkbox to the left */
     width: 100%;
-    margin: 5px;
-}
-
-.checkbox-grid {
-    display: grid; /* Enable grid layout */
-    grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-    gap: 0px; /* Add space between items */
-    width: 100%;
-    margin: 10px 0px;
+    margin: auto;
+    margin-top: 1vh;
+    margin-bottom: 0.5vh;
+    gap: 0.8vh; /* Consistent space between checkbox and text */
 }
 
 .checkbox-text {
-    font-size: 90%;
-    min-width: 40px;
-    padding-bottom: 3px;
-    margin-right: 8px;
+    font-size: 90%; /* Adjust font size as needed */
+    line-height: 1.2; /* Maintain proper vertical spacing for text */
+    flex: 1; /* Allow the text to take up available space */
+    padding: 0; /* Remove unnecessary padding */
+    margin: 0; /* Remove unnecessary margin */
+    white-space: normal; /* Allow text to wrap to the next line */
+    overflow: visible; /* Ensure no clipping of text */
 }
 
 .checkbox {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #333;
-    border-radius: 4px;
+    width: 2vh;
+    height: 2vh;
+    border: 0.2vh solid #333;
+    border-radius: 0.2vh;
     display: inline-flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
     user-select: none;
+    flex-shrink: 0; /* Prevent checkbox from resizing */
 }
 
 .checkbox[data-checked="true"] {
@@ -153,7 +152,7 @@ pre {
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     color: #333;
-    font-size: 16px;
+    font-size: 1.7vh;
 }
 
 
@@ -287,6 +286,12 @@ pre {
 
 .tab-switch-div .tab-switch:last-child {
     margin-right: 1.5vh;                   /* Remove right margin for the last tab */
+}
+
+.page-turner {
+    position:absolute; 
+    margin:1vh; 
+    font-size: 110%
 }
 
 
