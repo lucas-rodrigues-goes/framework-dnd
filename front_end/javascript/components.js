@@ -100,8 +100,8 @@ function textarea({id, style, placeholder}={}) {
     return return_content
 }
 
-function image({id, style, classes, src, onclick}={}) {
-    return element({id, style, classes, src, onclick, tag:"image"})
+function img({id, style, classes, src, onclick}={}) {
+    return element({id, style, classes, src, onclick, tag:"img"})
 }
 
 function button({content, id, classes, style, onclick}={}) {

@@ -280,11 +280,11 @@
                             if(feature) {
                                 const description = feature.description
                                 const type = feature.subtype || feature.type
-                                const image_src = subtypeImages[type] || typeImages[type]
+                                const image = subtypeImages[type] || typeImages[type]
 
                                 rows += row({
                                     columns:[
-                                        image({src:image_src, style:"height:2vh"}),
+                                        img({src:image, style:"height:2vh"}),
                                         name,
                                         capitalize(type),
                                     ], 
@@ -368,7 +368,7 @@
 
                             if (type_not_default || reduction != 0) {
                                 const damage_type = database.damage_types.data[name]
-                                const image_src = damage_type.image
+                                const image = damage_type.image
                                 let show_type
                                 if(type_not_default) {
                                     show_type = capitalize(type)
@@ -392,7 +392,7 @@
 
                                 rows += row({
                                     columns:[
-                                        image({src:image_src, style:"height:2vh"}),
+                                        img({src:image, style:"height:2vh"}),
                                         capitalize(name),
                                         show_type,
                                     ],
@@ -444,7 +444,7 @@
                     subtitle({content:"Name"}) +
                     element({tag:"h2", id:"name", content:""}) +
     
-                    image({id:"portrait", src:""}) +
+                    img({id:"portrait", src:""}) +
     
                     subtitle({content:"Class"}) +
                     element({tag:"h2", id:"class", content:""}) +

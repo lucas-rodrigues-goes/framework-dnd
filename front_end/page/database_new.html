@@ -121,8 +121,8 @@
                     // Columns
                     columns = [
                         name,
-                        image({src:edit_icon, id:"races-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"races-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"races-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"races-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -164,12 +164,8 @@
                     for (const key of filter_list) {
                         race = data[key]
 
-                        object = {...race}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...race})
                     }
 
                     // Update Table
@@ -192,7 +188,7 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, description, image_src=""
+                    name, type, description, image=""
                 }) {
 
                     description_text = description[0] != "" > 0 ? pre({content:"<b>Proficiency: </b>"+description[0]}) : ""
@@ -201,11 +197,11 @@
                     description_text += description[3] != "" ? pre({content:"<b>Grandmastery: </b>"+description[3]}) : ""
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name,
                         capitalize(type),
-                        image({src:edit_icon, id:"proficiencies-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"proficiencies-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"proficiencies-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"proficiencies-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -250,12 +246,8 @@
                     for (const key of filter_list) {
                         proficiency = data[key]
 
-                        object = {...proficiency}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...proficiency})
                     }
 
                     // Update Table
@@ -278,15 +270,15 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, description, image_src=""
+                    name, type, description, image=""
                 }) {
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name,
                         capitalize(type),
-                        image({src:edit_icon, id:"conditions-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"conditions-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"conditions-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"conditions-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -331,12 +323,8 @@
                     for (const key of filter_list) {
                         condition = data[key]
 
-                        object = {...condition}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...condition})
                     }
 
                     // Update Table
@@ -359,7 +347,7 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, subtype, level, description, image_src=""
+                    name, type, subtype, level, description, image=""
                 }) {
 
                     // Image
@@ -385,7 +373,7 @@
                         "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
                         "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
                     };
-                    image_src = subtypeImages[subtype] || typeImages[type] || "";
+                    image = subtypeImages[subtype] || typeImages[type] || "";
 
                     // Validate if present
                     subtype = subtype ? capitalize(subtype) : ""
@@ -393,13 +381,13 @@
                     level = level ? "Level " + level : ""
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name,
                         capitalize(type),
                         level,
                         subtype,
-                        image({src:edit_icon, id:"features-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"features-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"features-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"features-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -448,12 +436,8 @@
                     for (const key of filter_list) {
                         feature = data[key]
 
-                        object = {...feature}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...feature})
                     }
 
                     // Update Table
@@ -476,16 +460,16 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, subtype="", description, image_src=""
+                    name, type, subtype="", description, image=""
                 }) {
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name, 
                         capitalize(type),
                         capitalize(subtype),
-                        image({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"items-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"items-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -530,12 +514,8 @@
                     for (const key of filter_list) {
                         item = data[key]
 
-                        object = {...item}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...item})
                     }
 
                     // Update Table
@@ -558,15 +538,15 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, description, image_src
+                    name, type, description, image
                 }) {
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name, 
                         capitalize(type), 
-                        image({src:edit_icon, id:"damage-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"damage-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"damage-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"damage-table-row-"+name+"-remove"})
                     ]
 
                     return row({
@@ -611,12 +591,8 @@
                     for (const key of filter_list) {
                         damage = data[key]
 
-                        object = {...damage}
-                        object["image_src"] = object["image"]
-                        delete object["image"]
-
                         items.push(key)
-                        rows += custom_row({...object})
+                        rows += custom_row({...damage})
                     }
 
                     // Update Table
@@ -696,16 +672,16 @@
                         "necromancy": "asset://4e7caf122839630f94575156850cf067",
                         "transmutation": "asset://536f6fd178afa1dc3d79789af1112104"
                     };
-                    image_src = schoolImages[school] || "";
+                    image = schoolImages[school] || "";
 
                     columns = [
-                        image({src:image_src, style:"height:2.4vh"}), 
+                        img({src:image, style:"height:2.4vh"}), 
                         name, 
                         capitalize(level), 
                         capitalize(school), 
                         duration,
-                        image({src:edit_icon, id:"spells-table-row-"+name+"-edit"}) +
-                        image({src:remove_icon, id:"spells-table-row-"+name+"-remove"})
+                        img({src:edit_icon, id:"spells-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"spells-table-row-"+name+"-remove"})
                     ]
 
                     return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr min-content"})

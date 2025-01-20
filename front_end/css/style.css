@@ -324,7 +324,7 @@
         grid-template-columns: 1fr 2fr 1fr;
         gap: 1vh;
 
-        height: 3vh;
+        height: vh;
 
         padding: 0 1vh;
         padding-top:0.5vh;
