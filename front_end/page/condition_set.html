@@ -1,153 +1,18 @@
 [h:id = arg(0)]
 
-[dialog5("Condition", "width=400; height=900; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Condition", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
     <script>
         const id = "{id}"
     </script>
-    
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
 
     [r:'
-    <style>
-        .checkbox-container {
-        display: flex;
-        align-items: center;       /* Vertically center the items */
-        justify-content: center;    /* Horizontally center the items */
-        width: 100%;
-        margin: 5px;
-        }
-
-        .checkbox-grid {
-        display: grid; /* Enable grid layout */
-        grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-        gap: 0px; /* Add space between items */
-        width: 100%;
-        margin: 10px 0px;
-        }
-
-        .checkbox-text {
-        font-size: 90%;
-        min-width: 40px;
-        padding-bottom: 3px;
-        margin-right: 8px;
-        }
-
-        .checkbox {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #333;
-        border-radius: 4px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        user-select: none;
-        }
-
-        .checkbox[data-checked="true"] {
-        background-color: #ddd;
-        color: white;
-        }
-
-        .checkbox[data-checked="true"]::after {
-        font-size: 14px;
-        font-weight: bold;
-        }
-    </style>
     <script>
-
-        //=====================================================================================================
-        // Components
-        //=====================================================================================================
-
-        function title(title = "") {
-            return `
-            <h4>`+title+`</h4>
-            `
-        }
-
-        function input(id = "", title = "", placeholder = "", style = "") {
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <input style="`+style+`" id="`+id+`" placeholder="`+placeholder+`"></input>
-            `
-        }
-
-        function select(id = "", title = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <select required style="`+style+`" id="`+id+`">
-                <option disabled selected value="" hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function inline_select(id = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <select required style="`+style+`" id="`+id+`">
-                <option value="" disabled selected hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function checkbox(id = "", title = "", min_width = "40") {
-            if (id == "" && title == "") {
-                style = `style="display:none"`
-            } else {style = ""}
-
-            return `
-            <div class="checkbox-container">
-                <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
-                <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
-            </div>
-            `
-        }
-
-        function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
-            let checkboxes_string = ""
-            for (const box of checkboxes) {
-                checkboxes_string += checkbox(box[0], box[1], min_width)
-            }
-
-            return `
-            <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
-                `+checkboxes_string+`
-            </div>
-            `
-        }
-
-        function text_area(id = "", title = "", size = "7") {
-            return `
-            <h4>`+title+`</h4>
-            <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
-            `
-        }
-
-        function container(title="", children="") {
-
-            return `
-            <div class="spacer"></div>
-            <div class="container center-horizontal" style="padding-bottom:0px;">
-                <h3 class="container-title">`+title+`</h3>
-                <div class="spacer" ></div>
-                `+children+`
-                <div class="spacer"></div>
-            </div>
-            <div class="spacer"></div>
-            `
-        }
 
 
 
@@ -165,30 +30,37 @@
                 getId("name").value = capitalize(object.name)
                 getId("type").value = object.type
                 getId("description").value = object.description
+                getId("description-unit").value = "rounds"
                 getId("duration").value = object.duration
                 
+                loadInputFields()
             })
-        }
-
-        function loadCheckboxes() {
-            // Select all elements with the class checkbox
-            const checkboxes = document.querySelectorAll(".checkbox");
-
-            checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("click", () => {
-                // Toggle the data-checked attribute
-                const isChecked = checkbox.getAttribute("data-checked") === "true";
-                checkbox.setAttribute("data-checked", !isChecked);
-            });
-            });
         }
 
         function submit() {
             // Get values from form
             let name = getId("name").value;
             let type = getId("type").value;
-            let duration = getId("duration").value;
             let description = getId("description").value;
+
+            // Duration
+            let duration;
+            let duration_rounds = getId("duration").value;
+            let duration_unit = getId("duration-unit").value;
+            switch (duration_unit) {
+                case "days":
+                    duration = duration_rounds * 14400
+                    break
+                case "hours":
+                    duration = duration_rounds * 600
+                    break
+                case "minutes":
+                    duration = duration_rounds * 10
+                    break
+                default:
+                    duration = duration_rounds
+                    break
+            }
             
 
             // Send data to backend
@@ -212,33 +84,43 @@
 
         function loadPage() {
 
-            getId("content").innerHTML += 
+            // Create main div
+            document.body.innerHTML = div({classes:"outer", id:"content"})
 
-                container("Basic",
-                    input("name", "Name", "Condition name") +
+            getId("content").innerHTML += (
+                container({title:"Basic", content:(
+                    input({id:"name", placeholder:"Name"}) +
+                    select({
+                        id:"type", 
+                        placeholder:"Type",
+                        content:["spell", "natural", "curse", "poison", "special"]
+                    }) +
+                    input({id:"duration", placeholder:"Duration", style:"width:65%"}) + 
+                    select({
+                        id:"duration-unit", 
+                        placeholder:"Unit",
+                        style:"width:33%",
+                        content:["rounds", "minutes", "hours", "days"]
+                    })
+                )}) +
+                "<br><br>" +
+                container({title:"Information", content:(
+                    textarea({id:"description", placeholder:"Description"})
+                )}) +
+                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
+                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
+            )
 
-                    select("type", "Type", [
-                        "spell", "natural", "curse", "poison", "special"], "Condition type") +
+            // Event listeners
+            getId("close").addEventListener("click", () => { closePage("Condition") })
+            getId("submit").addEventListener("click", () => { submit() })
 
-                    input("duration", "Duration", "Default duration in rounds")
-                ) +
-
-                container("Information",
-                    text_area("description", "Description", "10") 
-                )
+            loadSelect()
         }
 
         function onWindowLoad() {
             loadPage()
 
-            let close_button = getId("close")
-            let submit_button = getId("submit")
-            let get_image_button = getId("get-image")
-
-            close_button.addEventListener("click", () => { closePage("Condition") })
-            submit_button.addEventListener("click", () => { submit() })
-
-            loadCheckboxes()
             updateFields()
         }
 
@@ -253,14 +135,6 @@
 <input type="text" class="hidden" id="id" value="{id}"></input>
 
 <body>
-    <div class="outer">
-
-        <div id="content"></div>
-
-        <button id="close">Close</button>
-        <button id="submit">Save</button>
-
-    </div>
 </body>
 
 }]
