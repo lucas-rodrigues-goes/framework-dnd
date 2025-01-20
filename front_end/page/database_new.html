@@ -232,6 +232,7 @@
                 })
             }
 
+            
             // Updates features tab
             if (isTabActive("features-tab")) {updateFeatures()}
             function updateFeatures() {
@@ -296,7 +297,7 @@
                 const 
                 string_filter = getId("features-string-filter").value,
                 type_filter = getId("features-type-filter").value,
-                subtype_filter = getId("features-subtype-filter").value,
+                subtype_filter = getId("features-subclass-filter").value || getId("features-class-filter").value,
                 level_filter = getId("features-level-filter").value
 
                 toBackend(`
@@ -684,36 +685,52 @@
         }
         
         function featuresTab() {
-            const dnd_classes = [
-                "barbarian", "Path of the Berserker", "Path of the Totem Warrior",
-                "bard", "College of Lore", "College of Valor",
-                "cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
-                "druid", "Circle of the Land", "Circle of the Moon",
-                "fighter", "Champion", "Battle Master", "Eldritch Knight",
-                "monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
-                "paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
-                "ranger", "Hunter", "Beast Master",
-                "rogue", "Thief", "Assassin", "Arcane Trickster",
-                "sorcerer", "Draconic Bloodline", "Wild Magic",
-                "warlock", "The Archfey", "The Fiend", "The Great Old One",
-                "wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
-            ]
+
+            const classSubclass = {
+                "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+                "bard": ["College of Lore", "College of Valor"],
+                "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+                "druid": ["Circle of the Land", "Circle of the Moon"],
+                "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+                "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+                "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+                "ranger": ["Hunter", "Beast Master"],
+                "rogue": ["Thief", "Assassin", "Arcane Trickster"],
+                "sorcerer": ["Draconic Bloodline", "Wild Magic"],
+                "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+                "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+            }
 
             const from1to20 = []
             for (let i = 1; i<=20; i++) {from1to20.push(String(i))}
 
             getId("features-tab").innerHTML += (
-                input({id:"features-string-filter", placeholder:"Search", style:"width:50%"}) +
+                input({id:"features-string-filter", placeholder:"Search", style:"width:60%"}) +
                 select({id:"features-type-filter", placeholder:"Type", style:"width:10%", content:[
                     "racial", "feat", "class"
                 ]}) +
-                select({id:"features-subtype-filter", placeholder:"Class", style:"width:25%", content:dnd_classes}) +
                 select({id:"features-level-filter", placeholder:"Level", style:"width:10%", content:from1to20}) +
+                select({id:"features-class-filter", placeholder:"Class", style:"width:15%", content:Object.keys(classSubclass)}) +
+                select({id:"features-subclass-filter", placeholder:"Subclass", style:"display:none", content:""}) +
                 table({id:"features-table", headers:[""], config:""}) +
                 button({id:"features-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("features-new").addEventListener("click", ()=>{ openPage("feature_set.html","") }) 
+            getId("features-new").addEventListener("click", () => { openPage("feature_set.html","") })
+            getId("features-class-filter").addEventListener("input", () => {
+                const current_class = getId("features-class-filter").value
+
+                if(current_class) {
+                    getId("features-string-filter-container").setAttribute("style", "width:35%")
+                    getId("features-subclass-filter-container").setAttribute("style", "width:25%")
+                } else {
+                    getId("features-string-filter-container").setAttribute("style", "width:60%")
+                    getId("features-subclass-filter-container").setAttribute("style", "display:none")
+                }
+
+                getId("features-subclass-filter").innerHTML = option({content:" ", value:""})
+                getId("features-subclass-filter").innerHTML += options_from_array(classSubclass[current_class])
+            })
 
             loadSelect()
         }
