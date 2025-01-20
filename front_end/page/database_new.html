@@ -29,16 +29,494 @@
         //=====================================================================================================
         // Helper functions
         //=====================================================================================================
+
+        const tab_names = [
+            //"classes",
+            //"races", 
+            "proficiencies", 
+            "conditions", 
+            "features", 
+            "items", 
+            "damage", 
+            //"resources", 
+            "spells",
+        ]
         
         const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
         const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
 
-        function isTabActive(tab_id) {
-            return getId(tab_id).style.display != "none"
-        }
 
         function updateTabs() {
+
+            // Returns true if the given tab is visible
+            function isTabActive(tab_id) {
+                return getId(tab_id).style.display != "none"
+            }
+
+            // Clears all tabs but a defined one
+            function clearTabsBut(active_tab) {
+                tab_names.splice(tab_names.indexOf(active_tab), 1);
+
+                for (const tab of tab_names) {
+                    getId(tab + "-table").children[1].innerHTML = ""
+                    getId(tab + "-table").setAttribute("hash", "")
+                }
+
+                tab_names.push(active_tab)
+            }
+
+                        
+            // Updates features tab
+            if (isTabActive("proficiencies-tab")) {updateProficiencies()}
+            function updateProficiencies() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image_src=""
+                }) {
+
+                    description_text = description[0] != "" > 0 ? pre({content:"<b>Proficiency: </b>"+description[0]}) : ""
+                    description_text += description[1] != "" ? pre({content:"<b>Expertise: </b>"+description[1]}) : ""
+                    description_text += description[2] != "" ? pre({content:"<b>Mastery: </b>"+description[2]}) : ""
+                    description_text += description[3] != "" ? pre({content:"<b>Grandmastery: </b>"+description[3]}) : ""
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        image({src:edit_icon, id:"proficiencies-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"proficiencies-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"proficiencies-table-row-"+name, 
+                        columns, 
+                        content:description_text, 
+                        config:"3vh 1fr 1fr 10vh"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("proficiencies")
+
+                // Filters
+                const 
+                string_filter = getId("proficiencies-string-filter").value,
+                type_filter = getId("proficiencies-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_proficiencies_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.proficiencies.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("proficiencies-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("proficiencies-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        proficiency = data[key]
+
+                        object = {...proficiency}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("proficiencies-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("proficiencies-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("proficiency_set.html", value) }) // Edit
+                        getId("proficiencies-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_proficiency("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+                        
+            // Updates features tab
+            if (isTabActive("conditions-tab")) {updateConditions()}
+            function updateConditions() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image_src=""
+                }) {
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        image({src:edit_icon, id:"conditions-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"conditions-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"conditions-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr 10vh"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("conditions")
+
+                // Filters
+                const 
+                string_filter = getId("conditions-string-filter").value,
+                type_filter = getId("conditions-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_conditions_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.conditions.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("conditions-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("conditions-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        condition = data[key]
+
+                        object = {...condition}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("conditions-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("conditions-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("condition_set.html", value) }) // Edit
+                        getId("conditions-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_condition("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+            // Updates features tab
+            if (isTabActive("features-tab")) {updateFeatures()}
+            function updateFeatures() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, subtype, level, description, image_src=""
+                }) {
+
+                    // Image
+                    const subtypeImages = {
+                        "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
+                        "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+                        "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
+                        "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+                        "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
+                            "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
+                            "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
+                            "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
+                        "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
+                        "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+                        "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
+                        "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
+                        "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
+                        "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
+                        "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
+                    };
+                    const typeImages = {
+                        "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
+                        "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
+                        "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
+                    };
+                    image_src = subtypeImages[subtype] || typeImages[type] || "";
+
+                    // Validate if present
+                    subtype = subtype ? capitalize(subtype) : ""
+                    level = level == 0 ? "" : level
+                    level = level ? "Level " + level : ""
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        subtype,
+                        level,
+                        image({src:edit_icon, id:"features-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"features-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"features-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 5vh 1fr 1fr 10vh"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("features")
+
+                // Filters
+                const 
+                string_filter = getId("features-string-filter").value,
+                type_filter = getId("features-type-filter").value,
+                subtype_filter = getId("features-subtype-filter").value,
+                level_filter = getId("features-level-filter").value
+
+                toBackend(`
+                    [
+                        database.get_features_list({
+                            "type":"`+type_filter+`",
+                            "subtype":"`+subtype_filter+`",
+                            "level":"`+level_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.features.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("features-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("features-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        feature = data[key]
+
+                        object = {...feature}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("features-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("features-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("feature_set.html", value) }) // Edit
+                        getId("features-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_feature("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+
+            // Updates items tab
+            if (isTabActive("items-tab")) {updateItems()}
+            function updateItems() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, subtype="", description, image_src=""
+                }) {
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(type),
+                        capitalize(subtype),
+                        image({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"items-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"items-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr 1fr 10vh"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("items")
+
+                // Filters
+                const 
+                string_filter = getId("items-string-filter").value,
+                type_filter = getId("items-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_items_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.items.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("items-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("items-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        item = data[key]
+
+                        object = {...item}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("items-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("items-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("item_set.html", value) }) // Edit
+                        getId("items-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_item("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+ 
+
+            // Updates damage tab
+            if (isTabActive("damage-tab")) {updateDamage()}
+            function updateDamage() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image_src
+                }) {
+
+                    columns = [
+                        image({src:image_src, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(type), 
+                        image({src:edit_icon, id:"damage-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"damage-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"damage-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr 10vh"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("damage")
+
+                // Filters
+                const 
+                string_filter = getId("damage-string-filter").value,
+                type_filter = getId("damage-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_damage_type_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.damage_types.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("damage-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("damage-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        damage = data[key]
+
+                        object = {...damage}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("damage-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("damage-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("damage_set.html", value) }) // Edit
+                        getId("damage-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_damage_type("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+            
+
+            // Updates spells tab
+            if (isTabActive("spells-tab")) {updateSpells()}
             function updateSpells() {
+                
+                // Model for row component to be used in table
                 function custom_row ({
                     name, level, school,
                     cast_time, range, target,
@@ -112,6 +590,9 @@
                     return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr 10vh"})
                 }
 
+                // Clearing other tables for performance
+                clearTabsBut("spells")
+
                 // Filters
                 const 
                 string_filter = getId("spells-string-filter").value,
@@ -163,13 +644,94 @@
                     updateColapsible()
                 })
             }
-
-            if (isTabActive("spells-tab")) {updateSpells()}
+            
         }
+
+
 
         //=====================================================================================================
         // Execution
         //=====================================================================================================
+                
+        function proficienciesTab() {
+            getId("proficiencies-tab").innerHTML += (
+                input({id:"proficiencies-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"proficiencies-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "skill", "combat", "save", "tool", "language"
+                ]}) +
+                table({id:"proficiencies-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                button({id:"proficiencies-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("proficiencies-new").addEventListener("click", ()=>{ openPage("proficiency_set.html","") }) 
+
+            loadSelect()
+        }
+        
+        function conditionsTab() {
+            getId("conditions-tab").innerHTML += (
+                input({id:"conditions-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"conditions-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "spell", "natural", "curse", "poison", "special"
+                ]}) +
+                table({id:"conditions-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                button({id:"conditions-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("conditions-new").addEventListener("click", ()=>{ openPage("condition_set.html","") }) 
+
+            loadSelect()
+        }
+        
+        function featuresTab() {
+            const dnd_classes = [
+                "barbarian", "Path of the Berserker", "Path of the Totem Warrior",
+                "bard", "College of Lore", "College of Valor",
+                "cleric", "Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain",
+                "druid", "Circle of the Land", "Circle of the Moon",
+                "fighter", "Champion", "Battle Master", "Eldritch Knight",
+                "monk", "Way of the Open Hand", "Way of Shadow", "Way of the Four Elements",
+                "paladin", "Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance",
+                "ranger", "Hunter", "Beast Master",
+                "rogue", "Thief", "Assassin", "Arcane Trickster",
+                "sorcerer", "Draconic Bloodline", "Wild Magic",
+                "warlock", "The Archfey", "The Fiend", "The Great Old One",
+                "wizard", "School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"
+            ]
+
+            const from1to20 = []
+            for (let i = 1; i<=20; i++) {from1to20.push(String(i))}
+
+            getId("features-tab").innerHTML += (
+                input({id:"features-string-filter", placeholder:"Search", style:"width:50%"}) +
+                select({id:"features-type-filter", placeholder:"Type", style:"width:10%", content:[
+                    "racial", "feat", "class"
+                ]}) +
+                select({id:"features-subtype-filter", placeholder:"Class", style:"width:25%", content:dnd_classes}) +
+                select({id:"features-level-filter", placeholder:"Level", style:"width:10%", content:from1to20}) +
+                table({id:"features-table", headers:[""], config:""}) +
+                button({id:"features-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("features-new").addEventListener("click", ()=>{ openPage("feature_set.html","") }) 
+
+            loadSelect()
+        }
+
+        function itemsTab() {
+            getId("items-tab").innerHTML += (
+                input({id:"items-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"items-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "equipment"
+                ]}) +
+                table({id:"items-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                button({id:"items-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("items-new").addEventListener("click", ()=>{ openPage("item_set.html","") }) 
+
+            loadSelect()
+        }
 
         function damageTab() {
             getId("damage-tab").innerHTML += (
@@ -209,31 +771,28 @@
         }
 
         function loadPage() {
-            document.body.innerHTML = tabs({content:[
-                //"classes",
-                "races", 
-                "proficiencies", 
-                "conditions", 
-                "features", 
-                "items", 
-                "damage", 
-                //"resources", 
-                "spells",
-            ]})
+
+            document.body.innerHTML = tabs({content:tab_names})
             loadTabs()
 
-            damageTab()
-            spellsTab()
+            for (const name of tab_names) {
+                tabFunction = eval(name+"Tab")
+                tabFunction()
+            }
         }
 
         function onWindowLoad() {
+            // Load HTML
             loadPage()
 
-            updateTabs; setInterval(updateTabs,200)
+            // Update tables dynamically
+            updateTabs(); setInterval(updateTabs,200)
 
         }
 
         document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        
 
         //=====================================================================================================
     </script>
