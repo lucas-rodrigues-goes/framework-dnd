@@ -1,158 +1,27 @@
 [h:id = arg(0)]
 
-[dialog5("Feature", "width=400; height=900; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Feature", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
 
+    <script>
+        const id = "{id}"
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="font_awesome.css@lib:front">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
         
     [r:'
     <style>
-        .checkbox-container {
-        display: flex;
-        align-items: center;       /* Vertically center the items */
-        justify-content: center;    /* Horizontally center the items */
-        width: 100%;
-        margin: 5px;
-        }
-
-        .checkbox-grid {
-            display: grid; /* Enable grid layout */
-            grid-template-columns: repeat(3, 1fr); /* Create 3 equal columns */
-            gap: 0px; /* Add space between items */
-            width: 100%;
-            margin: 10px 0px;
-        }
-
-        .checkbox-text {
-        font-size: 90%;
-        min-width: 40px;
-        padding-bottom: 3px;
-        margin-right: 8px;
-        }
-
-        .checkbox {
-        width: 20px;
-        height: 20px;
-        border: 2px solid #333;
-        border-radius: 4px;
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-        user-select: none;
-        }
-
-        .checkbox[data-checked="true"] {
-        background-color: #ddd;
-        color: white;
-        }
-
-        .checkbox[data-checked="true"]::after {
-        font-size: 14px;
-        font-weight: bold;
-        }
     </style>
     <script>
-
-        //=====================================================================================================
-        // Components
-        //=====================================================================================================
-
-        function title(title = "") {
-            return `
-            <h4>`+title+`</h4>
-            `
-        }
-
-        function input(id = "", title = "", placeholder = "", style = "") {
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <input style="`+style+`" id="`+id+`" placeholder="`+placeholder+`"></input>
-            `
-        }
-
-        function select(id = "", title = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <h4 id="`+id+`-title">`+title+`</h4>
-            <select required style="`+style+`" id="`+id+`">
-                <option disabled selected value="" hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function inline_select(id = "", options = [], placeholder="", style = "") {
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value=`+value+`>`+capitalize(value)+`</option>`
-            }
-            return `
-            <select required style="`+style+`" id="`+id+`">
-                <option value="" disabled selected hidden>`+placeholder+`</option>
-                `+options_string+`
-            </select>
-            `
-        }
-
-        function checkbox(id = "", title = "", min_width = "40") {
-            if (id == "" && title == "") {
-                style = `style="display:none"`
-            } else {style = ""}
-
-            return `
-            <div class="checkbox-container">
-                <span class="checkbox-text" style="min-width: `+min_width+`px;">`+title+`</span>
-                <div class="checkbox" id="`+id+`" `+style+` data-checked="`+"false"+`"></div>
-            </div>
-            `
-        }
-
-        function checkbox_grid(checkboxes = [["","Title"]], rows="3", min_width="40") {
-            let checkboxes_string = ""
-            for (const box of checkboxes) {
-                checkboxes_string += checkbox(box[0], box[1], min_width)
-            }
-
-            return `
-            <div class="checkbox-grid" style = "grid-template-columns: repeat(`+rows+`, 1fr)">
-                `+checkboxes_string+`
-            </div>
-            `
-        }
-
-        function text_area(id = "", title = "", size = "7") {
-            return `
-            <h4>`+title+`</h4>
-            <textarea id="`+id+`" rows="`+size+`" cols="30"></textarea>
-            `
-        }
-
-        function container(title="", children="") {
-
-            return `
-            <div class="spacer"></div>
-            <div class="container center-horizontal" style="padding-bottom:0px;">
-                <h3 class="container-title">`+title+`</h3>
-                <div class="spacer" ></div>
-                `+children+`
-                <div class="spacer"></div>
-            </div>
-            <div class="spacer"></div>
-            `
-        }
-
-
 
         //=====================================================================================================
         // Helper functions
         //=====================================================================================================
 
-        const dndSubclasses = {
+        const classSubclass = {
             "Barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
             "Bard": ["College of Lore", "College of Valor"],
             "Cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
@@ -167,19 +36,6 @@
             "Wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
         }
         
-        function loadCheckboxes() {
-            // Select all elements with the class checkbox
-            const checkboxes = document.querySelectorAll(".checkbox");
-
-            checkboxes.forEach(checkbox => {
-            checkbox.addEventListener("click", () => {
-                // Toggle the data-checked attribute
-                const isChecked = checkbox.getAttribute("data-checked") === "true";
-                checkbox.setAttribute("data-checked", !isChecked);
-            });
-            });
-        }
-        
         function findClassBySubclass(classesObj, subclass) {
             for (const [className, subclasses] of Object.entries(classesObj)) {
                 if (subclasses.includes(subclass)) {
@@ -189,45 +45,7 @@
             return undefined; // Return null if the subclass is not found
         }
 
-        function setSubtypeStyle(style) {
-            let type = getId("type")
-            let subtype = getId("subtype")
-            let subtype_title = getId("subtype-title")
-            let subclass = getId("subclass")
-            let subclass_title = getId("subclass-title")
-            
-            subtype.setAttribute("style", style)
-            subtype_title.setAttribute("style", style)
-            subclass.setAttribute("style", style)
-            subclass_title.setAttribute("style", style)
-        }
-
-        function updateSubtype () {
-            let type = getId("type")
-            let subtype = getId("subtype")
-
-            if (type.value == "class") {
-                setSubtypeStyle("")
-            } else {
-                setSubtypeStyle("display:none")
-            }
-
-            let options = dndSubclasses[capitalize(subtype.value)] || []
-
-            options_string = ""
-            for (const value of options) {
-                options_string += `<option value="`+value+`">`+value+`</option>`
-            }
-
-            subclass.innerHTML = `
-            <option value="" selected>`+"No subclass"+`</option>
-            `+options_string+`
-            `
-        }
-
         function updateFields() {
-
-            id = getId("id").value
 
             if(id == "") {return}
 
@@ -240,14 +58,13 @@
                 getId("optional").setAttribute("data-checked", response[id].optional)
                 getId("description").value = response[id].description
 
-                let feat_class = findClassBySubclass(dndSubclasses, response[id].subtype)
+                let feat_class = findClassBySubclass(classSubclass, response[id].subtype)
                 if (feat_class != undefined) { feat_class = feat_class.toLowerCase() }
-                getId("subtype").value = feat_class || response[id].subtype || ""
-
-                updateSubtype()
+                getId("class").value = feat_class || response[id].subtype || ""
 
                 getId("subclass").value = response[id].subtype || ""
 
+                updateInputFields()
             })
         }
 
@@ -256,7 +73,7 @@
             // Get values from form
             let name = getId("name").value;
             let type = getId("type").value;
-            let subtype = getId("subclass").value || getId("subtype").value.toLowerCase() || "";
+            let subtype = getId("subclass").value || getId("class").value.toLowerCase() || "";
             let level = getId("level").value;
             let optional = getId("optional").getAttribute("data-checked");
             let description = getId("description").value;
@@ -285,46 +102,66 @@
 
         function loadPage() {
 
-            getId("content").innerHTML += 
+            // Creates main div
+            document.body.innerHTML = div({classes:"outer", id:"content"})
 
-                container("Basic",
-                    input("name", "Name", "Feature name") +
+            getId("content").innerHTML += (
+                container({title:"Basic", content:(
+                    input({id:"name", placeholder:"Name"}) +
+                    select({id:"type", placeholder:"Type", content:[
+                        "racial", "feat", "class"
+                    ]}) +
+                    select({id:"class", placeholder:"Class", style:"display:none", content:Object.keys(classSubclass)}) +
+                    select({id:"subclass", placeholder:"Subclass", style:"display:none", content:[""]})
+                )}) +
+                container({title:"Requirements", content:(
+                    input({id:"level", placeholder:"Level"}) +
+                    checkbox({id:"optional", title:"Optional"})
+                )}) +
+                container({title:"Information", content:(
+                    textarea({id:"description", placeholder:"Description"})
+                )}) +
+                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
+                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
+            )
 
-                    select("type", "Type", [
-                        "racial", "feat", "class"], "Feature type") +
+            // Event listeners
+            getId("close").addEventListener("click", () => { closePage("Feature") })
+            getId("submit").addEventListener("click", () => { submit() })
+            getId("type").addEventListener("input", () => {
+                const typeIsClass = getId("type").value == "class"
 
-                    select("subtype", "Class", [
-                        "barbarian","bard","cleric","druid","fighter","monk",
-                        "paladin","ranger","rogue","sorcerer", "warlock", "wizard"], "Any class") +
+                if (typeIsClass) { 
+                    getId("class-container").setAttribute("style", "")
+                    
+                } 
+                else { 
+                    getId("class").value = ""
+                    getId("class-container").setAttribute("style", "display:none")
+                    getId("subclass").value = ""
+                    getId("subclass-container").setAttribute("style", "display:none")
+                }
+            })
+            getId("class").addEventListener("input", () => {
+                const current_class = getId("class").value
 
-                    select("subclass", "Subclass", [], "No subclass")
-                ) +
-                
-                container("Requirements",
-                    input("level", "Level", "0") +
-                    checkbox("optional", "Optional Feature")
-                ) +
-
-                container("Information",
-                    text_area("description", "Description", "10")
-                )
-
-            getId("type").addEventListener("input", ()=>{ updateSubtype() })
-            getId("subtype").addEventListener("input", ()=>{ updateSubtype() })
+                if(current_class) {
+                    getId("subclass").innerHTML = option({content:" ", value:""}) + options_from_array(classSubclass[current_class])
+                    getId("subclass-container").setAttribute("style", "")
+                } else {
+                    getId("subclass-container").setAttribute("style", "display:none")
+                }
+            })
+        
+            // Load components
+            loadSelect()
+            loadCheckboxes()
         }
 
         function onWindowLoad() {
             loadPage()
 
-            let close_button = getId("close")
-            let submit_button = getId("submit")
-
-            close_button.addEventListener("click", () => { closePage("Feature") })
-            submit_button.addEventListener("click", () => { submit() })
-
-            loadCheckboxes()
             updateFields()
-            updateSubtype()
         }
 
         document.addEventListener("DOMContentLoaded", onWindowLoad)
@@ -335,17 +172,7 @@
     ']
 </head>
 
-<input type="text" class="hidden" id="id" value="{id}"></input>
-
 <body>
-    <div class="outer">
-
-        <div id="content"></div>
-
-        <button id="close">Close</button>
-        <button id="submit">Save</button>
-
-    </div>
 </body>
 
 }]

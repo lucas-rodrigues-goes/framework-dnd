@@ -836,8 +836,7 @@
                     getId("features-subclass-filter-container").setAttribute("style", "display:none")
                 }
 
-                getId("features-subclass-filter").innerHTML = option({content:" ", value:""})
-                getId("features-subclass-filter").innerHTML += options_from_array(classSubclass[current_class])
+                getId("features-subclass-filter").innerHTML = option({content:" ", value:""}) + options_from_array(classSubclass[current_class])
             })
 
             loadSelect()
