@@ -91,7 +91,7 @@ function textarea({id, style, placeholder}={}) {
             element({tag:"textarea", style, id, placeholder:" ", additional:`
                 type="text" rows="1" required oninput="
                     this.style.height = &quot;&quot;
-                    this.style.height = this.scrollHeight + 4 + &quot;px&quot;"
+                    this.style.height = &quot;calc(&quot; + this.scrollHeight + &quot;px + 1em)&quot;"
             `}) +
             element({tag:"label", content:placeholder, additional:`for="`+id+`"`})
         )})
@@ -347,22 +347,25 @@ function loadTabs() {
 }
 
 function updateColapsible() {
-    document.querySelectorAll(".table-row").forEach(row => {
-        row.addEventListener("click", () => {
-            const isOpen = row.classList.contains("open");
-            document.querySelectorAll(".table-row").forEach(r => r.classList.remove("open"));
+    const rows = document.querySelectorAll(".table-row");
 
-            if (!isOpen) {
-                row.classList.add("open");
+    rows.forEach((row) => {
+        row.addEventListener("click", function () {
+            // Find the next sibling expandable content
+            const content = this.nextElementSibling;
+
+            if (content && content.classList.contains("collapsible-content")) {
+                // Toggle visibility with animation
+                if (content.classList.contains("show")) {
+                    content.style.maxHeight = null;
+                    content.classList.remove("show");
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    content.classList.add("show");
+                }
             }
         });
     });
-
-    document.querySelectorAll(".action-buttons img").forEach(button => {
-        button.addEventListener("click", event => {
-            event.stopPropagation(); // Prevent triggering row click
-        });
-});
 }
 
 function loadSelect() {

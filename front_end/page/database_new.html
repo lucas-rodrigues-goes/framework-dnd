@@ -13,15 +13,7 @@
         img:active { opacity: 0.3; }
 
         .input-container label {
-            position: absolute;
-            top: 1vh;
-            left: 0;
-            color: #888;
             background-color: #292929;
-            border-radius: 1vh;
-            padding: 0.5vh;
-            pointer-events: none;
-            transition: all 0.3s ease;
         }
     </style>
     <script>
@@ -32,7 +24,7 @@
 
         const tab_names = [
             //"classes",
-            //"races", 
+            "races", 
             "proficiencies", 
             "conditions", 
             "features", 
@@ -65,6 +57,134 @@
                 tab_names.push(active_tab)
             }
 
+
+                                    
+            // Updates features tab
+            if (isTabActive("races-tab")) {updateRaces()}
+            function updateRaces() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, features, proficiencies, ability_scores, description
+                }) {
+
+                    // Features
+                    features_string = ""
+                    for (const i in features) {
+                        features_string += features[i]
+                        features_string += i != features.length-1 ? ", " : ""
+                    }
+                    features_string = features_string ? `<br><br><b>Features</b>: `+ features_string : ""
+
+                    // Proficiencies
+                    const proficiency_names = {
+                        "0":"Proficiency",
+                        "1":"Expertise",
+                        "2":"Mastery",
+                        "3":"Grandmastery",
+                    }
+                    const languages = [
+                        "Common", "Dwarvish", "Elven", "Orcish"
+                    ]
+                    proficiencies_string = ""
+                    for (const i in proficiencies) {
+                        const value = proficiencies[i]
+                        const name = value["name"]
+                        const title = languages.includes(name) ? "Language" : proficiency_names[value["level"]]
+
+                        proficiencies_string += name + " " + title
+                        proficiencies_string += i != proficiencies.length - 1 ? ", " : ""
+                    }
+                    proficiencies_string = proficiencies_string ? `<br><br><b>Proficiencies</b>: `+ proficiencies_string : ""
+
+                    // Ability Scores
+                    ability_scores_string = ""
+                    for (const score in ability_scores) {
+                        bonus = Number(ability_scores[score])
+                        if (bonus != 0) {
+                            if (bonus > 0) {bonus = "+" + bonus}
+                            ability_scores_string += capitalize(score) + " " + bonus
+                            ability_scores_string += i != ability_scores.length -1 ? ", " : ""
+                        }
+                    }
+
+                    // Description
+                    description_text = (
+                        pre({content:description}) +
+                        div({style:"line-height: 1.5; text-align:left; padding-top:1vh;", content:(
+                            `<b>Ability Scores: </b>` + ability_scores_string + `
+                            `+features_string+`
+                            `+proficiencies_string+``
+                        )})
+                    )
+
+                    // Columns
+                    columns = [
+                        name,
+                        image({src:edit_icon, id:"races-table-row-"+name+"-edit"}) +
+                        image({src:remove_icon, id:"races-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"races-table-row-"+name, 
+                        columns, 
+                        content:description_text, 
+                        config:"1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("races")
+
+                // Filters
+                const 
+                string_filter = getId("races-string-filter").value
+
+                toBackend(`
+                    [
+                        database.get_races_list({}, "", "`+string_filter+`"),
+                        database.races.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("races-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("races-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        race = data[key]
+
+                        object = {...race}
+                        object["image_src"] = object["image"]
+                        delete object["image"]
+
+                        items.push(key)
+                        rows += custom_row({...object})
+                    }
+
+                    // Update Table
+                    getId("races-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("races-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("race_set.html", value) }) // Edit
+                        getId("races-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_race("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
                         
             // Updates features tab
             if (isTabActive("proficiencies-tab")) {updateProficiencies()}
@@ -92,7 +212,7 @@
                         id:"proficiencies-table-row-"+name, 
                         columns, 
                         content:description_text, 
-                        config:"3vh 1fr 1fr 10vh"
+                        config:"3vh 1fr 1fr min-content"
                     })
                 }
 
@@ -173,7 +293,7 @@
                         id:"conditions-table-row-"+name, 
                         columns, 
                         content:pre({content:description}), 
-                        config:"3vh 1fr 1fr 10vh"
+                        config:"3vh 1fr 1fr min-content"
                     })
                 }
 
@@ -286,7 +406,7 @@
                         id:"features-table-row-"+name, 
                         columns, 
                         content:pre({content:description}), 
-                        config:"3vh 1fr 1fr 1fr 1fr 10vh"
+                        config:"3vh 1fr 10vh 10vh 1fr min-content"
                     })
                 }
 
@@ -372,7 +492,7 @@
                         id:"items-table-row-"+name, 
                         columns, 
                         content:pre({content:description}), 
-                        config:"3vh 1fr 1fr 1fr 10vh"
+                        config:"3vh 1fr 1fr 1fr min-content"
                     })
                 }
 
@@ -453,7 +573,7 @@
                         id:"damage-table-row-"+name, 
                         columns, 
                         content:pre({content:description}), 
-                        config:"3vh 1fr 1fr 10vh"
+                        config:"3vh 1fr 1fr min-content"
                     })
                 }
 
@@ -588,7 +708,7 @@
                         image({src:remove_icon, id:"spells-table-row-"+name+"-remove"})
                     ]
 
-                    return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr 10vh"})
+                    return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr min-content"})
                 }
 
                 // Clearing other tables for performance
@@ -653,6 +773,18 @@
         //=====================================================================================================
         // Execution
         //=====================================================================================================
+
+        function racesTab() {
+            getId("races-tab").innerHTML += (
+                input({id:"races-string-filter", placeholder:"Search", style:"width:95%"}) +
+                table({id:"races-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"races-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("races-new").addEventListener("click", ()=>{ openPage("race_set.html","") }) 
+
+            loadSelect()
+        }
                 
         function proficienciesTab() {
             getId("proficiencies-tab").innerHTML += (
@@ -660,7 +792,7 @@
                 select({id:"proficiencies-type-filter", placeholder:"Type", style:"width:15%", content:[
                     "skill", "combat", "save", "tool", "language"
                 ]}) +
-                table({id:"proficiencies-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                table({id:"proficiencies-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"proficiencies-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
@@ -675,7 +807,7 @@
                 select({id:"conditions-type-filter", placeholder:"Type", style:"width:15%", content:[
                     "spell", "natural", "curse", "poison", "special"
                 ]}) +
-                table({id:"conditions-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                table({id:"conditions-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"conditions-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
@@ -741,7 +873,7 @@
                 select({id:"items-type-filter", placeholder:"Type", style:"width:15%", content:[
                     "equipment"
                 ]}) +
-                table({id:"items-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                table({id:"items-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"items-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
@@ -756,7 +888,7 @@
                 select({id:"damage-type-filter", placeholder:"Type", style:"width:15%", content:[
                     "elemental", "physical", "special"
                 ]}) +
-                table({id:"damage-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                table({id:"damage-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"damage-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
@@ -778,7 +910,7 @@
                 select({id:"spells-classes-filter", placeholder:"Class", style:"width:10%", content:[
                     "bard", "cleric", "druid", "sorcerer", "paladin", "ranger", "warlock", "wizard"
                 ]}) +
-                table({id:"spells-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr 10vh"}) +
+                table({id:"spells-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"spells-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
