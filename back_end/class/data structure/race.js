@@ -31,13 +31,13 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String
             features = [], // Array of feature names
             proficiencies = [], // Array of [name, level] arrays
             ability_scores = {}, // Dict of ability score modifiers
             description = "" // String
-        ) {
+        }) {
 
             // Instancing
             this.#name = name

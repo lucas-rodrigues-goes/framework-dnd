@@ -61,12 +61,12 @@ try {
             return object_names;
         }
 
-        set_race(name, features, proficiencies, ability_scores, description) {
+        set_race(data) {
             const database = this.#races
-            const object = new Race(name, features, proficiencies, ability_scores, description)
+            const object = new Race({...data})
 
             // Verify if already exists
-            if(name in database.data) {this.remove_race(name)}
+            if(object.name in database.data) {this.remove_race(object.name)}
             
 
             // Data
