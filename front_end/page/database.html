@@ -196,6 +196,13 @@
                     description_text += description[2] != "" ? pre({content:"<b>Mastery: </b>"+description[2]}) : ""
                     description_text += description[3] != "" ? pre({content:"<b>Grandmastery: </b>"+description[3]}) : ""
 
+                    const typeImages = {
+                        "combat":"asset://9394034e19ad1bcefb025a1fd971f57c",
+                        "skill":"asset://e7fc8f132555db0f9ca8d51ee6ffb1ee",
+                        "language":"asset://36292f4d1c468032b3090c6fce40751d"
+                    }
+                    image = image || typeImages[type] || ""
+
                     columns = [
                         img({src:image, style:"height:2.4vh"}), 
                         name,
@@ -272,6 +279,14 @@
                 function custom_row ({
                     name, type, description, image=""
                 }) {
+
+                    const type_images = {
+                        "special":"asset://d8d39018722cba6c415145a23e1b31ad",
+                        "spell":"asset://edca515244a8e3a68313377e786e3741",
+                        "curse":"asset://17a66eb974c4513994a93f7bc40a2ac1",
+                        "poison":"asset://b53a685d0b14ddd2eb01807f86cd7573"
+                    }
+                    image = image || type_images || ""
 
                     columns = [
                         img({src:image, style:"height:2.4vh"}), 

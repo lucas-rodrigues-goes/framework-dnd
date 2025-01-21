@@ -7,7 +7,7 @@
         const id = "{id}"
     </script>
 
-    <link rel="stylesheet" type="text/css" href="font_awesome.css@lib:front">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
@@ -22,18 +22,18 @@
         //=====================================================================================================
 
         const classSubclass = {
-            "Barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
-            "Bard": ["College of Lore", "College of Valor"],
-            "Cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
-            "Druid": ["Circle of the Land", "Circle of the Moon"],
-            "Fighter": ["Champion", "Battle Master", "Eldritch Knight"],
-            "Monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
-            "Paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
-            "Ranger": ["Hunter", "Beast Master"],
-            "Rogue": ["Thief", "Assassin", "Arcane Trickster"],
-            "Sorcerer": ["Draconic Bloodline", "Wild Magic"],
-            "Warlock": ["The Archfey", "The Fiend", "The Great Old One"],
-            "Wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+            "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+            "bard": ["College of Lore", "College of Valor"],
+            "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+            "druid": ["Circle of the Land", "Circle of the Moon"],
+            "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+            "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+            "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+            "ranger": ["Hunter", "Beast Master"],
+            "rogue": ["Thief", "Assassin", "Arcane Trickster"],
+            "sorcerer": ["Draconic Bloodline", "Wild Magic"],
+            "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+            "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
         }
         
         function findClassBySubclass(classesObj, subclass) {
@@ -58,13 +58,13 @@
                 getId("optional").setAttribute("data-checked", response[id].optional)
                 getId("description").value = response[id].description
 
-                let feat_class = findClassBySubclass(classSubclass, response[id].subtype)
-                if (feat_class != undefined) { feat_class = feat_class.toLowerCase() }
-                getId("class").value = feat_class || response[id].subtype || ""
+                getId("class").value = findClassBySubclass(classSubclass, response[id].subtype) || response[id].subtype || ""
+
+                updateInputFields()
 
                 getId("subclass").value = response[id].subtype || ""
 
-                updateInputFields()
+                loadSelect()
             })
         }
 
@@ -116,10 +116,12 @@
                 )}) +
                 container({title:"Requirements", content:(
                     input({id:"level", placeholder:"Level"}) +
-                    checkbox({id:"optional", title:"Optional"})
+                    div({style:"position:relative;left:30%;width:40%", content:(
+                        checkbox({id:"optional", title:"Optional Feature"})
+                    )})
                 )}) +
                 container({title:"Information", content:(
-                    textarea({id:"description", placeholder:"Description"})
+                    textarea({id:"description", placeholder:"Description", style:"max-height:20vh"})
                 )}) +
                 button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
                 button({id:"submit", content:"Save", classes:"bottom right page-turner"})

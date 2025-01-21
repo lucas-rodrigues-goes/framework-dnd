@@ -205,16 +205,6 @@
           ""
         ]
       },
-      "Sword": {
-        "name": "Sword",
-        "type": "combat",
-        "description": [
-          "You may gain bonuses to swords you are proficient with.",
-          "While wielding swords you can make attacks of opportunity when opponents miss you with melee weapon attacks.",
-          "You gain the following bonuses when wielding the following polearms:\n\n- Greatsword: Your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.\n\n- Longsword: You can use your weapon for thrusting, gaining the same bonus as small swords on those attacks.\n\n- Rapier: After attacking an opponent, your provoke no opportunity attacks from them.\n\n- Scimitar: You can make two opportunity attacks per round",
-          ""
-        ]
-      },
       "Small Sword": {
         "name": "Small Sword",
         "type": "combat",
@@ -265,21 +255,11 @@
           ""
         ]
       },
-      "Orcish": {
-        "name": "Orcish",
+      "Common": {
+        "name": "Common",
         "type": "language",
         "description": [
-          "You can read, write, and speak orcish.",
-          "",
-          "",
-          ""
-        ]
-      },
-      "Dwarvish": {
-        "name": "Dwarvish",
-        "type": "language",
-        "description": [
-          "The dwarvish language is mostly spoken by dwarves, although most merchants can also speak it.",
+          "You can understand, read, write, and speak this language.",
           "",
           "",
           ""
@@ -289,25 +269,244 @@
         "name": "Elven",
         "type": "language",
         "description": [
-          "You can read, write, and speak elven.",
+          "You can understand, read, write, and speak this language.",
           "",
           "",
           ""
         ]
       },
-      "Common": {
-        "name": "Common",
+      "Dwarvish": {
+        "name": "Dwarvish",
         "type": "language",
         "description": [
-          "Common is the language of the humans, although almost all races can speak it making it a common language between races.",
+          "You can understand, read, write, and speak this language.",
           "",
           "",
+          ""
+        ]
+      },
+      "Orcish": {
+        "name": "Orcish",
+        "type": "language",
+        "description": [
+          "You can understand, read, write, and speak this language.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Perception": {
+        "name": "Perception",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Athletics": {
+        "name": "Athletics",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Acrobatics": {
+        "name": "Acrobatics",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Sleight of Hand": {
+        "name": "Sleight of Hand",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Stealth": {
+        "name": "Stealth",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Animal Handling": {
+        "name": "Animal Handling",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Insight": {
+        "name": "Insight",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Medicine": {
+        "name": "Medicine",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Survival": {
+        "name": "Survival",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Arcana": {
+        "name": "Arcana",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "History": {
+        "name": "History",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Investigation": {
+        "name": "Investigation",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Nature": {
+        "name": "Nature",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Religion": {
+        "name": "Religion",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Deception": {
+        "name": "Deception",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Intimidation": {
+        "name": "Intimidation",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Performance": {
+        "name": "Performance",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Persuasion": {
+        "name": "Persuasion",
+        "type": "skill",
+        "description": [
+          "You receive a bonus made to checks using this skill.",
+          "",
+          "",
+          ""
+        ]
+      },
+      "Sword": {
+        "name": "Sword",
+        "type": "combat",
+        "description": [
+          "You may gain bonuses to swords you are proficient with.",
+          "While wielding swords you can make attacks of opportunity when opponents miss you with melee weapon attacks.",
+          "You gain the following bonuses when wielding the following swords:\n\n- Greatsword: Your attacks can hit multiple targets, before making a weapon attack roll, you can choose to hit up to 2 adjacent enemies, the roll against the main target receives a -3 penalty, and the roll against the other targets receives a -6 penalty.\n\n- Longsword: You can use your weapon for thrusting, gaining the same bonus as small swords on those attacks.\n\n- Rapier: After attacking an opponent, your provoke no opportunity attacks from them.\n\n- Scimitar: You can make two opportunity attacks per round",
           ""
         ]
       }
     },
     "type": {
-      "skill": [],
+      "skill": [
+        "Perception",
+        "Athletics",
+        "Acrobatics",
+        "Sleight of Hand",
+        "Stealth",
+        "Animal Handling",
+        "Insight",
+        "Medicine",
+        "Survival",
+        "Arcana",
+        "History",
+        "Investigation",
+        "Nature",
+        "Religion",
+        "Deception",
+        "Intimidation",
+        "Performance",
+        "Persuasion"
+      ],
       "weapon": [],
       "save": [],
       "tool": [],
@@ -316,19 +515,19 @@
         "Simple Weapon",
         "Martial Weapon",
         "Crossbow",
-        "Sword",
         "Small Sword",
         "Polearm",
         "Blunt Weapon",
         "Axe",
-        "Bow"
+        "Bow",
+        "Sword"
       ],
       "undefined": [],
       "language": [
-        "Orcish",
-        "Dwarvish",
+        "Common",
         "Elven",
-        "Common"
+        "Dwarvish",
+        "Orcish"
       ]
     }
   },
@@ -338,12 +537,21 @@
         "name": "Mage Armor",
         "type": "spell",
         "duration": "14400",
-        "description": "None"
+        "description": "A protective magical force surrounds you until the spell ends. Your base AC becomes 13 + your Dexterity modifier. The spell ends if you don armor."
+      },
+      "Rage": {
+        "name": "Rage",
+        "type": "special",
+        "duration": "10",
+        "description": "While raging, you gain the following benefits if you aren't wearing heavy armor:\n\n- You have advantage on Strength checks and Strength saving throws.\n\n- When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n\n- You have lesser resistance to bludgeoning, piercing, and slashing damage.\n\nIf you are able to cast spells, you can't cast them or concentrate on them while raging."
       }
     },
     "type": {
       "spell": [
         "Mage Armor"
+      ],
+      "special": [
+        "Rage"
       ]
     }
   },
@@ -354,104 +562,104 @@
   },
   "damage_types": {
     "data": {
-      "bludgeoning": {
-        "name": "bludgeoning",
-        "type": "physical",
-        "description": "Bludgeoning damage crushes and batters, leaving behind bruises, fractures, and broken bones. The impact resonates like thunder, as though the earth itself rises to meet the blow.\n\nA barbarian swings their greatsword in a massive arc, landing a crushing blow against a giant's leg. The heavy force causes the giant to stumble, while the ground beneath trembles with the sheer weight of the strike. The giant roars in pain, staggering as it feels the brute force of the blow reverberate through its bones.",
-        "image": "asset://5be7c85b6eff402cdd533bea7517d564"
-      },
-      "force": {
-        "name": "force",
-        "type": "special",
-        "description": "Force damage is an unseen, pure energy that crushes and pushes with overwhelming power. It feels as though the very air itself is turned into a solid weight, compressing and flinging the target with devastating results.\n\nA mage casts Magic Missile, sending bolts of magical force darting toward the enemy. Each bolt strikes with pinpoint precision, exploding in bursts of invisible energy that leave the target stumbling backward, as if slammed by an unseen hand. The creature feels the impact deep within its chest, though no physical object touched it.",
-        "image": "asset://2957f07243eb79029f44c069481f4853"
-      },
-      "piercing": {
-        "name": "piercing",
-        "type": "physical",
-        "description": "Piercing damage punctures and slices through the target, often leaving deep, narrow wounds. The damage is quick and precise, tearing through armor and flesh alike with ease.\n\nA rogue fires a crossbow bolt at an approaching enemy, the tip of the bolt punching through the creature’s defenses and embedding itself in its shoulder. The victim winces, the bolt having pierced both armor and flesh, and with a small spray of blood, it’s clear the damage is deep, though the wound is narrow.",
-        "image": "asset://c99068f93e9cbec6a1e4fe64f8b0beb5"
-      },
-      "psychic": {
-        "name": "psychic",
-        "type": "special",
-        "description": "Psychic damage assaults the mind directly, causing unbearable mental anguish and confusion. The target’s thoughts are twisted and torn, leaving them in a state of disorientation or madness.\n\nA mind flayer reaches out with its tentacles and sends a psychic shockwave through a character’s mind. The character stumbles, clutching their head as their thoughts spin out of control, their vision blurring and their sense of reality warping. The pain is not physical but an overwhelming mental assault that disorients and weakens the will to fight.",
-        "image": "asset://5f1eadd995ada478ae415d01039227aa"
-      },
-      "radiant": {
-        "name": "radiant",
-        "type": "special",
-        "description": "Radiant damage shines with divine light, burning through darkness and evil with holy purity. It leaves behind a glowing mark, as though touched by the sun itself, dispelling shadows and healing wounds with its blinding light.\n\nA cleric calls upon the power of their deity, casting Guiding Bolt and striking their enemy with a bolt of radiant light. The enemy is temporarily blinded by the sudden burst, and the light seems to scorch their skin, leaving a faint glow that lingers even after the attack is over, purging the darkness within them.",
-        "image": "asset://c2fefa091fa0c48437731f0ad6944de5"
-      },
-      "thunder": {
-        "name": "thunder",
-        "type": "special",
-        "description": "Thunder damage pulses with explosive sound waves, rattling the environment and causing concussive effects. The force reverberates through the air, stunning and deafening those caught in its path.\n\nA bard uses their Thunderwave spell, creating a shockwave of sound that pushes enemies away. The roar is deafening, and enemies are knocked off their feet, disoriented by the violent noise and the tremors in the ground. Their ears ring as the air seems to vibrate with the force of the sound.",
-        "image": "asset://8800aa11907a964e37390a68f3e4feb3"
-      },
-      "necrotic": {
-        "name": "necrotic",
-        "type": "special",
-        "description": "Necrotic damage drains the life force, corrupting and decaying everything it touches. It leaves behind withered, gray skin and a deep, internal chill as it leeches vitality and vitality from its victims.\n\nA lich raises its hand, sending a wave of necrotic energy that engulfs a group of adventurers. The life force is sucked from them, their skin turning ashen and their strength waning. The effect feels like a heavy weight on the soul, as if the body itself is resisting the drain but cannot stop it.",
-        "image": "asset://e4038c86139ef7bb00ae7ede271aa5be"
-      },
-      "lightning": {
-        "name": "lightning",
+      "Lightning": {
+        "name": "Lightning",
         "type": "elemental",
-        "description": "Lightning damage crackles with raw energy, snapping through the air with a violent jolt. The electric current sears flesh, leaves marks, and leaves a ringing in the ears, as the air crackles with static.\n\nA storm sorcerer summons a bolt of lightning that strikes down from the heavens, slamming into a group of enemies. The electric charge dances over their bodies, frying their armor and leaving scorch marks across their skin. The target is knocked backward, twitching from the aftershocks of the lightning coursing through their nerves.",
+        "description": "Lightning damage crackles with raw energy, snapping through the air with a violent jolt. The electric current sears flesh, leaves marks, and leaves a ringing in the ears, as the air crackles with static.",
         "image": "asset://134583abf12f915d3277e7096ba22c09"
       },
-      "slashing": {
-        "name": "slashing",
-        "type": "physical",
-        "description": "Slashing damage rends and tears, carving deep gashes into flesh and slicing through armor with unrelenting precision. The air hums with the sharp hiss of a blade's arc, leaving behind trails of blood and the jagged sting of exposed wounds. Each strike is a calculated savagery, a testament to the lethality of a honed edge.\n\nA rogue darts forward, twin daggers flashing in the light as they carve intricate patterns across an enemy's defenses. The blades bite deep, severing sinew and tearing cloth in a flurry of motion. The enemy staggers, blood dripping freely from the fresh wounds as the sting of the cuts settles in, each movement reopening the jagged lines and reminding them of the rogue's merciless precision.",
-        "image": "asset://a5ecc68523b5c6a9f843de98879c2ed8"
-      },
-      "poison": {
-        "name": "poison",
-        "type": "special",
-        "description": "Poison damage creeps insidiously through the body, corrupting and weakening from within. The target feels their strength ebb away as a vile, toxic force courses through their veins, overwhelming their natural defenses. The effects can range from excruciating pain to a slow, suffocating numbness that leaves the victim gasping for relief.\n\nA yuan-ti pureblood lashes out with a venom-coated blade, nicking the skin of its target. Within moments, a burning sensation spreads from the wound, intensifying into waves of nausea and muscle spasms. The victim's limbs grow heavy, their breath labored, and their vision dims as the poison takes hold. The agony feels as though their very life force is being consumed by a malevolent toxin, leaving them fragile and vulnerable.",
-        "image": "asset://91d630c543aa531518fbcecbf011042a"
-      },
-      "acid": {
-        "name": "acid",
+      "Acid": {
+        "name": "Acid",
         "type": "elemental",
-        "description": "Acid damage corrodes and dissolves materials, leaving behind smoking remnants and searing wounds. The air fills with the acrid stench of sulfur, and whatever it touches seems to bubble and hiss in agony.\n\nA green dragon's acidic breath sweeps over the battlefield, dissolving the armor of its enemies and leaving deep, burning holes in their skin. A character caught in the breath must struggle to avoid the corrosive effects, feeling their armor and weapons start to melt away under the acid's relentless assault.",
+        "description": "Acid damage corrodes and dissolves materials, leaving behind smoking remnants and searing wounds. The air fills with the acrid stench of sulfur, and whatever it touches seems to bubble and hiss in agony.",
         "image": "asset://2dec258f2f1c8012f4cf58b457fbd459"
       },
-      "cold": {
-        "name": "cold",
+      "Cold": {
+        "name": "Cold",
         "type": "elemental",
-        "description": "Cold damage freezes and numbs, enshrouding the target in biting frost. The air becomes brittle, and frost crystals creep across surfaces, leaving behind icy scars and a deathly chill.\n\nA wizard casts Cone of Cold, sending a blast of freezing air toward a group of enemies. As the icy wind hits them, their movements slow, and frostbite marks appear on their exposed skin. Those caught in the blast struggle to move, their muscles stiff and slow from the numbing cold, as the ice creeps into their joints.",
+        "description": "Cold damage freezes and numbs, enshrouding the target in biting frost. The air becomes brittle, and frost crystals creep across surfaces, leaving behind icy scars and a deathly chill.",
         "image": "asset://3bec73de34380eaa439b63ed4a081909"
       },
-      "fire": {
-        "name": "fire",
+      "Fire": {
+        "name": "Fire",
         "type": "elemental",
-        "description": "Fire damage burns with fierce, searing heat, scorching flesh and igniting materials in an inferno of destruction. The world around the flames warps and flickers, the air thick with smoke and the crackling of burning matter.\n\nA sorcerer conjures a fireball that explodes in the midst of a cluster of orcs. The blast sets the surrounding foliage ablaze, and the orcs cry out in pain as flames lick at their skin, reducing their armor to ash. The smell of burnt flesh fills the air as the heat from the explosion continues to burn everything in its radius.",
+        "description": "Fire damage burns with fierce, searing heat, scorching flesh and igniting materials in an inferno of destruction. The world around the flames warps and flickers, the air thick with smoke and the crackling of burning matter.",
         "image": "asset://daa543ebbb04f5cea92ea064656c85c6"
+      },
+      "Bludgeoning": {
+        "name": "Bludgeoning",
+        "type": "physical",
+        "description": "Bludgeoning damage crushes and batters, leaving behind bruises, fractures, and broken bones. The impact resonates like thunder, as though the earth itself rises to meet the blow.",
+        "image": "asset://5be7c85b6eff402cdd533bea7517d564"
+      },
+      "Piercing": {
+        "name": "Piercing",
+        "type": "physical",
+        "description": "Piercing damage punctures and slices through the target, often leaving deep, narrow wounds. The damage is quick and precise, tearing through armor and flesh alike with ease.",
+        "image": "asset://c99068f93e9cbec6a1e4fe64f8b0beb5"
+      },
+      "Slashing": {
+        "name": "Slashing",
+        "type": "physical",
+        "description": "Slashing damage rends and tears, carving deep gashes into flesh and slicing through armor with unrelenting precision. The air hums with the sharp hiss of a blade's arc, leaving behind trails of blood and the jagged sting of exposed wounds. Each strike is a calculated savagery, a testament to the lethality of a honed edge.",
+        "image": "asset://a5ecc68523b5c6a9f843de98879c2ed8"
+      },
+      "Force": {
+        "name": "Force",
+        "type": "special",
+        "description": "Force damage is an unseen, pure energy that crushes and pushes with overwhelming power. It feels as though the very air itself is turned into a solid weight, compressing and flinging the target with devastating results.",
+        "image": "asset://2957f07243eb79029f44c069481f4853"
+      },
+      "Psychic": {
+        "name": "Psychic",
+        "type": "special",
+        "description": "Psychic damage assaults the mind directly, causing unbearable mental anguish and confusion. The target’s thoughts are twisted and torn, leaving them in a state of disorientation or madness.",
+        "image": "asset://5f1eadd995ada478ae415d01039227aa"
+      },
+      "Radiant": {
+        "name": "Radiant",
+        "type": "special",
+        "description": "Radiant damage shines with divine light, burning through darkness and evil with holy purity. It leaves behind a glowing mark, as though touched by the sun itself, dispelling shadows and healing wounds with its blinding light.",
+        "image": "asset://c2fefa091fa0c48437731f0ad6944de5"
+      },
+      "Thunder": {
+        "name": "Thunder",
+        "type": "special",
+        "description": "Thunder damage pulses with explosive sound waves, rattling the environment and causing concussive effects. The force reverberates through the air, stunning and deafening those caught in its path.",
+        "image": "asset://8800aa11907a964e37390a68f3e4feb3"
+      },
+      "Necrotic": {
+        "name": "Necrotic",
+        "type": "special",
+        "description": "Necrotic damage drains the life force, corrupting and decaying everything it touches. It leaves behind withered, gray skin and a deep, internal chill as it leeches vitality and vitality from its victims.",
+        "image": "asset://e4038c86139ef7bb00ae7ede271aa5be"
+      },
+      "Poison": {
+        "name": "Poison",
+        "type": "special",
+        "description": "Poison damage creeps insidiously through the body, corrupting and weakening from within. The target feels their strength ebb away as a vile, toxic force courses through their veins, overwhelming their natural defenses. The effects can range from excruciating pain to a slow, suffocating numbness that leaves the victim gasping for relief.",
+        "image": "asset://91d630c543aa531518fbcecbf011042a"
       }
     },
     "type": {
       "physical": [
-        "bludgeoning",
-        "piercing",
-        "slashing"
+        "Bludgeoning",
+        "Piercing",
+        "Slashing"
       ],
       "elemental": [
-        "lightning",
-        "acid",
-        "cold",
-        "fire"
+        "Lightning",
+        "Acid",
+        "Cold",
+        "Fire"
       ],
       "special": [
-        "force",
-        "psychic",
-        "radiant",
-        "thunder",
-        "necrotic",
-        "poison"
+        "Force",
+        "Psychic",
+        "Radiant",
+        "Thunder",
+        "Necrotic",
+        "Poison"
       ]
     }
   },
@@ -791,14 +999,6 @@
         "level": "2",
         "optional": "false",
         "description": "You can use your action to magically assume the shape of a beast that you have seen before. You can use this feature twice. You regain expended uses when you finish a short or long rest.\n\nYou can stay in a beast shape for a number of hours equal to half your druid level (rounded down). You then revert to your normal form unless you expend another use of this feature. You can revert to your normal form earlier by using a bonus action on your turn. You automatically revert if you fall unconscious, drop to 0 hit points, or die.\n\nWhile you are transformed, the following rules apply:\n\nYour game statistics are replaced by the statistics of the beast, but you retain your alignment, personality, and Intelligence, Wisdom, and Charisma scores. You also retain all of your skill and saving throw proficiencies, in addition to gaining those of the creature. If the creature has the same proficiency as you and the bonus in its stat block is higher than yours, use the creature's bonus instead of yours. If the creature has any legendary or lair actions, you can't use them.\n\nWhen you transform, you assume the beast's hit points and Hit Dice. When you revert to your normal form, you return to the number of hit points you had before you transformed. However, if you revert as a result of dropping to 0 hit points, any excess damage carries over to your normal form. For example, if you take 10 damage in animal form and have only 1 hit point left, you revert and take 9 damage. As long as the excess damage doesn't reduce your normal form to 0 hit points, you aren't knocked unconscious.\n\nYou can't cast spells, and your ability to speak or take any action that requires hands is limited to the capabilities of your beast form. \n\nTransforming doesn't break your concentration on a spell you've already cast, however, or prevent you from taking actions that are part of a spell, such as Call Lightning, that you've already cast.\nYou retain the benefit of any features from your class, race, or other source and can use them if the new form is physically capable of doing so. \n\nHowever, you can't use any of your special senses, such as darkvision, unless your new form also has that sense.\n\nYou choose whether your equipment falls to the ground in your space, merges into your new form, or is worn by it. \n\nWorn equipment functions as normal, but the DM decides whether it is practical for the new form to wear a piece of equipment, based on the creature's shape and size. \n\nYour equipment doesn't change size or shape to match the new form, and any equipment that the new form can't wear must either fall to the ground or merge with it. \n\nEquipment that merges with the form has no effect until you leave the form."
-      },
-      "Rage": {
-        "name": "Rage",
-        "type": "class",
-        "subtype": "barbarian",
-        "level": "1",
-        "optional": "false",
-        "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\n\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\n\n- You have advantage on Strength checks and Strength saving throws.\n\n- When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n\n- You have resistance to bludgeoning, piercing, and slashing damage.\n\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\n\nYour rage lasts for 1 minute. It ends early if you are knocked unconscious or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\n\nOnce you have raged the maximum number of times for your barbarian level, you must finish a long rest before you can rage again. You may rage 2 times at 1st level, 3 at 3rd, 4 at 6th, 5 at 12th, and 6 at 17th."
       },
       "Bardic Inspiration": {
         "name": "Bardic Inspiration",
@@ -1517,12 +1717,19 @@
         "level": "0",
         "optional": "false",
         "description": "You learn a new feat at level 1."
+      },
+      "Rage": {
+        "name": "Rage",
+        "type": "class",
+        "subtype": "barbarian",
+        "level": "1",
+        "optional": "false",
+        "description": "In battle, you fight with primal ferocity. On your turn, you can enter a rage as a bonus action.\n\nWhile raging, you gain the following benefits if you aren't wearing heavy armor:\n\n- You have advantage on Strength checks and Strength saving throws.\n\n- When you make a melee weapon attack using Strength, you gain a +2 bonus to the damage roll. This bonus increases as you level.\n\n- You have lesser resistance to bludgeoning, piercing, and slashing damage.\n\nIf you are able to cast spells, you can't cast them or concentrate on them while raging.\n\nYour rage lasts for 1 minute. It ends early if you are knocked unconscious or if your turn ends and you haven't attacked a hostile creature since your last turn or taken damage since then. You can also end your rage on your turn as a bonus action.\n\nOnce you have raged the maximum number of times for your barbarian level, you must finish a long rest before you can rage again. You may rage 2 times at 1st level, 3 at 3rd, 4 at 6th, 5 at 12th, and 6 at 17th."
       }
     },
     "type": {
       "class": [
         "Barbarian Toughness",
-        "Rage",
         "Reckless Attack",
         "Danger Sense",
         "Primal Path",
@@ -1643,7 +1850,8 @@
         "Arcane Tradition",
         "Spell Mastery",
         "Signature Spells",
-        "Extra Attack"
+        "Extra Attack",
+        "Rage"
       ],
       "feat": [
         "Ability Score Improvement"
@@ -1688,8 +1896,8 @@
         "Persistent Rage",
         "Indomitable Might",
         "Primal Champion",
-        "Rage",
-        "Barbaric Movement"
+        "Barbaric Movement",
+        "Rage"
       ],
       "undefined": [
         "Ability Score Improvement",
@@ -1857,7 +2065,6 @@
         "Druid Spellcasting",
         "Sorcerer Spellcasting",
         "Sorcerer Origin",
-        "Rage",
         "Bardic Inspiration",
         "Bard Spellcasting",
         "Rogue Expertise",
@@ -1870,7 +2077,8 @@
         "Canny",
         "Favored Enemy",
         "Otherwordly Patron",
-        "Pact Magic"
+        "Pact Magic",
+        "Rage"
       ],
       "2": [
         "Cunning Action",
@@ -2049,7 +2257,6 @@
         "Metamagic",
         "Sorcerous Restoration",
         "Wildshape",
-        "Rage",
         "Bardic Inspiration",
         "Bard Spellcasting",
         "Jack of All Trades",
@@ -2134,7 +2341,8 @@
         "Bulky",
         "Savage Attacks",
         "Relentless Endurance",
-        "Extra Feat"
+        "Extra Feat",
+        "Rage"
       ],
       "true": [
         "Ability Score Improvement",
@@ -2644,27 +2852,6 @@
         "description": "You touch a willing creature to grant it the ability to see in the dark. For the duration, that creature has darkvision out to a range of 30 feet.",
         "description_higher_levels": ""
       },
-      "Detect Thoughts": {
-        "name": "Detect Thoughts",
-        "level": "2nd",
-        "school": "divination",
-        "classes": [
-          "bard",
-          "sorcerer",
-          "wizard"
-        ],
-        "cast_time": "1",
-        "range": "self",
-        "target": "The caster",
-        "components": [
-          "vocal",
-          "somatic",
-          "material"
-        ],
-        "duration": "10",
-        "description": "For the duration, you can read the thoughts of certain creatures. When you cast the spell and as your action on each turn until the spell ends, you can focus your mind on any one creature that you can see within 30 feet of you. If the creature you choose has an Intelligence of 3 or lower or doesn’t speak any language, the creature is unaffected.\n\nYou initially learn the surface thoughts of the creature - what is most on its mind in that moment. As an action, you can either shift your attention to another creature’s thoughts or attempt to probe deeper into the same creature’s mind. If you probe deeper, the target must make a Wisdom saving throw. If it fails, you gain insight into its reasoning (if any), its emotional state, and something that looms large in its mind (such as something it worries over, loves, or hates). If it succeeds, the spell ends. Either way, the target knows that you are probing into its mind, and unless you shift your attention to another creature’s thoughts, the creature can use its action on its turn to make an Intelligence check contested by your Intelligence check; if it succeeds, the spell ends.\n\nQuestions verbally directed at the target creature naturally shape the course of its thoughts, so this spell is particularly effective as part of an interrogation.\n\nYou can also use this spell to detect the presence of thinking creatures you can’t see. When you cast the spell or as your action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can’t detect a creature with an Intelligence of 3 or lower or one that doesn’t speak any language.\n\nOnce you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can’t see it, but it must still be within range.",
-        "description_higher_levels": ""
-      },
       "See Invisibility": {
         "name": "See Invisibility",
         "level": "2nd",
@@ -2750,26 +2937,6 @@
         "duration": "100",
         "description": "You create six tiny meteors in your space. They float in the air and orbit you for the spell’s duration. When you cast the spell — and as a bonus action on each of your turns thereafter — you can expend one or two of the meteors, sending them streaking toward a point or points you choose within 120 feet of you. Once a meteor reaches its destination or impacts against a solid surface, the meteor explodes. Each creature within 5 feet of the point where the meteor explodes must make a Dexterity saving throw. A creature takes 2d6 fire damage on a failed save, or half as much damage on a successful one.",
         "description_higher_levels": "The number of meteors increases by two when your spellcasting level reaches: 7, 9, and 11."
-      },
-      "Lightning Bolt": {
-        "name": "Lightning Bolt",
-        "level": "3rd",
-        "school": "evocation",
-        "classes": [
-          "sorcerer",
-          "wizard"
-        ],
-        "cast_time": "3",
-        "range": "100",
-        "target": "A point you choose within range",
-        "components": [
-          "vocal",
-          "somatic",
-          "material"
-        ],
-        "duration": "0",
-        "description": "A stroke of lightning forming a line of 100 feet long and 5 feet wide blasts out from you in a direction you choose. Each creature in the line must make a Dexterity saving throw. A creature takes 8d6 lightning damage on a failed save, or half as much damage on a successful one.\n\nThe lightning ignites flammable objects in the area that aren’t being worn or carried.",
-        "description_higher_levels": "The damage of this spell is increased by 1d6 when your spellcasting level reaches: 7, 9, and 11."
       },
       "Intellect Fortress": {
         "name": "Intellect Fortress",
@@ -2927,6 +3094,47 @@
         "duration": "1",
         "description": "The gravity in a 10-foot-radius sphere centered on a point you can see within range increases for a moment. Each creature in the sphere on the turn when you cast the spell must make a Constitution saving throw. On a failed save, a creature takes 2d6 force damage, and its speed is halved until the end of its next turn. On a successful save, a creature takes half as much damage and suffers no reduction to its speed.\n\nUntil the start of your next turn, any object that isn't being worn or carried in the sphere requires a successful Strength check against your spell save DC to pick up or move.",
         "description_higher_levels": "The damage of this spell is increased by 1d6 when your spellcasting level reaches: 3, 5, and 7."
+      },
+      "Detect Thoughts": {
+        "name": "Detect Thoughts",
+        "level": "2nd",
+        "school": "divination",
+        "classes": [
+          "bard",
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": "1",
+        "range": "self",
+        "target": "The caster",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": "10",
+        "description": "For the duration, you can read the thoughts of certain creatures. When you cast the spell and as your action on each turn until the spell ends, you can focus your mind on any one creature that you can see within 30 feet of you. If the creature you choose has an Intelligence of 3 or lower or doesn’t speak any language, the creature is unaffected.\n\nYou initially learn the surface thoughts of the creature - what is most on its mind in that moment. As an action, you can either shift your attention to another creature’s thoughts or attempt to probe deeper into the same creature’s mind. If you probe deeper, the target must make a Wisdom saving throw. If it fails, you gain insight into its reasoning (if any), its emotional state, and something that looms large in its mind (such as something it worries over, loves, or hates). If it succeeds, the spell ends. Either way, the target knows that you are probing into its mind, and unless you shift your attention to another creature’s thoughts, the creature can use its action on its turn to make an Intelligence check contested by your Intelligence check; if it succeeds, the spell ends.\n\nQuestions verbally directed at the target creature naturally shape the course of its thoughts, so this spell is particularly effective as part of an interrogation.\n\nYou can also use this spell to detect the presence of thinking creatures you can’t see. When you cast the spell or as your action during the duration, you can search for thoughts within 30 feet of you. The spell can penetrate barriers, but 2 feet of rock, 2 inches of any metal other than lead, or a thin sheet of lead blocks you. You can’t detect a creature with an Intelligence of 3 or lower or one that doesn’t speak any language.\n\nOnce you detect the presence of a creature in this way, you can read its thoughts for the rest of the duration as described above, even if you can’t see it, but it must still be within range.",
+        "description_higher_levels": ""
+      },
+      "Lightning Bolt": {
+        "name": "Lightning Bolt",
+        "level": "3rd",
+        "school": "evocation",
+        "classes": [
+          "sorcerer",
+          "wizard"
+        ],
+        "cast_time": "3",
+        "range": "100",
+        "target": "A point you choose within range",
+        "components": [
+          "vocal",
+          "somatic",
+          "material"
+        ],
+        "duration": "0",
+        "description": "A stroke of lightning forming a line of 100 feet long and 5 feet wide blasts out from you in a direction you choose. Each creature in the line must make a Dexterity saving throw. A creature takes 9d6 lightning damage on a failed save, or half as much damage on a successful one.\n\nThe lightning ignites flammable objects in the area that aren’t being worn or carried.",
+        "description_higher_levels": "The damage of this spell is increased by 1d6 when your spellcasting level reaches: 7, 9, and 11."
       }
     },
     "level": {
@@ -2960,18 +3168,18 @@
         "Mirror Image",
         "Aganazzar's Scorcher",
         "Darkvision",
-        "Detect Thoughts",
-        "See Invisibility"
+        "See Invisibility",
+        "Detect Thoughts"
       ],
       "3rd": [
         "Animate Dead",
         "Fireball",
         "Major Image",
         "Melf's Minute Meteors",
-        "Lightning Bolt",
         "Intellect Fortress",
         "Glyph of Warding",
-        "Haste"
+        "Haste",
+        "Lightning Bolt"
       ],
       "4th": [
         "Polymorph"
@@ -3000,12 +3208,12 @@
         "Detect Magic",
         "Blindness/Deafness",
         "Polymorph",
-        "Detect Thoughts",
         "See Invisibility",
         "Major Image",
         "Permanent Image",
         "Glyph of Warding",
-        "Disguise Self"
+        "Disguise Self",
+        "Detect Thoughts"
       ],
       "cleric": [
         "Light",
@@ -3048,19 +3256,19 @@
         "Mirror Image",
         "Aganazzar's Scorcher",
         "Darkvision",
-        "Detect Thoughts",
         "See Invisibility",
         "Major Image",
         "Permanent Image",
         "Melf's Minute Meteors",
-        "Lightning Bolt",
         "Intellect Fortress",
         "Glyph of Warding",
         "Haste",
         "Absorb Elements",
         "Burning Hands",
         "Disguise Self",
-        "Mage Armor"
+        "Mage Armor",
+        "Detect Thoughts",
+        "Lightning Bolt"
       ],
       "warlock": [
         "Misty Step",
@@ -3099,12 +3307,10 @@
         "Mirror Image",
         "Aganazzar's Scorcher",
         "Darkvision",
-        "Detect Thoughts",
         "See Invisibility",
         "Major Image",
         "Permanent Image",
         "Melf's Minute Meteors",
-        "Lightning Bolt",
         "Intellect Fortress",
         "Glyph of Warding",
         "Haste",
@@ -3112,7 +3318,9 @@
         "Burning Hands",
         "Disguise Self",
         "Mage Armor",
-        "Magnify Gravity"
+        "Magnify Gravity",
+        "Detect Thoughts",
+        "Lightning Bolt"
       ]
     },
     "school": {
@@ -3131,8 +3339,8 @@
       ],
       "divination": [
         "Detect Magic",
-        "Detect Thoughts",
-        "See Invisibility"
+        "See Invisibility",
+        "Detect Thoughts"
       ],
       "enchantment": [
         "Sleep",
@@ -3144,12 +3352,12 @@
         "Fire Bolt",
         "Lightning Streak",
         "Magic Missile",
-        "Fireball",
+        "Burning Hands",
         "Snilloc's Snowball Swarm",
         "Aganazzar's Scorcher",
+        "Fireball",
         "Melf's Minute Meteors",
-        "Lightning Bolt",
-        "Burning Hands"
+        "Lightning Bolt"
       ],
       "illusion": [
         "Blur",

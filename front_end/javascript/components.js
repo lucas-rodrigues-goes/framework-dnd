@@ -405,12 +405,12 @@ function updateInputFields() {
     const elements = document.querySelectorAll("input, select, textarea");
   
     // Loop through each element and trigger "input" and "change" events
-    elements.forEach(element => {
+    elements.forEach((element) => {
       // Trigger the "input" event
-      element.dispatchEvent(new Event("input"));
+      element.dispatchEvent(new Event("input", { bubbles: true }));
   
       // Trigger the "change" event (for select and input elements)
-      element.dispatchEvent(new Event("change"));
+      element.dispatchEvent(new Event("change", { bubbles: true }));
     });
 }
 
