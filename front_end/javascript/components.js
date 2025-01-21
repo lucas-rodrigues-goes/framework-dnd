@@ -407,10 +407,10 @@ function updateInputFields() {
     // Loop through each element and trigger "input" and "change" events
     elements.forEach((element) => {
       // Trigger the "input" event
-      element.dispatchEvent(new Event("input", { bubbles: true }));
+      element.dispatchEvent(new Event("input"));
   
       // Trigger the "change" event (for select and input elements)
-      element.dispatchEvent(new Event("change", { bubbles: true }));
+      element.dispatchEvent(new Event("change"));
     });
 }
 

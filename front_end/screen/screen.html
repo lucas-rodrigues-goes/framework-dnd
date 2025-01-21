@@ -258,12 +258,12 @@
         let onclick = "toBackend(`impersonated().go_to() ; impersonated().select()`)"
 
         return div({classes:"circular-health", style, content:(
-            image({id:"character-image", src:image_src, onclick})
+            img({id:"character-image", src:image_src, onclick})
         )})
     }
 
     function currentTarget({name="", type="", image_src="", style="", armor_class=""}={}) {
-        image_src = image_src ? image({src:image_src}) : ""
+        image_src = image_src ? img({src:image_src}) : ""
         armor_class = armor_class ? div({classes:"armor-class", content:armor_class}) : ""
 
         return div({id:"target", classes:"center-horizontal", content:(
@@ -282,7 +282,7 @@
 
     function partyCharacter({id, style, image_src}={}) {
         return div({classes:"circular-health circular-health-small", style, content:(
-            image({id:"party-image-"+id, src:image_src})
+            img({id:"party-image-"+id, src:image_src})
         )})
     }
     
@@ -427,18 +427,18 @@
                 div({id:"current-character"}) +
                 div({id:"current-party"}) +
                 div({classes:"button-background", content:(
-                    image({id:"info", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
-                    image({id:"inventory", src:"asset://711c8f12938d7ef430fbcf7e2e5845ae"}) +
-                    image({id:"journal", src:"asset://4e98be9419bf1ce960319891b66add73"}) +
-                    image({id:"abilities", src:"asset://65479d57a2b1ffc116a12a5c731d91a7"})
+                    img({id:"info", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
+                    img({id:"inventory", src:"asset://711c8f12938d7ef430fbcf7e2e5845ae"}) +
+                    img({id:"journal", src:"asset://4e98be9419bf1ce960319891b66add73"}) +
+                    img({id:"abilities", src:"asset://65479d57a2b1ffc116a12a5c731d91a7"})
                 )})
             )}) +
             div({id:"gm-menu", classes:"menu bottom right", content:(
                 div({classes:"button-background", content:(
-                    image({id:"code-map", src:"asset://ac911ef1f21300a44b3bdadd9bdee8e4"}) +
-                    image({id:"map", src:"asset://f9980524cd2aab3c5a9faf165b051ded"}) +
-                    image({id:"create-character", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
-                    image({id:"database", src:"asset://f218b6ad34fe8564e0553dc2bba91cc8"})
+                    img({id:"code-map", src:"asset://ac911ef1f21300a44b3bdadd9bdee8e4"}) +
+                    img({id:"map", src:"asset://f9980524cd2aab3c5a9faf165b051ded"}) +
+                    img({id:"create-character", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
+                    img({id:"database", src:"asset://f218b6ad34fe8564e0553dc2bba91cc8"})
                 )})
             )}) +
             div({id:"current-target"})
