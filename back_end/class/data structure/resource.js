@@ -31,13 +31,13 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String
             type = "", // String
             subtype = "", // String
             level = 0, // Number
             description = "" // String
-        ) {
+        }) {
 
             // Validate Type
             if ( ! [
