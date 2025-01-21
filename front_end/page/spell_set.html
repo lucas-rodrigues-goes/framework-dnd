@@ -55,7 +55,7 @@
 
                 getId("description").value = response[id].description; 
                 getId("description-higher-levels").value = response[id].description_higher_levels;
-                
+            
 
                 getId("duration").value = response[id].duration
                 getId("duration-unit").value = "rounds"
@@ -152,8 +152,9 @@
                     "`"+description_higher_levels+"`,"+
                 ")"
             )
-        }
 
+            closePage("Spell")
+        }
 
 
         //=====================================================================================================
