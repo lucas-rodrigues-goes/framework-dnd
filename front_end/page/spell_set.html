@@ -50,7 +50,7 @@
                 getId("level").value = response[id].level
                 getId("school").value = response[id].school
 
-                getId("cast_time").value = response[id].cast_time
+                getId("cast-time").value = response[id].cast_time
                 getId("target").value = response[id].target
 
                 getId("description").value = response[id].description; 
@@ -84,75 +84,56 @@
         }
 
         function submit() {
-            // Get values from form
-            let name = getId("name").value;
-            let level = getId("level").value;
-            let school = getId("school").value;
 
-            let cast_time = getId("cast_time").value;
-            let target = getId("target").value;
-
-            let description = getId("description").value;
-            let description_higher_levels = getId("description-higher-levels").value;
-
-            let duration;
-            let duration_rounds = getId("duration").value;
-            let duration_unit = getId("duration-unit").value;
+            // Duration
+            const duration_rounds = getId("duration").value
+            const duration_unit = getId("duration-unit").value
+            let duration = 0
             switch (duration_unit) {
                 case "days":
-                    duration = duration_rounds * 14400
-                    break
+                    duration = duration_rounds * 14400; break
                 case "hours":
-                    duration = duration_rounds * 600
-                    break
+                    duration = duration_rounds * 600; break
                 case "minutes":
-                    duration = duration_rounds * 10
-                    break
+                    duration = duration_rounds * 10; break
                 default:
                     duration = duration_rounds
-                    break
             }
 
+            // Range
+            let range = getId("range") == "distance" ? getId("range-distance").value : getId("range").value;
 
-            let range = getId("range").value;
-            if (range == "distance") {
-                range = getId("range-distance").value
-            }
-
+            // Classes
             let classes = []
             for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {
-                    classes.push(value)
-                }
+                if(getId(value).getAttribute("data-checked") == "true") {classes.push(value)}
             }
             classes = JSON.stringify(classes)
 
+            // Components
             let components = []
             for (const value of ["vocal", "somatic", "material", "concentration"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {
-                    components.push(value)
-                }
+                if(getId(value).getAttribute("data-checked") == "true") {components.push(value)}
             }
             components = JSON.stringify(components)
-            
 
-            // Send data to backend
-            toBackend(
-                "database.set_spell("+
-                    "`"+name+"`,"+
-                    "`"+level+"`,"+
-                    "`"+school+"`,"+
-                    ""+classes+","+
-                    "`"+cast_time+"`,"+
-                    "`"+range+"`,"+
-                    "`"+target+"`,"+
-                    ""+components+","+
-                    "`"+duration+"`,"+
-                    "`"+description+"`,"+
-                    "`"+description_higher_levels+"`,"+
-                ")"
+            const request = (
+            "database.set_spell({" +
+                "name: `" + getId(`name`).value + "`," +
+                "level: `" + getId(`level`).value + "`," +
+                "school: `" + getId(`school`).value + "`," +
+                "cast_time: `" + getId(`cast-time`).value + "`," +
+                "target: `" + getId(`target`).value+"`," +
+                "description: `" + getId(`description`).value + "`," +
+                "description_higher_levels: `" + getId(`description-higher-levels`).value+"`," +
+                "duration: `" + duration+"`," +
+                "range: `" + range+"`," +
+                "classes: " + classes+"," +
+                "components: " + components+"," +
+            "})"
             )
 
+            toBackend(request)
             closePage("Spell")
         }
 
@@ -199,7 +180,7 @@
                 // Div positioned to the right of the page
                 div({id:"right-area", style:"position:absolute; right:0; width:40%", content:(
                     container({title:"Casting", content:(
-                        input({id:"cast_time", placeholder:"Cast time"}) +
+                        input({id:"cast-time", placeholder:"Cast time"}) +
                         select({
                             id:"range", 
                             placeholder:"Range type",

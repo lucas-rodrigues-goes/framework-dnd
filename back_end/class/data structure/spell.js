@@ -46,7 +46,7 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", 
             level = "1st", 
             school = "", 
@@ -58,7 +58,7 @@ try {
             duration = 0, // 0 for instantaneous
             description = "", 
             description_higher_levels = ""
-        ) {
+        }) {
 
             // Validate Level
             if (![
@@ -75,7 +75,7 @@ try {
 
             // Remove Invalid Spellcasting Classes
             classes = classes.filter(value => [
-                "bard", "druid", "cleric", "sorcerer", "warlock", "wizard"
+                "bard", "druid", "cleric", "sorcerer", "paladin", "ranger", "warlock", "wizard"
             ].includes(value))
 
             // Remove invaild components

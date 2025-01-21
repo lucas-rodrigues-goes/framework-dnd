@@ -919,37 +919,13 @@ try {
             return object_names;
         }        
 
-        set_spell(
-            name,
-            level,
-            school,
-            classes,
-            cast_time,
-            range,
-            target,
-            components,
-            duration,
-            description,
-            description_higher_levels
-        ) {
+        set_spell(data) {
             const database = this.#spells;
-            const object = new Spell(
-                name,
-                level,
-                school,
-                classes,
-                cast_time,
-                range,
-                target,
-                components,
-                duration,
-                description,
-                description_higher_levels
-            );
+            const object = new Spell({...data});
         
             // Verify if already exists
-            if (name in database.data) {
-                this.remove_spell(name);
+            if (object.name in database.data) {
+                this.remove_spell(object.name);
             }
         
             // Level
