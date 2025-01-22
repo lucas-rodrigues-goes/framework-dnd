@@ -30,10 +30,10 @@
                 getId("name").value = capitalize(object.name)
                 getId("type").value = object.type
                 getId("description").value = object.description
-                getId("description-unit").value = "rounds"
+                getId("duration-unit").value = "rounds"
                 getId("duration").value = object.duration
                 
-                loadInputFields()
+                setTimeout(updateInputFields(),10)
             })
         }
 
