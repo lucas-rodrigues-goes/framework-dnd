@@ -11,6 +11,7 @@ try {
         #type
         #duration
         #description
+        #image
 
 
         
@@ -22,6 +23,7 @@ try {
         get type() { return this.#type }
         get duration() { return this.#duration }
         get description() { return this.#description }
+        get image() { return this.#image }
 
 
 
@@ -33,7 +35,8 @@ try {
             name = "", // String
             type = "", // String
             duration = 0, // Number
-            description = "" // String
+            description = "", // String
+            image = ""
         }) {
 
             // Validate Type
@@ -46,6 +49,7 @@ try {
             this.#type = type
             this.#duration = duration
             this.#description = description
+            this.#image = image
 
         }
 
@@ -54,7 +58,8 @@ try {
                 name: this.#name,
                 type: this.#type,
                 duration: this.#duration,
-                description: this.#description
+                description: this.#description,
+                image: this.#image,
             };
         }
 

@@ -13,6 +13,7 @@ try {
         #level
         #optional
         #description
+        #image
 
         
         //=====================================================================================================
@@ -25,6 +26,7 @@ try {
         get level() { return this.#level; }
         get optional() { return this.#optional; }
         get description() { return this.#description; }
+        get image() { return this.#image }
 
 
 
@@ -38,7 +40,8 @@ try {
             subtype = "", // String for classes in case of type class
             level = 0, // Number 
             optional = true, // Boolean 
-            description = "" // String
+            description = "", // String
+            image = "", // Asset url
         }) {
 
             // Validate Type
@@ -52,13 +55,14 @@ try {
             // Validate Level
             if (Number(level) < 0 || Number(level) > 20) { return }
 
-            // Instance
+            // Instancing
             this.#name = name
             this.#type = type
             this.#subtype = subtype
             this.#level = level
             this.#optional = optional
             this.#description = description
+            this.#image = image
 
         }
 
@@ -69,7 +73,8 @@ try {
                 subtype: this.#subtype,
                 level: this.#level,
                 optional: this.#optional,
-                description: this.#description
+                description: this.#description,
+                image: this.#image,
             };
         }
 
