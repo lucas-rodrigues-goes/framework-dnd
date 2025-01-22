@@ -476,20 +476,18 @@ try {
             return object_names;
         }          
 
-        set_damage_type(name, type, description, image) {
+        set_damage_type(data) {
             const database = this.#damage_types
-            const object = new DamageType(name, type, description, image)
+            const object = new DamageType({...data})
 
             // Verify if already exists
-            if(name in database.data) {this.remove_damage_type(name)}
-
+            if(object.name in database.data) {this.remove_damage_type(object.name)}
 
             // Type
             if (!database.type[object.type]) { 
                 database.type[object.type] = [] 
             }
             database.type[object.type].push(object.name)
-
 
             // Data
             database.data[object.name] = object.object()
@@ -1060,23 +1058,21 @@ try {
         }
         
 
-        set_condition(name, type, duration, description) {
+        set_condition(data) {
             const database = this.#conditions;
-            const condition = new Condition(name, type, duration, description);
+            const object = new Condition({...data});
         
             // Verify if the condition already exists
-            if (name in database.data) {
-                this.remove_condition(name);
-            }
+            if (object.name in database.data) { this.remove_condition(object.name); }
         
             // Type
-            if (!database.type[condition.type]) {
-                database.type[condition.type] = [];
+            if (!database.type[object.type]) {
+                database.type[object.type] = [];
             }
-            database.type[condition.type].push(condition.name);
+            database.type[object.type].push(object.name);
         
             // Data
-            database.data[condition.name] = condition.object();
+            database.data[object.name] = object.object();
         
             this.save();
         }

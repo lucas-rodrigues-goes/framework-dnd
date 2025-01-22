@@ -29,12 +29,12 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String 
             type = "", // String 
             description = "", // String 
             image = "", // String of asset address
-        ) {
+        }) {
 
             // Validate Level
             if (![
@@ -51,10 +51,10 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "type": this.#type,
-                "description": this.#description,
-                "image": this.#image
+                name: this.#name,
+                type: this.#type,
+                description: this.#description,
+                image: this.#image
             };
         }
 

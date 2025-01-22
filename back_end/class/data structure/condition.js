@@ -29,12 +29,12 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String
             type = "", // String
             duration = 0, // Number
             description = "" // String
-        ) {
+        }) {
 
             // Validate Type
             if (![

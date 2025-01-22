@@ -38,10 +38,6 @@
         }
 
         function submit() {
-            // Get values from form
-            let name = getId("name").value;
-            let type = getId("type").value;
-            let description = getId("description").value;
 
             // Duration
             let duration;
@@ -64,15 +60,16 @@
             
 
             // Send data to backend
-            toBackend(
-                "database.set_condition("+
-                    "`"+name+"`,"+
-                    "`"+type+"`,"+
-                    "`"+duration+"`,"+
-                    "`"+description+"`,"+
-                ")"
+            const request = (
+                "database.set_condition({"+
+                    "name: `" + getId("name").value + "`," +
+                    "type: `" + getId("type").value + "`," +
+                    "description: `" + getId("description").value + "`," +
+                    "duration: `" + duration + "`," +
+                "})"
             )
 
+            toBackend(request)
             closePage("Condition")
         }
 

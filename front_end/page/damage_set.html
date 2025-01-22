@@ -37,23 +37,16 @@
         }
 
         function submit() {
-            // Get values from form
-            let name = getId("name").value;
-            let type = getId("type").value;
-            let description = getId("description").value;
-            let image = getId("image").value;
-            
 
-            // Send data to backend
-            toBackend(
-                "database.set_damage_type("+
-                    "`"+name+"`,"+
-                    "`"+type+"`,"+
-                    "`"+description+"`,"+
-                    "`"+image+"`,"+
-                ")"
+            const request = (
+                "database.set_damage_type({"+
+                    "name: `" + getId("name").value + "`," +
+                    "type: `" + getId("type").value + "`," +
+                    "description: `" + getId("description").value + "`," +
+                    "image: `" + getId("image").value + "`," +
+                "})"
             )
-
+            toBackend(request)
             closePage("Damage Type")
         }
 
