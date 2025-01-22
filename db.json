@@ -3778,6 +3778,436 @@
         ],
         "recovery": 7,
         "base_armor_class": 0
+      },
+      "Dagger": {
+        "name": "Dagger",
+        "image": "asset://4df77858025ff60e7b7909984ccc7646",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 1,
+        "rarity": "common",
+        "price": 2,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Dagger",
+          "Mundane",
+          "Finesse",
+          "Light",
+          "Thrown"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "4",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 1,
+        "base_armor_class": 0
+      },
+      "Shortsword": {
+        "name": "Shortsword",
+        "image": "asset://c87a5e177a34318d6d09512cdcf34335",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 10,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Shortsword",
+          "Martial",
+          "Finesse",
+          "Light"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "6",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 2,
+        "base_armor_class": 0
+      },
+      "Scimitar": {
+        "name": "Scimitar",
+        "image": "asset://67aac5307fe8ed2107b14db0c68d9812",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 3,
+        "rarity": "common",
+        "price": 25,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Scimitar",
+          "Martial",
+          "Finesse",
+          "Light"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "6",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 3,
+        "base_armor_class": 0
+      },
+      "Rapier": {
+        "name": "Rapier",
+        "image": "asset://6ca0fe606b85c79d4d3de792fcb7e98a",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 25,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Rapier",
+          "Martial",
+          "Finesse"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 2,
+        "base_armor_class": 0
+      },
+      "Longsword": {
+        "name": "Longsword",
+        "image": "asset://36204064dbd1d4b08a4f367c1fb995ba",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 3,
+        "rarity": "common",
+        "price": 15,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Longsword",
+          "Martial",
+          "Versatile"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 3,
+        "base_armor_class": 0
+      },
+      "Greatsword": {
+        "name": "Greatsword",
+        "image": "asset://d3f1ce77fd97886d03dbe05424dea580",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 6,
+        "rarity": "common",
+        "price": 50,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Greatsword",
+          "Martial",
+          "Heavy",
+          "Two-handed"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "2",
+            "die_size": "6",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 6,
+        "base_armor_class": 0
+      },
+      "Javelin": {
+        "name": "Javelin",
+        "image": "asset://cabc4bee946453eecaaa27cd7584e799",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 0.5,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Javelin",
+          "Simple",
+          "Thrown"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "6",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 2,
+        "base_armor_class": 0
+      },
+      "Spear": {
+        "name": "Spear",
+        "image": "asset://c393bce89a40769ba522aecbe081f0ca",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 3,
+        "rarity": "common",
+        "price": 1,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Spear",
+          "Simple",
+          "Thrown",
+          "Versatile"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 3,
+        "base_armor_class": 0
+      },
+      "Glaive": {
+        "name": "Glaive",
+        "image": "asset://9c7e7317c713007e688eba82f043bf3a",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 6,
+        "rarity": "common",
+        "price": 20,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Glaive",
+          "Martial",
+          "Heavy",
+          "Two-handed",
+          "Reach"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "10",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 6,
+        "base_armor_class": 0
+      },
+      "Halberd": {
+        "name": "Halberd",
+        "image": "asset://d549596e555cb6b730ab39857f83c851",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 6,
+        "rarity": "common",
+        "price": 20,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Halberd",
+          "Martial",
+          "Heavy",
+          "Two-handed",
+          "Reach"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "10",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 6,
+        "base_armor_class": 0
+      },
+      "Light hammer": {
+        "name": "Light hammer",
+        "image": "asset://b731535e2eb74a0533151ac9973f7ed8",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 2,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Light hammer",
+          "Simple",
+          "Light",
+          "Thrown"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "4",
+            "damage_type": "Bludgeoning"
+          }
+        ],
+        "recovery": 2,
+        "base_armor_class": 0
+      },
+      "Warhammer": {
+        "name": "Warhammer",
+        "image": "asset://bdbcb5043831fdf7483bad8436355dad",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 5,
+        "rarity": "common",
+        "price": 15,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Warhammer",
+          "Martial",
+          "Versatile"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Bludgeoning"
+          }
+        ],
+        "recovery": 5,
+        "base_armor_class": 0
+      },
+      "Maul": {
+        "name": "Maul",
+        "image": "asset://bb71c3736454bbf7344e655c4c6d5243",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 10,
+        "rarity": "common",
+        "price": 10,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Maul",
+          "Martial",
+          "Heavy",
+          "Two-handed"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "2",
+            "die_size": "6",
+            "damage_type": "Bludgeoning"
+          }
+        ],
+        "recovery": 10,
+        "base_armor_class": 0
+      },
+      "Shortbow": {
+        "name": "Shortbow",
+        "image": "asset://93f2a7e2abe3c20bf3d09b0988278267",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 25,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Ammunition",
+          "Two-handed"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "6",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 4,
+        "base_armor_class": 0
+      },
+      "Longbow": {
+        "name": "Longbow",
+        "image": "asset://c160bb41e7be28f23896666f2cc39fdb",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 3,
+        "rarity": "common",
+        "price": 50,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Ammunition",
+          "Two-handed"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Piercing"
+          }
+        ],
+        "recovery": 6,
+        "base_armor_class": 0
       }
     },
     "type": {
@@ -3797,7 +4227,22 @@
         "Padded Armor",
         "Handaxe",
         "Battleaxe",
-        "Greataxe"
+        "Greataxe",
+        "Dagger",
+        "Shortsword",
+        "Scimitar",
+        "Rapier",
+        "Longsword",
+        "Greatsword",
+        "Javelin",
+        "Spear",
+        "Glaive",
+        "Halberd",
+        "Light hammer",
+        "Warhammer",
+        "Maul",
+        "Shortbow",
+        "Longbow"
       ],
       "undefined": [],
       "other": [
