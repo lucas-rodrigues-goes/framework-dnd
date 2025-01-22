@@ -51,10 +51,10 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "type": this.#type,
-                "duration": this.#duration,
-                "description": this.#description
+                name: this.#name,
+                type: this.#type,
+                duration: this.#duration,
+                description: this.#description
             };
         }
 

@@ -18,6 +18,10 @@ try {
         #stackable
         #equippable
         #properties
+        #bonus
+        #conditions
+        #damage
+        #base_armor_class
 
 
 
@@ -36,6 +40,10 @@ try {
         get stackable() { return this.#stackable; }
         get equippable() { return this.#equippable; }
         get properties() { return this.#properties; }
+        get bonus() { return this.#bonus; }
+        get conditions() { return this.#conditions; }
+        get damage() { return this.#damage; }
+        get base_armor_class() { return this.#base_armor_class; }
 
 
 
@@ -43,7 +51,7 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name,
             image,
             type,
@@ -54,13 +62,31 @@ try {
             price = 0,
             stackable = true,
             equippable = false,
-            properties = []
-        ) {
+            properties = [],
+            bonus = {},
+            conditions = [],
+            damage = [],
+            base_armor_class = 0,
+        }) {
 
             // Validate Rarity
             if ( ! [
                 "common", "uncommon", "rare", "very rare", "legendary"
             ].includes(rarity)) { return }
+
+            // Equipment
+            if (type != "equipment") {
+                bonus = {}
+                conditions = []
+                damage = []
+                base_armor_class = 0
+            }
+            
+            // Weapon
+            if (subtype != "weapon") {damage = []}
+
+            // Armor
+            if (subtype != "armor") {base_armor_class = 0}
 
             this.#name = name;
             this.#image = image;
@@ -73,22 +99,30 @@ try {
             this.#stackable = stackable;
             this.#equippable = equippable;
             this.#properties = properties;
+            this.#bonus = bonus;
+            this.#conditions = conditions;
+            this.#damage = damage;
+            this.#base_armor_class = base_armor_class;
 
         }
 
         object() {
             return {
-                "name": this.#name,
-                "image": this.#image,
-                "type": this.#type,
-                "subtype": this.#subtype,
-                "description": this.#description,
-                "weight": this.#weight,
-                "rarity": this.#rarity,
-                "price": this.#price,
-                "stackable": this.#stackable,
-                "equippable": this.#equippable,
-                "properties": this.#properties
+                name: this.#name,
+                image: this.#image,
+                type: this.#type,
+                subtype: this.#subtype,
+                description: this.#description,
+                weight: this.#weight,
+                rarity: this.#rarity,
+                price: this.#price,
+                stackable: this.#stackable,
+                equippable: this.#equippable,
+                properties: this.#properties,
+                bonus: this.#bonus,
+                conditions: this.#conditions,
+                damage: this.#damage,
+                base_armor_class: this.#base_armor_class,
             };
         }
 
