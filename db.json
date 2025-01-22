@@ -36,35 +36,35 @@
         },
         "description": "<i>Kingdoms rich in ancient grandeur, halls carved into the roots of mountains, the echoing of picks and hammers in deep mines and blazing forges, a commitment to clan and tradition, and a burning hatred of goblins and orcs – these common threads unite all dwarves.</i>\n\n<b>Age:</b> Dwarves mature at the same rate as humans, but they're considered young until they reach the age of 50. On average, they live about 350 years.\n\n<b>Alignment:</b> Most dwarves are lawful, believing firmly in the benefits of a well-ordered society. They tend toward good as well, with a strong sense of fair play and a belief that everyone deserves to share in the benefits of a just order.\n\n<b>Size:</b> Dwarves stand between 4 and 5 feet tall and average about 150 pounds. Your size is Medium."
       },
-      "Half-Elf": {
-        "name": "Half-Elf",
+      "Half-Orc": {
+        "name": "Half-Orc",
         "features": [
-          "Fey Ancestry",
-          "Extra Feat"
+          "Savage Attacks",
+          "Relentless Endurance"
         ],
         "proficiencies": [
           {
-            "name": "Small Sword",
-            "level": "1"
+            "name": "Intimidation",
+            "level": "0"
           },
           {
             "name": "Common",
             "level": "0"
           },
           {
-            "name": "Elven",
+            "name": "Orcish",
             "level": "0"
           }
         ],
         "ability_scores": {
-          "strength": "0",
-          "dexterity": "1",
-          "constitution": "0",
-          "wisdom": "0",
-          "intelligence": "1",
-          "charisma": "1"
+          "strength": "2",
+          "dexterity": "0",
+          "constitution": "2",
+          "wisdom": "-1",
+          "intelligence": "-1",
+          "charisma": "0"
         },
-        "description": "<i>Walking in two worlds but truly belonging to neither, half-elves combine what some say are the best qualities of their elf and human parents: human curiosity, inventiveness, and ambition tempered by the refined senses, love of nature, and artistic tastes of the elves.</i>\n\n<b>Age:</b> Half-elves age at much the same rate as humans, reaching adulthood at the age of 20. They live much longer than humans, however, often exceeding 180 years.\n\n<b>Alignment:</b> Half-elves share the chaotic bent of their elven heritage. They both value personal freedom and creative expression, demonstrating neither love of leaders nor desire for followers. They chafe at rules, resent others' demands, and sometimes prove unreliable, or at least unpredictable. They are good and evil in equal numbers, a trait they share with their human parents.\n\n<b>Size:</b> Half-elves are more or less the same size as humans, ranging from 5 to 6 feet tall. Your size is Medium."
+        "description": "<i>When alliances between humans and orcs are sealed by marriages, half-orcs are born. Some half-orcs rise to become proud chiefs of orc tribes, their human blood giving them an edge over their full-blooded orc rivals. Some venture into the world to prove their worth among humans and other more civilized races. Many of these become adventurers, achieving greatness for their mighty deeds and notoriety for their barbaric customs and savage fury.</i>\n\n<b>Age:</b> Half-orcs mature a little faster than humans, reaching adulthood around age 14. They age noticeably faster and rarely live longer than 75 years.\n\n<b>Alignment:</b> Half-orcs inherit a tendency toward chaos from their orc parents and are not strongly inclined toward good. Half-orcs raised among orcs and willing to live out their lives among them are usually evil.\n\n<b>Size:</b> Half-orcs are somewhat larger and bulkier than humans, and they range from 5 to well over 6 feet tall. Your size is Medium."
       },
       "Elf": {
         "name": "Elf",
@@ -76,7 +76,7 @@
         ],
         "proficiencies": [
           {
-            "name": "Bow",
+            "name": "Sword",
             "level": "1"
           },
           {
@@ -102,40 +102,6 @@
         },
         "description": "<i>Elves are a magical people of otherworldly grace, living in places of ethereal beauty, in the midst of ancient forests or in silvery spires glittering with faerie light, where soft music drifts through the air and gentle fragrances waft on the breeze. Elves love nature and magic, art and artistry, music and poetry.</i>\n\n<b>Age:</b> Although elves reach physical maturity at about the same age as humans, the elven understanding of adulthood goes beyond physical growth to encompass worldly experience. An elf typically claims adulthood and an adult name around the age of 100 and can live to be 750 years old.\n\n<b>Alignment:</b> Elves love freedom, variety, and self-expression, so they lean strongly towards the gentler aspects of chaos. They value and protect others' freedom as well as their own, and are good more often than not.\n\n<b>Size:</b> Elves range from under 5 to over 6 feet tall and have slender builds. Your size is Medium."
       },
-      "Half-Orc": {
-        "name": "Half-Orc",
-        "features": [
-          "Savage Attacks",
-          "Relentless Endurance"
-        ],
-        "proficiencies": [
-          {
-            "name": "Axe",
-            "level": "1"
-          },
-          {
-            "name": "Intimidation",
-            "level": "0"
-          },
-          {
-            "name": "Common",
-            "level": "0"
-          },
-          {
-            "name": "Orcish",
-            "level": "0"
-          }
-        ],
-        "ability_scores": {
-          "strength": "2",
-          "dexterity": "0",
-          "constitution": "2",
-          "wisdom": "-1",
-          "intelligence": "-1",
-          "charisma": "0"
-        },
-        "description": "<i>When alliances between humans and orcs are sealed by marriages, half-orcs are born. Some half-orcs rise to become proud chiefs of orc tribes, their human blood giving them an edge over their full-blooded orc rivals. Some venture into the world to prove their worth among humans and other more civilized races. Many of these become adventurers, achieving greatness for their mighty deeds and notoriety for their barbaric customs and savage fury.</i>\n\n<b>Age:</b> Half-orcs mature a little faster than humans, reaching adulthood around age 14. They age noticeably faster and rarely live longer than 75 years.\n\n<b>Alignment:</b> Half-orcs inherit a tendency toward chaos from their orc parents and are not strongly inclined toward good. Half-orcs raised among orcs and willing to live out their lives among them are usually evil.\n\n<b>Size:</b> Half-orcs are somewhat larger and bulkier than humans, and they range from 5 to well over 6 feet tall. Your size is Medium."
-      },
       "Human": {
         "name": "Human",
         "features": [
@@ -143,11 +109,11 @@
         ],
         "proficiencies": [
           {
-            "name": "Sword",
-            "level": "1"
+            "name": "Common",
+            "level": "0"
           },
           {
-            "name": "Common",
+            "name": "Persuasion",
             "level": "0"
           }
         ],
@@ -160,6 +126,36 @@
           "charisma": "1"
         },
         "description": "<i>In the reckonings of most worlds, humans are the youngest of the common races, late to arrive on the world scene and short-lived in comparison to dwarves, elves, and dragons. Perhaps it is because of their shorter lives that they strive to achieve as much as they can in the years they are given. Or maybe they feel they have something to prove to the elder races, and that's why they build their mighty empires on the foundation of conquest and trade. Whatever drives them, humans are the innovators, the achievers, and the pioneers of the worlds.</i>\n\n<b>Age:</b> Humans reach adulthood in their late teens and live less than a century.\n\n<b>Alignment:</b> Humans tend toward no particular alignment. The best and the worst are found among them.\n\n<b>Size:</b> Humans vary widely in height and build, from barely 5 feet to well over 6 feet tall. Regardless of your position in that range, your size is Medium."
+      },
+      "Half-Elf": {
+        "name": "Half-Elf",
+        "features": [
+          "Fey Ancestry",
+          "Extra Feat"
+        ],
+        "proficiencies": [
+          {
+            "name": "Common",
+            "level": "0"
+          },
+          {
+            "name": "Elven",
+            "level": "0"
+          },
+          {
+            "name": "Performance",
+            "level": "0"
+          }
+        ],
+        "ability_scores": {
+          "strength": "0",
+          "dexterity": "1",
+          "constitution": "0",
+          "wisdom": "0",
+          "intelligence": "1",
+          "charisma": "1"
+        },
+        "description": "<i>Walking in two worlds but truly belonging to neither, half-elves combine what some say are the best qualities of their elf and human parents: human curiosity, inventiveness, and ambition tempered by the refined senses, love of nature, and artistic tastes of the elves.</i>\n\n<b>Age:</b> Half-elves age at much the same rate as humans, reaching adulthood at the age of 20. They live much longer than humans, however, often exceeding 180 years.\n\n<b>Alignment:</b> Half-elves share the chaotic bent of their elven heritage. They both value personal freedom and creative expression, demonstrating neither love of leaders nor desire for followers. They chafe at rules, resent others' demands, and sometimes prove unreliable, or at least unpredictable. They are good and evil in equal numbers, a trait they share with their human parents.\n\n<b>Size:</b> Half-elves are more or less the same size as humans, ranging from 5 to 6 feet tall. Your size is Medium."
       }
     }
   },
