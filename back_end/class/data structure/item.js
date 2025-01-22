@@ -18,9 +18,16 @@ try {
         #stackable
         #equippable
         #properties
+
+        // Equipment
         #bonus
         #conditions
+
+        // Weapon
         #damage
+        #recovery
+
+        // Armor
         #base_armor_class
 
 
@@ -65,7 +72,14 @@ try {
             properties = [],
             bonus = {},
             conditions = [],
-            damage = [],
+            damage = [
+                {
+                    die_ammount: 1,
+                    die_size: 4,
+                    damage_type: "Piercing"
+                }
+            ],
+            recovery = 0,
             base_armor_class = 0,
         }) {
 
@@ -79,11 +93,12 @@ try {
                 bonus = {}
                 conditions = []
                 damage = []
+                recovery = 0
                 base_armor_class = 0
             }
             
             // Weapon
-            if (subtype != "weapon") {damage = []}
+            if (subtype != "weapon") {damage = []; recovery = 0}
 
             // Armor
             if (subtype != "armor") {base_armor_class = 0}
@@ -102,6 +117,7 @@ try {
             this.#bonus = bonus;
             this.#conditions = conditions;
             this.#damage = damage;
+            this.#recovery = recovery;
             this.#base_armor_class = base_armor_class;
 
         }
@@ -122,6 +138,7 @@ try {
                 bonus: this.#bonus,
                 conditions: this.#conditions,
                 damage: this.#damage,
+                recovery: this.#recovery,
                 base_armor_class: this.#base_armor_class,
             };
         }

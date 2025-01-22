@@ -1,0 +1,121 @@
+[h:id = arg(0)]
+
+[dialog5("Proficiency", "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+
+    <script>
+        const id = "{id}"
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+        
+    [r:'
+    <script>
+
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+
+        function updateFields() {
+
+            if(id == "") {return}
+
+            toBackend(`database.get_proficiency("`+id+`")`, (response) => {
+                proficiency = JSON.parse(response)
+                
+                getId("name").value = capitalize(proficiency.name)
+                getId("type").value = proficiency.type
+
+                getId("description-proficient").value = proficiency.description[0]
+                getId("description-expert").value = proficiency.description[1]
+                getId("description-master").value = proficiency.description[2]
+                getId("description-grandmaster").value = proficiency.description[3]
+
+                updateInputFields()
+            })
+        }
+
+        function submit() {
+
+            const description = [
+                getId("description-proficient").value,
+                getId("description-expert").value,
+                getId("description-master").value,
+                getId("description-grandmaster").value
+            ]
+
+            const request = (
+            "database.set_proficiency({" +
+                "name: `" + getId("name").value + "`," +
+                "type: `" + getId("type").value + "`," +
+                "description: " + JSON.stringify(description) + "," +
+            "})"
+            )
+
+            toBackend(request)
+            closePage("Proficiency")
+
+        }
+
+
+
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function loadPage() {
+            
+            // Create main div
+            document.body.innerHTML = div({classes:"outer", id:"content"})
+
+            getId("content").innerHTML += (
+                div({style:"position:absolute; left:0; width:40%", content:(
+                    container({title:"Basic", content:(
+                        input({id:"name", placeholder:"Name"}) +
+                        select({id:"type", placeholder:"Type", content:[
+                            "skill", "combat", "save", "tool", "language"
+                        ]})
+                    )})
+                )})+
+                div({style:"position:absolute; right:0; width:60%", content:(
+                    container({title:"Information", content:(
+                        textarea({id:"description-proficient", placeholder:"Proficiency", style:"max-height:10vh;"}) +
+                        textarea({id:"description-expert", placeholder:"Expertise", style:"max-height:17.5vh;"}) +
+                        textarea({id:"description-master", placeholder:"Mastery", style:"max-height:17.5vh;"}) +
+                        textarea({id:"description-grandmaster", placeholder:"Grandmastery", style:"max-height:17.5vh;"})
+                    )})
+                )}) +
+                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
+                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
+            )
+
+            // Event listeners
+            getId("close").addEventListener("click", () => { closePage("Proficiency") })
+            getId("submit").addEventListener("click", () => { submit() })
+
+            // Components
+            loadSelect()
+        }
+
+        function onWindowLoad() {
+            loadPage()
+
+            updateFields()
+        }
+
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
+
+    </script>
+    ']
+</head>
+
+<body>
+</body>
+
+}]

@@ -1189,7 +1189,12 @@ try {
                         }
                         const subtypeA = database.data[a].subtype || '';
                         const subtypeB = database.data[b].subtype || '';
-                        return subtypeA.localeCompare(subtypeB);
+
+                        if (subtypeA !== subtypeB) {
+                            return subtypeA.localeCompare(subtypeB);
+                        }
+
+                        return database.data[b].price - database.data[a].price
                     });
                     break;
             }
@@ -1200,21 +1205,21 @@ try {
 
         set_item(data) {
             const database = this.#items;
-            const item = new Item({...data});
+            const object = new Item({...data});
         
             // Verify if the item already exists
-            if (name in database.data) {
-                this.remove_item(name);
+            if (object.name in database.data) {
+                this.remove_item(object.name);
             }
         
             // Type
-            if (!database.type[item.type]) {
-                database.type[item.type] = [];
+            if (!database.type[object.type]) {
+                database.type[object.type] = [];
             }
-            database.type[item.type].push(item.name);
+            database.type[object.type].push(object.name);
         
             // Data
-            database.data[item.name] = item.object();
+            database.data[object.name] = object.object();
         
             this.save();
         }
@@ -1302,19 +1307,6 @@ try {
     }
 
     var database = new Database()
-
-    database.set_weapon(
-        "Dagger",
-        "",
-        "A dagger",
-        2,
-        "common",
-        10,
-        [],
-        undefined,
-        undefined,
-        undefined
-    )
     
 
 

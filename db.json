@@ -3381,32 +3381,429 @@
   },
   "items": {
     "data": {
-      "Dagger": {
-        "name": "Dagger",
-        "image": "",
+      "Gold Coin": {
+        "name": "Gold Coin",
+        "image": "asset://eff7e50079eb3dc7713bb48f01102fac",
+        "type": "other",
+        "subtype": "",
+        "description": "A common currency, worth 10 silver coins or 100 copper coins.",
+        "weight": 0.01,
+        "rarity": "common",
+        "price": 1,
+        "stackable": true,
+        "equippable": false,
+        "properties": [
+          ""
+        ],
+        "bonus": {},
+        "conditions": [],
+        "damage": [],
+        "base_armor_class": 0
+      },
+      "Silver Coin": {
+        "name": "Silver Coin",
+        "image": "asset://d0df32141e010dfb5d4a8fe801c340b3",
+        "type": "other",
+        "subtype": "",
+        "description": "A common currency, worth a tenth of a gold coin or 10 copper coins.",
+        "weight": 0.01,
+        "rarity": "common",
+        "price": 0.1,
+        "stackable": true,
+        "equippable": false,
+        "properties": [
+          ""
+        ],
+        "bonus": {},
+        "conditions": [],
+        "damage": [],
+        "base_armor_class": 0
+      },
+      "Copper Coin": {
+        "name": "Copper Coin",
+        "image": "asset://23e2af3effa9d9cfdf2f639952e31a93",
+        "type": "other",
+        "subtype": "",
+        "description": "A common currency, worth a hundredth of a gold coin or a tenth of a silver coin.",
+        "weight": 0.01,
+        "rarity": "common",
+        "price": 0.01,
+        "stackable": true,
+        "equippable": false,
+        "properties": [
+          ""
+        ],
+        "bonus": {},
+        "conditions": [],
+        "damage": [],
+        "base_armor_class": 0
+      },
+      "Splint Armor": {
+        "name": "Splint Armor",
+        "image": "asset://12611d6dda435bd94e3c5d4f609316ca",
         "type": "equipment",
-        "subtype": "weapon",
-        "description": "A dagger",
-        "weight": 2,
+        "subtype": "armor",
+        "description": "This armor is made of narrow vertical strips of metal riveted to a backing of leather that is worn over cloth padding. Flexible chain mail protects the joints.",
+        "weight": 60,
+        "rarity": "common",
+        "price": 200,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Heavy"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "17"
+      },
+      "Chain Mail": {
+        "name": "Chain Mail",
+        "image": "asset://ca79c1dd6d2a1360c1b38d37770e3f05",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Made of interlocking metal rings, chain mail includes a layer of quilted fabric worn underneath the mail to prevent chafing and to cushion the impact of blows. The suit includes gauntlets.",
+        "weight": 55,
+        "rarity": "common",
+        "price": 75,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Heavy"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "16"
+      },
+      "Ring Mail": {
+        "name": "Ring Mail",
+        "image": "asset://eacd9f64c122b7fc359c9e10b314fb4d",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "This armor is leather armor with heavy rings sewn into it. The rings help reinforce the armor against blows from swords and axes. Ring mail is inferior to chain mail, and it's usually worn only by those who can't afford better armor.",
+        "weight": 40,
+        "rarity": "common",
+        "price": 30,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Heavy"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "14"
+      },
+      "Plate Armor": {
+        "name": "Plate Armor",
+        "image": "asset://95534701fa961ef2dc4a674f72d7f6d8",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Plate consists of shaped, interlocking metal plates to cover the entire body. A suit of plate includes gauntlets, heavy leather boots, a visored helmet, and thick layers of padding underneath the armor. Buckles and straps distribute the weight over the body.",
+        "weight": 65,
+        "rarity": "common",
+        "price": 1500,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Heavy"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "19"
+      },
+      "Half Plate": {
+        "name": "Half Plate",
+        "image": "asset://a35adfd9d29001ac70bb35ac66f9ac3a",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Half plate consists of shaped metal plates that cover most of the wearer's body. It does not include leg protection beyond simple greaves that are attached with leather straps.",
+        "weight": 40,
+        "rarity": "common",
+        "price": 750,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "15"
+      },
+      "Breastplate": {
+        "name": "Breastplate",
+        "image": "asset://34785aed1dc9787e022c3dd04ab2c0c0",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "This armor consists of a fitted metal chest piece worn with supple leather. Although it leaves the legs and arms relatively unprotected, this armor provides good protection for the wearer's vital organs while leaving the wearer relatively unencumbered.",
+        "weight": 20,
+        "rarity": "common",
+        "price": 400,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "14"
+      },
+      "Scale Mail": {
+        "name": "Scale Mail",
+        "image": "asset://7ea87c319c08b06eaa2981b27953be41",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "This armor consists of a coat and leggings (and perhaps a separate skirt) of leather covered with overlapping pieces of metal, much like the scales of a fish. The suit includes gauntlets.",
+        "weight": 45,
+        "rarity": "common",
+        "price": 50,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "14"
+      },
+      "Dragon Scale Mail": {
+        "name": "Dragon Scale Mail",
+        "image": "asset://cbe55688d285ecc1e945ae7359b693f7",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Dragon scale mail is made of the scales of one kind of dragon. Sometimes dragons collect their cast-off scales and gift them to humanoids. Other times, hunters carefully skin and preserve the hide of a dead dragon. In either case, dragon scale mail is highly valued.\n\nWhile wearing this armor, you gain a +1 bonus to AC, you have advantage on saving throws against the Frightful Presence and breath weapons of dragons, and you have a resistance of 30 to one damage type that is determined by the kind of dragon that provided the scales.\n\nAdditionally, you can focus your senses as an action to magically discern the distance direction to the closest dragon within 30 miles of you that is of the same type as the armor.  This special action can't be used again until the next dawn.\n\nThis armor consists of a coat and leggings (and perhaps a separate skirt) of leather covered with overlapping pieces of metal, much like the scales of a fish. The suit includes gauntlets.",
+        "weight": 45,
+        "rarity": "very rare",
+        "price": 5000,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "15"
+      },
+      "Chain Shirt": {
+        "name": "Chain Shirt",
+        "image": "asset://1d614439913b710a5d5a06afc5bc50e8",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Made of interlocking metal rings, a chain shirt is worn between layers of clothing or leather. This armor offers modest protection to the wearer's upper body and allows the sound of the rings rubbing against one another to be muffled by outer layers.",
+        "weight": 20,
+        "rarity": "common",
+        "price": 50,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "13"
+      },
+      "Hide Armor": {
+        "name": "Hide Armor",
+        "image": "asset://1ebcad333149eb163656538d9969a6bd",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "This crude armor consists of thick furs and pelts. It is commonly worn by barbarian tribes, evil humanoids, and other folk who lack access to the tools and materials needed to create better armor.",
+        "weight": 12,
         "rarity": "common",
         "price": 10,
         "stackable": false,
         "equippable": true,
-        "properties": [],
-        "bonus": {},
-        "conditions": [],
+        "properties": [
+          "Medium"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "12"
+      },
+      "Studded Leather Armor": {
+        "name": "Studded Leather Armor",
+        "image": "asset://b9a2848c9bd234858521f15e94758116",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Made from tough but flexible leather, studded leather is reinforced with close-set rivets or spikes.",
+        "weight": 13,
+        "rarity": "common",
+        "price": 50,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Light"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "12"
+      },
+      "Leather Armor": {
+        "name": "Leather Armor",
+        "image": "asset://072d5f965d283cb68a8b4bc7ccc0cbdc",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "The breastplate and shoulder protectors of this armor are made of leather that has been stiffened by being boiled in oil. The rest of the armor is made of softer and more flexible materials.",
+        "weight": 10,
+        "rarity": "common",
+        "price": 10,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Light"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "11"
+      },
+      "Padded Armor": {
+        "name": "Padded Armor",
+        "image": "asset://29511aca9a999dc2a2676fce6564726b",
+        "type": "equipment",
+        "subtype": "armor",
+        "description": "Padded armor consists of quilted layers of cloth and batting.",
+        "weight": 10,
+        "rarity": "common",
+        "price": 5,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Stealth Disadvantage",
+          "Light"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [],
+        "base_armor_class": "11"
+      },
+      "Handaxe": {
+        "name": "Handaxe",
+        "image": "asset://8f066200fd26c49694df9cd01f4bbc74",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 2,
+        "rarity": "common",
+        "price": 5,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Handaxe",
+          "Simple",
+          "Light",
+          "Thrown"
+        ],
+        "bonus": "",
+        "conditions": "",
         "damage": [
           {
-            "ammount": 1,
-            "size": 4,
-            "type": "piercing"
+            "die_ammount": "1",
+            "die_size": "6",
+            "damage_type": "Slashing"
           }
-        ]
+        ],
+        "recovery": 2,
+        "base_armor_class": 0
+      },
+      "Battleaxe": {
+        "name": "Battleaxe",
+        "image": "asset://edd64b6e28b07aeb2630afa81f37172a",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 4,
+        "rarity": "common",
+        "price": 10,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Battleaxe",
+          "Martial",
+          "Versatile"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "8",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 4,
+        "base_armor_class": 0
+      },
+      "Greataxe": {
+        "name": "Greataxe",
+        "image": "asset://0cb0dd2199fd7efd93103c39e8a7c3e6",
+        "type": "equipment",
+        "subtype": "weapon",
+        "description": "",
+        "weight": 7,
+        "rarity": "common",
+        "price": 30,
+        "stackable": false,
+        "equippable": true,
+        "properties": [
+          "Greataxe",
+          "Martial",
+          "Heavy",
+          "Two-handed"
+        ],
+        "bonus": "",
+        "conditions": "",
+        "damage": [
+          {
+            "die_ammount": "1",
+            "die_size": "12",
+            "damage_type": "Slashing"
+          }
+        ],
+        "recovery": 7,
+        "base_armor_class": 0
       }
     },
     "type": {
       "equipment": [
-        "Dagger"
+        "Splint Armor",
+        "Chain Mail",
+        "Ring Mail",
+        "Plate Armor",
+        "Half Plate",
+        "Breastplate",
+        "Scale Mail",
+        "Dragon Scale Mail",
+        "Chain Shirt",
+        "Hide Armor",
+        "Studded Leather Armor",
+        "Leather Armor",
+        "Padded Armor",
+        "Handaxe",
+        "Battleaxe",
+        "Greataxe"
+      ],
+      "undefined": [],
+      "other": [
+        "Gold Coin",
+        "Silver Coin",
+        "Copper Coin"
       ]
     }
   }

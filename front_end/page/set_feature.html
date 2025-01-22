@@ -1,0 +1,179 @@
+[h:id = arg(0)]
+
+[dialog5("Feature", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+
+    <script>
+        const id = "{id}"
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+        
+    [r:'
+    <style>
+    </style>
+    <script>
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+
+        const classSubclass = {
+            "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+            "bard": ["College of Lore", "College of Valor"],
+            "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+            "druid": ["Circle of the Land", "Circle of the Moon"],
+            "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+            "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+            "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+            "ranger": ["Hunter", "Beast Master"],
+            "rogue": ["Thief", "Assassin", "Arcane Trickster"],
+            "sorcerer": ["Draconic Bloodline", "Wild Magic"],
+            "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+            "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+        }
+        
+        function findClassBySubclass(classesObj, subclass) {
+            for (const [className, subclasses] of Object.entries(classesObj)) {
+                if (subclasses.includes(subclass)) {
+                    return className;
+                }
+            }
+            return undefined; // Return null if the subclass is not found
+        }
+
+        function updateFields() {
+
+            if(id == "") {return}
+
+            toBackend("database.features.data", (response) => {
+                response = JSON.parse(response)
+                
+                getId("name").value = capitalize(response[id].name)
+                getId("type").value = response[id].type
+                getId("level").value = response[id].level
+                getId("optional").setAttribute("data-checked", response[id].optional)
+                getId("description").value = response[id].description
+
+                getId("class").value = findClassBySubclass(classSubclass, response[id].subtype) || response[id].subtype || ""
+
+                updateInputFields()
+
+                getId("subclass").value = response[id].subtype || ""
+
+                loadSelect()
+            })
+        }
+
+        function submit() {
+            
+            // Subtype
+            const subtype = getId("subclass").value || getId("class").value.toLowerCase() || "";
+
+            // Optional
+            let optional_field = getId("optional").getAttribute("data-checked")
+            const optional = optional_field == "true" ? true : false
+
+            // Send data to backend
+            const request  = (
+            "database.set_feature({"+
+                "name: `" + getId("name").value + "`," +
+                "type: `" + getId("type").value + "`," +
+                "subtype: `" + subtype + "`," +
+                "level: `" + getId("level").value + "`," +
+                "optional: `" + optional + "`," +
+                "description: `" + getId("description").value + "`," +
+            "})"
+            )
+
+            toBackend(request)
+            closePage("Feature")
+        }
+
+
+
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function loadPage() {
+
+            // Creates main div
+            document.body.innerHTML = div({classes:"outer", id:"content"})
+
+            getId("content").innerHTML += (
+                container({title:"Basic", content:(
+                    input({id:"name", placeholder:"Name"}) +
+                    select({id:"type", placeholder:"Type", content:[
+                        "racial", "feat", "class"
+                    ]}) +
+                    select({id:"class", placeholder:"Class", style:"display:none", content:Object.keys(classSubclass)}) +
+                    select({id:"subclass", placeholder:"Subclass", style:"display:none", content:[""]})
+                )}) +
+                container({title:"Requirements", content:(
+                    input({id:"level", placeholder:"Level"}) +
+                    div({style:"position:relative;left:30%;width:40%", content:(
+                        checkbox({id:"optional", title:"Optional Feature"})
+                    )})
+                )}) +
+                container({title:"Information", content:(
+                    textarea({id:"description", placeholder:"Description", style:"max-height:20vh"})
+                )}) +
+                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
+                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
+            )
+
+            // Event listeners
+            getId("close").addEventListener("click", () => { closePage("Feature") })
+            getId("submit").addEventListener("click", () => { submit() })
+            getId("type").addEventListener("input", () => {
+                const typeIsClass = getId("type").value == "class"
+
+                if (typeIsClass) { 
+                    getId("class-container").setAttribute("style", "")
+                    
+                } 
+                else { 
+                    getId("class").value = ""
+                    getId("class-container").setAttribute("style", "display:none")
+                    getId("subclass").value = ""
+                    getId("subclass-container").setAttribute("style", "display:none")
+                }
+            })
+            getId("class").addEventListener("input", () => {
+                const current_class = getId("class").value
+
+                if(current_class) {
+                    getId("subclass").innerHTML = option({content:" ", value:""}) + options_from_array(classSubclass[current_class])
+                    getId("subclass-container").setAttribute("style", "")
+                } else {
+                    getId("subclass-container").setAttribute("style", "display:none")
+                }
+            })
+        
+            // Load components
+            loadSelect()
+            loadCheckboxes()
+        }
+
+        function onWindowLoad() {
+            loadPage()
+
+            updateFields()
+        }
+
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
+
+    </script>
+    ']
+</head>
+
+<body>
+</body>
+
+}]

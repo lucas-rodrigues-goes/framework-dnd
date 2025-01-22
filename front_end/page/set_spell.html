@@ -1,0 +1,251 @@
+[h:id = arg(0)]
+
+[dialog5("Spell", "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+    <script>
+        const id = "{id}"
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+
+    [r:'
+    <script>
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+
+        function updateRange() {
+            let range = getId("range")
+            let range_distance = getId("range-distance-container")
+
+            range_distance.setAttribute("style","display:none")
+
+            if (range.value == "distance") {
+                    range_distance.setAttribute("style","")
+                } else {
+                    range_distance.setAttribute("style","display:none")
+                }
+
+            range.addEventListener("input",()=>{
+                if (range.value == "distance") {
+                    range_distance.setAttribute("style","")
+                } else {
+                    range_distance.setAttribute("style","display:none")
+                }
+            })
+        }
+
+        function updateFields() {
+
+            if(id == "") {return}
+
+            toBackend("database.spells.data", (response) => {
+                response = JSON.parse(response)
+                
+                getId("name").value = capitalize(response[id].name)
+                getId("level").value = response[id].level
+                getId("school").value = response[id].school
+
+                getId("cast-time").value = response[id].cast_time
+                getId("target").value = response[id].target
+
+                getId("description").value = response[id].description; 
+                getId("description-higher-levels").value = response[id].description_higher_levels;
+            
+
+                getId("duration").value = response[id].duration
+                getId("duration-unit").value = "rounds"
+
+                getId("bard").setAttribute("data-checked", response[id].classes.includes("bard"))
+                getId("cleric").setAttribute("data-checked", response[id].classes.includes("cleric"))
+                getId("druid").setAttribute("data-checked", response[id].classes.includes("druid"))
+                getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("sorcerer"))
+                getId("warlock").setAttribute("data-checked", response[id].classes.includes("warlock"))
+                getId("wizard").setAttribute("data-checked", response[id].classes.includes("wizard"))
+
+                getId("vocal").setAttribute("data-checked", response[id].components.includes("vocal"))
+                getId("somatic").setAttribute("data-checked", response[id].components.includes("somatic"))
+                getId("material").setAttribute("data-checked", response[id].components.includes("material"))
+                getId("concentration").setAttribute("data-checked", response[id].components.includes("concentration"))
+
+                getId("range").value = response[id].range
+                if (Number(response[id].range)) {
+                    getId("range").value = "distance"
+                    updateRange()
+                    getId("range-distance").value = response[id].range
+                }
+
+                updateInputFields()
+            })
+        }
+
+        function submit() {
+
+            // Duration
+            const duration_rounds = getId("duration").value
+            const duration_unit = getId("duration-unit").value
+            let duration = 0
+            switch (duration_unit) {
+                case "days":
+                    duration = duration_rounds * 14400; break
+                case "hours":
+                    duration = duration_rounds * 600; break
+                case "minutes":
+                    duration = duration_rounds * 10; break
+                default:
+                    duration = duration_rounds
+            }
+
+            // Range
+            let range = getId("range") == "distance" ? getId("range-distance").value : getId("range").value;
+
+            // Classes
+            let classes = []
+            for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
+                if(getId(value).getAttribute("data-checked") == "true") {classes.push(value)}
+            }
+            classes = JSON.stringify(classes)
+
+            // Components
+            let components = []
+            for (const value of ["vocal", "somatic", "material", "concentration"]) {
+                if(getId(value).getAttribute("data-checked") == "true") {components.push(value)}
+            }
+            components = JSON.stringify(components)
+
+            const request = (
+            "database.set_spell({" +
+                "name: `" + getId(`name`).value + "`," +
+                "level: `" + getId(`level`).value + "`," +
+                "school: `" + getId(`school`).value + "`," +
+                "cast_time: `" + getId(`cast-time`).value + "`," +
+                "target: `" + getId(`target`).value+"`," +
+                "description: `" + getId(`description`).value + "`," +
+                "description_higher_levels: `" + getId(`description-higher-levels`).value+"`," +
+                "duration: `" + duration+"`," +
+                "range: `" + range+"`," +
+                "classes: " + classes+"," +
+                "components: " + components+"," +
+            "})"
+            )
+
+            toBackend(request)
+            closePage("Spell")
+        }
+
+
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function loadPage () {
+
+            // Creates main div
+            document.body.innerHTML = div({classes:"outer", id:"content"})
+
+            // Fills main div with content
+            getId("content").innerHTML += (
+
+                // Div positioned to the left of the page
+                div({style:"position:absolute; left:0; width:60%", content:(
+                    container({title:"Basic", content:(
+                        input({
+                            id:"name", 
+                            placeholder:"Spell Name"
+                        }) +
+                        select({
+                            id:"level", 
+                            placeholder:"Spell Level",
+                            content:["cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"],
+                            required:true
+                        }) +
+                        select({
+                            id:"school",
+                            placeholder:"Magic School",
+                            content:[
+                                "abjuration","conjuration","divination","enchantment",
+                                "evocation","illusion","necromancy","transmutation"
+                            ],
+                            required: true
+                        }) +
+                        textarea({id:"description", placeholder:"Description", style:"max-height:40vh"}) +
+                        textarea({id:"description-higher-levels", placeholder:"Higher Levels", style:"max-height:10vh"})
+                    )})
+                )}) +
+
+                // Div positioned to the right of the page
+                div({id:"right-area", style:"position:absolute; right:0; width:40%", content:(
+                    container({title:"Casting", content:(
+                        input({id:"cast-time", placeholder:"Cast time"}) +
+                        select({
+                            id:"range", 
+                            placeholder:"Range type",
+                            content:["self", "touch", "sight", "unlimited", "special", "distance"],
+                            required:true
+                        }) +
+                        input({id:"range-distance", placeholder:"Distance in Feet"}) +
+                        input({id:"target", placeholder:"Target"}) +
+
+                        input({id:"duration", placeholder:"Duration", style:"width:65%"}) + 
+                        select({
+                            id:"duration-unit", 
+                            placeholder:"Unit",
+                            style:"width:33%",
+                            content:["rounds", "minutes", "hours", "days"]
+                        })
+                    )}) +
+                    container({title:"Components", content:(
+                        grid({columns: 2, content:(
+                            checkbox({title:"Vocal", id:"vocal"}) +
+                            checkbox({title:"Somatic", id:"somatic"}) +
+                            checkbox({title:"Material", id:"material"}) +
+                            checkbox({title:"Concentration", id:"concentration"})
+                        )})
+                    )}) +
+                    container({title:"Classes", content:(
+                        grid({columns: 3, content:(
+                            checkbox({title:"Bard", id:"bard"}) +
+                            checkbox({title:"Druid", id:"druid"}) +
+                            checkbox({title:"Cleric", id:"cleric"}) +
+                            checkbox({title:"Sorcerer", id:"sorcerer"}) +
+                            checkbox({title:"Paladin", id:"paladin"}) +
+                            checkbox({title:"Ranger", id:"ranger"}) +
+                            checkbox({title:"Warlock", id:"warlock"}) +
+                            checkbox({title:"Wizard", id:"wizard"})
+                        )})
+                    )})
+                )}) +
+                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
+                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
+            )
+
+            // Event listeners
+            getId("close").addEventListener("click", () => { closePage("Spell") })
+            getId("submit").addEventListener("click", () => { submit() })
+
+            updateRange()
+            loadSelect()
+            loadCheckboxes()
+        }
+
+        function onWindowLoad() {
+            loadPage()
+            updateFields()
+        }
+
+        document.addEventListener("DOMContentLoaded", onWindowLoad)
+
+        //=====================================================================================================
+
+    </script>
+    ']
+</head>
+
+<body>
+</body>
+
+}]

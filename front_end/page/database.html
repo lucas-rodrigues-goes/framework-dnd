@@ -38,6 +38,21 @@
         const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
         const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
 
+        
+        function arrayToList(array, capitalize=false) {
+            let return_string = ""
+
+            for (const i in array) {
+                const element = capitalize ? capitalize(array[i]) : array[i]
+
+                return_string += element
+                return_string += i != array.length-1 ? ", " : ""
+            }
+
+            return return_string
+        }
+
+
         function updateTabs() {
 
             // Returns true if the given tab is visible
@@ -173,7 +188,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("races-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("race_set.html", value) }) // Edit
+                        getId("races-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_race.html", value) }) // Edit
                         getId("races-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_race("`+value+`")`) }) // Remove
                     }
 
@@ -258,7 +273,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("proficiencies-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("proficiency_set.html", value) }) // Edit
+                        getId("proficiencies-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_proficiency.html", value) }) // Edit
                         getId("proficiencies-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_proficiency("`+value+`")`) }) // Remove
                     }
 
@@ -338,7 +353,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("conditions-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("condition_set.html", value) }) // Edit
+                        getId("conditions-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_condition.html", value) }) // Edit
                         getId("conditions-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_condition("`+value+`")`) }) // Remove
                     }
 
@@ -429,7 +444,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("features-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("feature_set.html", value) }) // Edit
+                        getId("features-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_feature.html", value) }) // Edit
                         getId("features-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_feature("`+value+`")`) }) // Remove
                     }
 
@@ -444,14 +459,47 @@
                 
                 // Model for row component to be used in table
                 function custom_row ({
-                    name, type, subtype="", description, image=""
+                    name, image, type, subtype, description, weight, rarity,
+                    price, stackable, equippable, properties, bonus,
+                    conditions, damage, base_armor_class, recovery=""
                 }) {
+
+                    const properties_string = arrayToList(properties) != "" ? `<br><b>Properties</b>: ` + capitalize(arrayToList(properties)) : ""
+                    const conditions_string = arrayToList(conditions) != "" ? `<br><b>Conditions</b>: ` + arrayToList(conditions, true) : ""
+                    const base_armor_class_string = base_armor_class != 0 ? `<b>Armor Class</b>: ` + base_armor_class + `<br>`: ""
+                    
+                    // Damage
+                    const damage_array = damage
+                    damage = ""
+                    for (const i in damage_array) {
+                        const current = damage_array[i]
+                        damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+                        damage += i != damage_array.length - 1 ? ", " : ""
+                    }
+                    const damage_string = damage.length > 0 ? `<b>Damage</b>: ` + damage + `<br>`: ""
+                    const recovery_string = recovery != 0 ? `<b>Recovery Speed</b>: ` + recovery + `<br>` : ""
+
+                    // Description
+                    description = (
+                        div({style:"line-height: 1.5;text-align:left;padding-top:1vh;", content:(`
+                            `+damage_string+`
+                            `+recovery_string+`
+                            `+base_armor_class_string+`
+                            <b>Rarity</b>: `+capitalize(rarity)+`
+                            <br><b>Price</b>: `+price+`gp
+                            <br><b>Weight</b>: `+weight+`lb
+                            `+properties_string+`
+                            `+conditions_string+`
+                        `)}) +
+                        pre({content:description})
+                    )
 
                     columns = [
                         img({src:image, style:"height:2.4vh"}), 
                         name, 
                         capitalize(type),
                         capitalize(subtype),
+                        price + "gp",
                         img({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
                         img({src:remove_icon, id:"items-table-row-"+name+"-remove"})
                     ]
@@ -459,8 +507,8 @@
                     return row({
                         id:"items-table-row-"+name, 
                         columns, 
-                        content:pre({content:description}), 
-                        config:"3vh 1fr 1fr 1fr min-content"
+                        content:description, 
+                        config:"3vh 1fr 1fr 1fr 1fr min-content"
                     })
                 }
 
@@ -507,7 +555,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("items-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("item_set.html", value) }) // Edit
+                        getId("items-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_item.html", value) }) // Edit
                         getId("items-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_item("`+value+`")`) }) // Remove
                     }
 
@@ -584,7 +632,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("damage-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("damage_set.html", value) }) // Edit
+                        getId("damage-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_damage.html", value) }) // Edit
                         getId("damage-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_damage_type("`+value+`")`) }) // Remove
                     }
 
@@ -706,7 +754,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
-                        getId("spells-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("spell_set.html", value) }) // Edit
+                        getId("spells-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_spell.html", value) }) // Edit
                         getId("spells-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_spell("`+value+`")`) }) // Remove
                     }
 
@@ -715,8 +763,6 @@
             }
             
         }
-
-
 
         //=====================================================================================================
         // Execution
@@ -729,7 +775,7 @@
                 button({id:"races-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("races-new").addEventListener("click", ()=>{ openPage("race_set.html","") }) 
+            getId("races-new").addEventListener("click", ()=>{ openPage("set_race.html","") }) 
 
             loadSelect()
         }
@@ -744,7 +790,7 @@
                 button({id:"proficiencies-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("proficiencies-new").addEventListener("click", ()=>{ openPage("proficiency_set.html","") }) 
+            getId("proficiencies-new").addEventListener("click", ()=>{ openPage("set_proficiency.html","") }) 
 
             loadSelect()
         }
@@ -759,7 +805,7 @@
                 button({id:"conditions-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("conditions-new").addEventListener("click", ()=>{ openPage("condition_set.html","") }) 
+            getId("conditions-new").addEventListener("click", ()=>{ openPage("set_condition.html","") }) 
 
             loadSelect()
         }
@@ -796,7 +842,7 @@
                 button({id:"features-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("features-new").addEventListener("click", () => { openPage("feature_set.html","") })
+            getId("features-new").addEventListener("click", () => { openPage("set_feature.html","") })
             getId("features-class-filter").addEventListener("input", () => {
                 const current_class = getId("features-class-filter").value
 
@@ -824,7 +870,7 @@
                 button({id:"items-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("items-new").addEventListener("click", ()=>{ openPage("item_set.html","") }) 
+            getId("items-new").addEventListener("click", ()=>{ openPage("set_item.html","") }) 
 
             loadSelect()
         }
@@ -839,7 +885,7 @@
                 button({id:"damage-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("damage-new").addEventListener("click", ()=>{ openPage("damage_set.html","") }) 
+            getId("damage-new").addEventListener("click", ()=>{ openPage("set_damage.html","") }) 
 
             loadSelect()
         }
@@ -861,7 +907,7 @@
                 button({id:"spells-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
             )
 
-            getId("spells-new").addEventListener("click", ()=>{ openPage("spell_set.html","") }) 
+            getId("spells-new").addEventListener("click", ()=>{ openPage("set_spell.html","") }) 
 
             loadSelect()
         }
