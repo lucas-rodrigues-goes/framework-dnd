@@ -35,28 +35,30 @@
                 getId("description-master").value = proficiency.description[2]
                 getId("description-grandmaster").value = proficiency.description[3]
 
-                setTimeout(updateInputFields(),0)
+                updateInputFields()
             })
         }
 
         function submit() {
-            // Get values from form
-            let name = getId("name").value;
-            let type = getId("type").value;
 
-            let description_proficient = getId("description-proficient").value;
-            let description_expert = getId("description-expert").value;
-            let description_master = getId("description-master").value;
-            let description_grandmaster = getId("description-grandmaster").value;
-            
-            toBackend("database.set_proficiency("+
-                "`"+name+"`,"+
-                "`"+type+"`,"+
-                "`"+description_proficient+"`,"+
-                "`"+description_expert+"`,"+
-                "`"+description_master+"`,"+
-                "`"+description_grandmaster+"`"+
-            ")")
+            const description = [
+                getId("description-proficient").value,
+                getId("description-expert").value,
+                getId("description-master").value,
+                getId("description-grandmaster").value
+            ]
+
+            const request = (
+            "database.set_proficiency({" +
+                "name: `" + getId("name").value + "`," +
+                "type: `" + getId("type").value + "`," +
+                "description: " + JSON.stringify(description) + "," +
+            "})"
+            )
+
+            toBackend(request)
+            closePage("Proficiency")
+
         }
 
 

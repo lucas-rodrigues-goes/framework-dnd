@@ -27,11 +27,11 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String
             type = "", // String
             description = ["Proficient", "Expert", "Master", "Grandmaster"] // Array of descriptions
-        ) {
+        }) {
 
             // Validate Type
             if ( ! [
@@ -47,9 +47,9 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "type": this.#type,
-                "description": this.#description
+                name: this.#name,
+                type: this.#type,
+                description: this.#description
             };
         }
 

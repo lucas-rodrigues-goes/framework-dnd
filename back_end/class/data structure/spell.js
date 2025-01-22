@@ -100,17 +100,17 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "level": this.#level,
-                "school": this.#school,
-                "classes": this.#classes,
-                "cast_time": this.#cast_time,
-                "range": this.#range,
-                "target": this.#target,
-                "components": this.#components,
-                "duration": this.#duration,
-                "description": this.#description,
-                "description_higher_levels": this.#description_higher_levels
+                name: this.#name,
+                level: this.#level,
+                school: this.#school,
+                classes: this.#classes,
+                cast_time: this.#cast_time,
+                range: this.#range,
+                target: this.#target,
+                components: this.#components,
+                duration: this.#duration,
+                description: this.#description,
+                description_higher_levels: this.#description_higher_levels
             };
         }
 

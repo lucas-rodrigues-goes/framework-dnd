@@ -61,11 +61,11 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "type": this.#type,
-                "subtype": this.#subtype,
-                "level": this.#level,
-                "description": this.#description
+                name: this.#name,
+                type: this.#type,
+                subtype: this.#subtype,
+                level: this.#level,
+                description: this.#description
             };
         }
 

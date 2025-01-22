@@ -169,25 +169,21 @@ try {
             return object_names;
         }
 
-        set_proficiency(name, type, prof="",exp="",master="",gm="") {
-
+        set_proficiency(data) {
             const database = this.#proficiencies
-            const object = new Proficiency(name, type, [prof, exp, master, gm])
+            const object = new Proficiency({...data})
 
             // Verify if already exists
-            if(name in database.data) {this.remove_proficiency(name)}
-
+            if(object.name in database.data) {this.remove_proficiency(object.name)}
 
             // Type
             if (!database.type[object.type]) { 
                 database.type[object.type] = [] 
             }
             database.type[object.type].push(object.name)
-            
 
             // Data
             database.data[object.name] = object.object()
-
 
             this.save()
         }
@@ -1401,14 +1397,14 @@ try {
 
         save() {
             let object = {
-                "races": this.#races,
-                "proficiencies": this.#proficiencies,
-                "conditions": this.#conditions,
-                "resources": this.#resources,
-                "damage_types": this.#damage_types,
-                "features": this.#features,
-                "spells": this.#spells,
-                "items": this.#items
+                races: this.#races,
+                proficiencies: this.#proficiencies,
+                conditions: this.#conditions,
+                resources: this.#resources,
+                damage_types: this.#damage_types,
+                features: this.#features,
+                spells: this.#spells,
+                items: this.#items
             };
 
             this.token.setProperty("object", JSON.stringify(object));

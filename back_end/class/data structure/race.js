@@ -50,11 +50,11 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "features": this.#features,
-                "proficiencies": this.#proficiencies,
-                "ability_scores": this.#ability_scores,
-                "description": this.#description
+                name: this.#name,
+                features: this.#features,
+                proficiencies: this.#proficiencies,
+                ability_scores: this.#ability_scores,
+                description: this.#description
             };
         }
 

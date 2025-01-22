@@ -612,20 +612,21 @@ try {
 
         save() {
             let object = {
-                "name": this.#name,
-                "type": this.#type,
-                "race": this.#race,
-                "attributes": this.#attributes,
-                "speed": this.#speed,
-                "health": this.#health,
-                "resources": this.#resources,
-                "features": this.#features,
-                "proficiencies": this.#proficiencies,
-                "spells": this.#spells,
-                "conditions": this.#conditions,
-                "equipment": this.#equipment,
-                "inventory": this.#inventory,
+                name: this.#name,
+                type: this.#type,
+                race: this.#race,
+                attributes: this.#attributes,
+                speed: this.#speed,
+                health: this.#health,
+                resources: this.#resources,
+                features: this.#features,
+                proficiencies: this.#proficiencies,
+                spells: this.#spells,
+                conditions: this.#conditions,
+                equipment: this.#equipment,
+                inventory: this.#inventory
             };
+            
             
             this.token.setName(this.#name);
             this.token.setProperty("object", JSON.stringify(object));
