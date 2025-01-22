@@ -350,7 +350,14 @@ function updateColapsible() {
     const rows = document.querySelectorAll(".table-row");
 
     rows.forEach((row) => {
-        row.addEventListener("click", function () {
+        row.addEventListener("click", function (event) {
+            // Check if the click originated from a button
+            if (event.target.tagName === "IMG") {
+                // Prevent the event from propagating to the parent
+                event.stopPropagation();
+                return;
+            }
+
             // Find the next sibling expandable content
             const content = this.nextElementSibling;
 

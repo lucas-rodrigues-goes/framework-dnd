@@ -699,12 +699,12 @@ try {
             return object_names;
         }
         
-        set_feature(name, type, subtype, level, optional, description) {
+        set_feature(data) {
             const database = this.#features
-            const object = new Feature(name, type, subtype, level, optional, description)
+            const object = new Feature({...data})
 
             // Verify if already exists
-            if(name in database.data) {this.remove_feature(name)}
+            if(object.name in database.data) {this.remove_feature(object.name)}
 
 
             // Type

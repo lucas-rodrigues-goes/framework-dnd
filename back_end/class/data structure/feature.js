@@ -32,14 +32,14 @@ try {
         // Instance management
         //=====================================================================================================
 
-        constructor(
+        constructor({
             name = "", // String 
             type = "", // String 
             subtype = "", // String for classes in case of type class
             level = 0, // Number 
             optional = true, // Boolean 
             description = "" // String
-        ) {
+        }) {
 
             // Validate Type
             if ( ! [
@@ -64,12 +64,12 @@ try {
 
         object() {
             return {
-                "name": this.#name,
-                "type": this.#type,
-                "subtype": this.#subtype,
-                "level": this.#level,
-                "optional": this.#optional,
-                "description": this.#description
+                name: this.#name,
+                type: this.#type,
+                subtype: this.#subtype,
+                level: this.#level,
+                optional: this.#optional,
+                description: this.#description
             };
         }
 
