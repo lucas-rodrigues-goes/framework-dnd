@@ -3,6 +3,7 @@
         
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
         [r:'
@@ -40,7 +41,12 @@
             }
 
             #character-tab-right .container {
-                padding-top: 3vh;
+                padding-top: 2vh;
+                padding-right: 0;
+                padding-left: 0;
+                padding-bottom: 0;
+
+                width:85%;
             }
 
             #portrait {
@@ -236,13 +242,7 @@
                             let description = condition ? condition.description : "Description unavailable."
 
                             // Image
-                            const type_images = {
-                                "special":"asset://38525024141fedd5b4503268f411f587",
-                                "spell":"asset://8fcbdc20a730e85f62f073323af54f9f",
-                                "curse":"asset://17a66eb974c4513994a93f7bc40a2ac1",
-                                "poison":"asset://b53a685d0b14ddd2eb01807f86cd7573"
-                            }
-                            image = type_images[condition.type] || ""
+                            image = condition_images[condition.type] || ""
 
                             rows += row({
                                 columns:[
@@ -263,28 +263,6 @@
                     }
 
                     function updateFeatures() {
-                        const subtype_images = {
-                            "barbarian":"asset://d963c8b40a27e349e6239dcc3a1cbce2",
-                            "bard":"asset://17a9f3a727fb50c75bff76d4e8ed6d27",
-                            "cleric":"asset://039a32067cd1c26bf1e18c423a218f5c",
-                            "druid":"asset://f03485d26b9728b00fc54c9e4e4b5b4c",
-                            "fighter":"asset://0775774cade2e68e4a9c4bd5c83ea282",
-                                "Battle Master":"asset://e44045582f8f31922e6c0bd793b10077",
-                                "Champion":"asset://1e718dbea4b8624c664fd346724216d6",
-                                "Eldritch Knight":"asset://d616194e11b05843b3553697ae268e05",
-                            "monk":"asset://8047e1c0694233eb11d5a0f669e61a54",
-                            "paladin":"asset://f3fcf46aaf9c1a13e33f40c62a91f541",
-                            "ranger":"asset://90baa66f12545c72476e0cfd3050620f",
-                            "rogue":"asset://e105c25e25210a5e107d49ef0af2bfb5",
-                            "sorcerer":"asset://57460f85630f7d84602ff9128eccfef4",
-                            "warlock":"asset://9663e79e3e5c493352a92ca0ba6acc60",
-                            "wizard":"asset://feb415509eb88654c71b1fa53d0879f1",
-                        };
-                        const type_images = {
-                            "racial": "asset://3432c572c31826e72dedd81ef4a10c5b",
-                            "feat": "asset://fc6c201b48e30ba2d9da845a14f92e60",
-                            "class": "asset://65479d57a2b1ffc116a12a5c731d91a7"
-                        };
                         
                         let rows = ""
                         for (const name of character.features.all) {
@@ -292,7 +270,7 @@
                             if(feature) {
                                 const description = feature.description
                                 const type = feature.subtype || feature.type
-                                const image = subtype_images[type] || type_images[type]
+                                const image = class_images[type] || feature_images[type]
 
                                 rows += row({
                                     columns:[
@@ -344,12 +322,7 @@
                                 description += level >= 3 ? "<br><br>" + proficiency.description[3] : ""
 
                                 // Image
-                                const type_images = {
-                                    "combat":"asset://9394034e19ad1bcefb025a1fd971f57c",
-                                    "skill":"asset://e7fc8f132555db0f9ca8d51ee6ffb1ee",
-                                    "language":"asset://36292f4d1c468032b3090c6fce40751d"
-                                }
-                                image = type_images[type] || ""
+                                image = proficiency_images[type] || ""
 
                                 const level_name = type == "language" ? "" : level_names[level]
 
