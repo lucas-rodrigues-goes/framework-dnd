@@ -1115,7 +1115,7 @@ try {
         get items() {return this.#items}
 
         get_item(name) {
-            const database = this.#damage_types;
+            const database = this.#items;
             
             // Check if the resource exists
             if (name in database.data) {

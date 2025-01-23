@@ -16,6 +16,7 @@ try {
         #rarity
         #price
         #stackable
+        #max_stack
         #equippable
         #properties
 
@@ -68,6 +69,7 @@ try {
             rarity = "common",
             price = 0,
             stackable = true,
+            max_stack = 20,
             equippable = false,
             properties = [],
             bonus = {},
@@ -112,6 +114,7 @@ try {
             this.#rarity = rarity;
             this.#price = price;
             this.#stackable = stackable;
+            this.#max_stack = max_stack;
             this.#equippable = equippable;
             this.#properties = properties;
             this.#bonus = bonus;
@@ -133,6 +136,7 @@ try {
                 rarity: this.#rarity,
                 price: this.#price,
                 stackable: this.#stackable,
+                max_stack: this.#max_stack,
                 equippable: this.#equippable,
                 properties: this.#properties,
                 bonus: this.#bonus,

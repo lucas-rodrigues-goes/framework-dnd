@@ -83,7 +83,7 @@ try {
             "secondary main hand": "",
             "secondary off hand": ""
         }
-        #inventory = []
+        #inventory = Array.from({ length: 16 }, () => null);
 
 
         //=====================================================================================================
@@ -144,9 +144,9 @@ try {
         get race() { return this.#race }
 
         set race(race) {
-
             // Old race information
             const old_race_data = database.get_race(this.race) || {};
+            const old_ability_scores = old_race_data.ability_scores || {};
         
             // Remove old racial features
             for (const feature of this.#features.racial || []) {
@@ -155,43 +155,49 @@ try {
         
             // Remove ability score bonuses
             for (const [score, value] of Object.entries(this.ability_scores)) {
-                const totalValue = Number(value) - Number(old_race_data.ability_scores?.[score] || 0);
-                this.set_ability_score(score, totalValue);
+                const bonus = old_ability_scores[score] || 0;
+                const total_value = Number(value) - Number(bonus);
+                this.set_ability_score(score, total_value);
             }
 
-
-            //================================================================================================
+            //=================================================================================================
         
-
             // New race information
             const new_race_data = database.get_race(race) || {};
         
+            const features = new_race_data.features || [];
+            const proficiencies = new_race_data.proficiencies || [];
+            const ability_scores = new_race_data.ability_scores || {};
+        
             // Add new racial features
-            for (const feature of new_race_data.features) {
+            for (const feature of features) {
                 this.add_feature("racial", feature);
             }
-
+        
             // Add new proficiencies
-            for (const proficiency of new_race_data.proficiencies || []) {
+            for (const proficiency of proficiencies) {
                 this.set_proficiency(proficiency.name, proficiency.level, true);
             }
-
+        
             // Add ability score bonuses
             for (const [score, value] of Object.entries(this.ability_scores)) {
-                const totalValue = Number(value) + Number(new_race_data.ability_scores?.[score] || 0);
-                this.set_ability_score(score, totalValue);
+                const bonus = ability_scores[score] || 0;
+                const total_value = Number(value) + Number(bonus);
+                this.set_ability_score(score, total_value);
             }
-
+        
             // Fill HP
             this.health = this.max_health;
-
+        
             // Change race
             this.#race = race;
-
+        
+            // Save state
             this.save();
-
+        
             log(this.#name + " race set to " + race + ".");
         }
+        
         
 
 
@@ -602,6 +608,148 @@ try {
         has_condition(name) {
             return name in this.#conditions
         }
+
+
+        //=====================================================================================================
+        // Inventory
+        //=====================================================================================================
+
+        get inventory () {
+            this.update_inventory_slots()
+            return this.#inventory
+        }
+
+        update_inventory_slots() {
+            while (this.#inventory.length < 16) {this.#inventory.push(null)}
+        }
+
+        receive_item(name, amount = 1) {
+            this.update_inventory_slots();
+        
+            const item = database.get_item(name);
+            const max_stack = item.stackable ? item.max_stack || 20 : 1;
+            let added_to_stack = false;
+        
+            // First loop: Check existing stacks
+            for (let i = 0; i < this.#inventory.length && amount !== 0; i++) {
+                if (this.#inventory[i] && this.#inventory[i].name === name && this.#inventory[i].amount < max_stack) {
+                    const available_space = max_stack - this.#inventory[i].amount;
+                    const added_amount = Math.min(amount, available_space);
+        
+                    // Add the amount to the existing stack
+                    this.#inventory[i].amount += added_amount;
+                    amount -= added_amount;
+        
+                    // Mark that we added to a stack
+                    added_to_stack = true;
+                }
+            }
+        
+            // Second loop: If there is still remainder, add to the first empty slot
+            for (let i = 0; i < this.#inventory.length && amount !== 0; i++) {
+                if (this.#inventory[i] === null) {
+                    const stack_amount = item.stackable ? Math.min(amount, max_stack) : 1;
+                    this.#inventory[i] = { name, amount: stack_amount };
+                    amount -= stack_amount;
+                }
+            }
+        
+            if (amount > 0) {
+                log(amount + " items were not added because the inventory is full.");
+            }
+        
+            this.save();
+        }
+        
+        
+        drop_item(index, amount=1) {
+
+            this.update_inventory_slots()
+
+            const item = this.#inventory[index];
+            const item_data = database.get_item(item.name)
+        
+            // Ensure the item exists and is valid
+            if (!item || item.amount <= 0) {
+                log("No item to drop at the specified index.");
+                return;
+            }
+        
+            // Handle drop of stackable item
+            if (item_data.stackable) {
+
+                // If the amount to drop is less than the current stack
+                if (amount < item.amount) {
+                    item.amount -= amount
+                }
+                // If the amount to drop is the entire stack
+                else if (amount >= item.amount) {
+                    this.#inventory[index] = null
+                }
+            }
+
+            // Handle non-stackable items (removal of one item at a time)
+            else {
+                this.#inventory[index] = null;
+            }
+        
+            this.save();
+        }
+
+        move_item(from_index, to_index, amount) {
+            this.update_inventory_slots()
+
+            const default_item = {name:null, amount:0}
+        
+            const from_item = this.#inventory[from_index] || default_item
+            const to_item = this.#inventory[to_index] || default_item
+
+            console.log(from_item)
+            console.log(to_item)
+
+            // Validate source item
+            if (!from_item.name) {
+                log("No item to move at the source index.");
+                return;
+            }
+
+            const item_data = database.get_item(from_item.name)
+            const equal_items = from_item.name == to_item.name
+            console.log(item_data)
+            console.log(equal_items)
+
+            amount = !amount ? from_item.amount : Math.min(amount, from_item.amount)
+            console.log(amount)
+            
+            // If items are different, can't be stacked
+            if (!equal_items || !item_data.stackable) {
+                this.#inventory[from_index] = to_item.name ? to_item : null
+                this.#inventory[to_index] = from_item.name ? from_item : null
+            }
+            
+            // If items are the same, and stackable
+            else if(equal_items && item_data.stackable) {
+                const max_stack = item_data.max_stack || 20
+                const space_available = max_stack - to_item.amount
+
+                const amount_to_send = Math.min(space_available, amount)
+
+                to_item.amount += amount_to_send
+                from_item.amount -= amount_to_send
+                
+                this.#inventory[from_index] = from_item.amount == 0 ? null : from_item
+                this.#inventory[to_index] = to_item
+            }
+
+            else if(to_item.name == null) {
+                
+            }
+
+            this.save()
+        }
+        
+               
+
 
         //=====================================================================================================
         // Instance
