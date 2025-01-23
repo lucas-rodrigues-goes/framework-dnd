@@ -109,7 +109,7 @@
                 toBackend(`
                     var character = impersonated();
                     JSON.stringify({
-                        "attr_bonus":character.attr_bonus,
+                        "score_bonus":character.score_bonus,
                         "skills":character.skills
                     })
                 `,(response) => {
@@ -130,7 +130,7 @@
                     ]
                     for (const score of scores_list) {
                         title = capitalize(score)
-                        value = bonusOf(character.attr_bonus[score])
+                        value = bonusOf(character.score_bonus[score])
                         getId("saving-throws-content").innerHTML += title_value({title, value})
                     }
 
@@ -150,7 +150,7 @@
                     JSON.stringify({
                         "name":character.name,
                         "portrait":character.portrait,
-                        "attributes":character.attributes,
+                        "ability_scores":character.ability_scores,
                         "type":character.type,
                         "race":character.race,
                         "health":character.health,
@@ -179,12 +179,12 @@
                     getId("ability-scores").outerHTML = table({
                             id:"ability-scores", 
                             headers:[
-                                character.attributes.strength,
-                                character.attributes.dexterity, 
-                                character.attributes.constitution, 
-                                character.attributes.wisdom, 
-                                character.attributes.intelligence, 
-                                character.attributes.charisma
+                                character.ability_scores.strength,
+                                character.ability_scores.dexterity, 
+                                character.ability_scores.constitution, 
+                                character.ability_scores.wisdom, 
+                                character.ability_scores.intelligence, 
+                                character.ability_scores.charisma
                             ],
                             config:"1fr 1fr 1fr 1fr 1fr 1fr",
                             header_style:"text-align:center;font-size:130%"

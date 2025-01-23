@@ -4,16 +4,17 @@ try {
     var Creature = class extends Entity {
 
         //=====================================================================================================
-        // Creature Default Parameters
+        // Default Parameters
         //=====================================================================================================
 
-        #name = "unnamed";
-        #type = "";
-        #race = "";
-        #attributes = {
+        #name = "unnamed"
+        #type = ""
+        #race = ""
+        #ability_scores = {
             "strength": 10, "dexterity": 10, "constitution": 10,
             "wisdom": 10, "intelligence": 10, "charisma": 10,
-        };
+        }
+        #health = 10
         #speed = {
             "walk":30,
             "climb":15,
@@ -21,20 +22,19 @@ try {
             "fly":0,
             "burrow":0,
         }
-        #health = 10
         #resources = {
             "mana": {
                 "current": 0,
                 "maximum": 0
             },
-        };
+        }
         #features = {
             "all": [], "racial": [], "feat": [],
             "barbarian": [], "bard": [], "cleric": [],
             "druid": [], "fighter": [], "monk": [],
             "paladin": [], "ranger": [], "rogue": [],
             "sorcerer": [], "warlock": [], "wizard": []
-        };
+        }
         #proficiencies = {}
         #spells = {
             "bard": {
@@ -66,8 +66,8 @@ try {
                 "always_prepared": [],
                 "memorized": []
             }
-        };
-        #conditions = {};
+        }
+        #conditions = {}
         #equipment = {
             "head": "",
             "body": "",
@@ -82,49 +82,167 @@ try {
             "primary off hand": "",
             "secondary main hand": "",
             "secondary off hand": ""
-        };
-        #inventory = [];
-
+        }
+        #inventory = []
 
 
         //=====================================================================================================
-        // Getter methods
+        // Methods
         //=====================================================================================================
 
-        get name() { return this.#name; }
-        get type() { return this.#type; }
-        get race() { return this.#race; }
+        create_character({name, type, race, ability_scores}) {
 
-        // Array or object getters
-        get attributes() { return this.#attributes; }
-        get health() { return this.#health }
-        get resources() { return this.#resources; }
-        get features() { return this.#features; }
-        get proficiencies() { return this.#proficiencies; }
-        get spells() { return this.#spells; }
-        get conditions() {return this.#conditions}
-        get equipment() { return this.#equipment; }
-        get inventory() { return this.#inventory; }
+            // Ability Scores
+            for (const [score, value] of Object.entries(ability_scores)) {
+                this.set_ability_score(score, value)
+            }
 
-        // Calculate the attribute bonuses based on the attribute values
-        get attr_bonus() {
-            let bonus = function (attribute_value) {
-                return Math.floor((attribute_value - 10) / 2);
+            // Set basic information
+            this.name = name
+            this.type = type
+            this.race = race
+            
+
+            // Fill health
+            this.health = this.max_health
+        }
+
+        //=====================================================================================================
+        // Name
+        //=====================================================================================================
+
+        get name() { return this.#name }
+
+        set name(name) {
+            this.#name = name
+
+            this.save()
+
+            log(this.#name + " updated their name.")
+        }
+
+        
+        //=====================================================================================================
+        // Type
+        //=====================================================================================================
+ 
+        get type() { return this.#type }
+
+        set type(type) {
+            this.#type = type
+
+            this.save()
+
+            log(this.#name + " type set to " + type + ".")
+        }
+
+
+        //=====================================================================================================
+        // Race
+        //=====================================================================================================
+
+        get race() { return this.#race }
+
+        set race(race) {
+
+            // Old race information
+            const old_race_data = database.get_race(this.race) || {};
+        
+            // Remove old racial features
+            for (const feature of this.#features.racial || []) {
+                this.remove_feature("racial", feature);
+            }
+        
+            // Remove ability score bonuses
+            for (const [score, value] of Object.entries(this.ability_scores)) {
+                const totalValue = Number(value) - Number(old_race_data.ability_scores?.[score] || 0);
+                this.set_ability_score(score, totalValue);
+            }
+
+
+            //================================================================================================
+        
+
+            // New race information
+            const new_race_data = database.get_race(race) || {};
+        
+            // Add new racial features
+            for (const feature of new_race_data.features) {
+                this.add_feature("racial", feature);
+            }
+
+            // Add new proficiencies
+            for (const proficiency of new_race_data.proficiencies || []) {
+                this.set_proficiency(proficiency.name, proficiency.level, true);
+            }
+
+            // Add ability score bonuses
+            for (const [score, value] of Object.entries(this.ability_scores)) {
+                const totalValue = Number(value) + Number(new_race_data.ability_scores?.[score] || 0);
+                this.set_ability_score(score, totalValue);
+            }
+
+            // Fill HP
+            this.health = this.max_health;
+
+            // Change race
+            this.#race = race;
+
+            this.save();
+
+            log(this.#name + " race set to " + race + ".");
+        }
+        
+
+
+        //=====================================================================================================
+        // Ability Scores
+        //=====================================================================================================
+
+        get ability_scores() { return this.#ability_scores }
+
+        get score_bonus() {
+            let bonus = function (score_value) {
+                return Math.floor((score_value - 10) / 2);
             }
 
             return {
-                "strength": bonus(this.#attributes.strength),
-                "dexterity": bonus(this.#attributes.dexterity),
-                "constitution": bonus(this.#attributes.constitution),
-                "wisdom": bonus(this.#attributes.wisdom),
-                "intelligence": bonus(this.#attributes.intelligence),
-                "charisma": bonus(this.#attributes.charisma)
+                strength: bonus(this.ability_scores.strength),
+                dexterity: bonus(this.ability_scores.dexterity),
+                constitution: bonus(this.ability_scores.constitution),
+                wisdom: bonus(this.ability_scores.wisdom),
+                intelligence: bonus(this.ability_scores.intelligence),
+                charisma: bonus(this.ability_scores.charisma)
             }
         }
 
+        set_ability_score(ability_score, value) {
+
+            // Validating parameters
+            if (isNaN(Number(value))) {return}
+            if (!this.ability_scores[ability_score]) {return}
+
+            value = Number(value)
+            const min_score_value = 0, max_score_value = 30
+            const clamped_value = Math.min(Math.max(value, min_score_value), max_score_value)
+
+            this.#ability_scores[ability_score] = clamped_value
+
+            this.save()
+
+            log(this.#name + " " + ability_score + " set to " + clamped_value + ".")
+        }
+
+
+        //=====================================================================================================
+        // Health
+        //=====================================================================================================
+
+        get health() { return this.#health }
+        
         get max_health() {
             const level = this.level || 1
-            let calculated_max_health = this.#attributes.constitution
+            let calculated_max_health = this.#ability_scores.constitution
 
             // Feature-based modifiers
             const feature_modifiers = {
@@ -140,38 +258,57 @@ try {
             return calculated_max_health
         }
 
-        get speed() {
-            let baseSpeed = this.#speed.walk;
-        
-            // Feature-based modifiers
-            const feature_modifiers = {
-                "Barbaric Movement": { type: "add", value: 10 },
-                "Monk Movement": { type: "add", value: 10 },
-                "Roving":  { type:"add", value: 5 },
-                "Fleet of Foot":  { type:"add", value: 5 },
-                "Bulky":  { type:"add", value: -5 },
-            };
-            for (const [feature, modifier] of Object.entries(feature_modifiers)) {
-                if (this.has_feature(feature)) {
-                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
-                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
-                }
+        set health(health) {
+
+            // Validating parameters
+            if (isNaN(Number(health))) { return }
+            const clampedHealth = Math.max(Math.min(health, this.max_health), 0)
+
+            this.#health = clampedHealth;
+            
+            this.save();
+        }
+
+        receive_damage(value, type) {
+
+            // Validating parameters
+            if (value <= 0) {return}
+            if (typeof type != "string") {return}
+
+            const resistance = this.resistances[type];
+            let damage = 0;
+
+            // Calculate damage based on resistance
+            switch (resistance.type) {
+                case "immunity":
+                    damage = 0;
+                    break;
+                case "vulnerability":
+                    damage = value * 2;
+                    break;
+                case "heals":
+                    this.receive_healing(value)
+                    return
+                default:
+                    damage = Math.max(value - resistance.reduction, 0);
+                    break;
             }
 
-            // Condition-based modifiers
-            const cnodition_modifiers = {
-                "Haste": { type: "multiply", value: 2 },
-                "Slow": { type: "multiply", value: 0.5 },
-            };
-            for (const [condition, modifier] of Object.entries(cnodition_modifiers)) {
-                if (this.has_condition(condition)) {
-                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
-                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
-                }
-            }
-        
-            return Math.floor(baseSpeed);
+            this.health -= damage;
+
+            log(this.#name + " received " + damage + " " + type + " damage.");
         }
+
+        receive_healing(value) {
+            this.health += value
+
+            log(this.#name + " received " + value + " points of healing.");
+        }
+
+
+        //=====================================================================================================
+        // Resistances
+        //=====================================================================================================
 
         get resistances() {
             
@@ -254,167 +391,76 @@ try {
             
             return resistances;
         }
+
+        //=====================================================================================================
+        // Armor Class
+        //=====================================================================================================
+
+        get armor_class() {
+            return 10 + this.score_bonus.dexterity;
+        }
+
+
+        //=====================================================================================================
+        // Speed
+        //=====================================================================================================
+
+        get speed() {
+            let baseSpeed = this.#speed.walk;
+        
+            // Feature-based modifiers
+            const feature_modifiers = {
+                "Barbaric Movement": { type: "add", value: 10 },
+                "Monk Movement": { type: "add", value: 10 },
+                "Roving":  { type:"add", value: 5 },
+                "Fleet of Foot":  { type:"add", value: 5 },
+                "Bulky":  { type:"add", value: -5 },
+            };
+            for (const [feature, modifier] of Object.entries(feature_modifiers)) {
+                if (this.has_feature(feature)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
+            }
+
+            // Condition-based modifiers
+            const cnodition_modifiers = {
+                "Haste": { type: "multiply", value: 2 },
+                "Slow": { type: "multiply", value: 0.5 },
+            };
+            for (const [condition, modifier] of Object.entries(cnodition_modifiers)) {
+                if (this.has_condition(condition)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
+            }
+        
+            return Math.floor(baseSpeed);
+        }
         
 
-        get skills() {
-            let skills = {
-                // Strength-based skills
-                "Athletics": this.attr_bonus.strength,
-                "Intimidation": Math.max(this.attr_bonus.charisma, this.attr_bonus.strength),
-            
-                // Dexterity-based skills
-                "Acrobatics": this.attr_bonus.dexterity,
-                "Sleight of Hand": this.attr_bonus.dexterity,
-                "Stealth": this.attr_bonus.dexterity,
-            
-                // Wisdom-based skills
-                "Animal Handling": this.attr_bonus.wisdom,
-                "Insight": this.attr_bonus.wisdom,
-                "Medicine": this.attr_bonus.wisdom,
-                "Perception": this.attr_bonus.wisdom,
-                "Survival": this.attr_bonus.wisdom,
-            
-                // Intelligence-based skills
-                "Arcana": this.attr_bonus.intelligence,
-                "History": this.attr_bonus.intelligence,
-                "Investigation": this.attr_bonus.intelligence,
-                "Nature": this.attr_bonus.intelligence,
-                "Religion": this.attr_bonus.intelligence,
-            
-                // Charisma-based skills
-                "Deception": this.attr_bonus.charisma,
-                "Performance": this.attr_bonus.charisma,
-                "Persuasion": this.attr_bonus.charisma
-            };
+        //=====================================================================================================
+        // Resources
+        //=====================================================================================================
 
-            // Apply Proficiency Bonus
-            for (const skill in skills) {
-                skills[skill] += (this.get_proficiency_level(skill) + 1) * 2
-            }
-            
-            return skills
-        }
-
-        // Armor class is determined by 10 + dexterity modifier
-        get armor_class() {
-            return 10 + this.attr_bonus.dexterity;
-        }
-
+        get resources() {return this.#resources}
 
 
         //=====================================================================================================
-        // Setter methods
+        // Features
         //=====================================================================================================
 
-        set name(name) {
-            this.#name = name;
-            this.save();
-            log(this.#name + " updated their name.");
-        }
+        get features() {return this.#features}
 
-        set type(type) {
-            this.#type = type;
-            this.save();
-            log(this.#name + " type set to " + type + ".");
-        }
-
-        set race(race) {
-            this.#race = race;
-            this.save();
-            log(this.#name + " race set to " + race + ".");
-        }
-
-        set health(health) {
-            if (isNaN(Number(health))) { return }
-            let clampedHealth = Math.max(Math.min(health, this.max_health), 0)
-
-            this.#health = clampedHealth;
-            this.save();
-        }
-
-        // Set individual attributes, checking validity (range 1-30)
-        set_attribute(attribute, value) {
-            value = Number(value);
-
-            let validAttributes = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"];
-
-            if (!validAttributes.includes(attribute) || value < 1 || value > 30) {return}
-
-            this.#attributes[attribute] = value;
-            this.save();
-            log(this.#name + " " + attribute + " set to " + value + ".");
-        }
-
-        set_condition(condition, value) {
-            value = Number(value)
-            if (value >= 1) {
-                this.#conditions[condition] = value;
-                log(this.#name + " received " + condition + " for " + value + " rounds.");
-            } else if (value == 0) {
-                delete this.#conditions[condition]
-                log(this.#name + " lost the condition " + condition + ".");
-            }
-            this.save()
-        }
-
-        has_condition(name) {
-            return name in this.#conditions
-        }
-
-
-
-        //=====================================================================================================
-        // Health management
-        //=====================================================================================================
-
-        // Receive damage based on resistance type
-        receive_damage(value, type) {
-            if (value <= 0) {return}
-            if (typeof type != "string") {return}
-
-            const resistance = this.resistances[type];
-            let damage = 0;
-
-            // Calculate damage based on resistance
-            switch (resistance.type) {
-                case "immunity":
-                    damage = 0;
-                    break;
-                case "vulnerability":
-                    damage = value * 2;
-                    break;
-                case "heals":
-                    this.receive_healing(value)
-                    return
-                default:
-                    damage = Math.max(value - resistance.reduction, 0);
-                    break;
-            }
-
-            this.health = this.health - damage;
-            log(this.#name + " received " + damage + " " + type + " damage.");
-        }
-
-        // Receive healing
-        receive_healing(value) {
-            this.health = this.health + value
-            log(this.#name + " received " + value + " points of healing.");
-        }
-
-
-
-        //=====================================================================================================
-        // Feature management
-        //=====================================================================================================
-
-        // Add a feature to the creature (checking feature type and duplication)
         add_feature(type, name) {
-            let validTypes = [
+
+            const valid_feature_types = [
                 "racial", "feat",
                 "barbarian", "bard", "cleric", "druid", "fighter", "monk",
                 "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"
-            ];
-            if (!validTypes.includes(type)) {
+            ]
+
+            if (!valid_feature_types.includes(type)) {
                 log(this.#name + " attempted to receive the feature " + name + ", but failed due to invalid type '" + type + "'.");
                 return;
             }
@@ -425,26 +471,20 @@ try {
 
             this.#features.all.push(name);
             this.#features[type].push(name);
+
             this.save();
             log(this.#name + " received the " + type + " feature " + name + ".");
         }
 
-        add_feature_list(type, name_list) {
-            let i = 0
-            while (i < name_list.length) {
-                this.add_feature(type,name_list[i])
-                i += 1
-            }
-        }
-
-        // Remove a feature from the creature
         remove_feature(type, name) {
-            let validTypes = [
+
+            const valid_feature_types = [
                 "racial", "feat",
                 "barbarian", "bard", "cleric", "druid", "fighter", "monk",
                 "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"
-            ];
-            if (!validTypes.includes(type)) { return; }
+            ]
+
+            if (!valid_feature_types.includes(type)) { return; }
 
             // Removes only one instance from ALL in case gained from multiple classes  
             const index = this.#features.all.indexOf(name); if (index !== -1) { this.#features.all.splice(index, 1);}
@@ -455,18 +495,17 @@ try {
             log(this.#name + " lost the " + type + " feature " + name + ".");
         }
 
-        // Check if the creature has a specific feature
         has_feature(name) {
             return this.#features.all.includes(name);
         }
 
 
-
         //=====================================================================================================
-        // Proficiency management
+        // Proficiencies
         //=====================================================================================================
 
-        // Add a proficiency to the creature
+        get proficiencies () {return this.#proficiencies}
+
         set_proficiency(name, level, highest=false) {
             if (isNaN(Number(level))) {
                 log("Invalid number when setting proficiency: "+name+" as level: "+level)
@@ -483,7 +522,6 @@ try {
             this.save()
         }
 
-        // Remove a proficiency from the creature
         remove_proficiency(name) {
             if (this.proficiencies[name]) {
                 delete this.proficiencies[name]
@@ -492,7 +530,6 @@ try {
             this.save()
         }
 
-        // Get level of proficiency
         get_proficiency_level(name) {
             if (this.proficiencies[name]) {
                 return this.proficiencies[name]
@@ -500,10 +537,74 @@ try {
             return -1
         }
 
+        
+        //=====================================================================================================
+        // Skills
+        //=====================================================================================================
+
+        get skills() {
+            let skills = {
+                // Strength-based skills
+                "Athletics": this.score_bonus.strength,
+                "Intimidation": Math.max(this.score_bonus.charisma, this.score_bonus.strength),
+            
+                // Dexterity-based skills
+                "Acrobatics": this.score_bonus.dexterity,
+                "Sleight of Hand": this.score_bonus.dexterity,
+                "Stealth": this.score_bonus.dexterity,
+            
+                // Wisdom-based skills
+                "Animal Handling": this.score_bonus.wisdom,
+                "Insight": this.score_bonus.wisdom,
+                "Medicine": this.score_bonus.wisdom,
+                "Perception": this.score_bonus.wisdom,
+                "Survival": this.score_bonus.wisdom,
+            
+                // Intelligence-based skills
+                "Arcana": this.score_bonus.intelligence,
+                "History": this.score_bonus.intelligence,
+                "Investigation": this.score_bonus.intelligence,
+                "Nature": this.score_bonus.intelligence,
+                "Religion": this.score_bonus.intelligence,
+            
+                // Charisma-based skills
+                "Deception": this.score_bonus.charisma,
+                "Performance": this.score_bonus.charisma,
+                "Persuasion": this.score_bonus.charisma
+            };
+
+            // Apply Proficiency Bonus
+            for (const skill in skills) {
+                skills[skill] += (this.get_proficiency_level(skill) + 1) * 2
+            }
+            
+            return skills
+        }
 
 
         //=====================================================================================================
-        // Instance management
+        // Conditions
+        //=====================================================================================================
+
+        set_condition(condition, value) {
+            value = Number(value)
+
+            if (value >= 1) {
+                this.#conditions[condition] = value;
+                log(this.#name + " received " + condition + " for " + value + " rounds.");
+            } else if (value == 0) {
+                delete this.#conditions[condition]
+                log(this.#name + " lost the condition " + condition + ".");
+            }
+            this.save()
+        }
+
+        has_condition(name) {
+            return name in this.#conditions
+        }
+
+        //=====================================================================================================
+        // Instance
         //=====================================================================================================
 
         constructor(id, reset) {
@@ -528,53 +629,8 @@ try {
             }
         }
 
-        // Create character, by attributing basic information, features and proficiencies
-        create(name, type, race, str, dex, con, wis, int, cha) {
-
-            // Get race information
-            const race_data = database.get_race(race)
-            
-
-            // Set basic information
-            this.name = name, 
-            this.type = type, 
-            this.race = race;
-
-
-            // Add features
-            this.add_feature_list("racial", race_data.features)
-
-
-            // Add proficiencies
-            for (const proficiency of race_data.proficiencies) {
-                const name = proficiency["name"]
-                const level = proficiency["level"]
-
-                this.set_proficiency(name, level, true)
-            }
-
-
-            // Ability Scores
-            const scores = race_data.ability_scores;
-            const baseScores = { 
-                strength: str, dexterity: dex, constitution: con, 
-                wisdom: wis, intelligence: int, charisma: cha 
-            };
-            for (const [attribute, baseValue] of Object.entries(baseScores)) {
-                const totalValue = Number(scores[attribute]) + Number(baseValue);
-                this.set_attribute(attribute, totalValue);
-            }
-
-            // Fill health
-            this.health = this.max_health
-
-            this.save()
-        }
-
-
-
         //=====================================================================================================
-        // MapTool sync management
+        // MapTool sync
         //=====================================================================================================
 
         load() {
@@ -582,7 +638,7 @@ try {
 
             // Check for undefined values and raise an error
             const keysToCheck = [
-                "name", "type", "race", "attributes", "speed", "health",
+                "name", "type", "race", "ability_scores", "speed", "health",
                 "resources", "features", "spells",
                 "conditions", "equipment", "inventory"
             ];
@@ -596,7 +652,7 @@ try {
             this.#name = object.name;
             this.#type = object.type;
             this.#race = object.race;
-            this.#attributes = object.attributes;
+            this.#ability_scores = object.ability_scores;
             this.#speed = object.speed;
             this.#health = object.health
             this.#resources = object.resources;
@@ -615,7 +671,7 @@ try {
                 name: this.#name,
                 type: this.#type,
                 race: this.#race,
-                attributes: this.#attributes,
+                ability_scores: this.#ability_scores,
                 speed: this.#speed,
                 health: this.#health,
                 resources: this.#resources,
@@ -636,7 +692,6 @@ try {
         //=====================================================================================================
     }
 
-
 } catch (e) {
-    MapTool.chat.broadcast("" + e + "\n" + e.stack);
+    MapTool.chat.broadcast("" + e + "\n" + e.stack)
 }

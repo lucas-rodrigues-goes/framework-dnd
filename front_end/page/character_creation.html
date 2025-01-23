@@ -136,26 +136,25 @@
         }
 
         function submit() {
-            let request = `var creature = new Creature(getImpersonated(), true);creature.create(`
-            
-            // Get values from form
-            let name = getId("name").value;
-            let type = "Humanoid";
-            let race = getId("race").value;
 
-            request += `"`+name+`","`+type+`","`+race+`"`
+            const ability_scores = {
+                strength: getId("strength").getAttribute("value"),
+                dexterity: getId("dexterity").getAttribute("value"),
+                constitution: getId("constitution").getAttribute("value"),
+                wisdom: getId("wisdom").getAttribute("value"),
+                intelligence: getId("intelligence").getAttribute("value"),
+                charisma: getId("charisma").getAttribute("value"),
+            }
 
-            // Get attribute values from form
-            let str = getId("strength").getAttribute("value");
-            let dex = getId("dexterity").getAttribute("value");
-            let con = getId("constitution").getAttribute("value");
-            let wis = getId("wisdom").getAttribute("value");
-            let int = getId("intelligence").getAttribute("value");
-            let cha = getId("charisma").getAttribute("value");
-
-            request += `,`+str+`,`+dex+`,`+con+`,`+wis+`,`+int+`,`+cha+`,`
-
-            request += `);`
+            const request = (
+            "var creature = new Creature(getImpersonated(), true);" +
+            "creature.create_character({" +
+                "name: `" + getId("name").value + "`," +
+                "type: `" + "Humanoid" + "`," +
+                "race: `" + getId("race").value + "`," +
+                "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
+            "})"
+            )
 
             toBackend(request)
             closePage("Character Creation")
