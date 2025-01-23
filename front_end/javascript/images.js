@@ -2,7 +2,7 @@
 
 const condition_images = {
     special: "asset://38525024141fedd5b4503268f411f587",
-    spell: "asset://8fcbdc20a730e85f62f073323af54f9f",
+    spell: "asset://8ee4b85b9fe045563d3cfb058e3f9ce0",
     curse: "asset://17a66eb974c4513994a93f7bc40a2ac1",
     poison: "asset://b53a685d0b14ddd2eb01807f86cd7573",
 };
