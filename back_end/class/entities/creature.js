@@ -638,9 +638,6 @@ try {
                     // Add the amount to the existing stack
                     this.#inventory[i].amount += added_amount;
                     amount -= added_amount;
-        
-                    // Mark that we added to a stack
-                    added_to_stack = true;
                 }
             }
         
@@ -660,8 +657,7 @@ try {
             this.save();
         }
         
-        
-        drop_item(index, amount = 1) {
+        drop_item(index, amount) {
 
             this.update_inventory_slots()
 
@@ -673,6 +669,8 @@ try {
                 log("No item to drop at the specified index.");
                 return;
             }
+
+            amount = !amount ? item.amount : Math.min(amount, item.amount);
         
             // Handle drop of stackable item
             if (item_data.stackable) {
@@ -752,8 +750,20 @@ try {
             this.save();
         }
 
-        send_item(from_index, ammount) {
+        send_item(index) {
+            if (!selected().inventory) { return }
 
+            let target_has_empty_slot = false
+            for (const slot of selected().inventory) {
+                if (slot == null) {target_has_empty_slot = true}
+            }
+
+            if (!target_has_empty_slot) { return }
+            
+            const item = this.inventory[index]
+
+            selected().receive_item(item.name, item.amount)
+            this.drop_item(index)
         }
         
 
