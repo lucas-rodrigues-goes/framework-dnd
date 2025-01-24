@@ -104,9 +104,9 @@ function textarea({id, style, placeholder}={}) {
     return return_content
 }
 
-function img({id, style, classes, src, tooltip, onclick}={}) {
+function img({id, style, classes, src, tooltip, additional, onclick}={}) {
     return span({classes:"tooltip-img", tooltip, content:(
-        element({id, style, classes, src, onclick, tag:"img"})
+        element({id, style, classes, src, onclick, additional, tag:"img"})
     )})
 }
 

@@ -620,7 +620,7 @@ try {
         }
 
         update_inventory_slots() {
-            while (this.#inventory.length < 16) {this.#inventory.push(null)}
+            while (this.#inventory.length < 18) {this.#inventory.push(null)}
         }
 
         receive_item(name, amount = 1) {
