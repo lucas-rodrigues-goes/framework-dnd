@@ -132,6 +132,18 @@ function teleport(arguments) {
     request.send(arguments);
 }
 
+//=====================================================================================================
+// Mouse Tracking
+//=====================================================================================================
+
+let mouse_x = 0;
+let mouse_y = 0;
+
+// Track mouse position globally
+document.addEventListener("mousemove", function (e) {
+    mouse_x = e.pageX; // X-coordinate relative to the page
+    mouse_y = e.pageY; // Y-coordinate relative to the page
+});
 
 
 //=====================================================================================================

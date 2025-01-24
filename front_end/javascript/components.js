@@ -5,37 +5,41 @@
 //=====================================================================================================
 
 function element({
-    content="", id="", tag="", classes="", style="", placeholder="", onclick="", value="", src="",
-    additional=""
+    content="", id="", tag="", classes="", style="", placeholder="", onclick="", value="", src="", 
+    tooltip="", additional=""
 }={}) {
     id = id ? `id="`+id+`"` : ""
-    classes = classes ? `class="`+classes+`"` : ""
     style = style ? `style="`+style+`"` : ""
     placeholder = placeholder ? `placeholder="`+placeholder+`"` : ""
     onclick = onclick ? `onclick="`+onclick+`"` : ""
     value = value ? `value="`+value+`"` : ""
     src = src ? `src="`+src+`"` : ""
 
+    tooltip = tooltip ? `tooltip="`+tooltip+`"` : ""
+    classes += tooltip ? " tooltip " : ""
+
+    classes = classes ? `class="`+classes+`"` : ""
+
     return `
-        <`+tag+` `+id+` `+classes+` `+style+` `+placeholder+` `+onclick+` `+value+` `+src+` `+additional+`>`+
+        <`+tag+` `+id+` `+classes+` `+style+` `+placeholder+` `+onclick+` `+value+` `+src+` `+tooltip+` `+additional+`>`+
             ``+content+``+
         `</`+tag+`>`.trim()
 }
 
-function div({content, id, classes, style, onclick, additional}={}) {
-    return element({content, id, classes, style, onclick, additional, tag:"div"})
+function div({content, id, classes, style, onclick, additional, tooltip}={}) {
+    return element({content, id, classes, style, onclick, additional, tooltip, tag:"div"})
 }
 
-function span({content, id, classes, style}={}) {
-    return element({content, id, classes, style, tag:"span"})
+function span({content, id, classes, style, tooltip}={}) {
+    return element({content, id, classes, style, tooltip, tag:"span"})
 }
 
-function paragraph({content, id, classes, style}={}) {
-    return element({content, id, classes, style, tag:"p"})
+function paragraph({content, id, classes, style, tooltip}={}) {
+    return element({content, id, classes, style, tooltip, tag:"p"})
 }
 
-function pre({content, id, classes, style}={}) {
-    return element({content, id, classes, style, tag:"pre"})
+function pre({content, id, classes, style, tooltip}={}) {
+    return element({content, id, classes, style, tooltip, tag:"pre"})
 }
 
 function option({content, value}={}) {
@@ -100,8 +104,10 @@ function textarea({id, style, placeholder}={}) {
     return return_content
 }
 
-function img({id, style, classes, src, onclick}={}) {
-    return element({id, style, classes, src, onclick, tag:"img"})
+function img({id, style, classes, src, tooltip, onclick}={}) {
+    return span({classes:"tooltip-img", tooltip, content:(
+        element({id, style, classes, src, onclick, tag:"img"})
+    )})
 }
 
 function button({content, id, classes, style, onclick}={}) {
@@ -218,6 +224,17 @@ function pointBuyCalculator() {
                 div({classes:"spacer"}) +
                 div({classes:"score-container", content})
             )})
+}
+
+function context_menu({content=[], id}) {
+
+    let options = ""
+    for (const value of content) {
+        options += element({tag:"li", id:id+"-"+value, content:capitalize(value)})
+    }
+
+
+    return element({tag:"ul", classes:"context-menu", id, content:options})
 }
 
 //=====================================================================================================
@@ -419,6 +436,38 @@ function updateInputFields() {
       // Trigger the "change" event (for select and input elements)
       element.dispatchEvent(new Event("change"));
     });
+}
+
+function loadContextMenu({target_id, context_menu_id, onOpen = () => {}}) {
+    function hideAllContextMenus() {
+        const context_menus = document.querySelectorAll(".context-menu");
+
+        context_menus.forEach(function (menu) {
+            menu.style.display = "none";
+        });
+    }
+
+    const target_div = document.getElementById(target_id);
+    const context_menu = document.getElementById(context_menu_id);
+
+    target_div.addEventListener("mousedown", function(event) {
+        if (event.button === 2) { // 2 is the right mouse button
+            event.preventDefault();
+
+            hideAllContextMenus()
+
+            context_menu.style.display = "block";
+            context_menu.style.left = mouse_x + "px";
+            context_menu.style.top = mouse_y + "px";
+
+            // Reset event listener for buttons
+            context_menu.innerHTML = context_menu.innerHTML
+
+            onOpen()
+        }
+    });
+
+    document.addEventListener("click", hideAllContextMenus);
 }
 
 //=====================================================================================================
