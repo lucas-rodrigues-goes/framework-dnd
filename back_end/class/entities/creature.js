@@ -628,7 +628,6 @@ try {
         
             const item = database.get_item(name);
             const max_stack = item.stackable ? item.max_stack || 20 : 1;
-            let added_to_stack = false;
         
             // First loop: Check existing stacks
             for (let i = 0; i < this.#inventory.length && amount !== 0; i++) {
@@ -662,7 +661,7 @@ try {
         }
         
         
-        drop_item(index, amount=1) {
+        drop_item(index, amount = 1) {
 
             this.update_inventory_slots()
 
@@ -697,59 +696,66 @@ try {
         }
 
         move_item(from_index, to_index, amount) {
-            this.update_inventory_slots()
-
-            const default_item = {name:null, amount:0}
+            this.update_inventory_slots();
         
-            const from_item = this.#inventory[from_index] || default_item
-            const to_item = this.#inventory[to_index] || default_item
-
-            console.log(from_item)
-            console.log(to_item)
-
+            const default_item = { name: null, amount: 0 };
+        
+            const from_item = this.#inventory[from_index] || default_item;
+            const to_item = this.#inventory[to_index] || default_item;
+        
             // Validate source item
             if (!from_item.name) {
                 log("No item to move at the source index.");
                 return;
             }
+        
+            const item_data = database.get_item(from_item.name);
+            const equal_items = from_item.name === to_item.name;
+        
+            amount = !amount ? from_item.amount : Math.min(amount, from_item.amount);
+        
+            // Destination slot has a different item, or equal items that are non stackable
+            if (!equal_items && to_item.name || equal_items && !item_data.stackable) {
 
-            const item_data = database.get_item(from_item.name)
-            const equal_items = from_item.name == to_item.name
-            console.log(item_data)
-            console.log(equal_items)
-
-            amount = !amount ? from_item.amount : Math.min(amount, from_item.amount)
-            console.log(amount)
-            
-            // If items are different, can't be stacked
-            if (!equal_items || !item_data.stackable) {
-                this.#inventory[from_index] = to_item.name ? to_item : null
-                this.#inventory[to_index] = from_item.name ? from_item : null
-            }
-            
-            // If items are the same, and stackable
-            else if(equal_items && item_data.stackable) {
-                const max_stack = item_data.max_stack || 20
-                const space_available = max_stack - to_item.amount
-
-                const amount_to_send = Math.min(space_available, amount)
-
-                to_item.amount += amount_to_send
-                from_item.amount -= amount_to_send
+                this.#inventory[from_index] = to_item;
+                this.#inventory[to_index] = from_item;
+            } 
+            // Destination slot is empty
+            else if (!to_item.name) {
                 
-                this.#inventory[from_index] = from_item.amount == 0 ? null : from_item
-                this.#inventory[to_index] = to_item
-            }
+                const amount_to_move = Math.min(amount, from_item.amount);
+                this.#inventory[to_index] = {
+                    name: from_item.name,
+                    amount: amount_to_move,
+                };
+        
+                from_item.amount -= amount_to_move;
+        
+                this.#inventory[from_index] = from_item.amount === 0 ? null : from_item;
+            } 
+            // Destination slot has the same item and can stack
+            else if (equal_items && item_data.stackable) {
 
-            else if(to_item.name == null) {
-                
+                const max_stack = item_data.max_stack || 20;
+                const space_available = max_stack - to_item.amount;
+        
+                const amount_to_send = Math.min(space_available, amount);
+        
+                to_item.amount += amount_to_send;
+                from_item.amount -= amount_to_send;
+        
+                this.#inventory[from_index] = from_item.amount === 0 ? null : from_item;
+        
+                this.#inventory[to_index] = to_item;
             }
+        
+            this.save();
+        }
 
-            this.save()
+        send_item(from_index, ammount) {
+
         }
         
-               
-
 
         //=====================================================================================================
         // Instance
