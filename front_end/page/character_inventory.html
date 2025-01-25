@@ -15,7 +15,7 @@
     [r:'
     <style>
 
-    .inventory-item {
+    .inventory-slot {
         background-color:#222;
         border: 0.2vh solid #555;
         border-radius: 0.5vh;
@@ -26,9 +26,20 @@
         transition: background-color 0.2s ease;
     }
 
-    .inventory-item:hover {
+    .inventory-slot:hover {
         background-color:#333
     }
+
+    .inventory-item {
+        position:relative;
+        height:80%; 
+        top:10%
+    }
+
+    .inventory-item-img {
+        height: 4.4vh;
+    }
+
 
     </style>
     <script>
@@ -42,6 +53,7 @@
 
     function dragStart(event) {
         draggedElement = event.target;
+        draggedElement.parentNode.classList.remove("tooltip")
         initialPosition = draggedElement.dataset.position;
     }
 
@@ -55,13 +67,16 @@
 
     function drop(event) {
         event.preventDefault();
-        const target = event.target.closest(".grid-item");
+        const target = event.target.closest(".inventory-slot");
 
         if (target) {
             const finalPosition = target.dataset.position;
-            console.log("Initial position: "+initialPosition+", Dropped on position: "+finalPosition);
+
+            toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
+            updateInventory()
+
             // Reset draggedElement visibility without moving it
-            draggedElement.style.visibility = "visible";
+            draggedElement.style.visibility = "hidden";
         }
     }
 
@@ -73,46 +88,40 @@
             const inventory = response[0]
             const item_database = response[1]
 
-            console.log(inventory)
+            const grid = getId("inventory")
+            grid.innerHTML = ""
 
-            let grid_content = ""
-            for (let i=0; i<18; i++) {
-
-                // Add item information
-
+            for (let i = 0; i < 18; i++) {
                 const slot = inventory[i]
-                const item = item_database[slot.name] || null
-
-                if (item != null) {
-                    content = img({
-                        src:item.image,
-                        style:"position:relative; height:80%; top:10%"
-                    })
-                } else {
-                    content = ""
-                }
-
-                // Add grid slot information
-
-                const grid_slot = getId("inventory-"+i+"-slot")
-
-                grid_slot.dataset.position = i
+                const item = slot ? item_database[slot.name] : null
+                
+                const grid_slot = document.createElement("div");
+                grid_slot.className = "inventory-slot";
+                grid_slot.dataset.position = i;
                 grid_slot.addEventListener("dragover", dragOver);
                 grid_slot.addEventListener("drop", drop);
-                grid_slot.innerHTML = content
 
 
-                // Add item behavior
+                if (item) {
+                    const tooltip = document.createElement("span");
+                    tooltip.className = "tooltip inventory-item";
+                    tooltip.setAttribute("tooltip", "Water")
 
-                const grid_item = grid_slot.children[0] || null
+                    const img = document.createElement("img");
+                    img.draggable = true;
+                    img.className = "inventory-item-img";
+                    img.dataset.position = i;
+                    img.src = item.image;
+                    img.addEventListener("dragstart", dragStart);
+                    img.addEventListener("dragend", dragEnd);
 
-                if(grid_item) {
-                    grid_item.draggable = true
-                    grid_item.dataset.position = i
-                    grid_item.addEventListener("dragstart", dragStart);
-                    grid_item.addEventListener("dragend", dragEnd);
+                    tooltip.appendChild(img);
+                    grid_slot.appendChild(tooltip);
                 }
+                
+                grid.appendChild(grid_slot);
             }
+            
         })
     }
 
@@ -125,7 +134,7 @@
         grid_content = ""
         for (let i=0; i<18; i++) {
             grid_content += (
-                div({classes:"inventory-item", id:"inventory-"+i+"-slot"})
+                div({classes:"inventory-slot", id:"inventory-"+i+"-slot"})
             )
         }
         
@@ -148,6 +157,8 @@
                 )})
             )})
         )
+
+        loadContextMenu({target_id:"content",context_menu_id:"teste-context-menu"})
     }
 
     function onWindowLoad() {
