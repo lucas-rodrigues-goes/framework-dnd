@@ -527,6 +527,7 @@
         padding: 0.3vh 0;
         list-style: none;
         font-size: 110%;
+        transform: translate(-0.5vh, -0.5vh);
     }
 
     .context-menu li {

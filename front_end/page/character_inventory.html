@@ -32,14 +32,16 @@
 
     .inventory-item {
         position:relative;
-        height:80%; 
+        height: 4.4vh;
         top:10%
     }
 
-    .inventory-item-img {
-        height: 4.4vh;
+    .tooltip-item::after {
+        position: absolute;
+        top: 115%;
+        height:fit-content;
+        font-weight: bold;
     }
-
 
     </style>
     <script>
@@ -53,7 +55,7 @@
 
     function dragStart(event) {
         draggedElement = event.target;
-        draggedElement.parentNode.classList.remove("tooltip")
+        draggedElement.parentNode.classList.remove("tooltip","tooltip-item")
         initialPosition = draggedElement.dataset.position;
     }
 
@@ -91,7 +93,9 @@
             const grid = getId("inventory")
             grid.innerHTML = ""
 
-            for (let i = 0; i < 18; i++) {
+            items = []
+
+            for (let i = 0; i < 20; i++) {
                 const slot = inventory[i]
                 const item = slot ? item_database[slot.name] : null
                 
@@ -103,25 +107,37 @@
 
 
                 if (item) {
-                    const tooltip = document.createElement("span");
-                    tooltip.className = "tooltip inventory-item";
-                    tooltip.setAttribute("tooltip", "Water")
-
                     const img = document.createElement("img");
+                    
+                    grid_slot.className = "tooltip tooltip-item inventory-slot";
+                    grid_slot.setAttribute("tooltip", item.name)
+                    grid_slot.setAttribute("id", "inventory-slot-"+i)
+
                     img.draggable = true;
-                    img.className = "inventory-item-img";
+                    img.className = "inventory-item";
                     img.dataset.position = i;
                     img.src = item.image;
                     img.addEventListener("dragstart", dragStart);
                     img.addEventListener("dragend", dragEnd);
 
-                    tooltip.appendChild(img);
-                    grid_slot.appendChild(tooltip);
+                    grid_slot.appendChild(img);
+
+                    items.push(i)
                 }
                 
                 grid.appendChild(grid_slot);
             }
             
+            for (const i of items) {
+
+                loadContextMenu({target_id:"inventory-slot-"+i, context_menu_id:"item-context-menu", onOpen:() => {
+                    getId("item-context-menu-drop").addEventListener("click", ()=>{
+                        toBackend(` impersonated().drop_item(`+i+`) `)
+                        updateInventory()
+                    })
+                }})
+
+            }
         })
     }
 
@@ -139,7 +155,7 @@
         }
         
         document.body.innerHTML = (
-            context_menu({content:["equip", "send", "drop"], id:"teste-context-menu"}) +
+            context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
             div({classes:"outer", style:"overflow:hidden;", id:"content"})
         )
 
@@ -149,16 +165,14 @@
                     grid({
                         id:"inventory",
                         classes: "center-horizontal",
-                        style: "position:relative; width:39vh; text-align:center; place-items:center; margin-top:2vh;",
-                        columns: 6,
+                        style: "position:relative; width:32.5vh; text-align:center; place-items:center; margin-top:2vh;",
+                        columns: 5,
                         gap:"0.5vh", 
                         content:grid_content
                     })
                 )})
             )})
         )
-
-        loadContextMenu({target_id:"content",context_menu_id:"teste-context-menu"})
     }
 
     function onWindowLoad() {

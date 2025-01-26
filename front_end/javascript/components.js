@@ -467,6 +467,10 @@ function loadContextMenu({target_id, context_menu_id, onOpen = () => {}}) {
         }
     });
 
+    context_menu.addEventListener("mouseleave", () => {
+        hideAllContextMenus()
+    })
+
     document.addEventListener("click", hideAllContextMenus);
 }
 

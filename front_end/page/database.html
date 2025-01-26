@@ -38,20 +38,6 @@
         const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
         const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
 
-        
-        function arrayToList(array, capitalize=false) {
-            let return_string = ""
-
-            for (const i in array) {
-                const element = capitalize ? capitalize(array[i]) : array[i]
-
-                return_string += element
-                return_string += i != array.length-1 ? ", " : ""
-            }
-
-            return return_string
-        }
-
 
         function updateTabs() {
 

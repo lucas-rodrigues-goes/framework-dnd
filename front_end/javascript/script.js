@@ -43,6 +43,19 @@ function timeUnit(time) {
     return "1 Round"; // Default case if time is <= 1
 }
 
+function arrayToList(array, capitalize=false) {
+    let return_string = ""
+
+    for (const i in array) {
+        const element = capitalize ? capitalize(array[i]) : array[i]
+
+        return_string += element
+        return_string += i != array.length-1 ? ", " : ""
+    }
+
+    return return_string
+}
+
 
 
 //=====================================================================================================
