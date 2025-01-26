@@ -46,6 +46,7 @@ try {
         // Setter methods
         //=====================================================================================================
 
+        get id() { return this.#id }
         get token() { return this.#token;}
         get portrait() { return this.#portrait;}
         

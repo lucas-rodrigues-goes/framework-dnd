@@ -592,6 +592,10 @@ try {
         // Conditions
         //=====================================================================================================
 
+        get conditions() {
+            return this.#conditions
+        }
+
         set_condition(condition, value) {
             value = Number(value)
 
@@ -751,6 +755,8 @@ try {
         }
 
         send_item(index) {
+            if (selected().id == impersonated().id) { return }
+
             if (!selected().inventory) { return }
 
             let target_has_empty_slot = false

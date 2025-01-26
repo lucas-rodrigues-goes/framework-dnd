@@ -585,4 +585,75 @@
         visibility: visible; /* Make it visible */
     }
 
+
+
+    /*===================================================================================================*/
+    /* Inventory */
+    /*===================================================================================================*/
+
+    .inventory-slot {
+        position:relative;
+
+        background-color:#222;
+        border: 0.2vh solid #555;
+        border-radius: 0.5vh;
+
+        height: 5.5vh;
+        width: 5.5vh;
+        margin: 0.3vh 0.5vh;
+
+        transition: background-color 0.2s ease;
+    }
+
+    .inventory-slot:hover {
+        background-color:#333
+    }
+
+    .inventory-item {
+        position:relative;
+        height: 95%;
+        top:2.5%;
+        cursor:pointer;
+    }
+
+    .inventory-item-amount {
+        position:absolute;
+        font-weight:bold; 
+        bottom:0vh; 
+        right:0.3vh;
+        text-shadow: 0.1vh 0.1vh 0.2vh rgba(0, 0, 0, 1), -0.1vh -0.1vh 0.2vh rgba(0,0,0,1);
+    }
+
+    .item-tooltip-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .item-tooltip {
+        position: absolute;
+        top: 110%; /* Position it just below the element */
+        left: 50%;
+        transform: translateX(-50%);
+
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease-in-out;
+        z-index: 150;
+
+        background-color: rgba(40, 40, 40, 0.95);
+        border: 0.2vh solid #444;
+        border-radius: 0.4vh;
+        padding: 1vh;
+        padding-bottom:0;
+
+        width: 21vh;
+    }
+
+    .item-tooltip-container:hover .item-tooltip {
+        opacity: 1;
+        visibility: visible;
+    }
+
+
+
     /*===================================================================================================*/

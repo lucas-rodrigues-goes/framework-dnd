@@ -15,110 +15,12 @@
     [r:'
     <style>
 
-    .inventory-slot {
-        position:relative;
-
-        background-color:#222;
-        border: 0.2vh solid #555;
-        border-radius: 0.5vh;
-
-        height: 5.5vh;
-        width: 5.5vh;
-        margin: 0vh;
-
-        transition: background-color 0.2s ease;
-    }
-
-    .inventory-slot:hover {
-        background-color:#333
-    }
-
-    .inventory-item {
-        position:relative;
-        height: 95%;
-        top:2.5%;
-        cursor:pointer;
-    }
-
-    .inventory-item-amount {
-        position:absolute;
-        font-weight:bold; 
-        bottom:0vh; 
-        right:0.3vh;
-        text-shadow: 0.1vh 0.1vh 0.2vh rgba(0, 0, 0, 1), -0.1vh -0.1vh 0.2vh rgba(0,0,0,1);
-    }
-
-    .container {
-        width: 34vh;
-        margin-bottom: 4vh;
-    }
-
-    .item-tooltip-container {
-    position: relative;
-    display: inline-block;
-    }
-
-    .item-tooltip {
-    position: absolute;
-    top: 110%; /* Position it just below the element */
-    left: 50%;
-    transform: translateX(-50%);
-
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease-in-out;
-    z-index: 150;
-
-    background-color: rgba(40, 40, 40, 0.95);
-    border: 0.2vh solid #444;
-    border-radius: 0.4vh;
-    padding: 1vh;
-    padding-bottom:0;
-
-    width: 18vh;
-    }
-
-    .item-tooltip-container:hover .item-tooltip {
-    opacity: 1;
-    visibility: visible;
-    }
-
     </style>
     <script>
 
     //=====================================================================================================
     // Helper functions
     //=====================================================================================================
-
-    let draggedElement = null;
-    let initialPosition = null;
-
-    function dragStart(event) {
-        draggedElement = event.target;
-        draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
-        initialPosition = draggedElement.dataset.position;
-    }
-    function dragEnd(event) {
-        draggedElement.style.visibility = "visible";
-        draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
-    }
-    function dragOver(event) {
-        event.preventDefault();
-    }
-    function drop(event) {
-        event.preventDefault();
-        const target = event.target.closest(".inventory-slot");
-
-        if (target) {
-            const finalPosition = target.dataset.position;
-
-            toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
-            updateInventory()
-
-            // Reset draggedElement visibility without moving it
-            draggedElement.style.visibility = "hidden";
-        }
-    }
 
     function capitalizeFirstLetters(str) {
         return str
@@ -183,13 +85,42 @@
         return div({style:"text-align: left; font-size:1.5vh", content})
     }
 
-
     //=====================================================================================================
     // Execution
     //=====================================================================================================
 
     
     function updateInventory() {
+
+        let draggedElement = null;
+        let initialPosition = null;
+
+        function dragStart(event) {
+            draggedElement = event.target;
+            draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
+            initialPosition = draggedElement.dataset.position;
+        }
+        function dragEnd(event) {
+            draggedElement.style.visibility = "visible";
+            draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
+        }
+        function dragOver(event) {
+            event.preventDefault();
+        }
+        function drop(event) {
+            event.preventDefault();
+            const target = event.target.closest(".inventory-slot");
+
+            if (target) {
+                const finalPosition = target.dataset.position;
+
+                toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
+                updateInventory()
+
+                // Reset draggedElement visibility without moving it
+                draggedElement.style.visibility = "hidden";
+            }
+        }
 
         const max_inventory_size = 20
 
