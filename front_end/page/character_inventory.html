@@ -1,7 +1,7 @@
 [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
 [h,if(id==""):id = getImpersonated()]
 
-[dialog5("Inventory", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Inventory", "width=325; height=800; temporary=1; input=1; noframe=0"), code: {
 <head>
     <script>
         const id = "{id}"
@@ -20,8 +20,8 @@
         border: 0.2vh solid #555;
         border-radius: 0.5vh;
 
-        height: 5.5vh;
-        width: 5.5vh;
+        height: 5vh;
+        width: 5vh;
 
         transition: background-color 0.2s ease;
     }
@@ -32,8 +32,17 @@
 
     .inventory-item {
         position:relative;
-        height: 4.4vh;
-        top:10%
+        height: 95%;
+        top:2.5%;
+        cursor:pointer;
+    }
+
+    .inventory-item-amount {
+        position:absolute;
+        font-weight:bold; 
+        bottom:-0.4vh; 
+        right:0;
+        text-shadow: 0.1vh 0.1vh 0.2vh rgba(0, 0, 0, 1), -0.1vh -0.1vh 0.2vh rgba(0,0,0,1);
     }
 
     .tooltip-item::after {
@@ -83,8 +92,16 @@
     }
 
     function updateInventory() {
+
+        const max_inventory_size = 20
         
         toBackend(" [impersonated().inventory , database.items.data] ", (response) => {
+
+            const new_hash = hash(response)
+            const old_hash = getId("inventory").getAttribute("hash")
+            if (new_hash == old_hash) { return }
+            getId("inventory").setAttribute("hash", new_hash)
+
             response = JSON.parse(response)
             
             const inventory = response[0]
@@ -93,49 +110,72 @@
             const grid = getId("inventory")
             grid.innerHTML = ""
 
-            items = []
+            const items = []
+            let cells = ""
 
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < max_inventory_size; i++) {
                 const slot = inventory[i]
                 const item = slot ? item_database[slot.name] : null
-                
-                const grid_slot = document.createElement("div");
-                grid_slot.className = "inventory-slot";
-                grid_slot.dataset.position = i;
-                grid_slot.addEventListener("dragover", dragOver);
-                grid_slot.addEventListener("drop", drop);
 
+                slot_tooltip = ""
+                slot_classes = "inventory-slot "
+                slot_content = ""
 
                 if (item) {
-                    const img = document.createElement("img");
-                    
-                    grid_slot.className = "tooltip tooltip-item inventory-slot";
-                    grid_slot.setAttribute("tooltip", item.name)
-                    grid_slot.setAttribute("id", "inventory-slot-"+i)
+                    slot_tooltip = item.name
+                    slot_classes += "tooltip tooltip-item "
+                    slot_content = img({
+                        src:item.image, 
+                        additional:`draggable data-position="`+i+`"`,
+                        classes:"inventory-item"
+                    })
 
-                    img.draggable = true;
-                    img.className = "inventory-item";
-                    img.dataset.position = i;
-                    img.src = item.image;
-                    img.addEventListener("dragstart", dragStart);
-                    img.addEventListener("dragend", dragEnd);
+                    slot_tooltip = slot.amount > 1 ? slot.amount + " " + slot_tooltip + "s" : slot_tooltip
+                    slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
-                    grid_slot.appendChild(img);
+                    weight = Math.round(item.weight * slot.amount * 100) / 100
+                    slot_tooltip += " (" + weight + "lb)"
 
                     items.push(i)
                 }
-                
-                grid.appendChild(grid_slot);
-            }
-            
-            for (const i of items) {
 
-                loadContextMenu({target_id:"inventory-slot-"+i, context_menu_id:"item-context-menu", onOpen:() => {
-                    getId("item-context-menu-drop").addEventListener("click", ()=>{
-                        toBackend(` impersonated().drop_item(`+i+`) `)
-                        updateInventory()
-                    })
-                }})
+                cells += div({
+                    id:"inventory-slot-"+i,
+                    classes:slot_classes,
+                    content:slot_content,
+                    tooltip:slot_tooltip,
+                    additional: `data-position="`+i+`"`
+                })
+            }
+
+            getId("inventory").innerHTML = cells
+            
+            for (let i = 0; i < max_inventory_size; i++) {
+                target_id = "inventory-slot-"+i
+
+                slot = getId(target_id)
+                slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
+
+                if(items.includes(i)) {
+                    item = slot.children[0]
+                    item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
+
+                    loadContextMenu({target_id, context_menu_id:"item-context-menu", onOpen:() => {
+
+                        // Send
+                        getId("item-context-menu-send").addEventListener("click", ()=>{
+                            toBackend(` impersonated().send_item(`+i+`) `)
+                            updateInventory()
+                        })
+
+                        // Drop
+                        getId("item-context-menu-drop").addEventListener("click", ()=>{
+                            toBackend(` impersonated().drop_item(`+i+`) `)
+                            updateInventory()
+                        })
+
+                    }})
+                }
 
             }
         })
@@ -146,13 +186,6 @@
     //=====================================================================================================
 
     function loadPage() {
-
-        grid_content = ""
-        for (let i=0; i<18; i++) {
-            grid_content += (
-                div({classes:"inventory-slot", id:"inventory-"+i+"-slot"})
-            )
-        }
         
         document.body.innerHTML = (
             context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
@@ -160,17 +193,22 @@
         )
 
         getId("content").innerHTML += (
+            container({title:"Equipment", content:(
+                div({style:"height:30vh"})
+            )}) +
             container({title:"Inventory", content:(
                 div({style: "margin-auto",content:(
                     grid({
                         id:"inventory",
                         classes: "center-horizontal",
-                        style: "position:relative; width:32.5vh; text-align:center; place-items:center; margin-top:2vh;",
+                        style: "position:relative; width:30vh; text-align:center; place-items:center; margin-top:2vh;",
                         columns: 5,
-                        gap:"0.5vh", 
-                        content:grid_content
+                        gap:"0.2vh"
                     })
                 )})
+            )}) +
+            container({title:"Item Description", content:(
+                div({style:"height:12.5vh", content:"<br>Select an item to see its description."})
             )})
         )
     }
@@ -180,7 +218,7 @@
         // Body HTML
         loadPage()
 
-        updateInventory()
+        updateInventory(); setInterval(updateInventory, 200)
     }
 
 

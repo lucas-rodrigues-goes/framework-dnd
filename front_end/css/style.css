@@ -518,16 +518,19 @@
     .context-menu {
         margin: 0;
         position: absolute;
-        background-color: #333;
-        border: 0.1vh solid #444;
-        border-radius: 0.5vh;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        
         display: none;
         z-index: 1000;
         padding: 0.3vh 0;
         list-style: none;
         font-size: 110%;
         transform: translate(-0.5vh, -0.5vh);
+
+        background-color: rgba(51, 51, 51, 0.95);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        border: 0.1vh solid #444;
+        border-radius: 0.5vh;
+        font-weight:bold;
     }
 
     .context-menu li {
@@ -536,7 +539,8 @@
     }
 
     .context-menu li:hover {
-        background-color: #1d7bed;
+        background-color: #ddd;
+        color: #222;
     }
 
     /*===================================================================================================*/
@@ -556,7 +560,7 @@
         left: 50%;
         transform: translateX(-50%);
 
-        background-color: rgba(51, 51, 51, 0.8);
+        background-color: rgba(51, 51, 51, 0.9);
         color: #ddd;
 
         padding: 0.5vh 1vh;
