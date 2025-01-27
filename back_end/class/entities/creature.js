@@ -69,21 +69,21 @@ try {
         }
         #conditions = {}
         #equipment = {
-            "head": "",
-            "body": "",
-            "gloves": "",
-            "feet": "",
-            "amulet": "",
-            "right ring": "",
-            "left ring": "",
-            "cape": "",
-            "backpack": "",
-            "primary main hand": "",
-            "primary off hand": "",
-            "secondary main hand": "",
-            "secondary off hand": ""
+            "head": null,
+            "body": null,
+            "gloves": null,
+            "feet": null,
+            "amulet": null,
+            "right ring": null,
+            "left ring": null,
+            "cape": null,
+            "backpack": null,
+            "primary main hand": null,
+            "primary off hand": null,
+            "secondary main hand": null,
+            "secondary off hand": null
         }
-        #inventory = Array.from({ length: 16 }, () => null);
+        #inventory = Array.from({ length: 25 }, () => null);
 
 
         //=====================================================================================================
@@ -615,7 +615,7 @@ try {
 
 
         //=====================================================================================================
-        // Inventory
+        // Inventory & Equipment
         //=====================================================================================================
 
         get inventory () {
@@ -624,7 +624,10 @@ try {
         }
 
         update_inventory_slots() {
-            while (this.#inventory.length < 25) {this.#inventory.push(null)}
+            const max_inventory_size = 25
+
+            while (this.#inventory.length < max_inventory_size) {this.#inventory.push(null)}
+            while (this.#inventory.length > max_inventory_size) {this.#inventory.pop()}
         }
 
         receive_item(name, amount = 1) {
@@ -770,6 +773,87 @@ try {
 
             selected().receive_item(item.name, item.amount)
             this.drop_item(index)
+        }
+
+        get equipment() {
+            return this.#equipment
+        }
+
+        equip_item(inventory_index, equipment_index) {
+
+            const inventory_slot = this.#inventory[inventory_index]
+            const equipment_slot = this.#equipment[equipment_index]
+
+            const item = database.get_item(inventory_slot.name) || null
+            if (!item) {return}
+            
+
+            let valid_slots = [
+                "head",
+                "body",
+                "gloves",
+                "feet",
+                "amulet",
+                "right ring",
+                "left ring",
+                "cape",
+                "backpack",
+                "primary main hand",
+                "primary off hand",
+                "secondary main hand",
+                "secondary off hand"
+            ]
+
+            if (item.type != "equipment") {return}
+
+
+            // Filtering valid slots
+            switch(item.subtype) {
+                case "weapon":
+                    valid_slots = ["primary main hand", "secondary main hand"]
+                    if (item.properties.includes("Light")) { valid_slots.push("primary off hand", "secondary off hand") }
+                    break
+                case "armor":
+                    valid_slots = ["body"]
+                    break
+            }
+            if (!valid_slots.includes(equipment_index)) {return}
+
+            // Removing main hand if trying to equip weapon offhand and mainhand too heavy
+            if (["primary off hand", "secondary off hand"].includes(equipment_index)) {
+                const main_hand_index = equipment_index.split(" ")[0] + " main hand"
+
+                const main_hand_slot = this.#equipment[main_hand_index]
+                const main_hand_item = database.get_item(main_hand_slot.name)
+
+                if (main_hand_item) {
+                    if ( 
+                        (!main_hand_item.properties.includes("Light") && item.subtype == "weapon") || 
+                        (main_hand_item.properties.includes("Heavy") && item.subtype == "shield") 
+                    ) {
+                        this.unequip_item(main_hand_index)
+                    }
+                }
+            }
+
+            // Switching item positions
+            this.#inventory[inventory_index] = equipment_slot
+            this.#equipment[equipment_index] = inventory_slot
+
+            this.save()
+        }
+
+        unequip_item(equipment_index, inventory_index) {
+            const equipment_slot = this.#equipment[equipment_index]
+
+            this.#equipment[equipment_index] = null
+
+            if (!equipment_index) {
+                this.receive_item(equipment_slot.name)
+            }
+            else {
+                this.#inventory[inventory_index] = equipment_slot
+            }
         }
         
 

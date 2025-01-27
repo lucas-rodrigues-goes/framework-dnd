@@ -506,38 +506,44 @@
             }
 
             function updateInventoryTab() {
+                                    
+                let draggedElement = null;
+                let initialPosition = null;
+
+                function dragStart(event) {
+                    draggedElement = event.target;
+                    draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
+                    initialPosition = draggedElement.dataset.position;
+                }
+                function dragEnd(event) {
+                    draggedElement.style.visibility = "visible";
+                    draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
+                }
+                function dragOver(event) {
+                    event.preventDefault();
+                }
+                function drop(event) {
+                    event.preventDefault();
+                    const target = event.target.closest(".inventory-slot");
+
+                    if (target) {
+                        const finalPosition = target.dataset.position;
+
+                        if (isNaN(Number(finalPosition))) {
+                            toBackend(` impersonated().equip_item(`+initialPosition+`, "`+finalPosition+`") `)
+                        } else {
+                            toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
+                        }   
+                        updateInventoryTab()
+
+                        // Reset draggedElement visibility without moving it
+                        draggedElement.style.visibility = "hidden";
+                    }
+                }
+
+
                 function inventory() {
                     const max_inventory_size = 25
-                    
-                    let draggedElement = null;
-                    let initialPosition = null;
-
-                    function dragStart(event) {
-                        draggedElement = event.target;
-                        draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
-                        initialPosition = draggedElement.dataset.position;
-                    }
-                    function dragEnd(event) {
-                        draggedElement.style.visibility = "visible";
-                        draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
-                    }
-                    function dragOver(event) {
-                        event.preventDefault();
-                    }
-                    function drop(event) {
-                        event.preventDefault();
-                        const target = event.target.closest(".inventory-slot");
-
-                        if (target) {
-                            const finalPosition = target.dataset.position;
-
-                            toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
-                            updateInventoryTab()
-
-                            // Reset draggedElement visibility without moving it
-                            draggedElement.style.visibility = "hidden";
-                        }
-                    }
 
                     toBackend(" [impersonated().inventory , database.items.data] ", (response) => {
 
@@ -632,8 +638,105 @@
                         }
                     })
                 }
+
+                function equipment() {
+                    toBackend(" [impersonated().equipment , database.items.data] ", (response) => {
+                        
+                        // Hash
+                        const new_hash = hash(response)
+                        const old_hash = getId("equipment").getAttribute("hash")
+                        if (new_hash == old_hash) { return }
+                        getId("equipment").setAttribute("hash", new_hash)
+
+                        response = JSON.parse(response)
+
+                        const equipment = response[0]
+                        const item_database = response[1]
+                        const grid = getId("equipment")
+                        grid.innerHTML = ""
+
+                        const items = []
+                        let cells = ""
+
+                        // For each inventory slot
+                        const equipment_slot_list = ["", "", "body", "", ""]
+                        for (const key of equipment_slot_list) {
+                            const slot = equipment[key]
+                            const item = slot ? item_database[slot.name] : null
+
+                            // Default config
+                            slot_content = ""
+                            div_classes = ""
+                            tooltip = ""
+
+                            // If there is item in slot
+                            if (item) {
+
+                                // Tooltip
+                                div_classes += "item-tooltip-container"
+                                tooltip = div({classes:"item-tooltip", content:itemDescription({...item}, slot.amount)})
+
+                                // Image
+                                slot_content = img({
+                                    src:item.image, 
+                                    additional:`draggable data-position="`+key+`"`,
+                                    classes:"inventory-item"
+                                })
+                                // Amount
+                                slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
+
+                                items.push(key)
+                            }
+
+                            // Create item slot
+                            if (key == "") { cells += div() }
+                            else {
+                                cells += (
+                                    div({classes:div_classes, content:(
+                                        div({
+                                            id:"equipment-slot-"+key,
+                                            classes:"inventory-slot item-tooltip-trigger",
+                                            content:slot_content,
+                                            additional: `data-position="`+key+`"`
+                                        }) +
+                                        tooltip
+                                    )})
+                                )
+                            }
+                            
+                        }
+
+                        getId("equipment").innerHTML = cells
+                        
+                        for (const key of equipment_slot_list) {
+                            if (key == "") {continue}
+
+                            target_id = "equipment-slot-"+key
+
+                            slot = getId(target_id)
+                            slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
+
+                            if(items.includes(key)) {
+                                item = slot.children[0]
+                                item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
+
+                                loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => {
+
+                                    // Send
+                                    getId("equipment-context-menu-unequip").addEventListener("click", ()=>{
+                                        toBackend(` impersonated().unequip_item(`+key+`) `)
+                                        updateInventoryTab()
+                                    })
+
+                                }})
+                            }
+
+                        }
+                    })
+                }
                 
                 inventory()
+                equipment()
             }
 
 
@@ -771,11 +874,18 @@
                 getId("inventory-tab").innerHTML += (
                     div({style:"position:absolute; left:3%; width:46%", content:(
                         container({title:"Equipment", style:"z-index:0;", content:(
-                            div({style:"height:81.5vh"})
+                            div({style: "margin-auto",content:(
+                                grid({
+                                    id:"equipment",
+                                    classes: "center-horizontal",
+                                    style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh;",
+                                    columns: 5,
+                                    gap:"0"
+                                })
+                            )})
                         )})
                     )}) +
                     div({style:"position:absolute; right:3%; width:46%", content:(
-                        
                         container({title:"Backpack", style:"z-index:5", content:(
                             div({style: "margin-auto",content:(
                                 grid({
@@ -796,7 +906,8 @@
                 // Loading main div, tabs, and context menu
                 document.body.innerHTML = (
                     tabs({content:["character","inventory","abilities"]}) + 
-                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"})
+                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
+                    context_menu({content:["unequip"], id:"equipment-context-menu"})
                 )
                 loadTabs()
                 
