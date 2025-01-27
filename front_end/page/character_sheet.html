@@ -529,11 +529,8 @@
                     if (target) {
                         const finalPosition = target.dataset.position;
 
-                        if (isNaN(Number(finalPosition))) {
-                            toBackend(` impersonated().equip_item(`+initialPosition+`, "`+finalPosition+`") `)
-                        } else {
-                            toBackend(` impersonated().move_item(`+initialPosition+`, `+finalPosition+`) `)
-                        }   
+                        console.log(` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `)
+                        toBackend(` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `)
                         updateInventoryTab()
 
                         // Reset draggedElement visibility without moving it
@@ -659,7 +656,12 @@
                         let cells = ""
 
                         // For each inventory slot
-                        const equipment_slot_list = ["", "", "body", "", ""]
+                        const equipment_slot_list = [
+                            "", "amulet", "head", "cape", "backpack",
+                            "","left ring", "body", "right ring", "",
+                            "","hands","belt","feet", "",
+                            "primary main hand", "primary off hand", "", "secondary main hand", "secondary off hand"
+                        ]
                         for (const key of equipment_slot_list) {
                             const slot = equipment[key]
                             const item = slot ? item_database[slot.name] : null

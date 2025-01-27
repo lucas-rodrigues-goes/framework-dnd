@@ -71,7 +71,8 @@ try {
         #equipment = {
             "head": null,
             "body": null,
-            "gloves": null,
+            "hands": null,
+            "belt":null,
             "feet": null,
             "amulet": null,
             "right ring": null,
@@ -623,6 +624,10 @@ try {
             return this.#inventory
         }
 
+        get equipment() {
+            return this.#equipment
+        }
+
         update_inventory_slots() {
             const max_inventory_size = 25
 
@@ -701,12 +706,18 @@ try {
         }
 
         move_item(from_index, to_index, amount) {
+            function isNumber(text) {
+                return !isNaN(Number(text))
+            }
+
             this.update_inventory_slots();
         
             const default_item = { name: null, amount: 0 };
+            const from = isNumber(from_index) ? "inventory" : "equipment"
+            const to = isNumber(to_index) ? "inventory" : "equipment"
         
-            const from_item = this.#inventory[from_index] || default_item;
-            const to_item = this.#inventory[to_index] || default_item;
+            const from_item = from == "inventory" ? this.#inventory[from_index] || default_item : this.#equipment[from_index] || default_item
+            const to_item = from == "inventory" ? this.#inventory[to_index] || default_item : this.#equipment[to_index] || default_item
         
             // Validate source item
             if (!from_item.name) {
@@ -722,21 +733,37 @@ try {
             // Destination slot has a different item, or equal items that are non stackable
             if (!equal_items && to_item.name || equal_items && !item_data.stackable) {
 
-                this.#inventory[from_index] = to_item;
-                this.#inventory[to_index] = from_item;
+                // From position receives destination item
+                if (from == "inventory") { 
+                    this.#inventory[from_index] = to_item }
+                else { 
+                    this.#equipment[from_index] = to_item }
+                
+                // Destination position receives FROM item
+                if (to == "inventory") { 
+                    this.#inventory[to_index] = from_item } 
+                else { 
+                    this.#equipment[to_index] = from_item }
             } 
+            
             // Destination slot is empty
             else if (!to_item.name) {
                 
                 const amount_to_move = Math.min(amount, from_item.amount);
-                this.#inventory[to_index] = {
-                    name: from_item.name,
-                    amount: amount_to_move,
-                };
+
+                if (to == "inventory") {
+                    this.#inventory[to_index] = { name: from_item.name, amount: amount_to_move } }
+                else {
+                    this.#equipment[to_index] = { name: from_item.name, amount: amount_to_move } }
         
                 from_item.amount -= amount_to_move;
-        
-                this.#inventory[from_index] = from_item.amount === 0 ? null : from_item;
+
+                
+                if (from == "inventory") {
+                    this.#inventory[from_index] = from_item.amount == 0 ? null : from_item} 
+                else {
+                    this.#equipment[from_index] = from_item.amount == 0 ? null : from_item}
+                
             } 
             // Destination slot has the same item and can stack
             else if (equal_items && item_data.stackable) {
@@ -749,9 +776,16 @@ try {
                 to_item.amount += amount_to_send;
                 from_item.amount -= amount_to_send;
         
-                this.#inventory[from_index] = from_item.amount === 0 ? null : from_item;
-        
-                this.#inventory[to_index] = to_item;
+                if (from == "inventory") {
+                    this.#inventory[from_index] = from_item.amount == 0 ? null : from_item}
+                else {
+                    this.#equipment[from_index] = from_item.amount == 0 ? null : from_item}
+                
+                if (to == "equipment") {
+                    this.#inventory[to_index] = to_item}
+                else {
+                    this.#equipment[to_index] = to_item}
+                
             }
         
             this.save();
@@ -773,87 +807,6 @@ try {
 
             selected().receive_item(item.name, item.amount)
             this.drop_item(index)
-        }
-
-        get equipment() {
-            return this.#equipment
-        }
-
-        equip_item(inventory_index, equipment_index) {
-
-            const inventory_slot = this.#inventory[inventory_index]
-            const equipment_slot = this.#equipment[equipment_index]
-
-            const item = database.get_item(inventory_slot.name) || null
-            if (!item) {return}
-            
-
-            let valid_slots = [
-                "head",
-                "body",
-                "gloves",
-                "feet",
-                "amulet",
-                "right ring",
-                "left ring",
-                "cape",
-                "backpack",
-                "primary main hand",
-                "primary off hand",
-                "secondary main hand",
-                "secondary off hand"
-            ]
-
-            if (item.type != "equipment") {return}
-
-
-            // Filtering valid slots
-            switch(item.subtype) {
-                case "weapon":
-                    valid_slots = ["primary main hand", "secondary main hand"]
-                    if (item.properties.includes("Light")) { valid_slots.push("primary off hand", "secondary off hand") }
-                    break
-                case "armor":
-                    valid_slots = ["body"]
-                    break
-            }
-            if (!valid_slots.includes(equipment_index)) {return}
-
-            // Removing main hand if trying to equip weapon offhand and mainhand too heavy
-            if (["primary off hand", "secondary off hand"].includes(equipment_index)) {
-                const main_hand_index = equipment_index.split(" ")[0] + " main hand"
-
-                const main_hand_slot = this.#equipment[main_hand_index]
-                const main_hand_item = database.get_item(main_hand_slot.name)
-
-                if (main_hand_item) {
-                    if ( 
-                        (!main_hand_item.properties.includes("Light") && item.subtype == "weapon") || 
-                        (main_hand_item.properties.includes("Heavy") && item.subtype == "shield") 
-                    ) {
-                        this.unequip_item(main_hand_index)
-                    }
-                }
-            }
-
-            // Switching item positions
-            this.#inventory[inventory_index] = equipment_slot
-            this.#equipment[equipment_index] = inventory_slot
-
-            this.save()
-        }
-
-        unequip_item(equipment_index, inventory_index) {
-            const equipment_slot = this.#equipment[equipment_index]
-
-            this.#equipment[equipment_index] = null
-
-            if (!equipment_index) {
-                this.receive_item(equipment_slot.name)
-            }
-            else {
-                this.#inventory[inventory_index] = equipment_slot
-            }
         }
         
 
