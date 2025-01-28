@@ -529,8 +529,15 @@
                     if (target) {
                         const finalPosition = target.dataset.position;
 
-                        console.log(` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `)
-                        toBackend(` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `)
+                        let request = ` impersonated().move_item(`
+                        request += !isNaN(Number(initialPosition)) ? initialPosition : `"`+initialPosition+`"`
+                        request += `, `
+                        request += !isNaN(Number(finalPosition)) ? finalPosition : `"`+finalPosition+`"`
+                        request += `)`
+                        //` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `
+
+                        console.log(request)
+                        toBackend(request)
                         updateInventoryTab()
 
                         // Reset draggedElement visibility without moving it
