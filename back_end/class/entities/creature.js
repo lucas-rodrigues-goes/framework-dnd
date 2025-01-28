@@ -78,7 +78,7 @@ try {
             "right ring": null,
             "left ring": null,
             "cape": null,
-            "backpack": null,
+            "ammunition": null,
             "primary main hand": null,
             "primary off hand": null,
             "secondary main hand": null,
@@ -629,10 +629,12 @@ try {
         }
 
         update_inventory_slots() {
-            const max_inventory_size = 25
+            const max_inventory_size = 50
 
             while (this.#inventory.length < max_inventory_size) {this.#inventory.push(null)}
             while (this.#inventory.length > max_inventory_size) {this.#inventory.pop()}
+
+            this.save()
         }
 
         receive_item(name, amount = 1) {
