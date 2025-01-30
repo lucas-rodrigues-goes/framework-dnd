@@ -48,6 +48,23 @@ const spell_school_images = {
     transmutation: "asset://536f6fd178afa1dc3d79789af1112104",
 };
 
+const equipment_images = {
+    "amulet": "asset://cf27b88dd4f48eae32cb43788aa46e9c",
+    "head": "asset://6b3d4e653016569e9466ca339c6fa8d5",
+    "ammunition": "asset://93f4e8fd03f40a9d6a51700fc09e169e",
+    "hands": "asset://5ab24f7f421710d9bf91d5e3cdb39c78",
+    "body": "asset://a35adfd9d29001ac70bb35ac66f9ac3a",
+    "cape": "asset://33ab2bcaee3011081b99584fe2d16b1c",
+    "left ring": "asset://bb2cac7f2fc70e0a3a460b1b532510c8",
+    "belt": "asset://c5c94dfe256e4e5dcd3236d761ec8c48",
+    "right ring": "asset://bb2cac7f2fc70e0a3a460b1b532510c8",
+    "feet": "asset://76119f39aecd93afadce8989c0800310",
+    "primary main hand": "asset://36204064dbd1d4b08a4f367c1fb995ba",
+    "primary off hand": "asset://1590f16edebd685127567b4c02beb3be",
+    "secondary main hand": "asset://36204064dbd1d4b08a4f367c1fb995ba",
+    "secondary off hand": "asset://1590f16edebd685127567b4c02beb3be",
+};
+
 
 //===================================================================================================//
 

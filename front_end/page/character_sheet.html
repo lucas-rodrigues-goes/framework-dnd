@@ -76,6 +76,7 @@
             #ability-scores-container-content > .table-container {
                 margin-right:-1.5vh;
                 margin-left:-1.5vh;
+                
             }
         </style>
     
@@ -547,7 +548,7 @@
 
 
                 function inventory() {
-                    const max_inventory_size = 25
+                    const max_inventory_size = 60
 
                     toBackend(" [impersonated().inventory , database.items.data] ", (response) => {
 
@@ -644,7 +645,7 @@
                 }
 
                 function equipment() {
-                    toBackend(" [impersonated().equipment , database.items.data] ", (response) => {
+                    toBackend(" [impersonated().equipment , database.items.data, impersonated().inventory] ", (response) => {
                         
                         // Hash
                         const new_hash = hash(response)
@@ -676,7 +677,12 @@
                             const item = slot ? item_database[slot.name] : null
 
                             // Default config
-                            slot_content = ""
+                            slot_content = img({src:equipment_images[key], classes:"", style:`
+                                filter:brightness(100); opacity:0.05;
+                                position:relative;
+                                height: 85%;
+                                top:7.5%;`
+                            })
                             div_classes = ""
                             tooltip = ""
 
@@ -883,7 +889,7 @@
             }
             function loadInventoryTab() {
                 getId("inventory-tab").innerHTML += (
-                    div({style:"position:absolute; left:3%; width:46%", content:(
+                    div({style:"position:absolute; left:0; width:45%", content:(
                         container({title:"Equipment", style:"z-index:0;", content:(
                             div({style: "margin-auto",content:(
                                 grid({
@@ -896,14 +902,14 @@
                             )})
                         )})
                     )}) +
-                    div({style:"position:absolute; right:3%; width:46%", content:(
+                    div({style:"position:absolute; right:0; width:55%", content:(
                         container({title:"Backpack", style:"z-index:5", content:(
                             div({style: "margin-auto",content:(
                                 grid({
                                     id:"inventory",
                                     classes: "center-horizontal",
                                     style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh;",
-                                    columns: 5,
+                                    columns: 6,
                                     gap:"0"
                                 })
                             )})

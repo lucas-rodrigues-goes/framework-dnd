@@ -629,7 +629,7 @@ try {
         }
 
         update_inventory_slots() {
-            const max_inventory_size = 50
+            const max_inventory_size = 60
 
             while (this.#inventory.length < max_inventory_size) {this.#inventory.push(null)}
             while (this.#inventory.length > max_inventory_size) {this.#inventory.pop()}
