@@ -78,6 +78,15 @@
                 margin-left:-1.5vh;
                 
             }
+
+            .item-selected {
+                background-color: #3a3a3a;
+            }
+
+            .tooltip::after {
+                top: 120%;
+                height:fit-content;
+            }
         </style>
     
         <script>
@@ -131,9 +140,11 @@
                 const conditions_string = arrayToList(conditions) != "" ? arrayToList(conditions, true) : ""
 
                 content = div({style: "text-align:center; margin-bottom:-1vh", content:(
-                    span({style:"font-weight: bold; font-size: 105%", content:name}) + "<br>" +
+                    span({style:"font-weight: bold; font-size: 110%", content:name}) + "<br>" +
                     span({style:"font-size: 95%; color:#aaa", content:subtitle})
                 )})
+
+                content += "<br>"
 
                 content += damage.length > 0 ? title("Damage: ") + value(damage_string) : ""
                 content += recovery ? title("Recovery Speed: ") + value(recovery) : ""
@@ -144,7 +155,8 @@
 
                 content += "<br>"
 
-                content += description ? pre({style: "color:#888; text-align:left; font-size:95%; font-style: italic", content:`"`+description+`"`}) : ""
+                //content += description ? pre({style: "color:#888; text-align:left; font-size:95%; font-style: italic", content:`"`+description+`"`}) : ""
+                content += description ? pre({style: "color:#aaa; text-align:left; font-size:100%", content:description}) : ""
 
 
                 return div({style:"text-align: left; font-size:1.6vh", content})
@@ -546,9 +558,25 @@
                     }
                 }
 
+                // Description
+                function description(item_name, amount, target_id) {
+                    slot = getId(target_id)
+
+                    document.querySelectorAll(".item-selected").forEach((element) => {
+                        element.classList.remove("item-selected");
+                    });
+                    slot.classList.add("item-selected")
+
+                    toBackend(` database.get_item("`+item_name+`") `, (response) => {
+                        const item = JSON.parse(response)
+
+                        getId("item-description").innerHTML = (itemDescription({...item}, amount))
+                    })
+                }
+
                 // Containers
                 function inventory() {
-                    const max_inventory_size = 60
+                    const max_inventory_size = 72
 
                     toBackend(" [impersonated().inventory , database.items.data, impersonated().equipment] ", (response) => {
 
@@ -558,6 +586,8 @@
                         if (new_hash == old_hash) { return }
                         getId("inventory").setAttribute("hash", new_hash)
 
+                        getId("item-description").innerHTML = "Click an item to see its description."
+
                         response = JSON.parse(response)
                         
                         const inventory = response[0]
@@ -565,7 +595,7 @@
                         const grid = getId("inventory")
                         grid.innerHTML = ""
 
-                        const items = []
+                        const items = {}
                         let cells = ""
 
                         // For each inventory slot
@@ -576,52 +606,56 @@
                             // Default config
                             slot_content = ""
                             div_classes = ""
-                            tooltip = ""
 
                             // If there is item in slot
                             if (item) {
 
-                                // Tooltip
-                                div_classes += "item-tooltip-container"
-                                tooltip = div({classes:"item-tooltip", content:itemDescription({...item}, slot.amount)})
+                                tooltip = item.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+                                tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
                                 // Image
                                 slot_content = img({
                                     src:item.image, 
                                     additional:`draggable data-position="`+i+`"`,
-                                    classes:"inventory-item"
+                                    classes:"inventory-item",
+                                    tooltip
                                 })
                                 // Amount
                                 slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
-                                items.push(i)
+                                items[i] = {
+                                    name: item.name,
+                                    amount: slot.amount
+                                }
                             }
 
                             // Create item slot
                             cells += (
-                                div({classes:div_classes, content:(
-                                    div({
-                                        id:"inventory-slot-"+i,
-                                        classes:"inventory-slot item-tooltip-trigger",
-                                        content:slot_content,
-                                        additional: `data-position="`+i+`"`
-                                    }) +
-                                    tooltip
-                                )})
+                                div({
+                                    id:"inventory-slot-"+i,
+                                    classes:"inventory-slot item-tooltip-trigger",
+                                    content:slot_content,
+                                    additional: `data-position="`+i+`"`
+                                })
                             )
                         }
 
                         getId("inventory").innerHTML = cells
                         
                         for (let i = 0; i < max_inventory_size; i++) {
-                            target_id = "inventory-slot-"+i
+                            let target_id = "inventory-slot-"+i
 
-                            slot = getId(target_id)
+                            const slot = getId(target_id)
                             slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
 
-                            if(items.includes(i)) {
-                                item = slot.children[0]
-                                item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
+                            if(items[i]) {
+                                const item = slot.children[0]
+
+                                item.addEventListener("click", ()=>{
+                                    description(items[i].name, items[i].amount, target_id)
+                                })
+                                item.addEventListener("dragstart", dragStart); 
+                                item.addEventListener("dragend", dragEnd);
 
                                 loadContextMenu({target_id, context_menu_id:"item-context-menu", onOpen:() => {
 
@@ -659,7 +693,7 @@
                         const grid = getId("equipment")
                         grid.innerHTML = ""
 
-                        const items = []
+                        const items = {}
                         let cells = ""
 
                         // For each inventory slot
@@ -684,41 +718,39 @@
                                 user-select: none;
                                 pointer-events: none`
                             })
-                            div_classes = ""
-                            tooltip = ""
 
                             // If there is item in slot
                             if (item) {
 
-                                // Tooltip
-                                div_classes += "item-tooltip-container"
-                                tooltip = div({classes:"item-tooltip", content:itemDescription({...item}, slot.amount)})
+                                tooltip = item.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+                                tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
                                 // Image
                                 slot_content = img({
                                     src:item.image, 
                                     additional:`draggable data-position="`+key+`"`,
-                                    classes:"inventory-item"
+                                    classes:"inventory-item",
+                                    tooltip
                                 })
                                 // Amount
                                 slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
-                                items.push(key)
+                                items[key] = {
+                                    name: item.name,
+                                    amount: slot.amount
+                                }
                             }
 
                             // Create item slot
                             if (key == "") { cells += div() }
                             else {
                                 cells += (
-                                    div({classes:div_classes, content:(
-                                        div({
-                                            id:"equipment-slot-"+key,
-                                            classes:"inventory-slot item-tooltip-trigger",
-                                            content:slot_content,
-                                            additional: `data-position="`+key+`"`
-                                        }) +
-                                        tooltip
-                                    )})
+                                    div({
+                                        id:"equipment-slot-"+key,
+                                        classes:"inventory-slot item-tooltip-trigger",
+                                        content:slot_content,
+                                        additional: `data-position="`+key+`"`
+                                    })
                                 )
                             }
                             
@@ -729,13 +761,17 @@
                         for (const key of equipment_slot_list) {
                             if (key == "") {continue}
 
-                            target_id = "equipment-slot-"+key
+                            let target_id = "equipment-slot-"+key
 
-                            slot = getId(target_id)
+                            const slot = getId(target_id)
                             slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
 
-                            if(items.includes(key)) {
-                                item = slot.children[0]
+                            if(items[key]) {
+                                const item = slot.children[0]
+
+                                item.addEventListener("click", ()=>{
+                                    description(items[key].name, items[key].amount, target_id)
+                                })
                                 item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
 
                                 loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => {
@@ -904,7 +940,7 @@
             function loadInventoryTab() {
                 getId("inventory-tab").innerHTML += (
                     div({style:"position:absolute; left:0; width:45%", content:(
-                        container({title:"Equipment", style:"z-index:0;", content:(
+                        container({title:"Equipment", style:"height:41vh", content:(
                             div({style: "margin-auto",content:(
                                 grid({
                                     id:"equipment",
@@ -914,17 +950,25 @@
                                     gap:"0"
                                 })
                             )})
+                        )}) + "<br>" +
+                        container({title:"Description", content:(
+                            div({id:"item-description", style:`
+                                margin-top:1.5vh;
+                                margin-bottom:-2vh;
+                                height: 28vh;
+                                overflow: scroll;
+                            `, content:"Click an item to see its description."})
                         )})
                     )}) +
                     div({style:"position:absolute; right:0; width:55%", content:(
-                        container({title:"Backpack", style:"z-index:5", content:(
-                            div({style: "margin-auto",content:(
+                        container({title:"Backpack", style:"", content:(
+                            div({style:"margin-auto",content:(
                                 grid({
                                     id:"inventory",
-                                    classes: "center-horizontal",
-                                    style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh;",
+                                    classes: "",
+                                    style: "position:relative; width: fit-content; margin:auto; margin-top:2vh; grid-row-gap:0.2vh;",
                                     columns: 6,
-                                    gap:"0"
+                                    gap:""
                                 })
                             )})
                         )})
