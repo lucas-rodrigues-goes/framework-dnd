@@ -238,7 +238,9 @@
                 // Equipment container
                 style = type == "equipment" ? "" : "display:none"
                 getId("equipment-container").setAttribute("style", style)
-                getId("subtype").innerHTML += type == "equipment" ? options_from_array(["weapon", "armor"]) : ""
+                getId("subtype").innerHTML += type == "equipment" ? options_from_array([
+                    "weapon", "shield", "armor", "clothing", "helmet", "hat", "amulet", "ring", "gloves", "cape", "belt", "boots"
+                ]) : ""
                 
             })
             getId("subtype").addEventListener("input", () => {
