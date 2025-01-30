@@ -174,6 +174,8 @@
             //=====================================================================================================
 
             function updateCharacterTab() {
+
+                // Page areas
                 function left() {
 
                     function bonusOf(number, parenthesis=false) {
@@ -499,18 +501,16 @@
                         updateResistances()
                         updateColapsible()
                     })
-                    }
-
-                left(); 
-                center(); 
-                right();
+                }
+                left()
+                center()
+                right()
             }
-
             function updateInventoryTab() {
-                                    
+                
+                // Item dragging
                 let draggedElement = null;
                 let initialPosition = null;
-
                 function dragStart(event) {
                     draggedElement = event.target;
                     draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
@@ -546,11 +546,11 @@
                     }
                 }
 
-
+                // Containers
                 function inventory() {
                     const max_inventory_size = 60
 
-                    toBackend(" [impersonated().inventory , database.items.data] ", (response) => {
+                    toBackend(" [impersonated().inventory , database.items.data, impersonated().equipment] ", (response) => {
 
                         // Hash
                         const new_hash = hash(response)
@@ -643,7 +643,6 @@
                         }
                     })
                 }
-
                 function equipment() {
                     toBackend(" [impersonated().equipment , database.items.data, impersonated().inventory] ", (response) => {
                         
@@ -681,7 +680,9 @@
                                 filter:brightness(100); opacity:0.05;
                                 position:relative;
                                 height: 85%;
-                                top:7.5%;`
+                                top:7.5%;
+                                user-select: none;
+                                pointer-events: none`
                             })
                             div_classes = ""
                             tooltip = ""
@@ -751,7 +752,6 @@
                         }
                     })
                 }
-                
                 inventory()
                 equipment()
             }
@@ -760,7 +760,21 @@
             //=====================================================================================================
             // Create HTML
             //=====================================================================================================
-            
+
+            function loadPage() {
+
+                // Loading main div, tabs, and context menu
+                document.body.innerHTML = (
+                    tabs({content:["character","inventory","abilities"]}) + 
+                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
+                    context_menu({content:["unequip"], id:"equipment-context-menu"})
+                )
+                loadTabs()
+                
+                // Loading each tab
+                loadCharacterTab()
+                loadInventoryTab()
+            }
             function loadCharacterTab() {
     
                 getId("character-tab").innerHTML += (
@@ -919,28 +933,12 @@
                 )
             }
 
-            function loadPage() {
-                // Loading main div, tabs, and context menu
-                document.body.innerHTML = (
-                    tabs({content:["character","inventory","abilities"]}) + 
-                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
-                    context_menu({content:["unequip"], id:"equipment-context-menu"})
-                )
-                loadTabs()
-                
-                // Loading each tab
-                loadCharacterTab()
-                loadInventoryTab()
-            }
-
             function onWindowLoad() {
                 loadPage()
     
                 updateCharacterTab();setInterval(updateCharacterTab, 200)
                 updateInventoryTab();setInterval(updateInventoryTab, 200)
             }
-    
-
             document.addEventListener("DOMContentLoaded", onWindowLoad)
     
             //=====================================================================================================

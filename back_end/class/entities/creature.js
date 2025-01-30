@@ -629,168 +629,228 @@ try {
         }
 
         update_inventory_slots() {
-            const max_inventory_size = 60
-
-            while (this.#inventory.length < max_inventory_size) {this.#inventory.push(null)}
-            while (this.#inventory.length > max_inventory_size) {this.#inventory.pop()}
-
-            this.save()
+            const max_inventory_size = 60;
+            const current_size = this.#inventory.length;
+    
+            if (current_size < max_inventory_size) {
+                this.#inventory.push(...Array(max_inventory_size - current_size).fill(null));
+            } else if (current_size > max_inventory_size) {
+                this.#inventory.splice(max_inventory_size, current_size - max_inventory_size);
+            }
+    
+            this.save();
         }
 
         receive_item(name, amount = 1) {
             this.update_inventory_slots();
-        
+    
             const item = database.get_item(name);
             const max_stack = item.stackable ? item.max_stack || 20 : 1;
-        
+    
             // First loop: Check existing stacks
-            for (let i = 0; i < this.#inventory.length && amount !== 0; i++) {
-                if (this.#inventory[i] && this.#inventory[i].name === name && this.#inventory[i].amount < max_stack) {
-                    const available_space = max_stack - this.#inventory[i].amount;
+            for (let i = 0; i < this.#inventory.length && amount > 0; i++) {
+                const slot = this.#inventory[i];
+                if (slot && slot.name === name && slot.amount < max_stack) {
+                    const available_space = max_stack - slot.amount;
                     const added_amount = Math.min(amount, available_space);
-        
-                    // Add the amount to the existing stack
-                    this.#inventory[i].amount += added_amount;
+                    slot.amount += added_amount;
                     amount -= added_amount;
                 }
             }
-        
-            // Second loop: If there is still remainder, add to the first empty slot
-            for (let i = 0; i < this.#inventory.length && amount !== 0; i++) {
+    
+            // Second loop: Add to the first empty slot
+            for (let i = 0; i < this.#inventory.length && amount > 0; i++) {
                 if (this.#inventory[i] === null) {
                     const stack_amount = item.stackable ? Math.min(amount, max_stack) : 1;
                     this.#inventory[i] = { name, amount: stack_amount };
                     amount -= stack_amount;
                 }
             }
-        
+    
             if (amount > 0) {
                 log(amount + " items were not added because the inventory is full.");
             }
-        
+    
             this.save();
         }
         
         drop_item(index, amount) {
+            // Helper functions
+            const DEFAULT_ITEM = { name: null, amount: 0 };
+            const getSlot = (container, index) => 
+                (container === "inventory" ? this.#inventory[index] : this.#equipment[index]) || DEFAULT_ITEM;
+            
+            const setSlot = (container, index, value) => {
+                if (container === "inventory") {
+                    this.#inventory[index] = value?.amount > 0 ? value : null;
+                } else {
+                    this.#equipment[index] = value?.amount > 0 ? value : null;
+                }
+            };
+            const isInventoryIndex = (index) => !isNaN(Number(index));
 
-            this.update_inventory_slots()
+            // Update inventory
+            this.update_inventory_slots();
 
-            const item = this.#inventory[index];
-            const item_data = database.get_item(item.name)
-        
-            // Ensure the item exists and is valid
-            if (!item || item.amount <= 0) {
+            // Define slot item
+            const container = isInventoryIndex(index) ? "inventory" : "equipment"
+            const slot = getSlot(container, index)
+            const item = database.get_item(slot.name);
+
+            if (!slot.name) {
                 log("No item to drop at the specified index.");
                 return;
             }
-
-            amount = !amount ? item.amount : Math.min(amount, item.amount);
-        
-            // Handle drop of stackable item
-            if (item_data.stackable) {
-
-                // If the amount to drop is less than the current stack
-                if (amount < item.amount) {
-                    item.amount -= amount
+    
+            // Clamp amount to drop
+            amount = amount ? Math.min(amount, item.amount) : item.amount;
+    
+            if (item.stackable) {
+                if (amount < slot.amount) {
+                    slot.amount -= amount;
+                } else {
+                    setSlot(container,index,null);
                 }
-                // If the amount to drop is the entire stack
-                else if (amount >= item.amount) {
-                    this.#inventory[index] = null
+            } else {
+                setSlot(container,index,null);
+            }
+    
+            this.save();
+        }
+
+        move_item(from_index, to_index, amount) {
+            // Helper function inside move_item (since it's not needed elsewhere)
+            const isInventoryIndex = (index) => !isNaN(Number(index));
+        
+            this.update_inventory_slots();
+        
+            // Constants and configuration
+            const DEFAULT_ITEM = { name: null, amount: 0 };
+            const DEFAULT_MAX_STACK = 20;
+        
+            // Determine source and target containers
+            const from_container = isInventoryIndex(from_index) ? "inventory" : "equipment";
+            const to_container = isInventoryIndex(to_index) ? "inventory" : "equipment";
+        
+            // Safe access with fallback
+            const getSlot = (container, index) => 
+                (container === "inventory" ? this.#inventory[index] : this.#equipment[index]) || DEFAULT_ITEM;
+            
+            const setSlot = (container, index, value) => {
+                if (container === "inventory") {
+                    this.#inventory[index] = value?.amount > 0 ? value : null;
+                } else {
+                    this.#equipment[index] = value?.amount > 0 ? value : null;
+                }
+            };
+        
+            // Get items with safe access
+            const from_slot = getSlot(from_container, from_index);
+            const to_slot = getSlot(to_container, to_index);
+        
+            // Early exit for invalid moves
+            if (!from_slot.name) {
+                log("No item to move at the source index.");
+                return;
+            }
+        
+            // Validate indices are within bounds
+            if ((from_container === "inventory" && from_index >= this.#inventory.length) ||
+                (to_container === "inventory" && to_index >= this.#inventory.length)) {
+                log("Invalid slot index");
+                return;
+            }
+        
+            const item_data = database.get_item(from_slot.name);
+            amount = amount ? Math.min(amount, from_slot.amount) : from_slot.amount;
+            const isSameItemType = from_slot.name === to_slot.name;
+            const canStack = isSameItemType && item_data.stackable;
+
+            // Verify target, if target is equipment and item is not valid for slot stop execution
+            const isTargetEquipment = !isInventoryIndex(to_index)
+            const isItemValidForSlot = isTargetEquipment ? this.is_valid_item_for_slot(item_data.name, to_index) : true
+            if(!isItemValidForSlot) {
+                log ("Invalid item for the selected slot")
+                return
+            }
+
+            // Unequip main hand weapon if offhand impedes its use
+            if (isTargetEquipment && ["primary off hand", "secondary off hand"].includes(to_index)) {
+                const main_hand_index = to_index == "primary off hand" ? "primary main hand" : "secondary main hand"
+                const main_hand_slot = this.#equipment[main_hand_index] || DEFAULT_ITEM
+                const main_hand_item = database.get_item(main_hand_slot.name)
+                
+                if (main_hand_item) {
+
+                    const isTwoHanded = main_hand_item.properties.includes("Two-handed")
+                    const isLight = main_hand_item.properties.includes("Light")
+                    const offhandIsWeapon = item_data.subtype == "weapon"
+
+                    if (isTwoHanded || (!isLight && offhandIsWeapon)) {
+                        this.unequip_item(main_hand_index)
+                    }
+                
                 }
             }
 
-            // Handle non-stackable items (removal of one item at a time)
-            else {
-                this.#inventory[index] = null;
+            // Unequip offhand weapon if mainhand impedes its use
+            if (isTargetEquipment && ["primary main hand", "secondary main hand"].includes(to_index)) {
+                const off_hand_index = to_index == "primary main hand" ? "primary off hand" : "secondary off hand"
+                const off_hand_slot = this.#equipment[off_hand_index] || DEFAULT_ITEM
+                const off_hand_item = database.get_item(off_hand_slot.name)
+
+                if (off_hand_item) {
+
+                    const isTwoHanded = item_data.properties.includes("Two-handed")
+                    const isLight = item_data.properties.includes("Light")
+                    const offhandIsWeapon = off_hand_item.subtype == "weapon"
+
+                    if (isTwoHanded || (!isLight && offhandIsWeapon)) {
+                        this.unequip_item(off_hand_index)
+                    }
+                
+                }
+            }
+
+        
+            // Case 1: Swap items (different types or non-stackable)
+            if ((!isSameItemType || !item_data.stackable) && to_slot.name) {
+                // Store original values before swap
+                const original_from = {...from_slot};
+                const original_to = {...to_slot};
+        
+                setSlot(from_container, from_index, original_to);
+                setSlot(to_container, to_index, original_from);
+            }
+            // Case 2: Move to empty slot
+            else if (!to_slot.name) {
+                const transfer_amount = Math.min(amount, from_slot.amount);
+                const new_from = {...from_slot, amount: from_slot.amount - transfer_amount};
+                
+                setSlot(to_container, to_index, {...from_slot, amount: transfer_amount});
+                setSlot(from_container, from_index, new_from.amount > 0 ? new_from : null);
+            }
+            // Case 3: Stack items
+            else if (canStack) {
+                const max_stack = item_data.max_stack || DEFAULT_MAX_STACK;
+                const available_space = max_stack - to_slot.amount;
+                const transfer_amount = Math.min(available_space, amount);
+        
+                const new_to = {...to_slot, amount: to_slot.amount + transfer_amount};
+                const new_from = {...from_slot, amount: from_slot.amount - transfer_amount};
+        
+                setSlot(to_container, to_index, new_to);
+                setSlot(from_container, from_index, new_from.amount > 0 ? new_from : null);
             }
         
             this.save();
         }
 
-        move_item(from_index, to_index, amount) {
-            function isNumber(text) {
-                return !isNaN(Number(text))
-            }
+        unequip_item(index) {
+            const slot = this.#equipment[index]
 
-            this.update_inventory_slots();
-        
-            const default_item = { name: null, amount: 0 };
-            const from = isNumber(from_index) ? "inventory" : "equipment"
-            const to = isNumber(to_index) ? "inventory" : "equipment"
-        
-            const from_item = from == "inventory" ? this.#inventory[from_index] || default_item : this.#equipment[from_index] || default_item
-            const to_item = from == "inventory" ? this.#inventory[to_index] || default_item : this.#equipment[to_index] || default_item
-        
-            // Validate source item
-            if (!from_item.name) {
-                log("No item to move at the source index.");
-                return;
-            }
-        
-            const item_data = database.get_item(from_item.name);
-            const equal_items = from_item.name === to_item.name;
-        
-            amount = !amount ? from_item.amount : Math.min(amount, from_item.amount);
-        
-            // Destination slot has a different item, or equal items that are non stackable
-            if (!equal_items && to_item.name || equal_items && !item_data.stackable) {
-
-                // From position receives destination item
-                if (from == "inventory") { 
-                    this.#inventory[from_index] = to_item }
-                else { 
-                    this.#equipment[from_index] = to_item }
-                
-                // Destination position receives FROM item
-                if (to == "inventory") { 
-                    this.#inventory[to_index] = from_item } 
-                else { 
-                    this.#equipment[to_index] = from_item }
-            } 
-            
-            // Destination slot is empty
-            else if (!to_item.name) {
-                
-                const amount_to_move = Math.min(amount, from_item.amount);
-
-                if (to == "inventory") {
-                    this.#inventory[to_index] = { name: from_item.name, amount: amount_to_move } }
-                else {
-                    this.#equipment[to_index] = { name: from_item.name, amount: amount_to_move } }
-        
-                from_item.amount -= amount_to_move;
-
-                
-                if (from == "inventory") {
-                    this.#inventory[from_index] = from_item.amount == 0 ? null : from_item} 
-                else {
-                    this.#equipment[from_index] = from_item.amount == 0 ? null : from_item}
-                
-            } 
-            // Destination slot has the same item and can stack
-            else if (equal_items && item_data.stackable) {
-
-                const max_stack = item_data.max_stack || 20;
-                const space_available = max_stack - to_item.amount;
-        
-                const amount_to_send = Math.min(space_available, amount);
-        
-                to_item.amount += amount_to_send;
-                from_item.amount -= amount_to_send;
-        
-                if (from == "inventory") {
-                    this.#inventory[from_index] = from_item.amount == 0 ? null : from_item}
-                else {
-                    this.#equipment[from_index] = from_item.amount == 0 ? null : from_item}
-                
-                if (to == "equipment") {
-                    this.#inventory[to_index] = to_item}
-                else {
-                    this.#equipment[to_index] = to_item}
-                
-            }
-        
-            this.save();
+            this.drop_item(index)
+            this.receive_item(slot.name, slot.amount)
         }
 
         send_item(index) {
@@ -809,6 +869,58 @@ try {
 
             selected().receive_item(item.name, item.amount)
             this.drop_item(index)
+        }
+
+        is_valid_item_for_slot(item_name, slot) {
+            const item_data = database.get_item(item_name);
+            
+            // Early return for invalid items
+            if (!item_data?.type) {
+                log("Invalid item data for: " + item_name);
+                return false;
+            }
+        
+            // Configuration: Single source of truth for slot requirements
+            const EQUIPMENT_SLOT_RULES = {
+                "head":        { allowed_type: "equipment", allowed_subtypes: ["helmet", "hat"] },
+                "body":        { allowed_type: "equipment", allowed_subtypes: ["armor", "clothing"] },
+                "hands":       { allowed_type: "equipment", allowed_subtypes: ["gloves"] },
+                "belt":        { allowed_type: "equipment", allowed_subtypes: ["belt"] },
+                "feet":        { allowed_type: "equipment", allowed_subtypes: ["boots"] },
+                "amulet":      { allowed_type: "equipment", allowed_subtypes: ["amulet"] },
+                "right ring":  { allowed_type: "equipment", allowed_subtypes: ["ring"] },
+                "left ring":   { allowed_type: "equipment", allowed_subtypes: ["ring"] },
+                "cape":        { allowed_type: "equipment", allowed_subtypes: ["cape"] },
+                "ammunition":  { allowed_type: "ammunition", allowed_subtypes: [] }, // Any subtype
+                "primary main hand": { allowed_type: "equipment", allowed_subtypes: ["weapon"] },
+                "primary off hand": { allowed_type: "equipment", allowed_subtypes: ["weapon", "shield"] },
+                "secondary main hand": { allowed_type: "equipment", allowed_subtypes: ["weapon"] },
+                "secondary off hand": { allowed_type: "equipment", allowed_subtypes: ["weapon", "shield"] },
+            };
+        
+            // Validate slot exists in rules
+            if (!EQUIPMENT_SLOT_RULES.hasOwnProperty(slot)) {
+                log("Invalid equipment slot: " + slot);
+                return false;
+            }
+        
+            const { allowed_type, allowed_subtypes } = EQUIPMENT_SLOT_RULES[slot];
+            
+            // 1. Check primary type match
+            if (item_data.type !== allowed_type) return false;
+        
+            // 2. Check subtype requirements (empty array = any subtype allowed)
+            const subtypeValid = allowed_subtypes.length === 0 ? true : allowed_subtypes.includes(item_data.subtype);
+            
+            // 3. Check light weapon for offhand slot
+            const isOffhandSlot = ["primary off hand", "secondary off hand"].includes(slot)
+            const isWeapon = item_data.subtype == "weapon"
+            const isLight = item_data.properties.includes("Light")
+            if (isOffhandSlot && isWeapon && !isLight) {
+                return false;
+            }
+        
+            return subtypeValid;
         }
         
 
