@@ -17,7 +17,6 @@ try {
         #price
         #stackable
         #max_stack
-        #equippable
         #properties
 
         // Equipment
@@ -46,7 +45,7 @@ try {
         get rarity() { return this.#rarity; }
         get price() { return this.#price; }
         get stackable() { return this.#stackable; }
-        get equippable() { return this.#equippable; }
+        get max_stack() { return this.#max_stack }
         get properties() { return this.#properties; }
         get bonus() { return this.#bonus; }
         get conditions() { return this.#conditions; }
@@ -70,7 +69,6 @@ try {
             price = 0,
             stackable = true,
             max_stack = 20,
-            equippable = false,
             properties = [],
             bonus = {},
             conditions = [],
@@ -97,6 +95,9 @@ try {
                 damage = []
                 recovery = 0
                 base_armor_class = 0
+            } else {
+                stackable = false
+                max_stack = 1
             }
             
             // Weapon
@@ -115,7 +116,6 @@ try {
             this.#price = price;
             this.#stackable = stackable;
             this.#max_stack = max_stack;
-            this.#equippable = equippable;
             this.#properties = properties;
             this.#bonus = bonus;
             this.#conditions = conditions;
@@ -137,7 +137,6 @@ try {
                 price: this.#price,
                 stackable: this.#stackable,
                 max_stack: this.#max_stack,
-                equippable: this.#equippable,
                 properties: this.#properties,
                 bonus: this.#bonus,
                 conditions: this.#conditions,

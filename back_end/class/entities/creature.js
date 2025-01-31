@@ -629,7 +629,7 @@ try {
         }
 
         update_inventory_slots() {
-            const max_inventory_size = 60;
+            const max_inventory_size = 72;
             const current_size = this.#inventory.length;
     
             if (current_size < max_inventory_size) {

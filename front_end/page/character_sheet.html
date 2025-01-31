@@ -549,7 +549,6 @@
                         request += `)`
                         //` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `
 
-                        console.log(request)
                         toBackend(request)
                         updateInventoryTab()
 
@@ -610,7 +609,7 @@
                             // If there is item in slot
                             if (item) {
 
-                                tooltip = item.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+                                tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
                                 tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
                                 // Image
@@ -719,15 +718,29 @@
                                 pointer-events: none`
                             })
 
+                            
+                            // Verify two-handed main hand
+                            let isTwoHanded = false
+                            let two_hand_image
+                            if (key == "primary off hand" || key == "secondary off hand") {
+                                const main_hand_index = key == "primary off hand" ? "primary main hand" : "secondary main hand"
+                                const main_hand_slot = equipment[main_hand_index] || {name:null}
+                                const main_hand_item = item_database[main_hand_slot.name] || null
+
+                                if (main_hand_item) {
+                                    isTwoHanded = main_hand_item.properties.includes("Two-handed")
+                                    two_hand_image = main_hand_item.image
+                                }
+                            }
+
                             // If there is item in slot
                             if (item) {
-
-                                tooltip = item.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+                                tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
                                 tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
                                 // Image
                                 slot_content = img({
-                                    src:item.image, 
+                                    src: item.image, 
                                     additional:`draggable data-position="`+key+`"`,
                                     classes:"inventory-item",
                                     tooltip
@@ -739,6 +752,16 @@
                                     name: item.name,
                                     amount: slot.amount
                                 }
+                            }
+                            else if (isTwoHanded) {
+                                // Image
+                                slot_content = img({
+                                    src: two_hand_image,
+                                    additional:`draggable=false`,
+                                    classes:"inventory-item",
+                                    style: "opacity:0.2; cursor:default"
+                                })
+
                             }
 
                             // Create item slot
