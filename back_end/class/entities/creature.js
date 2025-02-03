@@ -449,8 +449,8 @@ try {
             let equipment_bonus = 0
             for (const slot in equipment) {
                 if (equipment[slot] && !slot.includes("secondary")) {
-                    const bonus_ac = database.getItem(equipment[slot].name).bonus_armor_class || 0
-                    equipment_bonus += bonus_ac
+                    const bonus_ac = database.get_item(equipment[slot].name).bonus_armor_class || 0
+                    equipment_bonus += Number(bonus_ac)
                 }
             }
         
