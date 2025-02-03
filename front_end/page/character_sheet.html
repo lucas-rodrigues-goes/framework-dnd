@@ -575,8 +575,6 @@
 
                 // Containers
                 function inventory() {
-                    const max_inventory_size = 72
-
                     toBackend(" [impersonated().inventory , database.items.data, impersonated().equipment] ", (response) => {
 
                         // Hash
@@ -598,7 +596,7 @@
                         let cells = ""
 
                         // For each inventory slot
-                        for (let i = 0; i < max_inventory_size; i++) {
+                        for (let i = 0; i < inventory.length; i++) {
                             const slot = inventory[i]
                             const item = slot ? item_database[slot.name] : null
 
@@ -639,9 +637,9 @@
                             )
                         }
 
-                        getId("inventory").innerHTML = cells
+                        grid.innerHTML = cells
                         
-                        for (let i = 0; i < max_inventory_size; i++) {
+                        for (let i = 0; i < inventory.length; i++) {
                             let target_id = "inventory-slot-"+i
 
                             const slot = getId(target_id)
@@ -799,9 +797,9 @@
 
                                 loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => {
 
-                                    // Send
+                                    // Unequip
                                     getId("equipment-context-menu-unequip").addEventListener("click", ()=>{
-                                        toBackend(` impersonated().unequip_item(`+key+`) `)
+                                        toBackend(` impersonated().unequip_item("`+key+`") `)
                                         updateInventoryTab()
                                     })
 
