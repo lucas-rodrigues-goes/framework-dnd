@@ -489,6 +489,7 @@
                         capitalize(type),
                         capitalize(subtype),
                         price + "gp",
+                        img({src:edit_icon, id:"items-table-row-"+name+"-give"}) +
                         img({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
                         img({src:remove_icon, id:"items-table-row-"+name+"-remove"})
                     ]
@@ -544,6 +545,7 @@
 
                     // Adding behavior to buttons
                     for (const value of items) {
+                        getId("items-table-row-"+value+"-give").addEventListener("click", ()=>{ openPage("give_item.html", value) }) // Give
                         getId("items-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_item.html", value) }) // Edit
                         getId("items-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_item("`+value+`")`) }) // Remove
                     }
