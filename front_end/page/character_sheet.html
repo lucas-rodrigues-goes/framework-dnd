@@ -830,11 +830,6 @@
                 inventory()
                 equipment()
             }
-
-
-            //=====================================================================================================
-            // Create HTML
-            //=====================================================================================================
             function loadUpdaters () {
                 const interval = 200
 
@@ -842,22 +837,13 @@
                 updateCharacterTab(); setInterval(updateCharacterTab, interval)
                 updateInventoryTab(); setInterval(updateInventoryTab, interval)
             }
-            function loadPage() {
+            
 
-                // Loading main div, tabs, and context menu
-                document.body.innerHTML = (
-                    tabs({content:["character","inventory","abilities"]}) + 
-                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
-                    context_menu({content:["unequip"], id:"equipment-context-menu"})
-                )
-                loadTabs()
-                
-                // Loading each tab
-                loadCharacterTab()
-                loadInventoryTab()
-            }
+            //=====================================================================================================
+            // Create HTML
+            //=====================================================================================================
+
             function loadCharacterTab() {
-    
                 getId("character-tab").innerHTML += (
                     div({id:"character-tab-left", content:(
                         container({title:"Saving Throws", id:"saving-throws", content:(
@@ -1021,13 +1007,34 @@
                     )})
                 )
             }
+            function loadPage() {
 
-            function onWindowLoad() {
+                // Loading main div, tabs, and context menu
+                document.body.innerHTML = (
+                    tabs({content:["character","inventory","abilities"]}) + 
+                    context_menu({content:["equip", "send", "drop"], id:"item-context-menu"}) +
+                    context_menu({content:["unequip"], id:"equipment-context-menu"})
+                )
+
+                // Load elements
+                loadTabs()
+
+                // Loading each tab
+                loadCharacterTab()
+                loadInventoryTab()
+            }
+
+
+            //=====================================================================================================
+            // Execution
+            //=====================================================================================================
+
+            document.addEventListener("DOMContentLoaded", () => {
                 loadPage()
                 loadUpdaters()
-            }
-            document.addEventListener("DOMContentLoaded", onWindowLoad)
-    
+            })
+
+
             //=====================================================================================================
     
         </script>

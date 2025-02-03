@@ -33,11 +33,14 @@
             "damage", 
             //"resources", 
             "spells",
-        ]
-        
+        ]     
         const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
         const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
 
+        
+        //=====================================================================================================
+        // Update page
+        //=====================================================================================================
 
         function updateTabs() {
 
@@ -748,9 +751,16 @@
             }
             
         }
+        function loadUpdaters() {
+            const interval = 200
+
+            // Content
+            updateTabs(); setInterval(updateTabs, interval)
+        }
+
 
         //=====================================================================================================
-        // Execution
+        // Load HTML
         //=====================================================================================================
 
         function racesTab() {
@@ -764,7 +774,6 @@
 
             loadSelect()
         }
-                
         function proficienciesTab() {
             getId("proficiencies-tab").innerHTML += (
                 input({id:"proficiencies-string-filter", placeholder:"Search", style:"width:80%"}) +
@@ -778,8 +787,7 @@
             getId("proficiencies-new").addEventListener("click", ()=>{ openPage("set_proficiency.html","") }) 
 
             loadSelect()
-        }
-        
+        }        
         function conditionsTab() {
             getId("conditions-tab").innerHTML += (
                 input({id:"conditions-string-filter", placeholder:"Search", style:"width:80%"}) +
@@ -794,7 +802,6 @@
 
             loadSelect()
         }
-        
         function featuresTab() {
 
             const classSubclass = {
@@ -844,7 +851,6 @@
 
             loadSelect()
         }
-
         function itemsTab() {
             getId("items-tab").innerHTML += (
                 input({id:"items-string-filter", placeholder:"Search", style:"width:80%"}) +
@@ -859,7 +865,6 @@
 
             loadSelect()
         }
-
         function damageTab() {
             getId("damage-tab").innerHTML += (
                 input({id:"damage-string-filter", placeholder:"Search", style:"width:80%"}) +
@@ -874,7 +879,6 @@
 
             loadSelect()
         }
-
         function spellsTab() {
             getId("spells-tab").innerHTML += (
                 input({id:"spells-string-filter", placeholder:"Search", style:"width:60%"}) +
@@ -896,30 +900,29 @@
 
             loadSelect()
         }
-
         function loadPage() {
 
+            // Load body
             document.body.innerHTML = tabs({content:tab_names})
             loadTabs()
 
+            // Tabs from as from "tab_names"
             for (const name of tab_names) {
                 tabFunction = eval(name+"Tab")
                 tabFunction()
             }
         }
 
-        function onWindowLoad() {
-            // Load HTML
+
+        //=====================================================================================================
+        // Executions
+        //=====================================================================================================
+
+        document.addEventListener("DOMContentLoaded", ()=>{
             loadPage()
+            loadUpdaters()
+        })
 
-            // Update tables dynamically
-            updateTabs(); setInterval(updateTabs,200)
-
-        }
-
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        
 
         //=====================================================================================================
     </script>

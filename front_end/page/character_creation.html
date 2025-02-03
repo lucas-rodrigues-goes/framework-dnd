@@ -13,17 +13,42 @@
         [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
 
         [r:'
-        <style>
-
-        .outer { margin-top: 4vh }
-
-        </style>
         <script>
 
         //=====================================================================================================
         // Helper functions
         //=====================================================================================================
         
+        function submit() {
+
+            const ability_scores = {
+                strength: getId("strength").getAttribute("value"),
+                dexterity: getId("dexterity").getAttribute("value"),
+                constitution: getId("constitution").getAttribute("value"),
+                wisdom: getId("wisdom").getAttribute("value"),
+                intelligence: getId("intelligence").getAttribute("value"),
+                charisma: getId("charisma").getAttribute("value"),
+            }
+
+            const request = (
+            "var creature = new Creature(getImpersonated(), true);" +
+            "creature.create_character({" +
+                "name: `" + getId("name").value + "`," +
+                "type: `" + "Humanoid" + "`," +
+                "race: `" + getId("race").value + "`," +
+                "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
+            "})"
+            )
+
+            toBackend(request)
+            closePage("Character Creation")
+
+        }
+
+        //=====================================================================================================
+        // Update Page
+        //=====================================================================================================
+
         function updateRaceInfo() {
 
             const scores_list = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
@@ -134,42 +159,16 @@
             })
 
         }
+        function loadUpdaters () {
+            const interval = 200
 
-        function submit() {
-
-            const ability_scores = {
-                strength: getId("strength").getAttribute("value"),
-                dexterity: getId("dexterity").getAttribute("value"),
-                constitution: getId("constitution").getAttribute("value"),
-                wisdom: getId("wisdom").getAttribute("value"),
-                intelligence: getId("intelligence").getAttribute("value"),
-                charisma: getId("charisma").getAttribute("value"),
-            }
-
-            const request = (
-            "var creature = new Creature(getImpersonated(), true);" +
-            "creature.create_character({" +
-                "name: `" + getId("name").value + "`," +
-                "type: `" + "Humanoid" + "`," +
-                "race: `" + getId("race").value + "`," +
-                "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
-            "})"
-            )
-
-            toBackend(request)
-            closePage("Character Creation")
-
+            // Tabs
+            updateRaceInfo(); setInterval(updateRaceInfo, interval)
         }
 
-
         //=====================================================================================================
-        // Execution
+        // Load HTML
         //=====================================================================================================
-
-        function loadPage() {
-            document.body.innerHTML = tabs({content:["race","class","attributes"]})
-            loadTabs()
-        }
 
         function raceTab() {
 
@@ -217,7 +216,6 @@
 
             loadSelect()
         }
-
         function classTab() {
 
             // HTML content
@@ -232,7 +230,6 @@
             getId("class-tab-previous-page").addEventListener("click", ()=>{ getId("race-switch").click() }) // Button previous page
             getId("class-tab-next-page").addEventListener("click", ()=>{ getId("attributes-switch").click() }) // Button next page
         }
-
         function attributesTab() {
 
             // HTML Content
@@ -266,27 +263,30 @@
             // Start component
             loadPointBuyCalculator()
         }
+        function loadPage() {
+            // Add HTML to body
+            document.body.innerHTML = tabs({content:["race","class","attributes"]})
 
-        function onWindowLoad() {
+            // Load elements
+            loadTabs()
 
-            // Body HTML
-            loadPage()
-
-            // Tabs
+            // Load Tabs
             raceTab()
             classTab()
             attributesTab() 
-
-            // Constant updates
-            updateRaceInfo(); setInterval(updateRaceInfo, 200) // Requires attributes
-
         }
 
 
-
+        //=====================================================================================================
+        // Execution
         //=====================================================================================================
 
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
+        document.addEventListener("DOMContentLoaded", ()=>{
+            loadPage()
+            loadUpdaters()
+        })
+
+        //=====================================================================================================
 
         </script>
         ']
