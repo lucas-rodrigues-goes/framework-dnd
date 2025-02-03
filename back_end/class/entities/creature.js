@@ -404,7 +404,57 @@ try {
         //=====================================================================================================
 
         get armor_class() {
-            return 10 + this.score_bonus.dexterity;
+            const body_slot = this.equipment.body;
+            let armor_type = "None";
+            let armor_class;
+        
+            // Updating armor_type based on currently equipped armor
+            if (body_slot) {
+                const item = database.get_item(body_slot.name);
+                if (item) {
+                    // Match armor weight by its properties
+                    const type = ["Heavy", "Medium", "Light"].find(prop => 
+                        item.properties?.includes(prop)
+                    );
+                    armor_type = type || armor_type;
+                }
+            }
+        
+            // Base armor class values for calc
+            const dexterity_modifier = Number(this.score_bonus.dexterity) || 0;
+            const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0;
+        
+            // Calculate armor class based on armor type
+            switch (armor_type) {
+                case "Heavy":
+                    armor_class = item_armor_class;
+                    break;
+                case "Medium":
+                    const clamped_dex_bonus = Math.max(-2, Math.min(dexterity_modifier, 2));
+                    armor_class = item_armor_class + clamped_dex_bonus;
+                    break;
+                case "Light":
+                    armor_class = item_armor_class + dexterity_modifier;
+                    break;
+                case "None":
+                    armor_class = 10 + dexterity_modifier;
+                    break;
+                default:
+                    armor_class = 10 + dexterity_modifier; // Default to unarmored behavior
+                    break;
+            }
+
+            // Calculate armor class bonus
+            const equipment = this.#equipment
+            let equipment_bonus = 0
+            for (const slot in equipment) {
+                if (equipment[slot] && !slot.includes("secondary")) {
+                    const bonus_ac = database.getItem(equipment[slot].name).bonus_armor_class || 0
+                    equipment_bonus += bonus_ac
+                }
+            }
+        
+            return armor_class + equipment_bonus;
         }
 
 

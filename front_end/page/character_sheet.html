@@ -86,6 +86,8 @@
             .tooltip::after {
                 top: 120%;
                 height:fit-content;
+                font-weight:normal;
+                font-size: 1.6vh;
             }
         </style>
     
@@ -678,7 +680,14 @@
                     })
                 }
                 function equipment() {
-                    toBackend(" [impersonated().equipment , database.items.data, impersonated().inventory] ", (response) => {
+                    toBackend(` 
+                        [
+                            impersonated().equipment,
+                            database.items.data,
+                            impersonated().armor_class,
+                            impersonated().inventory
+                        ]
+                    `, (response) => {
                         // Hashing
                         const new_hash = hash(response)
                         const old_hash = getId("equipment").getAttribute("hash")
@@ -690,6 +699,7 @@
                         response = JSON.parse(response)
                         const equipment = response[0]
                         const item_database = response[1]
+                        const armor_class = response[2]
 
                         // Reset equipment grid
                         const grid = getId("equipment")
@@ -710,6 +720,9 @@
                             const slot = equipment[key]
                             const item = slot ? item_database[slot.name] : null
 
+                            // Default config
+                            let slot_content = ""
+
                             // Verify if current slot is offhand, and main hand weapon is two-handed
                             let isTwoHanded = false
                             let two_hand_image; // initialize undefined
@@ -724,11 +737,10 @@
                                 }
                             }
 
-                            // Default config
-                            let slot_content = ""
 
                             // If there is item in slot
                             if (item) {
+                                // Tooltip
                                 tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
                                 tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
@@ -742,6 +754,7 @@
                                 // Amount
                                 slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
+                                // Save equipment stats for event listeners
                                 equipment_items[key] = {
                                     name: item.name,
                                     amount: slot.amount
@@ -776,11 +789,13 @@
                             }
                             // Create slot, and add slot_content
                             else {
+                                style = key.includes("secondary") ? "opacity:0.5; border-color:#333" : ""
                                 cells += (
                                     div({
                                         id:"equipment-slot-"+key,
                                         classes:"inventory-slot item-tooltip-trigger",
                                         content:slot_content,
+                                        style,
                                         additional:`data-position="`+key+`"`
                                     })
                                 )
@@ -790,11 +805,12 @@
 
                         // Add HTML to grid
                         grid.innerHTML = cells
+                        getId("equipment-armor-class").innerHTML = armor_class
                         
                         // Add listeners to grid
                         for (const key of equipment_slot_list) {
                             // Skip grid fillers
-                            if (key == "") {continue}
+                            if (!key) {continue}
 
                             // Add slot event listeners
                             const target_id = "equipment-slot-"+key
@@ -976,9 +992,25 @@
                                 grid({
                                     id:"equipment",
                                     classes: "center-horizontal",
-                                    style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh;",
+                                    style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh",
                                     columns: 5,
                                     gap:"0"
+                                }) +
+                                div({
+                                    id: "equipment-armor-class",
+                                    style: `
+                                        border: 0.3vh solid #444; 
+                                        background-color: #333; 
+                                        padding: 1vh; 
+                                        font-weight:bold; 
+                                        font-size: 120%; 
+                                        border-radius: 50%; border-top-left-radius:0.3vh; border-top-right-radius:0.3vh;
+                                        margin-top: 1vh;
+                                        position:absolute;
+                                        right: 2vh;
+                                        top: 4vh;
+                                    `,
+                                    tooltip: "Armor Class"
                                 })
                             )})
                         )}) + "<br>" +

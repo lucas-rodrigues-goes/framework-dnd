@@ -85,15 +85,15 @@
 
                 "weight: " + getId("weight").value + "," +
                 "price: " + getId("price").value + "," +
-                "max_stack: " + getId("max-stack").value + "," +
+                "max_stack: " + (getId("max-stack").value || 1) + "," +
 
                 "properties: " + properties + ","
             )
 
-            switch(type) {
+            switch(getId("type").value) {
                 case "equipment":
                     request += (
-                        "bonus: `" + placeholder + "`," +
+                        "bonus_armor_class: " + (getId("bonus-armor-class").value || 0 ) + "," +
                         "conditions: `" + placeholder + "`,"
                     )
                     break
@@ -101,7 +101,7 @@
                     break
             }
 
-            switch(subtype) {
+            switch(getId("subtype").value) {
                 case "armor":
                     request += (
                         "base_armor_class: `" + getId("base-armor-class").value + "`,"
@@ -118,6 +118,7 @@
 
             request += "})"
 
+            console.log(request)
             toBackend(request)
             closePage("Item")
         }

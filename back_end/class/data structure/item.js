@@ -20,7 +20,7 @@ try {
         #properties
 
         // Equipment
-        #bonus
+        #bonus_armor_class
         #conditions
 
         // Weapon
@@ -47,9 +47,13 @@ try {
         get stackable() { return this.#stackable; }
         get max_stack() { return this.#max_stack }
         get properties() { return this.#properties; }
-        get bonus() { return this.#bonus; }
+
+
+        get bonus_armor_class() { return this.#bonus_armor_class; }
         get conditions() { return this.#conditions; }
+        
         get damage() { return this.#damage; }
+        
         get base_armor_class() { return this.#base_armor_class; }
 
 
@@ -70,8 +74,12 @@ try {
             stackable = true,
             max_stack = 20,
             properties = [],
-            bonus = {},
+
+            // Equipment  
+            bonus_armor_class = 0,
             conditions = [],
+
+            // Weapon
             damage = [
                 {
                     die_ammount: 1,
@@ -80,6 +88,8 @@ try {
                 }
             ],
             recovery = 0,
+
+            // Armor
             base_armor_class = 0,
         }) {
 
@@ -90,7 +100,7 @@ try {
 
             // Equipment
             if (type != "equipment") {
-                bonus = {}
+                bonus_armor_class = 0
                 conditions = []
                 damage = []
                 recovery = 0
@@ -117,7 +127,7 @@ try {
             this.#stackable = stackable;
             this.#max_stack = max_stack;
             this.#properties = properties;
-            this.#bonus = bonus;
+            this.#bonus_armor_class = bonus_armor_class;
             this.#conditions = conditions;
             this.#damage = damage;
             this.#recovery = recovery;
@@ -138,7 +148,7 @@ try {
                 stackable: this.#stackable,
                 max_stack: this.#max_stack,
                 properties: this.#properties,
-                bonus: this.#bonus,
+                bonus_armor_class: this.#bonus_armor_class,
                 conditions: this.#conditions,
                 damage: this.#damage,
                 recovery: this.#recovery,
