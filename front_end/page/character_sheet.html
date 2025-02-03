@@ -95,14 +95,12 @@
             // Helper functions
             //=====================================================================================================
 
-                    
             function capitalizeFirstLetters(str) {
                 return str
                     .split(" ")
                     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                     .join(" ");
             }
-
             function itemDescription({name, image, type, subtype, description, weight, rarity,
                 price, stackable, equippable, properties, bonus,
                 conditions, damage, base_armor_class, recovery=""
@@ -161,14 +159,12 @@
 
                 return div({style:"text-align: left; font-size:1.6vh", content})
             }
-
             function subtitle({content}) {
                 return paragraph({
                     content, 
                     style:"opacity:0.8;font-weight:bold;font-size:110%;margin-bottom:-1.5vh"
                 })
             }
-
             function title_value({title, value, id}) {
                 /* return paragraph({style:"text-align:left;font-size:100%",content:(
                     span({style:"font-weight:bold", content:title}) + ": " + span({content:value})
@@ -179,8 +175,7 @@
                )})
             }
 
-
-
+            
             //=====================================================================================================
             // Update Page
             //=====================================================================================================
@@ -572,41 +567,42 @@
                         getId("item-description").innerHTML = (itemDescription({...item}, amount))
                     })
                 }
-
+                function resetDescription(){
+                    getId("item-description").innerHTML = "Click an item to see its description."
+                }
+                
                 // Containers
                 function inventory() {
                     toBackend(" [impersonated().inventory , database.items.data, impersonated().equipment] ", (response) => {
-
-                        // Hash
+                        // Hashing
                         const new_hash = hash(response)
                         const old_hash = getId("inventory").getAttribute("hash")
                         if (new_hash == old_hash) { return }
                         getId("inventory").setAttribute("hash", new_hash)
 
-                        getId("item-description").innerHTML = "Click an item to see its description."
-
-                        response = JSON.parse(response)
+                        // Reset item description
+                        resetDescription()
                         
+                        // Parsing
+                        response = JSON.parse(response)
                         const inventory = response[0]
                         const item_database = response[1]
+
+                        // Clear grid
                         const grid = getId("inventory")
                         grid.innerHTML = ""
 
-                        const items = {}
+                        // Create new inventory grid
+                        const inventory_items = {}
                         let cells = ""
-
-                        // For each inventory slot
                         for (let i = 0; i < inventory.length; i++) {
                             const slot = inventory[i]
                             const item = slot ? item_database[slot.name] : null
 
-                            // Default config
-                            slot_content = ""
-                            div_classes = ""
+                            let slot_content = ""; // Initialized empty
 
-                            // If there is item in slot
                             if (item) {
-
+                                // Tooltip
                                 tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
                                 tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
 
@@ -615,18 +611,20 @@
                                     src:item.image, 
                                     additional:`draggable data-position="`+i+`"`,
                                     classes:"inventory-item",
-                                    tooltip
+                                    tooltip // Tooltip initialized earlier
                                 })
+
                                 // Amount
                                 slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
-                                items[i] = {
+                                // Save info for event listeners
+                                inventory_items[i] = {
                                     name: item.name,
                                     amount: slot.amount
                                 }
                             }
 
-                            // Create item slot
+                            // Create slot
                             cells += (
                                 div({
                                     id:"inventory-slot-"+i,
@@ -637,24 +635,29 @@
                             )
                         }
 
+                        // Add HTML to grid
                         grid.innerHTML = cells
                         
+                        // Add listeners
                         for (let i = 0; i < inventory.length; i++) {
-                            let target_id = "inventory-slot-"+i
 
+                            // Slot event listeners
+                            const target_id = "inventory-slot-"+i
                             const slot = getId(target_id)
                             slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
 
-                            if(items[i]) {
+                            // In case slot has an item
+                            if(inventory_items[i]) {
                                 const item = slot.children[0]
+                                const { name, amount } = inventory_items[i]
 
-                                item.addEventListener("click", ()=>{
-                                    description(items[i].name, items[i].amount, target_id)
-                                })
+                                // Add item listeners (dragging, description, context-menu)
                                 item.addEventListener("dragstart", dragStart); 
                                 item.addEventListener("dragend", dragEnd);
-
-                                loadContextMenu({target_id, context_menu_id:"item-context-menu", onOpen:() => {
+                                item.addEventListener("click", ()=>{
+                                    description(name, amount, target_id)
+                                })
+                                loadContextMenu({target_id, context_menu_id:"item-context-menu", onOpen:() => { // Context menu
 
                                     // Send
                                     getId("item-context-menu-send").addEventListener("click", ()=>{
@@ -676,24 +679,24 @@
                 }
                 function equipment() {
                     toBackend(" [impersonated().equipment , database.items.data, impersonated().inventory] ", (response) => {
-                        
-                        // Hash
+                        // Hashing
                         const new_hash = hash(response)
                         const old_hash = getId("equipment").getAttribute("hash")
                         if (new_hash == old_hash) { return }
                         getId("equipment").setAttribute("hash", new_hash)
+                        resetDescription()
 
+                        // Parsing
                         response = JSON.parse(response)
-
                         const equipment = response[0]
                         const item_database = response[1]
+
+                        // Reset equipment grid
                         const grid = getId("equipment")
                         grid.innerHTML = ""
 
-                        const items = {}
-                        let cells = ""
-
-                        // For each inventory slot
+                        // Create grid HTML
+                        const equipment_items = {}
                         const equipment_slot_list = [
                             "", "amulet", "head", "ammunition", "",
                             "","hands", "body", "cape", "",
@@ -702,24 +705,14 @@
                             "","","","","",
                             "primary main hand", "primary off hand", "", "secondary main hand", "secondary off hand",
                         ]
+                        let cells = ""
                         for (const key of equipment_slot_list) {
                             const slot = equipment[key]
                             const item = slot ? item_database[slot.name] : null
 
-                            // Default config
-                            slot_content = img({src:equipment_images[key], classes:"", style:`
-                                filter:brightness(100); opacity:0.05;
-                                position:relative;
-                                height: 85%;
-                                top:7.5%;
-                                user-select: none;
-                                pointer-events: none`
-                            })
-
-                            
-                            // Verify two-handed main hand
+                            // Verify if current slot is offhand, and main hand weapon is two-handed
                             let isTwoHanded = false
-                            let two_hand_image
+                            let two_hand_image; // initialize undefined
                             if (key == "primary off hand" || key == "secondary off hand") {
                                 const main_hand_index = key == "primary off hand" ? "primary main hand" : "secondary main hand"
                                 const main_hand_slot = equipment[main_hand_index] || {name:null}
@@ -730,6 +723,9 @@
                                     two_hand_image = main_hand_item.image
                                 }
                             }
+
+                            // Default config
+                            let slot_content = ""
 
                             // If there is item in slot
                             if (item) {
@@ -746,11 +742,12 @@
                                 // Amount
                                 slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
 
-                                items[key] = {
+                                equipment_items[key] = {
                                     name: item.name,
                                     amount: slot.amount
                                 }
                             }
+                            // If current slot is offhand and mainhand has two-handed weapon
                             else if (isTwoHanded) {
                                 // Image
                                 slot_content = img({
@@ -759,43 +756,62 @@
                                     classes:"inventory-item",
                                     style: "opacity:0.2; cursor:default"
                                 })
-
+                            }
+                            // Empty slot, receives placeholder for equipment type in the slot
+                            else {
+                                // Image
+                                slot_content = img({src:equipment_images[key], classes:"", style:`
+                                    filter:brightness(100); opacity:0.05;
+                                    position:relative;
+                                    height: 85%;
+                                    top:7.5%;
+                                    user-select: none;
+                                    pointer-events: none`
+                                })
                             }
 
-                            // Create item slot
-                            if (key == "") { cells += div() }
+                            // If key is "" adds empty div to fill the grid position
+                            if (key == "") {
+                                cells += div()
+                            }
+                            // Create slot, and add slot_content
                             else {
                                 cells += (
                                     div({
                                         id:"equipment-slot-"+key,
                                         classes:"inventory-slot item-tooltip-trigger",
                                         content:slot_content,
-                                        additional: `data-position="`+key+`"`
+                                        additional:`data-position="`+key+`"`
                                     })
                                 )
                             }
                             
                         }
 
-                        getId("equipment").innerHTML = cells
+                        // Add HTML to grid
+                        grid.innerHTML = cells
                         
+                        // Add listeners to grid
                         for (const key of equipment_slot_list) {
+                            // Skip grid fillers
                             if (key == "") {continue}
 
-                            let target_id = "equipment-slot-"+key
-
+                            // Add slot event listeners
+                            const target_id = "equipment-slot-"+key
                             const slot = getId(target_id)
-                            slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
+                            slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop); // Read item drop
 
-                            if(items[key]) {
+                            // When slot has item
+                            if(equipment_items[key]) {
                                 const item = slot.children[0]
+                                const { name, amount } = equipment_items[key]
 
-                                item.addEventListener("click", ()=>{
-                                    description(items[key].name, items[key].amount, target_id)
-                                })
+                                // Add item event listeners
                                 item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
-
-                                loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => {
+                                item.addEventListener("click", ()=>{
+                                    description(name, amount, target_id)
+                                })
+                                loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => { // Context menu
 
                                     // Unequip
                                     getId("equipment-context-menu-unequip").addEventListener("click", ()=>{
@@ -809,6 +825,8 @@
                         }
                     })
                 }
+                
+                // Run
                 inventory()
                 equipment()
             }
@@ -817,7 +835,13 @@
             //=====================================================================================================
             // Create HTML
             //=====================================================================================================
+            function loadUpdaters () {
+                const interval = 200
 
+                // Tabs
+                updateCharacterTab(); setInterval(updateCharacterTab, interval)
+                updateInventoryTab(); setInterval(updateInventoryTab, interval)
+            }
             function loadPage() {
 
                 // Loading main div, tabs, and context menu
@@ -1000,9 +1024,7 @@
 
             function onWindowLoad() {
                 loadPage()
-    
-                updateCharacterTab();setInterval(updateCharacterTab, 200)
-                updateInventoryTab();setInterval(updateInventoryTab, 200)
+                loadUpdaters()
             }
             document.addEventListener("DOMContentLoaded", onWindowLoad)
     
