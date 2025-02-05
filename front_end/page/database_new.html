@@ -1,0 +1,954 @@
+[dialog5("Database",  "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+<head>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+
+    [r:'
+    <style>
+        img { margin: 0; }
+        img:hover { opacity: 0.5; }
+        img:active { opacity: 0.3; }
+
+        .input-container label {
+            background-color: #292929;
+        }
+    </style>
+    <script>
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+
+        const tab_names = [
+            //"classes",
+            "races", 
+            "proficiencies", 
+            "conditions", 
+            "features", 
+            "items", 
+            "damage", 
+            //"resources", 
+            "spells",
+        ]     
+        const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
+        const remove_icon = "asset://e984745ad793f4ca43bc3c5f14cb317d"
+
+        
+        //=====================================================================================================
+        // Update page
+        //=====================================================================================================
+
+        function updateTabs() {
+
+            // Returns true if the given tab is visible
+            function isTabActive(tab_id) {
+                return getId(tab_id).style.display != "none"
+            }
+
+            // Clears all tabs but a defined one
+            function clearTabsBut(active_tab) {
+                tab_names.splice(tab_names.indexOf(active_tab), 1);
+
+                for (const tab of tab_names) {
+                    getId(tab + "-table").children[1].innerHTML = ""
+                    getId(tab + "-table").setAttribute("hash", "")
+                }
+
+                tab_names.push(active_tab)
+            }
+
+
+                                    
+            // Updates features tab
+            if (isTabActive("races-tab")) {updateRaces()}
+            function updateRaces() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, features, proficiencies, ability_scores, description
+                }) {
+
+                    // Features
+                    features_string = ""
+                    for (const i in features) {
+                        features_string += features[i]
+                        features_string += i != features.length-1 ? ", " : ""
+                    }
+                    features_string = features_string ? `<br><br><b>Features</b>: `+ features_string : ""
+
+                    // Proficiencies
+                    const proficiency_names = {
+                        "0":"Proficiency",
+                        "1":"Expertise",
+                        "2":"Mastery",
+                        "3":"Grandmastery",
+                    }
+                    const languages = [
+                        "Common", "Dwarvish", "Elven", "Orcish"
+                    ]
+                    proficiencies_string = ""
+                    for (const i in proficiencies) {
+                        const value = proficiencies[i]
+                        const name = value["name"]
+                        const title = languages.includes(name) ? "Language" : proficiency_names[value["level"]]
+
+                        proficiencies_string += name + " " + title
+                        proficiencies_string += i != proficiencies.length - 1 ? ", " : ""
+                    }
+                    proficiencies_string = proficiencies_string ? `<br><br><b>Proficiencies</b>: `+ proficiencies_string : ""
+
+                    // Ability Scores
+                    ability_scores_string = ""
+                    for (const score in ability_scores) {
+                        bonus = Number(ability_scores[score])
+                        if (bonus != 0) {
+                            if (bonus > 0) {bonus = "+" + bonus}
+                            ability_scores_string += capitalize(score) + " " + bonus
+                            ability_scores_string += i != ability_scores.length -1 ? ", " : ""
+                        }
+                    }
+
+                    // Description
+                    description_text = (
+                        pre({content:description}) +
+                        div({style:"line-height: 1.5; text-align:left; padding-top:1vh;", content:(
+                            `<b>Ability Scores: </b>` + ability_scores_string + `
+                            `+features_string+`
+                            `+proficiencies_string+``
+                        )})
+                    )
+
+                    // Columns
+                    columns = [
+                        name,
+                        img({src:edit_icon, id:"races-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"races-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"races-table-row-"+name, 
+                        columns, 
+                        content:description_text, 
+                        config:"1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("races")
+
+                // Filters
+                const 
+                string_filter = getId("races-string-filter").value
+
+                toBackend(`
+                    [
+                        database.get_races_list({}, "", "`+string_filter+`"),
+                        database.races.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("races-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("races-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        race = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...race})
+                    }
+
+                    // Update Table
+                    getId("races-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("races-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_race.html", value) }) // Edit
+                        getId("races-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_race("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+                        
+            // Updates features tab
+            if (isTabActive("proficiencies-tab")) {updateProficiencies()}
+            function updateProficiencies() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image=""
+                }) {
+
+                    description_text = description[0] != "" > 0 ? pre({content:"<b>Proficiency: </b>"+description[0]}) : ""
+                    description_text += description[1] != "" ? pre({content:"<b>Expertise: </b>"+description[1]}) : ""
+                    description_text += description[2] != "" ? pre({content:"<b>Mastery: </b>"+description[2]}) : ""
+                    description_text += description[3] != "" ? pre({content:"<b>Grandmastery: </b>"+description[3]}) : ""
+
+                    // Images
+                    image = image || proficiency_images[type] || ""
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        img({src:edit_icon, id:"proficiencies-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"proficiencies-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"proficiencies-table-row-"+name, 
+                        columns, 
+                        content:description_text, 
+                        config:"3vh 1fr 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("proficiencies")
+
+                // Filters
+                const 
+                string_filter = getId("proficiencies-string-filter").value,
+                type_filter = getId("proficiencies-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_proficiencies_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.proficiencies.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("proficiencies-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("proficiencies-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        proficiency = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...proficiency})
+                    }
+
+                    // Update Table
+                    getId("proficiencies-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("proficiencies-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_proficiency.html", value) }) // Edit
+                        getId("proficiencies-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_proficiency("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+                        
+            // Updates features tab
+            if (isTabActive("conditions-tab")) {updateConditions()}
+            function updateConditions() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image=""
+                }) {
+
+                    // Image
+                    image = image || condition_images[type] || ""
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        img({src:edit_icon, id:"conditions-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"conditions-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"conditions-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("conditions")
+
+                // Filters
+                const 
+                string_filter = getId("conditions-string-filter").value,
+                type_filter = getId("conditions-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_conditions_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.conditions.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("conditions-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("conditions-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        condition = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...condition})
+                    }
+
+                    // Update Table
+                    getId("conditions-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("conditions-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_condition.html", value) }) // Edit
+                        getId("conditions-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_condition("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+            
+            // Updates features tab
+            if (isTabActive("features-tab")) {updateFeatures()}
+            function updateFeatures() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, subtype, level, description, image=""
+                }) {
+
+                    // Image
+                    image = image || class_images[subtype] || feature_images[type] || ""
+
+                    // Validate if present
+                    subtype = subtype ? capitalize(subtype) : ""
+                    level = level == 0 ? "" : level
+                    level = level ? "Level " + level : ""
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        level,
+                        subtype,
+                        img({src:edit_icon, id:"features-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"features-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"features-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 10vh 10vh 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("features")
+
+                // Filters
+                const 
+                string_filter = getId("features-string-filter").value,
+                type_filter = getId("features-type-filter").value,
+                subtype_filter = getId("features-subclass-filter").value || getId("features-class-filter").value,
+                level_filter = getId("features-level-filter").value
+
+                toBackend(`
+                    [
+                        database.get_features_list({
+                            "type":"`+type_filter+`",
+                            "subtype":"`+subtype_filter+`",
+                            "level":"`+level_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.features.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("features-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("features-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        feature = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...feature})
+                    }
+
+                    // Update Table
+                    getId("features-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("features-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_feature.html", value) }) // Edit
+                        getId("features-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_feature("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
+
+            // Updates items tab
+            if (isTabActive("items-tab")) {updateItems()}
+            function updateItems() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, image, type, subtype, description, weight, rarity,
+                    price, stackable, equippable, properties, bonus,
+                    conditions, damage, base_armor_class, recovery=""
+                }) {
+
+                    const properties_string = arrayToList(properties) != "" ? `<br><b>Properties</b>: ` + capitalize(arrayToList(properties)) : ""
+                    const conditions_string = arrayToList(conditions) != "" ? `<br><b>Conditions</b>: ` + arrayToList(conditions, true) : ""
+                    const base_armor_class_string = base_armor_class != 0 ? `<b>Armor Class</b>: ` + base_armor_class + `<br>`: ""
+                    
+                    // Damage
+                    const damage_array = damage
+                    damage = ""
+                    for (const i in damage_array) {
+                        const current = damage_array[i]
+                        damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+                        damage += i != damage_array.length - 1 ? ", " : ""
+                    }
+                    const damage_string = damage.length > 0 ? `<b>Damage</b>: ` + damage + `<br>`: ""
+                    const recovery_string = recovery != 0 ? `<b>Recovery Speed</b>: ` + recovery + `<br>` : ""
+
+                    // Description
+                    description = (
+                        div({style:"line-height: 1.5;text-align:left;padding-top:1vh;", content:(`
+                            `+damage_string+`
+                            `+recovery_string+`
+                            `+base_armor_class_string+`
+                            <b>Rarity</b>: `+capitalize(rarity)+`
+                            <br><b>Price</b>: `+price+`gp
+                            <br><b>Weight</b>: `+weight+`lb
+                            `+properties_string+`
+                            `+conditions_string+`
+                        `)}) +
+                        pre({content:description})
+                    )
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(type),
+                        capitalize(subtype),
+                        price + "gp",
+                        img({src:edit_icon, id:"items-table-row-"+name+"-give"}) +
+                        img({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"items-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"items-table-row-"+name, 
+                        columns, 
+                        content:description, 
+                        config:"3vh 1fr 1fr 1fr 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("items")
+
+                // Filters
+                const 
+                string_filter = getId("items-string-filter").value,
+                type_filter = getId("items-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_items_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.items.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("items-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("items-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        item = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...item})
+                    }
+
+                    // Update Table
+                    getId("items-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("items-table-row-"+value+"-give").addEventListener("click", ()=>{ openPage("give_item.html", value) }) // Give
+                        getId("items-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_item.html", value) }) // Edit
+                        getId("items-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_item("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+ 
+            // Updates damage tab
+            if (isTabActive("damage-tab")) {updateDamage()}
+            function updateDamage() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, type, description, image=""
+                }) {
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(type), 
+                        img({src:edit_icon, id:"damage-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"damage-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"damage-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("damage")
+
+                // Filters
+                const 
+                string_filter = getId("damage-string-filter").value,
+                type_filter = getId("damage-type-filter").value
+
+                toBackend(`
+                    [
+                        database.get_damage_type_list({
+                            "type":"`+type_filter+`",
+                        }, "", "`+string_filter+`"),
+                        database.damage_types.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("damage-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("damage-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        damage = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...damage})
+                    }
+
+                    // Update Table
+                    getId("damage-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("damage-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_damage.html", value) }) // Edit
+                        getId("damage-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_damage_type("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+            
+            // Updates spells tab
+            if (isTabActive("spells-tab")) {updateSpells()}
+            function updateSpells() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, level, school,
+                    cast_time, range, target,
+                    components, duration, classes,
+                    description, description_higher_levels, image = ""
+                }) {
+
+                    // Duration
+                    duration = duration == 0 ? "Instantaneous" : timeUnit(duration);
+
+                    // Cast Time
+                    cast_time = cast_time/2+" seconds"
+
+                    // Components
+                    components_string = ""
+                    for (const i in components) {
+                        components_string += components[i]
+                        components_string += i != components.length-1 ? ", " : ""
+                    }
+                    components_string = capitalize(components_string)
+
+                    // Classes
+                    classes_string = ""
+                    for (const i in classes) {
+                        classes_string += capitalize(classes[i])
+                        classes_string += i != classes.length-1 ? ", " : ""
+                    }
+
+                    // Range
+                    range = isNaN(Number(range)) ? capitalize(range) : range + " feet"
+
+                    // Higher levels description
+                    description_higher_levels = description_higher_levels ? pre({content:"<b>At Higher Levels:</b> " + description_higher_levels}) : ""
+
+                    description = (
+                        div({style:"line-height: 1.5;text-align:left;padding-top:1vh;", content:(`
+                            <b>Classes</b>: `+classes_string+`
+                            <br><b>Components</b>: `+components_string+`
+                            <br><b>Target</b>: `+target+`
+                            <br><b>Range</b>: `+range+`
+                            <br><b>Casting Time</b>: `+cast_time+`
+                            <br><b>Duration</b>: `+duration+`
+                        `)}) +
+                        pre({content:description}) +
+                        description_higher_levels
+                    )
+
+                    image = image || spell_school_images[school] || ""
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name, 
+                        capitalize(level), 
+                        capitalize(school),
+                        duration,
+                        img({src:edit_icon, id:"spells-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"spells-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({id:"spells-table-row-"+name, columns, content:description, config:"3vh 1fr 1fr 1fr 1fr min-content"})
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("spells")
+
+                // Filters
+                const 
+                string_filter = getId("spells-string-filter").value,
+                level_filter = getId("spells-level-filter").value,
+                school_filter = getId("spells-school-filter").value,
+                classes_filter = getId("spells-classes-filter").value
+
+                toBackend(`
+                    [
+                        database.get_spells_list({
+                            "school":"`+school_filter+`", 
+                            "level":"`+level_filter+`", 
+                            "player_class":"`+classes_filter+`"
+                        }, "", "`+string_filter+`"),
+                        database.spells.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("spells-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("spells-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        spell = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...spell})
+                    }
+
+                    // Update Table
+                    getId("spells-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("spells-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_spell.html", value) }) // Edit
+                        getId("spells-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_spell("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+            
+        }
+        function loadUpdaters() {
+            const interval = 200
+
+            // Content
+            updateTabs(); setInterval(updateTabs, interval)
+        }
+
+
+        //=====================================================================================================
+        // Load HTML
+        //=====================================================================================================
+
+        function racesTab() {
+            getId("races-tab").innerHTML += (
+                input({id:"races-string-filter", placeholder:"Search", style:"width:95%"}) +
+                table({id:"races-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"races-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("races-new").addEventListener("click", ()=>{ openPage("set_race.html","") }) 
+
+            loadSelect()
+        }
+        function proficienciesTab() {
+            getId("proficiencies-tab").innerHTML += (
+                input({id:"proficiencies-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"proficiencies-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "skill", "combat", "save", "tool", "language"
+                ]}) +
+                table({id:"proficiencies-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"proficiencies-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("proficiencies-new").addEventListener("click", ()=>{ openPage("set_proficiency.html","") }) 
+
+            loadSelect()
+        }        
+        function conditionsTab() {
+            getId("conditions-tab").innerHTML += (
+                input({id:"conditions-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"conditions-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "spell", "natural", "curse", "poison", "special"
+                ]}) +
+                table({id:"conditions-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"conditions-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("conditions-new").addEventListener("click", ()=>{ openPage("set_condition.html","") }) 
+
+            loadSelect()
+        }
+        function featuresTab() {
+
+            const classSubclass = {
+                "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+                "bard": ["College of Lore", "College of Valor"],
+                "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+                "druid": ["Circle of the Land", "Circle of the Moon"],
+                "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+                "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+                "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+                "ranger": ["Hunter", "Beast Master"],
+                "rogue": ["Thief", "Assassin", "Arcane Trickster"],
+                "sorcerer": ["Draconic Bloodline", "Wild Magic"],
+                "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+                "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+            }
+
+            const from1to20 = []
+            for (let i = 1; i<=20; i++) {from1to20.push(String(i))}
+
+            getId("features-tab").innerHTML += (
+                input({id:"features-string-filter", placeholder:"Search", style:"width:60%"}) +
+                select({id:"features-type-filter", placeholder:"Type", style:"width:10%", content:[
+                    "racial", "feat", "class"
+                ]}) +
+                select({id:"features-level-filter", placeholder:"Level", style:"width:10%", content:from1to20}) +
+                select({id:"features-class-filter", placeholder:"Class", style:"width:15%", content:Object.keys(classSubclass)}) +
+                select({id:"features-subclass-filter", placeholder:"Subclass", style:"display:none", content:""}) +
+                table({id:"features-table", headers:[""], config:""}) +
+                button({id:"features-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("features-new").addEventListener("click", () => { openPage("set_feature.html","") })
+            getId("features-class-filter").addEventListener("input", () => {
+                const current_class = getId("features-class-filter").value
+
+                if(current_class) {
+                    getId("features-string-filter-container").setAttribute("style", "width:35%")
+                    getId("features-subclass-filter-container").setAttribute("style", "width:25%")
+                } else {
+                    getId("features-string-filter-container").setAttribute("style", "width:60%")
+                    getId("features-subclass-filter-container").setAttribute("style", "display:none")
+                }
+
+                getId("features-subclass-filter").innerHTML = option({content:" ", value:""}) + options_from_array(classSubclass[current_class])
+            })
+
+            loadSelect()
+        }
+        function itemsTab() {
+            getId("items-tab").innerHTML += (
+                input({id:"items-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"items-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "equipment"
+                ]}) +
+                table({id:"items-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"items-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("items-new").addEventListener("click", ()=>{ openPage("set_item.html","") }) 
+
+            loadSelect()
+        }
+        function damageTab() {
+            getId("damage-tab").innerHTML += (
+                input({id:"damage-string-filter", placeholder:"Search", style:"width:80%"}) +
+                select({id:"damage-type-filter", placeholder:"Type", style:"width:15%", content:[
+                    "elemental", "physical", "special"
+                ]}) +
+                table({id:"damage-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"damage-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("damage-new").addEventListener("click", ()=>{ openPage("set_damage.html","") }) 
+
+            loadSelect()
+        }
+        function spellsTab() {
+            
+            const spells_tab = getId("spells-tab")
+            spells_tab.appendChildren([
+                input ({id:"spells-string-filter", placeholder:"Search", div_style: {width: "60%"}}),
+                select ({id:"spells-level-filter", placeholder:"Level", div_style: {width: "10%"}, children: [
+                    "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"
+                ]}),
+                select ({id:"spells-school-filter", placeholder:"School", div_style: {width:"15%"}, children: [
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"
+                ]}),
+                select ({id:"spells-classes-filter", placeholder:"Class", div_style: {width:"10%"}, children: [
+                    "bard", "cleric", "druid", "sorcerer", "paladin", "ranger", "warlock", "wizard"
+                ]})
+            ])
+
+            getId("spells-tab").innerHTML += (
+                input({id:"spells-string-filter", placeholder:"Search", style:"width:60%"}) +
+                select({id:"spells-level-filter", placeholder:"Level", style:"width:10%", content:[
+                    "cantrip","1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"
+                ]}) +
+                select({id:"spells-school-filter", placeholder:"School", style:"width:15%", content:[
+                    "abjuration","conjuration","divination","enchantment",
+                    "evocation","illusion","necromancy","transmutation"
+                ]}) +
+                select({id:"spells-classes-filter", placeholder:"Class", style:"width:10%", content:[
+                    "bard", "cleric", "druid", "sorcerer", "paladin", "ranger", "warlock", "wizard"
+                ]}) +
+                table({id:"spells-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"spells-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("spells-new").addEventListener("click", ()=>{ openPage("set_spell.html","") }) 
+
+            loadSelect()
+        }
+        function loadPage() {
+
+            // Load body
+            tabs ({tab_names, parent: document.body})
+
+            spellsTab()
+
+            // Tabs from as from "tab_names"
+            /* for (const name of tab_names) {
+                tabFunction = eval(name+"Tab")
+                tabFunction()
+            } */
+        }
+
+
+        //=====================================================================================================
+        // Executions
+        //=====================================================================================================
+
+        document.addEventListener("DOMContentLoaded", ()=>{
+            loadPage()
+            //loadUpdaters()
+        })
+
+
+        //=====================================================================================================
+    </script>
+    ']
+</head>
+
+<body>
+</body>
+
+}]

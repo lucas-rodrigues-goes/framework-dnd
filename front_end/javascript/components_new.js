@@ -15,9 +15,9 @@ function element (options) {
     }
 
     // Set styles
-    if (options.styles) {
-        for (var style in options.styles) {
-            created_element.style[style] = options.styles[style];
+    if (options.style) {
+        for (var style in options.style) {
+            created_element.style[style] = options.style[style];
         }
     }
 
@@ -33,22 +33,43 @@ function element (options) {
         }
     }
 
-    // Append children created_elements (objects, HTML created_elements, or text nodes)
+    // Override appendChild
+    created_element.appendChild = function(child) {
+        if (typeof child === "string") {
+            this.appendChild(document.createTextNode(child));
+        } else if (child instanceof HTMLElement) {
+            Node.prototype.appendChild.call(this, child);
+        } else if (typeof child === "object" && child !== null) {
+            this.appendChild(element(child));
+        } else {
+            throw new Error("Invalid child type. Must be a string, HTMLElement, or an object compatible with the element function.");
+        }
+    };
+
+    // Add appendChildren method
+    created_element.appendChildren = function(child) {
+        if (Array.isArray(child)) {
+            child.forEach(c => this.appendChild(c));
+        } else {
+            throw new Error("Invalid child type. Must an array.");
+        }
+    };
+
+    // Add clearChildren method
+    created_element.clearChildren = function() {
+        while (this.firstChild) {
+            this.removeChild(this.firstChild);
+        }
+    };
+
+    // Append children
     if (options.children) {
-        options.children.forEach (function(child) {
-            if (typeof child === "string") {
-                created_element.appendChild (document.createTextNode(child));
-            } else if (child instanceof HTMLElement) {
-                created_element.appendChild (child);
-            } else {
-                created_element.appendChild (element(child));
-            }
-        });
+        options.children.forEach(child => created_element.appendChild(child));
     }
 
     // Append to a parent if specified
     if (options.parent) {
-        options.parent.appendChild (created_element);
+        options.parent.appendChild(created_element);
     }
 
     return created_element;
@@ -57,6 +78,18 @@ function element (options) {
 //=====================================================================================================
 // Components
 //=====================================================================================================
+
+// Helpers
+
+function options_from_array (array) {
+    return_options = []
+    for (const name of array) {
+        return_options.push(
+            option ({text: capitalize(name), attributes: {value: name}})
+        )
+    }
+    return return_options
+}
 
 // Primitive Tags
 
@@ -69,33 +102,72 @@ function option (options) {options.tag = "option"; return element(options) }
 
 // Components
 
-function container ({id="", title="", parent, children}) {
-    // ID for inner created_elements
-    const div_id = id ? id + "-div" : ""
-    const title_id = id ? id + "-title" : ""
+function container({ id = "", title = "", parent, children, options = {} }) {
+    // Generate unique IDs for inner elements
+    const div_id = id ? id + "-div" : "";
+    const title_id = id ? id + "-title" : "";
 
-    // Element
-    return element (
-    {tag:"div", attributes: {id: div_id, class: "container"}, parent, children: [
-        {tag: "div", attributes: {id}, children},
-        {tag: "h4", attributes: {id: title_id, class: "container-title"}, text:title}
-    ]})
+    // Destructure the options object for clarity
+    const { div = {}, content = {}, title: title_options = {} } = options;
+    const { attributes: div_attributes = {}, class: div_class = "" } = div;
+    const { attributes: content_attributes = {}, class: content_class = "" } = content;
+    const { attributes: title_attributes = {}, class: title_class = "" } = title_options;
+
+    // Create the element structure with proper classes, ids, and attributes
+    const container_element = {
+        tag: "div",
+        attributes: {
+            ...div_attributes,
+            id: div_id,
+            class: "container " + div_class,
+        },
+        parent,
+        children: [
+            {
+                tag: "div",
+                attributes: {
+                    ...content_attributes,
+                    id: id,
+                    class: "content " + content_class,
+                },
+                children,
+            },
+            {
+                tag: "h4",
+                attributes: {
+                    ...title_attributes,
+                    id: title_id,
+                    class: "container-title " + title_class,
+                },
+                text: title,
+            },
+        ],
+    };
+
+    // Return the created element
+    return element(container_element);
 }
 
-function select({ id, placeholder = "", parent, children }) {
+function select({ id, placeholder = "", parent, children, children_type = "text"}) {
     // ID for inner created_elements
-    const div_id = id ? `${id}-div` : "";
-    const placeholder_id = id ? `${id}-placeholder` : "";
-
-    // Clone children to avoid mutation
-    const processedChildren = [
-        option({ text: "", attributes: { value: "" } }),
-        ...(children || [])
-    ];
+    const div_id = id ? id+`-div` : "";
+    const placeholder_id = id ? id+`-placeholder` : "";
+    
 
     function updateSelectState() {
         this.classList.toggle("filled", !!this.value);
     }
+
+    // Convert children
+    if (children_type == "text") {
+        children = options_from_array(children)
+    }
+
+    // Process chldren
+    const processedChildren = [
+        option({ text: "", attributes: { value: "" } }),
+        ...(children || [])
+    ]
 
     // Element
     return element({
@@ -122,7 +194,7 @@ function input ({id, placeholder="", parent}) {
     // Element
     return element (
     {tag: "div", attributes: {id: div_id, class: "input-container"}, parent, children:[
-        {tag: "input", attributes: {id, type:"text", placeholder: ""}},
+        {tag: "input", attributes: {id, type:"text", placeholder: " "}},
         {tag: "label", attributes: {id: placeholder_id, for: id}, text: placeholder}
     ]})
 }
@@ -141,7 +213,7 @@ function textarea ({id, placeholder="", parent}) {
     // Element
     return element (
     {tag: "div", attributes: {id: div_id, class: "input-container"}, parent, children:[
-        {tag: "textarea", attributes: {id, type:"text", placeholder: ""}, 
+        {tag: "textarea", attributes: {id, type:"text", placeholder: " "}, 
             events: {"input": updateHeight}
         },
         {tag: "label", attributes: {id: placeholder_id, for: id}, text: placeholder}
