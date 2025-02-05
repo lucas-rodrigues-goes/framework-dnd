@@ -81,7 +81,7 @@ function select({content, style, content_type="array", id, placeholder=""}={}) {
 function input({id, style, placeholder}={}) {
     let return_content = (
         div({classes:"input-container", style, id:id+"-container", content:(
-            element({tag:"input", id, placeholder:" ", additional:`type="text" required`}) +
+            element({tag:"input", id, placeholder:" ", additional:`type="text"`}) +
             element({tag:"label", content:placeholder, additional:`for="`+id+`"`})
         )})
     )

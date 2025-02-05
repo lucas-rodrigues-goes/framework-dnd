@@ -142,12 +142,12 @@
         flex-shrink: 0; /* Prevent checkbox from resizing */
     }
 
-    .checkbox[data-checked="true"] {
+    .checkbox[checked="true"], .checkbox[data-checked="true"] {
         background-color: #ddd;
         color: white;
     }
 
-    .checkbox[data-checked="true"]::after {
+    .checkbox[checked="true"]::after, .checkbox[data-checked="true"]::after {
         content: "\f00c"; /* Font Awesome checkmark */
         font-family: "Font Awesome 5 Free";
         font-weight: 900;
