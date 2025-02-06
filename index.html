@@ -12,10 +12,22 @@
 
         window.onload = function () {
 
-            tabs ({tab_names:["main", "secondary"], parent: document.body})
-
-            const main = getId("main-tab")
-            main.appendChild(div({text:"Agua"}))
+            container({
+                title: "agua", 
+                parent: document.body,
+                options: {
+                    div: {
+                        style: {
+                            height:"30vh",
+                        }
+                    },
+                    title: {
+                        style: {
+                            height:"10vh",
+                        }
+                    }
+                }
+            })
 
         }
 
