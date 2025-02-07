@@ -36,7 +36,7 @@ function element(options) {
     // Override appendChild
     created_element.appendChild = function(child) {
         if (typeof child === "string") {
-            this.appendChild(document.createTextNode(child));
+            this.appendChild(element({tag:"span", children:[child]}));
         } else if (child instanceof HTMLElement) {
             Node.prototype.appendChild.call(this, child);
         } else if (typeof child === "object" && child !== null) {

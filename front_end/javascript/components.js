@@ -369,7 +369,7 @@ function updateColapsible() {
     rows.forEach((row) => {
         row.addEventListener("click", function (event) {
             // Check if the click originated from a button
-            if (event.target.tagName === "IMG") {
+            if (["IMG", "BUTTON"].includes(event.target.tagName)) {
                 // Prevent the event from propagating to the parent
                 event.stopPropagation();
                 return;
