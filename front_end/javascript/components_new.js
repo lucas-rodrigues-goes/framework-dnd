@@ -75,23 +75,6 @@ function element(options) {
     return created_element;
 }
 
-//=====================================================================================================
-// Helper Functions
-//=====================================================================================================
-
-function options_from_array(array) {
-    return
-}
-
-//=====================================================================================================
-// Primitive Components
-//=====================================================================================================
-
-function span(options) { options.tag = "span"; return element(options); }
-function div(options) { options.tag = "div"; return element(options); }
-function p(options) { options.tag = "p"; return element(options); }
-function pre(options) { options.tag = "pre"; return element(options); }
-function option(options) { options.tag = "option"; return element(options); }
 
 //=====================================================================================================
 // Components (Standardized to the "container" template)
@@ -99,7 +82,7 @@ function option(options) { options.tag = "option"; return element(options); }
 
 function container({ id = "", title = "", parent, children, options = {} } = {}) {
 
-    // Destructure the options object for clarity
+    // Destructure the options
     const { div: div_options = {}, content: content_options = {}, title: title_options = {} } = options;
     const { attributes: div_attributes = {} } = div_options;
     const { attributes: content_attributes = {} } = content_options;
@@ -109,6 +92,7 @@ function container({ id = "", title = "", parent, children, options = {} } = {})
     return element(
         {...div_options,
             tag: "div",
+            parent,
             attributes: {...div_attributes,
                 id: id + "-div",
                 class: "container " + (div_attributes.class || ""),
@@ -135,18 +119,19 @@ function container({ id = "", title = "", parent, children, options = {} } = {})
     );
 }
 
-function input({ id = "", title = "", parent, text, options = {} }) {
+function input({ id = "", placeholder = "", parent, options = {} }) {
     
-    // Destructure the options object for clarity
-    const { div: div_options = {}, input: input_options = {}, title: title_options = {} } = options;
+    // Destructure the options
+    const { div: div_options = {}, input: input_options = {}, placeholder: placeholder_options = {} } = options;
     const { attributes: div_attributes = {} } = div_options;
     const { attributes: input_attributes = {} } = input_options;
-    const { attributes: title_attributes = {} } = title_options;
+    const { attributes: placeholder_attributes = {} } = placeholder_options;
     
     // Element
     return element(
         {...div_options,
             tag: "div", 
+            parent,
             attributes: {...div_attributes, 
                 id: id + "-div",
                 class: "input-container " + (div_attributes.class || "")
@@ -160,12 +145,101 @@ function input({ id = "", title = "", parent, text, options = {} }) {
                         type: "text"
                     }
                 },
-                {...title_options,
-                    tag: "label", 
+                {...placeholder_options,
+                    tag: "label",
                     text: placeholder,
                     attributes: {
-                        ...title_attributes,
+                        ...placeholder_attributes,
+                        id: id + "-placeholder",
+                        for: id
+                    }
+                }
+            ]
+        }
+    )
+}
+
+function textarea({ id = "", placeholder = "", parent, options = {} }) {
+    
+    // Destructure the options
+    const { div: div_options = {}, input: input_options = {}, placeholder: placeholder_options = {} } = options;
+    const { attributes: div_attributes = {} } = div_options;
+    const { attributes: input_attributes = {}, events: input_events } = input_options;
+    const { attributes: placeholder_attributes = {} } = placeholder_options;
+    
+    // Auto height
+    function autoHeight () {
+        this.style.height = ""
+        this.style.height = this.scrollHeight + "px"
+    }
+
+    // Element
+    return element(
+        {...div_options,
+            tag: "div", 
+            parent,
+            attributes: {...div_attributes, 
+                id: id + "-div",
+                class: "input-container " + (div_attributes.class || "")
+            },
+            children: [
+                {...input_options,
+                    tag: "textarea", 
+                    attributes: {...input_attributes,
+                        id,
+                        placeholder: " ", 
+                        type: "text",
+                        rows: 1
+                    },
+                    events: {...input_events,
+                        input: autoHeight
+                    }
+                },
+                {...placeholder_options,
+                    tag: "label",
+                    text: placeholder,
+                    attributes: {
+                        ...placeholder_attributes,
+                        id: id + "-placeholder",
                         for:id
+                    }
+                }
+            ]
+        }
+    )
+}
+
+function checkbox({ id = "", title = "", parent, options = {}}) {
+
+    // Destructure the options
+    const { div: div_options = {}, checkbox: checkbox_options = {}, title: title_options = {} } = options;
+    const { attributes: div_attributes = {} } = div_options;
+    const { attributes: checkbox_attributes = {} } = checkbox_options;
+    const { attributes: title_attributes = {} } = title_options;
+
+    return element(
+        {...div_options,
+            tag: "div",
+            parent,
+            attributes: {...div_attributes,
+                class: "checkbox-container " + (div_attributes.class || ""),
+                id: id + "-div"
+            },
+            children: [
+                {...title_options,
+                    tag: "span",
+                    text: title,
+                    attributes: {...title_attributes,
+                        id: id + "-title",
+                        class: "checkbox-text " + (title_attributes.class || "")
+                    }
+                },
+                {...checkbox_options,
+                    tag: "div",
+                    attributes: {...checkbox_attributes,
+                        id,
+                        checked: false,
+                        class: "checkbox " + (checkbox_attributes.class || "")
                     }
                 }
             ]

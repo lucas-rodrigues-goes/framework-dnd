@@ -13,20 +13,18 @@
         window.onload = function () {
 
             container({
-                title: "agua", 
+                title: "Agua", 
                 parent: document.body,
                 options: {
                     div: {
                         style: {
                             height:"30vh",
                         }
-                    },
-                    title: {
-                        style: {
-                            height:"10vh",
-                        }
                     }
-                }
+                },
+                children: [
+                    textarea({placeholder: "Input"})
+                ]
             })
 
         }
