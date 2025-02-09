@@ -85,6 +85,13 @@ function animateAccordion() {
 // External functions
 //=====================================================================================================
 
+async function backend(body) {
+    return fetch("macro:console@lib:back", {
+        method: "POST",
+        body
+    }).then(response => response.text())
+} 
+
 function toBackend(arguments, valueCallback) {
     let request = new XMLHttpRequest();
     request.open("POST", "macro:console@lib:back", true);
