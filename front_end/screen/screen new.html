@@ -314,7 +314,14 @@
         // Stop exectuion if not impersonated
         if (!isImpersonated) {return}
 
-        
+        // Character
+        const character = {
+            health: await backend("impersonated().health"),
+            max_health: await backend("impersonated().max_health"),
+            portrait: await backend("impersonated().portrait")
+        }
+
+
         toBackend(`
             [impersonated().health, impersonated().max_health, impersonated().portrait]`
         , (response)=>{
@@ -435,12 +442,28 @@
         })
     }
 
-    function loadPage() {
+    async function loadPage() {
 
         // Character menu
         element(
             {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, children: [
-                {tag: "div", attributes: {id: "current-character"}},
+                {tag: "div", attributes: {id: "current-character"}, children: [
+                    {tag: "div", 
+                        attributes: {
+                            class: "circular-health", 
+                            id: "current-character-health"
+                        },
+                        style: {
+                            background: "rgba(0,0,0,0.15)"
+                        },
+                        children: [
+                            {tag: "img", 
+                                attributes: {id: "current-character-portrait", src: await backend("impersonated().portrait")}, 
+                                events: {click: ()=>{backend(" impersonated.go_to() ; impersonated().select() ")}}
+                            }
+                        ]
+                    }
+                ]},
                 {tag: "div", attributes: {id: "current-party"}},
                 {tag: "div", attributes: {class: "button-background"}, children: [
 
