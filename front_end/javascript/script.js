@@ -89,8 +89,10 @@ async function backend(body) {
     return fetch("macro:console@lib:back", {
         method: "POST",
         body
-    }).then(response => response.text())
-} 
+    })
+    .then(response => response.text())
+    .catch(() => ""); // Return an empty string if fetch fails
+}
 
 function toBackend(arguments, valueCallback) {
     let request = new XMLHttpRequest();

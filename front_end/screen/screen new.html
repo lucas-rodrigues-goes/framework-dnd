@@ -205,6 +205,10 @@
     // Helper functions
     //=====================================================================================================
 
+    function isEqualJSON(a, b) {
+        return JSON.stringify(a) === JSON.stringify(b)
+    }
+
     function getColor(value) {
 
         // Ensure value is within the range 0 to 100
@@ -235,20 +239,6 @@
         // Return the color in RGB format
         //return `#ddd`
         return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
-    }
-
-    function hash(string) {
-        let hash = 0;
-
-        if (string.length == 0) return hash;
-
-        for (i = 0; i < string.length; i++) {
-            char = string.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-
-        return hash;
     }
 
     //=====================================================================================================
@@ -303,16 +293,20 @@
     // Execution
     //=====================================================================================================
 
+    let current_character = {}
     async function updateCurrentCharacter() {
 
         const isImpersonated = await backend("impersonated()") != ""
 
         // Character Menu visibility
-        const character_menu = document.getElementById("character-menu")
-        character_menu.style.display = isImpersonated ? "block" : "none"
+        const character_menu = getId("character-menu")
+        character_menu.style.display = isImpersonated ? "" : "none"
 
         // Stop exectuion if not impersonated
-        if (!isImpersonated) {return}
+        if (!isImpersonated) {
+            current_character = {}
+            return
+        }
 
         // Character
         const character = {
@@ -321,31 +315,16 @@
             portrait: await backend("impersonated().portrait")
         }
 
+        // Verify if there is need for update and updates
+        if (!isEqualJSON(current_character, character)) {
+            current_character = character
 
-        toBackend(`
-            [impersonated().health, impersonated().max_health, impersonated().portrait]`
-        , (response)=>{
-            new_hash = hash(response)
-            old_hash = getId("current-character").getAttribute("hash")
-            if(old_hash == new_hash) {return}
+            let hp_percent = character.health / character.max_health * 100
+            let end_hp = hp_percent != 0 ? hp_percent + 2 : 0
 
-            getId("current-character").setAttribute("hash", new_hash)
-            getId("current-character").innerHTML = ""
-
-            character = JSON.parse(response)
-
-            let health = character[0]
-            let max_health = character[1]
-            let hp_percent = health/max_health * 100
-            let start_hp = hp_percent
-            let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
-
-            let image = character[2]
-            let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-
-            getId("current-character").innerHTML += 
-                currentCharacter({style, image_src:image})
-        })
+            getId("current-character-health").style.background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%)`
+            getId("current-character-portrait").setAttribute("src", character.portrait)
+        }
     }
 
     function updateCurrentTarget() {
@@ -445,21 +424,17 @@
     async function loadPage() {
 
         // Character menu
+        const character_display = await backend("impersonated()") ? "" : "none"
         element(
-            {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, children: [
+            {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, style: {display: character_display}, children: [
                 {tag: "div", attributes: {id: "current-character"}, children: [
                     {tag: "div", 
-                        attributes: {
-                            class: "circular-health", 
-                            id: "current-character-health"
-                        },
-                        style: {
-                            background: "rgba(0,0,0,0.15)"
-                        },
+                        attributes: {class: "circular-health", id: "current-character-health"},
+                        style: {background: "rgba(0,0,0,0.15)"},
                         children: [
                             {tag: "img", 
-                                attributes: {id: "current-character-portrait", src: await backend("impersonated().portrait")}, 
-                                events: {click: ()=>{backend(" impersonated.go_to() ; impersonated().select() ")}}
+                                attributes: {id: "current-character-portrait", src: ""}, 
+                                events: {click: ()=>{backend(" impersonated().go_to() ; impersonated().select() ")}}
                             }
                         ]
                     }
@@ -520,6 +495,7 @@
     window.onload = function () {
         loadPage()
 
+        setInterval(updateCurrentCharacter, 100)
 
     }
 
