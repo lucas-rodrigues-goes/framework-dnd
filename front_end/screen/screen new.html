@@ -132,11 +132,11 @@
     /* Target */
     /*===================================================================================================*/
 
-    #target {
+    #current-target {
         top: 1vh;
     }
 
-    #target > .top {
+    #current-target > .top {
         width: fit-content;
         position: relative;
 
@@ -150,7 +150,7 @@
         justify-content: center;
     }
 
-    #target img {
+    #current-target img {
         position: absolute;
         height: 4vh;
         left: -5vh;
@@ -159,7 +159,7 @@
         bottom: 1vh;
     }
 
-    #target-health {
+    #current-target-health {
         position: relative;
         width: 35vh;
         
@@ -170,7 +170,7 @@
         border: 0.3vh solid #444;
     }
 
-    #target .armor-class {
+    #current-target .armor-class {
         position:relative;
         display:inline;
 
@@ -245,48 +245,42 @@
     // Components
     //=====================================================================================================
 
-    function currentCharacter({style, image_src}={}) {
-        let onclick = "toBackend(`impersonated().go_to() ; impersonated().select()`)"
+    function partyCharacter({portrait, health, max_health, id}) {
+        // Click function
+        function goTo() {
+            let request = `
+                var party_member = instance("`+id+`");
+                party_member.go_to();
+                party_member.select();
+            `
+            request += gm ? "party_member.impersonate();" : ""
+            
+            backend(request)
+        }
 
-        return div({classes:"circular-health", style, content:(
-            img({id:"character-image", src:image_src, onclick})
-        )})
-    }
+        // Healthbar styling
+        const hp_percent = health / max_health * 100
+        const end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+        const background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%)`
 
-    function currentTarget({name="", type="", image_src="", style="", armor_class=""}={}) {
-        image_src = image_src ? img({src:image_src}) : ""
-        armor_class = armor_class ? div({classes:"armor-class", content:armor_class}) : ""
-
-        return div({id:"target", classes:"center-horizontal", content:(
-            div({classes:"top center-horizontal", content:(
-                image_src +
-                element({tag:"p", style:"text-align:center", content:(
-                    span({classes:"text-shadow", style:"font-size:120%;font-weight:bold", content:name}) +
-                    "<br>" +
-                    span({classes:"text-shadow", style:"color:#aaa", content:type}) 
-                )})
-            )}) +
-            div({id:"target-health", style}) +
-            div({style:"display:flex; gap: 1vh", content:armor_class})
-        )})
-    }
-
-    function partyCharacter({id, style, image_src}={}) {
-        return div({classes:"circular-health circular-health-small", style, content:(
-            img({id:"party-image-"+id, src:image_src})
-        )})
+        // Element
+        return element(
+            {tag: "div", parent: getId("current-party"), attributes: {class: "circular-health circular-health-small"}, style: {background}, children: [
+                {tag: "img", attributes: {src: portrait}, events: {click: goTo}} 
+            ]}
+        )
     }
 
     function screenButton ({tooltip, src, click}) {
-            return (
-                {tag: "span", attributes: {class: "tooltip-img", tooltip}, children: [
-                    {tag: "img",
-                        attributes: {src}, 
-                        events: {click}
-                    }
-                ]}
-            )
-        }
+        return (
+            {tag: "span", attributes: {class: "tooltip-img", tooltip}, children: [
+                {tag: "img",
+                    attributes: {src}, 
+                    events: {click}
+                }
+            ]}
+        )
+    }
     
 
     //=====================================================================================================
@@ -296,16 +290,16 @@
     let current_character = {}
     async function updateCurrentCharacter() {
 
+        // Checks if user is actually impersonating
         const isImpersonated = await backend("impersonated()") != ""
 
-        // Character Menu visibility
+        // Character Menu
         const character_menu = getId("character-menu")
-        character_menu.style.display = isImpersonated ? "" : "none"
 
         // Stop exectuion if not impersonated
-        if (!isImpersonated) {
-            current_character = {}
-            return
+        if (!isImpersonated) { 
+            character_menu.style.display = "none"
+            return 
         }
 
         // Character
@@ -315,7 +309,7 @@
             portrait: await backend("impersonated().portrait")
         }
 
-        // Verify if there is need for update and updates
+        // Verify if there is need for update
         if (!isEqualJSON(current_character, character)) {
             current_character = character
 
@@ -325,108 +319,104 @@
             getId("current-character-health").style.background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%)`
             getId("current-character-portrait").setAttribute("src", character.portrait)
         }
+
+        // Unhide after updates
+        character_menu.style.display = ""
     }
 
-    function updateCurrentTarget() {
-        toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
-            const valid_class = ["Creature"]
-            selected_tokens = JSON.parse(response)
+    let current_target = {}
+    async function updateCurrentTarget() {
 
-            if (selected_tokens.length != 1) { 
-                getId("current-target").setAttribute("hash", "")
-                getId("current-target").innerHTML = ""
-                return
-            }
+        const hasTarget = await backend("selected()") != ""
 
-            toBackend(`
-                var target = instance("`+selected_tokens[0]+`"); 
-                [target.health, target.max_health, target.name,
-                target.type, target.race, target.portrait, 
-                target.player, target.armor_class, target.token.getProperty("class")]`
-            , (response)=>{
-                target = JSON.parse(response)
-                
-                new_hash = hash(response)
-                old_hash = getId("current-target").getAttribute("hash")
-                if(old_hash == new_hash) {return}
+        // Target HUD
+        const target_HUD = getId("current-target")
 
-                getId("current-target").setAttribute("hash", new_hash)
-                getId("current-target").innerHTML = ""
+        // Stop execution and hide if no target selected
+        if (!hasTarget) { 
+            target_HUD.style.display = "none"
+            return
+        }
 
-                const name = target[2] || "",
-                type = target[4] || target[3] || target[8] || "Entity",
-                image = target[5] || "",
-                armor_class = target[7],
-                health = target[0] || 100,
-                max_health = target[1] || 100
+        // Target
+        const target = {
+            name: await backend("selected().name"),
+            type: await backend("selected().race || selected().type || selected().token.getProperty(`class`)") || "Entity",
+            portrait: await backend("selected().portrait"),
+            player: await backend("selected().player"),
+            armor_class: await backend("selected().armor_class"),
+            health: await backend("selected().health"),
+            max_health: await backend("selected().max_health"),
+        }
 
-                let hp_percent = health/max_health * 100
-                let color = target[6] == "true" ? "#5ab350" : "#b44"
-                color = !valid_class.includes(target[8]) ? "#666" : color
+        // Verify if there is need for update
+        if (!isEqualJSON(current_target, target)) {
+            current_target = target
 
-                let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%);`
+            // Calculated attributes
+            let hp_percent = target.health / target.max_health * 100
+            let color = target.player == "true" ? "#5ab350" : "#b44"
 
-                getId("current-target").innerHTML += currentTarget({name, type, image_src:image, style, armor_class})
-            })
-        })
+            // Update values
+            getId("current-target-name").textContent = target.name
+            getId("current-target-type").textContent = target.type
+            getId("current-target-health").style.background = `linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%)`
+
+            // Update portrait
+            const target_HUD_portrait = getId("current-target-portrait")
+            target_HUD_portrait.setAttribute("src", target.portrait)
+            target_HUD_portrait.style.display = target.portrait ? "" : "none"
+
+            // Update AC
+            const target_HUD_armor_class = getId("current-target-armor-class")
+            target_HUD_armor_class.textContent = target.armor_class
+            target_HUD_armor_class.style.display = target.armor_class ? "" : "none"
+        }
+
+        // Unhide after updating values
+        target_HUD.style.display = ""
     }
 
-    function updateCurrentParty() {
-        toBackend(`
-            [party_info(), getImpersonated()]`
-        , (response) => {
-            new_hash = hash(response)
-            old_hash = getId("current-party").getAttribute("hash")
-            if(old_hash == new_hash) {return}
+    let current_party = [] ; let current_party_impersonated_id = ""
+    async function updateCurrentParty() {
 
-            party_members = JSON.parse(response)[0]
-            current_id = JSON.parse(response)[1]
+        // Gather party info
+        const party = JSON.parse(await backend("party_info()"))
+        const impersonated_ID = await backend("getImpersonated()")
+        
+        // Verify if there is need for update
+        if (!isEqualJSON(current_party, party) || current_party_impersonated_id != impersonated_ID) {
+            current_party = party
+            current_party_impersonated_id = impersonated_ID
 
-            getId("current-party").setAttribute("hash", new_hash)
-            getId("current-party").innerHTML = ""
-            
-            items = []
-            for (const member of party_members) {
-                let member_id = member[3]
-                if(member_id == current_id) {continue}
-                
-                let image = member[2]
+            // Clear
+            getId("current-party").clearChildren()
 
-                let health = member[0]
-                let max_health = member[1]
-                let hp_percent = health/max_health * 100
-                let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+            for (const character_info of party) {
 
-                let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-
-                items.push(member_id)
-                getId("current-party").innerHTML +=
-                    partyCharacter({id:member_id, style, image_src:image})
-            }
-
-            for(const member_id of items) {
-                if (getId("party-image-"+member_id)) {
-                    getId("party-image-"+member_id).addEventListener("click",() => {
-                        toBackend(`
-                            var party_member = instance("`+member_id+`");
-                            party_member.go_to();
-                            party_member.select();
-                        `)
-                        if(gm) {
-                            toBackend(`party_member.impersonate();`)
-                        }
-                    })
+                // Character
+                const character = {
+                    id: character_info[3],
+                    portrait: character_info[2],
+                    health: character_info[0],
+                    max_health: character_info[1]
                 }
+
+                // Skip if own character
+                if (character.id == impersonated_ID) {continue}
+                
+                // Create element
+                partyCharacter({...character})
             }
-        })
+        }
     }
 
-    async function loadPage() {
+
+    function loadPage() {
 
         // Character menu
-        const character_display = await backend("impersonated()") ? "" : "none"
         element(
-            {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, style: {display: character_display}, children: [
+            {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, style: {display: "none"}, children: [
                 {tag: "div", attributes: {id: "current-character"}, children: [
                     {tag: "div", 
                         attributes: {class: "circular-health", id: "current-character-health"},
@@ -488,14 +478,31 @@
 
         // Current target
         element (
-            {tag: "div", parent: document.body, attributes: {id: "current-target"}}
+            {tag: "div", parent: document.body, attributes: {id: "current-target", class: "center-horizontal"}, style: {display: "none"}, children: [
+                {tag: "div", attributes: {class: "top center-horizontal"}, children: [
+                    {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},
+                    {tag: "p", style: {textAlign: "center"}, children: [
+                        {tag: "span", attributes: {id: "current-target-name", class: "text-shadow"}, style: {fontSize: "120%", fontWeight: "bold"}}, 
+                        {tag: "br"},
+                        {tag: "span", attributes: {id: "current-target-type", class: "text-shadow"}, style: {color: "#aaa"}}
+                    ]}
+                ]},
+                {tag: "div", attributes: {id: "current-target-health"}},
+                {tag: "div", style: {display: "flex", gap: "1vh"}, children: [
+                    {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}}
+                ]}
+            ]}
         )
     }
 
     window.onload = function () {
         loadPage()
 
-        setInterval(updateCurrentCharacter, 100)
+        setInterval(()=>{
+            updateCurrentCharacter()
+            updateCurrentTarget()
+            updateCurrentParty()
+        }, 100)
 
     }
 
