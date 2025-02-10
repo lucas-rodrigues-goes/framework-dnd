@@ -75,9 +75,26 @@ function element(options) {
     return created_element;
 }
 
+/* 
+Creates a new HTMLElement dinamically.
+Parameters accepted include:
+    tag: Determines tag of the element, defaults to "div"
+    text: Determine textContent of the element, should be a string
+    parent: Calls appendChild on the element specified here to append this element.
+    attributes: An object attribute:value
+    style: An object style:value
+    events: An object event:function
+    children: An array of either: 
+        - Objects (with parameters like the ones specified here). 
+        - HTMLElements.
+        - Strings (converted to span elements).
+
+Also rewrites methods appendChild() to work with parameters that can be fed on children.
+Includes new methods clearChildren() and appendChildren() (receives an array)
+*/
 
 //=====================================================================================================
-// Components (Standardized to the "container" template)
+// Components
 //=====================================================================================================
 
 function container({ id = "", title = "", parent, children, options = {} } = {}) {
@@ -211,12 +228,13 @@ function textarea({ id = "", placeholder = "", parent, options = {} }) {
 
 function checkbox({ id = "", title = "", parent, options = {}}) {
 
-    // Destructure the options
+    // Options
     const { div: div_options = {}, checkbox: checkbox_options = {}, title: title_options = {} } = options;
     const { attributes: div_attributes = {} } = div_options;
     const { attributes: checkbox_attributes = {} } = checkbox_options;
     const { attributes: title_attributes = {} } = title_options;
 
+    // Element
     return element(
         {...div_options,
             tag: "div",
@@ -244,6 +262,59 @@ function checkbox({ id = "", title = "", parent, options = {}}) {
                 }
             ]
         }
+    )
+}
+
+function collapsible({parent, button_children = [], children = [], options = {}}) {
+
+    // Toggle collapsible visibility
+    function click (event) {
+        // Check if the click originated from a button
+        if (["IMG", "BUTTON"].includes(event.target.tagName)) {
+            event.stopPropagation();
+            return;
+        }
+
+        // Find the next sibling expandable content
+        const content = this.nextElementSibling;
+
+        // Toggle visibility with animation
+        if (content.classList.contains("show")) {
+            content.style.maxHeight = null;
+            content.classList.remove("show");
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+            content.classList.add("show");
+        }
+    }
+
+    // Options
+    const { div: div_options = {}, button: button_options = {}, content: content_options = {} } = options;
+    const { attributes: button_attributes = {}, events: button_events = {} } = button_options;
+    const { attributes: content_attributes = {} } = content_options;
+
+    // Element
+    return element(
+        {...div_options, 
+            tag: "div",
+            parent,
+            children: [
+                {...button_options,
+                    tag: "div", 
+                    attributes: {...button_attributes,
+                        class: "collapsible-div " + (button_attributes.class || "")
+                    }, 
+                    events: {...button_events, click},
+                    children: button_children
+                },
+                {...content_options,
+                    tag: "div", 
+                    attributes: {...content_attributes,
+                        class: "collapsible-content" + (content_attributes.class || "")
+                    },
+                    children
+                }
+        ]}
     )
 }
 

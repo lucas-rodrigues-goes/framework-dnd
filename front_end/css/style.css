@@ -317,7 +317,7 @@
         text-align: left;
     }
 
-    .table-row {
+    .table-row, .collapsible-div {
         position:relative;
 
         display: grid;
@@ -343,17 +343,17 @@
         z-index:5;
     }
 
-    .table-row img{
+    .table-row img, .collapsible-div img{
         height:2.4vh;
     }
 
-    .table-row > div{
+    .table-row > div, .collapsible-div > div{
         display:flex;
         align-items:center;
         gap: 0.3vh;
     }
 
-    .table-row:hover {
+    .table-row:hover, .collapsible-div:hover {
         background-color: #383838;
     }
 
@@ -384,7 +384,7 @@
         opacity: 1;
     }
 
-    .table-row.open + .collapsible-content {
+    .table-row.open + .collapsible-content, .collapsible-div.open + .collapsible-content {
         display:block;
         height: fit-content;
         margin-bottom: -2vh;
