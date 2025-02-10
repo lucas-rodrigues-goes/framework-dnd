@@ -4,6 +4,26 @@
 // Create Element
 //=====================================================================================================
 
+/* Creates a new HTMLElement dinamically.
+
+Parameters accepted include:
+    tag: Determines tag of the element, defaults to "div"
+    text: Determine textContent of the element, should be a string
+    parent: Calls appendChild on the element specified here to append this element.
+    attributes: An object attribute:value
+    style: An object style:value
+    events: An object event:function
+    children: An array of either: 
+        - Objects (with parameters like the ones specified here). 
+        - HTMLElements.
+        - Strings (converted to span elements).
+        
+Also rewrites and adds some new methods to all elements created this way:
+    appendChild: Now also accepts objects following these paremters and strings
+    appendChildren: Works like appendChild but receives an array
+    clearChildren: Removes all children, also removing their listeners
+
+*/
 function element(options) {
     const created_element = document.createElement(options.tag || "div");
 
@@ -74,24 +94,6 @@ function element(options) {
 
     return created_element;
 }
-
-/* 
-Creates a new HTMLElement dinamically.
-Parameters accepted include:
-    tag: Determines tag of the element, defaults to "div"
-    text: Determine textContent of the element, should be a string
-    parent: Calls appendChild on the element specified here to append this element.
-    attributes: An object attribute:value
-    style: An object style:value
-    events: An object event:function
-    children: An array of either: 
-        - Objects (with parameters like the ones specified here). 
-        - HTMLElements.
-        - Strings (converted to span elements).
-
-Also rewrites methods appendChild() to work with parameters that can be fed on children.
-Includes new methods clearChildren() and appendChildren() (receives an array)
-*/
 
 //=====================================================================================================
 // Components
