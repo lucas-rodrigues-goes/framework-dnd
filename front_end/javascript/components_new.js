@@ -29,71 +29,82 @@ function element(options) {
 
     // Set attributes
     if (options.attributes) {
-        for (var attr in options.attributes) {
+        for (let attr in options.attributes) {
             created_element.setAttribute(attr, options.attributes[attr]);
         }
     }
 
     // Set styles
     if (options.style) {
-        for (var style in options.style) {
+        for (let style in options.style) {
             created_element.style[style] = options.style[style];
         }
     }
 
     // Set text content
-    if (options.text) {
+    if (typeof options.text === "string") {
         created_element.textContent = options.text;
     }
 
     // Add event listeners
     if (options.events) {
-        for (var event in options.events) {
+        for (let event in options.events) {
             created_element.addEventListener(event, options.events[event]);
         }
     }
 
-    // Override appendChild
-    created_element.appendChild = function(child) {
-        if (typeof child === "string") {
-            this.appendChild(element({tag:"span", children:[child]}));
-        } else if (child instanceof HTMLElement) {
-            Node.prototype.appendChild.call(this, child);
-        } else if (typeof child === "object" && child !== null) {
-            this.appendChild(element(child));
-        } else {
-            throw new Error("Invalid child type. Must be a string, HTMLElement, or an object compatible with the element function.");
+    // Override appendChild method safely
+    Object.defineProperty(created_element, "appendChild", {
+        value: function (child) {
+            if (typeof child === "string") {
+                Node.prototype.appendChild.call(this, element({ tag: "span", text: child }));
+            } else if (child instanceof HTMLElement) {
+                Node.prototype.appendChild.call(this, child);
+            } else if (typeof child === "object" && child !== null) {
+                Node.prototype.appendChild.call(this, element(child));
+            } else {
+                throw new Error("Invalid child type. Must be a string, HTMLElement, or an object compatible with the element function.");
+            }
         }
-    };
+    });
 
     // Add appendChildren method
-    created_element.appendChildren = function(child) {
-        if (Array.isArray(child)) {
-            child.forEach(c => this.appendChild(c));
-        } else {
-            throw new Error("Invalid child type. Must an array.");
+    Object.defineProperty(created_element, "appendChildren", {
+        value: function (children) {
+            if (Array.isArray(children)) {
+                children.forEach(child => this.appendChild(child));
+            } else {
+                throw new Error("Invalid children type. Must be an array.");
+            }
         }
-    };
+    });
 
     // Add clearChildren method
-    created_element.clearChildren = function() {
-        while (this.firstChild) {
-            this.removeChild(this.firstChild);
+    Object.defineProperty(created_element, "clearChildren", {
+        value: function () {
+            while (this.firstChild) {
+                if (this.firstChild instanceof HTMLElement) {
+                    this.firstChild.replaceWith(); // Ensures event listeners are removed
+                } else {
+                    this.removeChild(this.firstChild);
+                }
+            }
         }
-    };
+    });
 
-    // Append children
-    if (options.children) {
+    // Append children if provided
+    if (Array.isArray(options.children)) {
         options.children.forEach(child => created_element.appendChild(child));
     }
 
-    // Append to a parent if specified
-    if (options.parent) {
+    // Append to parent if specified and valid
+    if (options.parent instanceof HTMLElement) {
         options.parent.appendChild(created_element);
     }
 
     return created_element;
 }
+
 
 //=====================================================================================================
 // Components
@@ -316,6 +327,60 @@ function collapsible({parent, button_children = [], children = [], options = {}}
                     },
                     children
                 }
+        ]}
+    )
+}
+
+function create_tabs({content=[], parent}) {
+    const tab_switch_buttons = []
+    const tabs = []
+
+    // Function
+    function click(event) {
+        const clicked_button = event.currentTarget;
+        const current_tab = clicked_button.id.replace("-switch", "");
+    
+        // Toggle visibility
+        content.forEach(name => {
+          const button = document.getElementById(name + "-switch");
+          const tab = document.getElementById(name + "-tab");
+          
+          if (name === current_tab) {
+            button.classList.add("active");
+            tab.style.display = "";
+          } else {
+            button.classList.remove("active");
+            tab.style.display = "none";
+          }
+        });
+      }
+
+    // Create buttons and tabs for each tab name in content
+    for (const i in content) {
+        const tab_name = content[i]
+
+        // Tab button
+        const button_classes = i == 0 ? "tab-switch active" : "tab-switch"
+        tab_switch_buttons.push(element(
+            {tag: "button", attributes: {class: button_classes, id: tab_name + "-switch"}, events: {click}, text: capitalize(tab_name)}
+        ))
+
+        // Tab
+        const tab_display = i == 0 ? "" : "none"
+        tabs.push(element(
+            {tag: "div", attributes: {class: "outer tab", id: tab_name + "-tab"}, style: {display: tab_display}}
+        ))
+
+    }
+
+    // Buttons div
+    const button_div = element({tag: "div", attributes: {class: "tab-switch-div"}, children: tab_switch_buttons})
+    const tab_div = element({tag: "div", children: tabs})
+
+    return element(
+        {tag: "div", parent, children: [
+            button_div,
+            tab_div
         ]}
     )
 }

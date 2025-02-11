@@ -56,6 +56,10 @@ function arrayToList(array, capitalize=false) {
     return return_string
 }
 
+function isEqualJSON(a, b) {
+    return JSON.stringify(a) === JSON.stringify(b)
+}
+
 
 
 //=====================================================================================================

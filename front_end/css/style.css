@@ -317,7 +317,7 @@
         text-align: left;
     }
 
-    .table-row, .collapsible-div {
+    .table-row {
         position:relative;
 
         display: grid;
@@ -328,6 +328,23 @@
 
         padding: 0 1vh;
         padding-top:0.5vh;
+
+        border: 0.1vh solid #444;
+        border-radius: 0.75vh;
+        background-color: #333;
+
+        transition: background-color 0.2s ease;
+
+        text-align: left;
+        vertical-align:middle;
+        align-items: center;
+        font-weight: bold;
+
+        z-index:5;
+    }
+
+    .collapsible-div {
+        position:relative;
 
         border: 0.1vh solid #444;
         border-radius: 0.75vh;
