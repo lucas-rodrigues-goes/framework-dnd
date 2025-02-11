@@ -167,30 +167,30 @@
                 // Character
                 const character = {}
 
-                //=================================================================================================
+                // Updates name, portrait, class, ability scores..
+                async function update_basic_attributes() {
+                    
+                    character.basic = JSON.parse(await backend(`JSON.stringify({
+                        name: impersonated().name,
+                        portrait: impersonated().portrait,
+                        class: impersonated().class || "None",
+                        ability_scores: impersonated().ability_scores
+                    })`))
 
-                // Basic Character Attributes
-                character.basic = JSON.parse(await backend(`JSON.stringify({
-                    name: impersonated().name,
-                    portrait: impersonated().portrait,
-                    class: impersonated().class || "None",
-                    ability_scores: impersonated().ability_scores
-                })`))
+                    // Updates
+                    if (!isEqualJSON(current_character.basic, character.basic)) {
+                        current_character.basic = character.basic
 
-                // Updates
-                if (!isEqualJSON(current_character.basic, character.basic)) {
-                    current_character.basic = character.basic
+                        getId("name").textContent = character.basic.name
+                        getId("portrait").setAttribute("src", character.basic.portrait)
+                        getId("class").textContent = character.basic.class
 
-                    getId("name").textContent = character.basic.name
-                    getId("portrait").setAttribute("src", character.basic.portrait)
-                    getId("class").textContent = character.basic.class
-
-                    for (const score in character.basic.ability_scores) {
-                        getId(score).textContent = character.basic.ability_scores[score]
+                        for (const score in character.basic.ability_scores) {
+                            getId(score).textContent = character.basic.ability_scores[score]
+                        }
                     }
                 }
-
-                //=================================================================================================
+                update_basic_attributes()
 
                 // Skills and Saving Throws
                 character.rolls = JSON.parse(await backend(`JSON.stringify({
@@ -671,7 +671,6 @@
                 inventory()
                 equipment()
             }
-
             
             //=====================================================================================================
             // Create HTML
