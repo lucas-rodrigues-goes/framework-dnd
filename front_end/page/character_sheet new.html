@@ -163,11 +163,10 @@
 
             let current_character = {basic: {}, rolls: {}, conditions: {}, features: {}, proficiencies: {}}
             async function updateCharacterTab() {
-
                 // Character
                 const character = {}
 
-                // Updates name, portrait, class, ability scores..
+                // Update name, portrait, class, and ability scores
                 async function update_basic_attributes() {
                     
                     character.basic = JSON.parse(await backend(`JSON.stringify({
@@ -192,152 +191,153 @@
                 }
                 update_basic_attributes()
 
-                // Skills and Saving Throws
-                character.rolls = JSON.parse(await backend(`JSON.stringify({
-                    score_bonus: impersonated().score_bonus,
-                    skills: impersonated().skills
-                })`))
+                // Update skills and saving throws
+                async function update_skills () {
+                    // Skills and Saving Throws
+                    character.rolls = JSON.parse(await backend(`JSON.stringify({
+                        score_bonus: impersonated().score_bonus,
+                        skills: impersonated().skills
+                    })`))
 
-                // Updates
-                if (!isEqualJSON(current_character.rolls, character.rolls)) {
-                    current_character.rolls = character.rolls
+                    // Updates
+                    if (!isEqualJSON(current_character.rolls, character.rolls)) {
+                        current_character.rolls = character.rolls
 
-                    // Clear Saving Throws
-                    const saving_throws_container = getId("saving-throws")
-                    saving_throws_container.clearChildren()
+                        // Clear Saving Throws
+                        const saving_throws_container = getId("saving-throws")
+                        saving_throws_container.clearChildren()
 
-                    // Append Saving Throws with bonuses
-                    for (const score in character.basic.ability_scores) {
-                        const title = capitalize(score)
-                        const value = bonusOf(character.rolls.score_bonus[score])
-                        saving_throws_container.appendChild(
-                            {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-                                {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-                                {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-                            ]}
-                        )
-                    }
+                        // Append Saving Throws with bonuses
+                        for (const score in character.basic.ability_scores) {
+                            const title = capitalize(score)
+                            const value = bonusOf(character.rolls.score_bonus[score])
+                            saving_throws_container.appendChild(
+                                {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
+                                    {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
+                                    {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
+                                ]}
+                            )
+                        }
 
-                    // Clear Skills
-                    const skills_container = getId("skills")
-                    skills_container.clearChildren()
+                        // Clear Skills
+                        const skills_container = getId("skills")
+                        skills_container.clearChildren()
 
-                    // Append Skills with bonuses
-                    for (const skill in character.rolls.skills) {
-                        const title = capitalize(skill)
-                        const value = bonusOf(character.rolls.skills[skill])
-                        skills_container.appendChild(
-                            {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-                                {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-                                {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-                            ]}
-                        )
-                    }
-                }
-
-                //=================================================================================================
-
-                // Conditions
-                character.conditions = JSON.parse(await backend(`impersonated().conditions`))
-
-                // Update
-                if (!isEqualJSON(current_character.conditions, character.conditions)) {
-                    current_character.conditions = character.conditions
-
-                    // Clear conditions
-                    const conditions = getId("character-conditions")
-                    conditions.clearChildren()
-
-                    // Append Conditions
-                    for (const name in character.conditions) {
-                        // From character
-                        const duration = timeUnit(character.conditions[name])
-
-                        // From database
-                        const condition = JSON.parse(await backend(`database.get_condition("`+ name +`")`))
-                        const description = condition.description || "Description unavailable"
-                        const image = condition_images[condition.type] || ""
-
-                        // Element
-                        collapsible(
-                            {parent: conditions,
-                                options: {
-                                    button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
-                                    content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                                },
-                                button_children: [
-                                    {tag: "img", attributes: {src: image}},
-                                    {tag: "span", text: name},
-                                    {tag: "span", style: {position: "absolute", right: "1vh"}, text: duration}
-                                ],
-                                children: [
-                                    {tag: "pre", style: {fontSize: "90%"}, text: description}
-                                ]
-                            }
-                        )
-                    }
-
-                    // Hide container if empty
-                    if (conditions.children.length == 0) {
-                        conditions.parentElement.classList.add("hidden")
-                    } else {
-                        conditions.parentElement.classList.remove("hidden")
+                        // Append Skills with bonuses
+                        for (const skill in character.rolls.skills) {
+                            const title = capitalize(skill)
+                            const value = bonusOf(character.rolls.skills[skill])
+                            skills_container.appendChild(
+                                {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
+                                    {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
+                                    {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
+                                ]}
+                            )
+                        }
                     }
                 }
+                update_skills()
+
+                // Update conditions
+                async function update_conditions () {
+                    // Conditions
+                    character.conditions = JSON.parse(await backend(`impersonated().conditions`))
+
+                    // Update
+                    if (!isEqualJSON(current_character.conditions, character.conditions)) {
+                        current_character.conditions = character.conditions
+
+                        // Clear conditions
+                        const conditions = getId("character-conditions")
+                        conditions.clearChildren()
+
+                        // Append Conditions
+                        for (const name in character.conditions) {
+                            // From character
+                            const duration = timeUnit(character.conditions[name])
+
+                            // From database
+                            const condition = JSON.parse(await backend(`database.get_condition("`+ name +`")`))
+                            const description = condition.description || "Description unavailable"
+                            const image = condition_images[condition.type] || ""
+
+                            // Element
+                            collapsible(
+                                {parent: conditions,
+                                    options: {
+                                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+                                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+                                    },
+                                    button_children: [
+                                        {tag: "img", attributes: {src: image}},
+                                        {tag: "span", text: name},
+                                        {tag: "span", style: {position: "absolute", right: "1vh"}, text: duration}
+                                    ],
+                                    children: [
+                                        {tag: "pre", style: {fontSize: "90%"}, text: description}
+                                    ]
+                                }
+                            )
+                        }
+
+                        // Hide container if empty
+                        if (conditions.children.length == 0) {
+                            conditions.parentElement.classList.add("hidden")
+                        } else {
+                            conditions.parentElement.classList.remove("hidden")
+                        }
+                    }
+                }
+                update_conditions()
                 
-                //=================================================================================================
+                // Update features
+                async function update_features () {
+                    // Features
+                    character.features = JSON.parse(await backend(`impersonated().features`))
 
-                // Features
-                character.features = JSON.parse(await backend(`impersonated().features`))
+                    // Update
+                    if (!isEqualJSON(current_character.features, character.features)) {
+                        current_character.features = character.features
 
-                // Update
-                if (!isEqualJSON(current_character.features, character.features)) {
-                    current_character.features = character.features
+                        // Clear conditions
+                        const features = getId("character-features")
+                        features.clearChildren()
 
-                    // Clear conditions
-                    const features = getId("character-features")
-                    features.clearChildren()
+                        // Append Conditions
+                        for (const name of character.features.all) {
+                            // From database
+                            const feature = JSON.parse(await backend(`database.get_feature("`+ name +`")`))
+                            const type = feature.subtype || feature.type || "None"
+                            const image = class_images[type] || feature_images[type] || ""
+                            const description = feature.description || "Description unavailable"
 
-                    // Append Conditions
-                    for (const name of character.features.all) {
-                        // From database
-                        const feature = JSON.parse(await backend(`database.get_feature("`+ name +`")`))
-                        const type = feature.subtype || feature.type || "None"
-                        const image = class_images[type] || feature_images[type] || ""
-                        const description = feature.description || "Description unavailable"
+                            // Element
+                            collapsible(
+                                {parent: features,
+                                    options: {
+                                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+                                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+                                    },
+                                    button_children: [
+                                        {tag: "img", attributes: {src: image}},
+                                        {tag: "span", text: name}
+                                    ],
+                                    children: [
+                                        {tag: "pre", style: {fontSize: "90%"}, text: description}
+                                    ]
+                                }
+                            )
+                        }
 
-                        // Element
-                        collapsible(
-                            {parent: features,
-                                options: {
-                                    button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
-                                    content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                                },
-                                button_children: [
-                                    {tag: "img", attributes: {src: image}},
-                                    {tag: "span", text: name}
-                                ],
-                                children: [
-                                    {tag: "pre", style: {fontSize: "90%"}, text: description}
-                                ]
-                            }
-                        )
-                    }
-
-                    // Hide container if empty
-                    if (features.children.length == 0) {
-                        features.parentElement.classList.add("hidden")
-                    } else {
-                        features.parentElement.classList.remove("hidden")
+                        // Hide container if empty
+                        if (features.children.length == 0) {
+                            features.parentElement.classList.add("hidden")
+                        } else {
+                            features.parentElement.classList.remove("hidden")
+                        }
                     }
                 }
-
-                //=================================================================================================
-
-                // Proficiencies
-                character.proficiencies = JSON.parse(await backend(`impersonated().proficiencies`))
-
-                // Update
+                update_features()
             }
 
             function updateInventoryTab() {
