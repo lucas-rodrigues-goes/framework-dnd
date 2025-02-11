@@ -1,480 +1,519 @@
 [overlay("Screen"), code: {
-<head>
-    <script>
-        const gm = "{isGM()}" == "1"
-    </script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
-    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
-
-    [r:'
-    <style>
-
-    /*===================================================================================================*/
-    /* Document */
-    /*===================================================================================================*/
-
-    body {
-        all:unset;
-        font-size: 1.7vh;
-    }
-
-    .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
-
-    .menu {
-        position: fixed;
-
-        padding: 1vh 0.5vw;
-        margin: 0.5vh;
-
-        display: flex;
-        align-items: end;
-        gap: 1vh;
-    }
-
-
-
-    /*===================================================================================================*/
-    /* Button */
-    /*===================================================================================================*/
-
-    .button-background {
-        background-color: #333;
-        border: 0.2vh solid #444;
-        border-radius: 1vh;
-        padding: 0.3vh;
-        padding-left: 0.4vh;
-        display:flex;
-
-        background-color: rgba(0,0,0,0);
-        border: none;
-    }
-
-    .button-background img {
-        background-color: #292929;
-        border: 0.3vh solid #444;
-        border-radius: 0.5vh;
-        display:block;
-        height: 3vh;
-        padding: 0.5vh;
-        margin: 0 0.25vh;
-        min-height:29px;
-    }
-
-    .button-background img:hover {
-        background-color: #444;
-        border: 0.3vh solid #555;
-        opacity:1;
-    }
-    .button-background img:active {
-        background-color: #555;
-        opacity:1;
-    }
-
-
-
-    /*===================================================================================================*/
-    /* Circular Health Bar */
-    /*===================================================================================================*/
-
-    .circular-health {
-        position: relative;
-        width: 13vh;
-        height: 13vh;
-        margin: -0.5vh 0px;
-
-        background: rgba(0,0,0,0.15);
-        border-radius: 50%;
-        border: 0.2vh solid #444;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .circular-health img {
-        border-radius: 50%;
-        border: 0.3vh solid #444;
-        height: 11.5vh;
-    }
-
-    .circular-health img:hover {
-        filter: brightness(1.1)
-    }
-
-    .circular-health img:active {
-        filter: brightness(1.3)
-    }
-
-    #current-party {
-        position: absolute;
-        bottom: 13.5vh;
-    }
-
-    .circular-health-small {
-        width: 6.5vh;
-        height: 6.5vh;
-        min-height: 0;
-        min-width: 0;
-        margin: 1vh 0vh;
-    }
-
-    .circular-health-small img {
-        height: 5.5vh;
-        min-height: 0;
-    }
-
-
-
-    /*===================================================================================================*/
-    /* Target */
-    /*===================================================================================================*/
-
-    #target {
-        top: 1vh;
-    }
-
-    #target > .top {
-        width: fit-content;
-        position: relative;
-
-        bottom: -1vh;
-        height: 6vh;
-
-        color: #ddd;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    #target img {
-        position: absolute;
-        height: 4vh;
-        left: -5vh;
-        border-radius: 50%;
-        border: 0.1vh solid #444;
-        bottom: 1vh;
-    }
-
-    #target-health {
-        position: relative;
-        width: 35vh;
-        
-        height: 1.5vh;
-        bottom: 0px;
-        background-color: rgba(0,0,0,0.15);
-        border-radius: 1vh;
-        border: 0.3vh solid #444;
-    }
-
-    #target .armor-class {
-        position:relative;
-        display:inline;
-
-        color:#ddd;
-        text-align: center;
-        font-weight: bold;
-        font-size: 110%;
-
-        background-color: #444;
-        border: 0.3vh solid #555;
-        border-radius: 50%;
-        border-top-right-radius: 0;
-        border-top-left-radius: 0;
-
-        padding: 0.5vh;
-        width:2vh;
-        left: 1vh;
-    }
-
-    .text-shadow {
-        text-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
-    }
-
-
-
-    /*===================================================================================================*/
-
-    </style>
-    <script>
-
-    //=====================================================================================================
-    // Helper functions
-    //=====================================================================================================
-
-    function getColor(value) {
-
-        // Ensure value is within the range 0 to 100
-        value = Number(value)
-        value = Math.max(0, Math.min(100, value));
-
-        // Calculate the proportion for interpolation
-        let red, green;
-
-        if (value >= 50) {
-            // From yellow (50) to green (100)
-            green = 255;
-            red = Math.round(255 * (1 - (value - 50) / 50));
-        } else {
-            // From red (0) to yellow (50)
-            red = 255;
-            green = Math.round(255 * (value / 50));
-        }
-
-        // Adjust color intensity based on toneFactor
-        red = Math.round(red * 0.7);
-        green = Math.round(green * 0.7);
-
-        // Clamp the values to ensure they stay within 0-255
-        red = Math.min(255, Math.max(0, red));
-        green = Math.min(255, Math.max(0, green));
-
-        // Return the color in RGB format
-        //return `#ddd`
-        return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
-    }
-
-    function hash(string) {
-        let hash = 0;
-
-        if (string.length == 0) return hash;
-
-        for (i = 0; i < string.length; i++) {
-            char = string.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-
-        return hash;
-    }
-
-    //=====================================================================================================
-    // Components
-    //=====================================================================================================
-
-    function currentCharacter({style, image_src}={}) {
-        let onclick = "toBackend(`impersonated().go_to() ; impersonated().select()`)"
-
-        return div({classes:"circular-health", style, content:(
-            img({id:"character-image", src:image_src, onclick})
-        )})
-    }
-
-    function currentTarget({name="", type="", image_src="", style="", armor_class=""}={}) {
-        image_src = image_src ? img({src:image_src}) : ""
-        armor_class = armor_class ? div({classes:"armor-class", content:armor_class}) : ""
-
-        return div({id:"target", classes:"center-horizontal", content:(
-            div({classes:"top center-horizontal", content:(
-                image_src +
-                element({tag:"p", style:"text-align:center", content:(
-                    span({classes:"text-shadow", style:"font-size:120%;font-weight:bold", content:name}) +
-                    "<br>" +
-                    span({classes:"text-shadow", style:"color:#aaa", content:type}) 
-                )})
-            )}) +
-            div({id:"target-health", style}) +
-            div({style:"display:flex; gap: 1vh", content:armor_class})
-        )})
-    }
-
-    function partyCharacter({id, style, image_src}={}) {
-        return div({classes:"circular-health circular-health-small", style, content:(
-            img({id:"party-image-"+id, src:image_src})
-        )})
-    }
+    <head>
+        <script>
+            const gm = "{isGM()}" == "1"
+        </script>
     
-
-    //=====================================================================================================
-    // Execution
-    //=====================================================================================================
-
-    function updateCurrentCharacter() {
-        toBackend(`impersonated()`, (response)=>{
-            if (!response) {
-                getId("character-menu").setAttribute("style", "display:none")
-                return
-            } else {
-                getId("character-menu").setAttribute("style", "")
-            }
-        })
-        toBackend(`
-            [impersonated().health, impersonated().max_health, impersonated().portrait]`
-        , (response)=>{
-            new_hash = hash(response)
-            old_hash = getId("current-character").getAttribute("hash")
-            if(old_hash == new_hash) {return}
-
-            getId("current-character").setAttribute("hash", new_hash)
-            getId("current-character").innerHTML = ""
-
-            character = JSON.parse(response)
-
-            let health = character[0]
-            let max_health = character[1]
-            let hp_percent = health/max_health * 100
-            let start_hp = hp_percent
-            let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
-
-            let image = character[2]
-            let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+start_hp+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-
-            getId("current-character").innerHTML += 
-                currentCharacter({style, image_src:image})
-        })
-    }
-
-    function updateCurrentTarget() {
-        toBackend(`MapTool.tokens.getSelectedTokens()`, (response) => {
-            const valid_class = ["Creature"]
-            selected_tokens = JSON.parse(response)
-
-            if (selected_tokens.length != 1) { 
-                getId("current-target").setAttribute("hash", "")
-                getId("current-target").innerHTML = ""
-                return
-            }
-
-            toBackend(`
-                var target = instance("`+selected_tokens[0]+`"); 
-                [target.health, target.max_health, target.name,
-                target.type, target.race, target.portrait, 
-                target.player, target.armor_class, target.token.getProperty("class")]`
-            , (response)=>{
-                target = JSON.parse(response)
-                
-                new_hash = hash(response)
-                old_hash = getId("current-target").getAttribute("hash")
-                if(old_hash == new_hash) {return}
-
-                getId("current-target").setAttribute("hash", new_hash)
-                getId("current-target").innerHTML = ""
-
-                const name = target[2] || "",
-                type = target[4] || target[3] || target[8] || "Entity",
-                image = target[5] || "",
-                armor_class = target[7],
-                health = target[0] || 100,
-                max_health = target[1] || 100
-
-                let hp_percent = health/max_health * 100
-                let color = target[6] == "true" ? "#5ab350" : "#b44"
-                color = !valid_class.includes(target[8]) ? "#666" : color
-
-                let style = `background: linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%);`
-
-                getId("current-target").innerHTML += currentTarget({name, type, image_src:image, style, armor_class})
-            })
-        })
-    }
-
-    function updateCurrentParty() {
-        toBackend(`
-            [party_info(), getImpersonated()]`
-        , (response) => {
-            new_hash = hash(response)
-            old_hash = getId("current-party").getAttribute("hash")
-            if(old_hash == new_hash) {return}
-
-            party_members = JSON.parse(response)[0]
-            current_id = JSON.parse(response)[1]
-
-            getId("current-party").setAttribute("hash", new_hash)
-            getId("current-party").innerHTML = ""
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+    
+        [r:'
+        <style>
+    
+        /*===================================================================================================*/
+        /* Document */
+        /*===================================================================================================*/
+    
+        body {
+            all:unset;
+            font-size: 1.7vh;
+        }
+    
+        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+    
+        .menu {
+            position: fixed;
+    
+            padding: 1vh 0.5vw;
+            margin: 0.5vh;
+    
+            display: flex;
+            align-items: end;
+            gap: 1vh;
+        }
+    
+    
+    
+        /*===================================================================================================*/
+        /* Button */
+        /*===================================================================================================*/
+    
+        .button-background {
+            background-color: #333;
+            border: 0.2vh solid #444;
+            border-radius: 1vh;
+            padding: 0.3vh;
+            padding-left: 0.4vh;
+            display:flex;
+    
+            background-color: rgba(0,0,0,0);
+            border: none;
+        }
+    
+        .button-background img {
+            background-color: #292929;
+            border: 0.3vh solid #444;
+            border-radius: 0.5vh;
+            display:block;
+            height: 3vh;
+            padding: 0.5vh;
+            margin: 0 0.25vh;
+            min-height:29px;
+        }
+    
+        .button-background img:hover {
+            background-color: #444;
+            border: 0.3vh solid #555;
+            opacity:1;
+        }
+        .button-background img:active {
+            background-color: #555;
+            opacity:1;
+        }
+    
+    
+    
+        /*===================================================================================================*/
+        /* Circular Health Bar */
+        /*===================================================================================================*/
+    
+        .circular-health {
+            position: relative;
+            width: 13vh;
+            height: 13vh;
+            margin: -0.5vh 0px;
+    
+            background: rgba(0,0,0,0.15);
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        .circular-health img {
+            border-radius: 50%;
+            border: 0.3vh solid #444;
+            height: 11.5vh;
+        }
+    
+        .circular-health img:hover {
+            filter: brightness(1.1)
+        }
+    
+        .circular-health img:active {
+            filter: brightness(1.3)
+        }
+    
+        #current-party {
+            position: absolute;
+            bottom: 13.5vh;
+        }
+    
+        .circular-health-small {
+            width: 6.5vh;
+            height: 6.5vh;
+            min-height: 0;
+            min-width: 0;
+            margin: 1vh 0vh;
+        }
+    
+        .circular-health-small img {
+            height: 5.5vh;
+            min-height: 0;
+        }
+    
+    
+    
+        /*===================================================================================================*/
+        /* Target */
+        /*===================================================================================================*/
+    
+        #current-target {
+            top: 1vh;
+        }
+    
+        #current-target > .top {
+            width: fit-content;
+            position: relative;
+    
+            bottom: -1vh;
+            height: 6vh;
+    
+            color: #ddd;
+    
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        #current-target img {
+            position: absolute;
+            height: 4vh;
+            left: -5vh;
+            border-radius: 50%;
+            border: 0.1vh solid #444;
+            bottom: 1vh;
+        }
+    
+        #current-target-health {
+            position: relative;
+            width: 35vh;
             
-            items = []
-            for (const member of party_members) {
-                let member_id = member[3]
-                if(member_id == current_id) {continue}
-                
-                let image = member[2]
-
-                let health = member[0]
-                let max_health = member[1]
-                let hp_percent = health/max_health * 100
-                let end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
-
-                let style = `background: linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%);`
-
-                items.push(member_id)
-                getId("current-party").innerHTML +=
-                    partyCharacter({id:member_id, style, image_src:image})
+            height: 1.5vh;
+            bottom: 0px;
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 1vh;
+            border: 0.3vh solid #444;
+        }
+    
+        #current-target .armor-class {
+            position:relative;
+            display:inline;
+    
+            color:#ddd;
+            text-align: center;
+            font-weight: bold;
+            font-size: 110%;
+    
+            background-color: #444;
+            border: 0.3vh solid #555;
+            border-radius: 50%;
+            border-top-right-radius: 0;
+            border-top-left-radius: 0;
+    
+            padding: 0.5vh;
+            width:2vh;
+            left: 1vh;
+        }
+    
+        .text-shadow {
+            text-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
+        }
+    
+    
+    
+        /*===================================================================================================*/
+    
+        </style>
+        <script>
+    
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+    
+        function isEqualJSON(a, b) {
+            return JSON.stringify(a) === JSON.stringify(b)
+        }
+    
+        function getColor(value) {
+    
+            // Ensure value is within the range 0 to 100
+            value = Number(value)
+            value = Math.max(0, Math.min(100, value));
+    
+            // Calculate the proportion for interpolation
+            let red, green;
+    
+            if (value >= 50) {
+                // From yellow (50) to green (100)
+                green = 255;
+                red = Math.round(255 * (1 - (value - 50) / 50));
+            } else {
+                // From red (0) to yellow (50)
+                red = 255;
+                green = Math.round(255 * (value / 50));
             }
-
-            for(const member_id of items) {
-                if (getId("party-image-"+member_id)) {
-                    getId("party-image-"+member_id).addEventListener("click",() => {
-                        toBackend(`
-                            var party_member = instance("`+member_id+`");
-                            party_member.go_to();
-                            party_member.select();
-                        `)
-                        if(gm) {
-                            toBackend(`party_member.impersonate();`)
-                        }
-                    })
+    
+            // Adjust color intensity based on toneFactor
+            red = Math.round(red * 0.7);
+            green = Math.round(green * 0.7);
+    
+            // Clamp the values to ensure they stay within 0-255
+            red = Math.min(255, Math.max(0, red));
+            green = Math.min(255, Math.max(0, green));
+    
+            // Return the color in RGB format
+            //return `#ddd`
+            return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
+        }
+    
+        //=====================================================================================================
+        // Components
+        //=====================================================================================================
+    
+        function partyCharacter({portrait, health, max_health, id}) {
+            // Click function
+            function goTo() {
+                let request = `
+                    var party_member = instance("`+id+`");
+                    party_member.go_to();
+                    party_member.select();
+                `
+                request += gm ? "party_member.impersonate();" : ""
+                
+                backend(request)
+            }
+    
+            // Healthbar styling
+            const hp_percent = health / max_health * 100
+            const end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+            const background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%)`
+    
+            // Element
+            return element(
+                {tag: "div", parent: getId("current-party"), attributes: {class: "circular-health circular-health-small"}, style: {background}, children: [
+                    {tag: "img", attributes: {src: portrait}, events: {click: goTo}} 
+                ]}
+            )
+        }
+    
+        function screenButton ({tooltip, src, click}) {
+            return (
+                {tag: "span", attributes: {class: "tooltip-img", tooltip}, children: [
+                    {tag: "img",
+                        attributes: {src}, 
+                        events: {click}
+                    }
+                ]}
+            )
+        }
+        
+    
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+    
+        let current_character = {}
+        async function updateCurrentCharacter() {
+    
+            // Checks if user is actually impersonating
+            const isImpersonated = await backend("impersonated()") != ""
+    
+            // Character Menu
+            const character_menu = getId("character-menu")
+    
+            // Stop exectuion if not impersonated
+            if (!isImpersonated) { 
+                character_menu.style.display = "none"
+                return 
+            }
+    
+            // Character
+            const character = {
+                health: await backend("impersonated().health"),
+                max_health: await backend("impersonated().max_health"),
+                portrait: await backend("impersonated().portrait")
+            }
+    
+            // Verify if there is need for update
+            if (!isEqualJSON(current_character, character)) {
+                current_character = character
+    
+                let hp_percent = character.health / character.max_health * 100
+                let end_hp = hp_percent != 0 ? hp_percent + 2 : 0
+    
+                getId("current-character-health").style.background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(0,0,0,0.15) `+end_hp+`%)`
+                getId("current-character-portrait").setAttribute("src", character.portrait)
+            }
+    
+            // Unhide after updates
+            character_menu.style.display = ""
+        }
+    
+        let current_target = {}
+        async function updateCurrentTarget() {
+    
+            const hasTarget = await backend("selected()") != ""
+    
+            // Target HUD
+            const target_HUD = getId("current-target")
+    
+            // Stop execution and hide if no target selected
+            if (!hasTarget) { 
+                target_HUD.style.display = "none"
+                return
+            }
+    
+            // Target
+            const target = {
+                name: await backend("selected().name"),
+                type: await backend("selected().race || selected().type || selected().token.getProperty(`class`)") || "Entity",
+                portrait: await backend("selected().portrait"),
+                player: await backend("selected().player"),
+                armor_class: await backend("selected().armor_class"),
+                health: await backend("selected().health"),
+                max_health: await backend("selected().max_health"),
+            }
+    
+            // Verify if there is need for update
+            if (!isEqualJSON(current_target, target)) {
+                current_target = target
+    
+                // Calculated attributes
+                let hp_percent = target.health / target.max_health * 100
+                let color = target.player == "true" ? "#5ab350" : "#b44"
+    
+                // Update values
+                getId("current-target-name").textContent = target.name
+                getId("current-target-type").textContent = target.type
+                getId("current-target-health").style.background = `linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%)`
+    
+                // Update portrait
+                const target_HUD_portrait = getId("current-target-portrait")
+                target_HUD_portrait.setAttribute("src", target.portrait)
+                target_HUD_portrait.style.display = target.portrait ? "" : "none"
+    
+                // Update AC
+                const target_HUD_armor_class = getId("current-target-armor-class")
+                target_HUD_armor_class.textContent = target.armor_class
+                target_HUD_armor_class.style.display = target.armor_class ? "" : "none"
+            }
+    
+            // Unhide after updating values
+            target_HUD.style.display = ""
+        }
+    
+        let current_party = [] ; let current_party_impersonated_id = ""
+        async function updateCurrentParty() {
+    
+            // Gather party info
+            const party = JSON.parse(await backend("party_info()"))
+            const impersonated_ID = await backend("getImpersonated()")
+            
+            // Verify if there is need for update
+            if (!isEqualJSON(current_party, party) || current_party_impersonated_id != impersonated_ID) {
+                current_party = party
+                current_party_impersonated_id = impersonated_ID
+    
+                // Clear
+                getId("current-party").clearChildren()
+    
+                for (const character_info of party) {
+    
+                    // Character
+                    const character = {
+                        id: character_info[3],
+                        portrait: character_info[2],
+                        health: character_info[0],
+                        max_health: character_info[1]
+                    }
+    
+                    // Skip if own character
+                    if (character.id == impersonated_ID) {continue}
+                    
+                    // Create element
+                    partyCharacter({...character})
                 }
             }
-        })
-    }
-
-    function loadPage() { 
-        // Page content
-        getId("content").innerHTML += (
-            div({id:"character-menu", classes:"menu bottom left", content:(
-                div({id:"current-character"}) +
-                div({id:"current-party"}) +
-                div({classes:"button-background", content:(
-                    img({tooltip:"Character", id:"info", src:"asset://3432c572c31826e72dedd81ef4a10c5b"}) +
-                    img({tooltip:"Inventory", id:"inventory", src:"asset://711c8f12938d7ef430fbcf7e2e5845ae"}) +
-                    img({tooltip:"Journal", id:"journal", src:"asset://4e98be9419bf1ce960319891b66add73"}) +
-                    img({tooltip:"Abilities", id:"abilities", src:"asset://65479d57a2b1ffc116a12a5c731d91a7"})
-                )})
-            )}) +
-            div({id:"gm-menu", classes:"menu bottom right", content:(
-                div({classes:"button-background", content:(
-                    img({tooltip:"Map", id:"map", src:"asset://f9980524cd2aab3c5a9faf165b051ded"}) +
-                    img({tooltip:"New Character", id:"create-character", src:"asset://65479d57a2b1ffc116a12a5c731d91a7"}) +
-                    img({tooltip:"Database", id:"database", src:"asset://aa347dbe8d8970836c46fefb0ececdb3"})
-                )}) +
-                div({})
-            )}) +
-            div({id:"current-target"})
-        )
-
-        // Events
-        getId("map").addEventListener("click", () => {teleport("Map")})
-        getId("info").addEventListener("click", () => {openClosePage("", "Character Sheet", "character_sheet.html")})
-        getId("inventory").addEventListener("click", () => {openClosePage("", "Character Sheet", "character_sheet.html")})
-        getId("database").addEventListener("click",() => { openClosePage("", "Database", "database.html") })
-        getId("create-character").addEventListener("click", () => {openClosePage("", "Character Creation", "character_creation.html")})
-
-        if (!gm) { getId("gm-menu").setAttribute("style", "display:none") }
-    }
-
-    function onWindowLoad() {
-        loadPage()
-
-        updateCurrentCharacter(); setInterval(updateCurrentCharacter, 200)
-        updateCurrentParty(); setInterval(updateCurrentParty, 200)
-        updateCurrentTarget(); setInterval(updateCurrentTarget, 200)
-    }
-
-
-
-    //=====================================================================================================
-
-    document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-    </script>
-    ']
-</head>
-
-<body>
-    <div id="content"></div>
-</body>
-
-}]
+        }
+    
+    
+        function loadPage() {
+    
+            // Character menu
+            element(
+                {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left"}, style: {display: "none"}, children: [
+                    {tag: "div", attributes: {id: "current-character"}, children: [
+                        {tag: "div", 
+                            attributes: {class: "circular-health", id: "current-character-health"},
+                            style: {background: "rgba(0,0,0,0.15)"},
+                            children: [
+                                {tag: "img", 
+                                    attributes: {id: "current-character-portrait", src: ""}, 
+                                    events: {click: ()=>{backend(" impersonated().go_to() ; impersonated().select() ")}}
+                                }
+                            ]
+                        }
+                    ]},
+                    {tag: "div", attributes: {id: "current-party"}},
+                    {tag: "div", attributes: {class: "button-background"}, children: [
+    
+                        screenButton({
+                            tooltip: "Character", 
+                            src: "asset://3432c572c31826e72dedd81ef4a10c5b",
+                            click: ()=>{openClosePage("", "Character Sheet", "character_sheet.html")}
+                        }),
+    
+                        screenButton({
+                            tooltip: "Inventory", 
+                            src: "asset://711c8f12938d7ef430fbcf7e2e5845ae",
+                            click: ()=>{openClosePage("", "Character Sheet", "character_sheet.html")}
+                        })
+    
+                    ]}
+                ]}
+            )
+    
+            // GM Menu
+            const gm_display = gm ? "block" : "none"
+            element(
+                {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display}, children: [
+                    {tag: "div", attributes: {class: "button-background"}, children: [
+    
+                        screenButton({
+                            tooltip: "Map", 
+                            src: "asset://f9980524cd2aab3c5a9faf165b051ded",
+                            click: ()=>{teleport("Map")}
+                        }),
+    
+                        screenButton({
+                            tooltip: "New Character", 
+                            src: "asset://711c8f12938d7ef430fbcf7e2e5845ae",
+                            click: ()=>{openClosePage("", "Character Creation", "character_creation.html")}
+                        }),
+    
+                        screenButton({
+                            tooltip: "Database", 
+                            src: "asset://aa347dbe8d8970836c46fefb0ececdb3",
+                            click: ()=>{openClosePage("", "Database", "database.html")}
+                        })
+    
+                    ]}
+                ]}
+            )
+    
+            // Current target
+            element (
+                {tag: "div", parent: document.body, attributes: {id: "current-target", class: "center-horizontal"}, style: {display: "none"}, children: [
+                    {tag: "div", attributes: {class: "top center-horizontal"}, children: [
+                        {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},
+                        {tag: "p", style: {textAlign: "center"}, children: [
+                            {tag: "span", attributes: {id: "current-target-name", class: "text-shadow"}, style: {fontSize: "120%", fontWeight: "bold"}}, 
+                            {tag: "br"},
+                            {tag: "span", attributes: {id: "current-target-type", class: "text-shadow"}, style: {color: "#aaa"}}
+                        ]}
+                    ]},
+                    {tag: "div", attributes: {id: "current-target-health"}},
+                    {tag: "div", style: {display: "flex", gap: "1vh"}, children: [
+                        {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}}
+                    ]}
+                ]}
+            )
+        }
+    
+        window.onload = function () {
+            loadPage()
+    
+            setInterval(()=>{
+                updateCurrentCharacter()
+                updateCurrentTarget()
+                updateCurrentParty()
+            }, 100)
+    
+        }
+    
+        //=====================================================================================================
+    
+        </script>
+        ']
+    </head>
+    
+    <body>
+    
+    </body>
+    
+    }]
