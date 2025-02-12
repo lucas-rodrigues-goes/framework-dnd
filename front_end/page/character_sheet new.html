@@ -1,793 +1,795 @@
 [dialog5("Character Sheet", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
-    <head>
-        
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
-        [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
-        [r:'
-    
-        <style>
-            #character-tab-left {
-                position:absolute;
-                width:33%;
-                height:98%;
-                left:0;
-                top:1%;
-    
-                overflow-y:inherit
-            }
-            #character-tab-center {
-                position:absolute;
-                left: 33%;
-                width:34%;
-                height:100.5%;
-                bottom: -0.5vh;
-    
-                background-color:#2d2d2d; 
-                border: 0.2vh solid #444;
-                border-bottom: none;
-    
-                overflow-y:inherit;
-            }
-            #character-tab-right {
-                position:absolute;
-                width:33%;
-                height:98%;
-                right:0;
-                top:1%;
-    
-                overflow-y:inherit;
-            }
-
-            #character-tab-right .container {
-                padding-top: 2vh;
-                padding-right: 0;
-                padding-left: 0;
-                padding-bottom: 0;
-
-                width:85%;
-            }
-
-            #portrait {
-                height:15vh; 
-                border-radius: 50%; 
-                border: 0.3vh solid #444;
-            }
-
-            hr {
-                border: 0.1vh solid #444;
-                display:block;
-                width: 100%;
-                margin:auto;
-                margin-top: 2vh;
-                margin-bottom: 0;
-            }
-
-            #character-tab-right .table-header {
-                margin-bottom: -1.5vh;
-            }
-            #character-tab-left .container {
-                padding-top:0vh;
-                padding-bottom: 2vh;
-            }
-
-            #ability-scores-container-content > .table-container {
-                margin-right:-1.5vh;
-                margin-left:-1.5vh;
-                
-            }
-
-            .item-selected {
-                background-color: #3a3a3a;
-            }
-
-            .tooltip::after {
-                top: 120%;
-                height:fit-content;
-                font-weight:normal;
-                font-size: 1.6vh;
-            }
-        </style>
-    
-        <script>
-
-            //=====================================================================================================
-            // Helper functions
-            //=====================================================================================================
-
-            function bonusOf(number, parenthesis=false) {
-                number = Number(number) > 0 ? "+"+number : number
-                number = parenthesis ? "("+number+")" : number
-
-                return String(number)
-            }
-            function capitalizeFirstLetters(str) {
-                return str
-                    .split(" ")
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ");
-            }
-            function subtitle({text}) {
-                return {tag: "p", text, style: {opacity: "0.8", fontWeight: "bold", fontSize: "110%", marginBottom:"-1.5vh"}}
-            }
-            function ability_scores() {
-                    function gridItem(text, id="") {
-                        return {tag: "div",
-                            style: {
-                                fontWeight: "bold",
-                                textAlign: "center"
-                            },
-                            attributes: {id},
-                            text
-                        }
-                    }
-
-                    return element(
-                        {tag: "div",
-                            style: {
-                                display: "grid",
-                                marginTop: "1vh",
-                                gridTemplateColumns: "repeat(6, 1fr)",
-                                gridTemplateRows: "repeat(2, auto)",
-                            },
-                            children: [
-                                gridItem("STR"),
-                                gridItem("DEX"),
-                                gridItem("CON"),
-                                gridItem("WIS"),
-                                gridItem("INT"),
-                                gridItem("CHA"),
-
-                                gridItem("0", "strength"),
-                                gridItem("0", "dexterity"),
-                                gridItem("0", "constitution"),
-                                gridItem("0", "wisdom"),
-                                gridItem("0", "intelligence"),
-                                gridItem("0", "charisma"),
-                            ]
-                        }
-                    )
-                }
-            function isEqualJSON(a, b) {
-                return JSON.stringify(a) === JSON.stringify(b)
-            }
-            async function closeIfNotImpersonated () {
-                if (await backend("impersonated()") == "") {closePage("Character Sheet")}
-            }
-
-            //=====================================================================================================
-            // Update Page
-            //=====================================================================================================
-
-            let current_character = {basic: {}, rolls: {}, conditions: {}, features: {}, proficiencies: {}}
-            async function updateCharacterTab() {
-                // Character
-                const character = {}
-
-                // Update name, portrait, class, and ability scores
-                async function update_basic_attributes() {
-                    
-                    character.basic = JSON.parse(await backend(`JSON.stringify({
-                        name: impersonated().name,
-                        portrait: impersonated().portrait,
-                        class: impersonated().class || "None",
-                        ability_scores: impersonated().ability_scores
-                    })`))
-
-                    // Updates
-                    if (!isEqualJSON(current_character.basic, character.basic)) {
-                        current_character.basic = character.basic
-
-                        getId("name").textContent = character.basic.name
-                        getId("portrait").setAttribute("src", character.basic.portrait)
-                        getId("class").textContent = character.basic.class
-
-                        for (const score in character.basic.ability_scores) {
-                            getId(score).textContent = character.basic.ability_scores[score]
-                        }
-                    }
-                }
-                update_basic_attributes()
-
-                // Update skills and saving throws
-                async function update_skills () {
-                    // Skills and Saving Throws
-                    character.rolls = JSON.parse(await backend(`JSON.stringify({
-                        score_bonus: impersonated().score_bonus,
-                        skills: impersonated().skills
-                    })`))
-
-                    // Updates
-                    if (!isEqualJSON(current_character.rolls, character.rolls)) {
-                        current_character.rolls = character.rolls
-
-                        // Clear Saving Throws
-                        const saving_throws_container = getId("saving-throws")
-                        saving_throws_container.clearChildren()
-
-                        // Append Saving Throws with bonuses
-                        for (const score in character.basic.ability_scores) {
-                            const title = capitalize(score)
-                            const value = bonusOf(character.rolls.score_bonus[score])
-                            saving_throws_container.appendChild(
-                                {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-                                    {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-                                    {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-                                ]}
-                            )
-                        }
-
-                        // Clear Skills
-                        const skills_container = getId("skills")
-                        skills_container.clearChildren()
-
-                        // Append Skills with bonuses
-                        for (const skill in character.rolls.skills) {
-                            const title = capitalize(skill)
-                            const value = bonusOf(character.rolls.skills[skill])
-                            skills_container.appendChild(
-                                {tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-                                    {tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-                                    {tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-                                ]}
-                            )
-                        }
-                    }
-                }
-                update_skills()
-
-                // Update conditions
-                async function update_conditions () {
-                    // Conditions
-                    character.conditions = JSON.parse(await backend(`impersonated().conditions`))
-
-                    // Update
-                    if (!isEqualJSON(current_character.conditions, character.conditions)) {
-                        current_character.conditions = character.conditions
-
-                        // Clear conditions
-                        const conditions = getId("character-conditions")
-                        conditions.clearChildren()
-
-                        // Append Conditions
-                        for (const name in character.conditions) {
-                            // From character
-                            const duration = timeUnit(character.conditions[name])
-
-                            // From database
-                            const condition = JSON.parse(await backend(`database.get_condition("`+ name +`")`))
-                            const description = condition.description || "Description unavailable"
-                            const image = condition_images[condition.type] || ""
-
-                            // Element
-                            collapsible(
-                                {parent: conditions,
-                                    options: {
-                                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
-                                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                                    },
-                                    button_children: [
-                                        {tag: "img", attributes: {src: image}},
-                                        {tag: "span", text: name},
-                                        {tag: "span", style: {position: "absolute", right: "1vh"}, text: duration}
-                                    ],
-                                    children: [
-                                        {tag: "pre", style: {fontSize: "90%"}, text: description}
-                                    ]
-                                }
-                            )
-                        }
-
-                        // Hide container if empty
-                        if (conditions.children.length == 0) {
-                            conditions.parentElement.classList.add("hidden")
-                        } else {
-                            conditions.parentElement.classList.remove("hidden")
-                        }
-                    }
-                }
-                update_conditions()
-                
-                // Update features
-                async function update_features () {
-                    // Features
-                    character.features = JSON.parse(await backend(`impersonated().features`))
-
-                    // Update
-                    if (!isEqualJSON(current_character.features, character.features)) {
-                        current_character.features = character.features
-
-                        // Clear conditions
-                        const features = getId("character-features")
-                        features.clearChildren()
-
-                        // Append Conditions
-                        for (const name of character.features.all) {
-                            // From database
-                            const feature = JSON.parse(await backend(`database.get_feature("`+ name +`")`))
-                            const type = feature.subtype || feature.type || "None"
-                            const image = class_images[type] || feature_images[type] || ""
-                            const description = feature.description || "Description unavailable"
-
-                            // Element
-                            collapsible(
-                                {parent: features,
-                                    options: {
-                                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
-                                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                                    },
-                                    button_children: [
-                                        {tag: "img", attributes: {src: image}},
-                                        {tag: "span", text: name}
-                                    ],
-                                    children: [
-                                        {tag: "pre", style: {fontSize: "90%"}, text: description}
-                                    ]
-                                }
-                            )
-                        }
-
-                        // Hide container if empty
-                        if (features.children.length == 0) {
-                            features.parentElement.classList.add("hidden")
-                        } else {
-                            features.parentElement.classList.remove("hidden")
-                        }
-                    }
-                }
-                update_features()
-            }
-
-            function updateInventoryTab() {
-                
-                // Item dragging
-                let draggedElement = null;
-                let initialPosition = null;
-                function dragStart(event) {
-                    draggedElement = event.target;
-                    draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
-                    initialPosition = draggedElement.dataset.position;
-                }
-                function dragEnd(event) {
-                    draggedElement.style.visibility = "visible";
-                    draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
-                }
-                function dragOver(event) {
-                    event.preventDefault();
-                }
-                function drop(event) {
-                    event.preventDefault();
-                    const target = event.target.closest(".inventory-slot");
-
-                    if (target) {
-                        const finalPosition = target.dataset.position;
-
-                        let request = ` impersonated().move_item(`
-                        request += !isNaN(Number(initialPosition)) ? initialPosition : `"`+initialPosition+`"`
-                        request += `, `
-                        request += !isNaN(Number(finalPosition)) ? finalPosition : `"`+finalPosition+`"`
-                        request += `)`
-                        //` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `
-
-                        toBackend(request)
-                        updateInventoryTab()
-
-                        // Reset draggedElement visibility without moving it
-                        draggedElement.style.visibility = "hidden";
-                    }
-                }
-
-                // Description
-                function description(item_name, amount, target_id) {
-                    slot = getId(target_id)
-
-                    document.querySelectorAll(".item-selected").forEach((element) => {
-                        element.classList.remove("item-selected");
-                    });
-                    slot.classList.add("item-selected")
-
-                    toBackend(` database.get_item("`+item_name+`") `, (response) => {
-                        const item = JSON.parse(response)
-
-                        getId("item-description").innerHTML = (itemDescription({...item}, amount))
-                    })
-                }
-                function resetDescription(){
-                    getId("item-description").innerHTML = "Click an item to see its description."
-                }
-                
-                // Containers
-                function inventory() {
-                    toBackend(" [impersonated().inventory , database.items.data, impersonated().equipment] ", (response) => {
-                        // Hashing
-                        const new_hash = hash(response)
-                        const old_hash = getId("inventory").getAttribute("hash")
-                        if (new_hash == old_hash) { return }
-                        getId("inventory").setAttribute("hash", new_hash)
-
-                        // Reset item description
-                        resetDescription()
-                        
-                        // Parsing
-                        response = JSON.parse(response)
-                        const inventory = response[0]
-                        const item_database = response[1]
-
-                        // Clear grid
-                        const grid = getId("inventory")
-                        grid.innerHTML = ""
-
-                        // Create new inventory grid
-                        const inventory_items = {}
-                        let cells = ""
-                        for (let i = 0; i < inventory.length; i++) {
-                            const slot = inventory[i]
-                            const item = slot ? item_database[slot.name] : null
-
-                            let slot_content = ""; // Initialized empty
-
-                            if (item) {
-                                // Tooltip
-                                tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
-                                tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
-
-                                // Image
-                                slot_content = img({
-                                    src:item.image, 
-                                    additional:`draggable data-position="`+i+`"`,
-                                    classes:"inventory-item",
-                                    tooltip // Tooltip initialized earlier
-                                })
-
-                                // Amount
-                                slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
-
-                                // Save info for event listeners
-                                inventory_items[i] = {
-                                    name: item.name,
-                                    amount: slot.amount
-                                }
-                            }
-
-                            // Create slot
-                            cells += (
-                                div({
-                                    id:"inventory-slot-"+i,
-                                    classes:"inventory-slot item-tooltip-trigger",
-                                    content:slot_content,
-                                    additional: `data-position="`+i+`"`
-                                })
-                            )
-                        }
-
-                        // Add HTML to grid
-                        grid.innerHTML = cells
-                        
-                        // Add listeners
-                        for (let i = 0; i < inventory.length; i++) {
-
-                            // Slot event listeners
-                            const target_id = "inventory-slot-"+i
-                            const slot = getId(target_id)
-                            slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop);
-
-                            // In case slot has an item
-                            if(inventory_items[i]) {
-                                const item = slot.children[0]
-                                const { name, amount } = inventory_items[i]
-
-                                // Add item listeners (dragging, description, context-menu)
-                                item.addEventListener("dragstart", dragStart); 
-                                item.addEventListener("dragend", dragEnd);
-                                item.addEventListener("click", ()=>{
-                                    description(name, amount, target_id)
-                                })
-                                loadContextMenu({target_id, context_menu_id:"item-context-menu", onOpen:() => { // Context menu
-
-                                    // Send
-                                    getId("item-context-menu-send").addEventListener("click", ()=>{
-                                        toBackend(` impersonated().send_item(`+i+`) `)
-                                        updateInventoryTab()
-                                    })
-
-                                    // Drop
-                                    getId("item-context-menu-drop").addEventListener("click", ()=>{
-                                        toBackend(` impersonated().drop_item(`+i+`) `)
-                                        updateInventoryTab()
-                                    })
-
-                                }})
-                            }
-
-                        }
-                    })
-                }
-                function equipment() {
-                    toBackend(` 
-                        [
-                            impersonated().equipment,
-                            database.items.data,
-                            impersonated().armor_class,
-                            impersonated().inventory
-                        ]
-                    `, (response) => {
-                        // Hashing
-                        const new_hash = hash(response)
-                        const old_hash = getId("equipment").getAttribute("hash")
-                        if (new_hash == old_hash) { return }
-                        getId("equipment").setAttribute("hash", new_hash)
-                        resetDescription()
-
-                        // Parsing
-                        response = JSON.parse(response)
-                        const equipment = response[0]
-                        const item_database = response[1]
-                        const armor_class = response[2]
-
-                        // Reset equipment grid
-                        const grid = getId("equipment")
-                        grid.innerHTML = ""
-
-                        // Create grid HTML
-                        const equipment_items = {}
-                        const equipment_slot_list = [
-                            "", "amulet", "head", "ammunition", "",
-                            "","hands", "body", "cape", "",
-                            "","left ring","belt","right ring", "",
-                            "","","feet","","",
-                            "","","","","",
-                            "primary main hand", "primary off hand", "", "secondary main hand", "secondary off hand",
-                        ]
-                        let cells = ""
-                        for (const key of equipment_slot_list) {
-                            const slot = equipment[key]
-                            const item = slot ? item_database[slot.name] : null
-
-                            // Default config
-                            let slot_content = ""
-
-                            // Verify if current slot is offhand, and main hand weapon is two-handed
-                            let isTwoHanded = false
-                            let two_hand_image; // initialize undefined
-                            if (key == "primary off hand" || key == "secondary off hand") {
-                                const main_hand_index = key == "primary off hand" ? "primary main hand" : "secondary main hand"
-                                const main_hand_slot = equipment[main_hand_index] || {name:null}
-                                const main_hand_item = item_database[main_hand_slot.name] || null
-
-                                if (main_hand_item) {
-                                    isTwoHanded = main_hand_item.properties.includes("Two-handed")
-                                    two_hand_image = main_hand_item.image
-                                }
-                            }
-
-
-                            // If there is item in slot
-                            if (item) {
-                                // Tooltip
-                                tooltip = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
-                                tooltip += " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
-
-                                // Image
-                                slot_content = img({
-                                    src: item.image, 
-                                    additional:`draggable data-position="`+key+`"`,
-                                    classes:"inventory-item",
-                                    tooltip
-                                })
-                                // Amount
-                                slot_content += slot.amount > 1 ? span({content:slot.amount, classes:"inventory-item-amount"}) : ""
-
-                                // Save equipment stats for event listeners
-                                equipment_items[key] = {
-                                    name: item.name,
-                                    amount: slot.amount
-                                }
-                            }
-                            // If current slot is offhand and mainhand has two-handed weapon
-                            else if (isTwoHanded) {
-                                // Image
-                                slot_content = img({
-                                    src: two_hand_image,
-                                    additional:`draggable=false`,
-                                    classes:"inventory-item",
-                                    style: "opacity:0.2; cursor:default"
-                                })
-                            }
-                            // Empty slot, receives placeholder for equipment type in the slot
-                            else {
-                                // Image
-                                slot_content = img({src:equipment_images[key], classes:"", style:`
-                                    filter:brightness(100); opacity:0.05;
-                                    position:relative;
-                                    height: 85%;
-                                    top:7.5%;
-                                    user-select: none;
-                                    pointer-events: none`
-                                })
-                            }
-
-                            // If key is "" adds empty div to fill the grid position
-                            if (key == "") {
-                                cells += div()
-                            }
-                            // Create slot, and add slot_content
-                            else {
-                                style = key.includes("secondary") ? "opacity:0.5; border-color:#333" : ""
-                                cells += (
-                                    div({
-                                        id:"equipment-slot-"+key,
-                                        classes:"inventory-slot item-tooltip-trigger",
-                                        content:slot_content,
-                                        style,
-                                        additional:`data-position="`+key+`"`
-                                    })
-                                )
-                            }
-                            
-                        }
-
-                        // Add HTML to grid
-                        grid.innerHTML = cells
-                        getId("equipment-armor-class").innerHTML = armor_class
-                        
-                        // Add listeners to grid
-                        for (const key of equipment_slot_list) {
-                            // Skip grid fillers
-                            if (!key) {continue}
-
-                            // Add slot event listeners
-                            const target_id = "equipment-slot-"+key
-                            const slot = getId(target_id)
-                            slot.addEventListener("dragover", dragOver); slot.addEventListener("drop", drop); // Read item drop
-
-                            // When slot has item
-                            if(equipment_items[key]) {
-                                const item = slot.children[0]
-                                const { name, amount } = equipment_items[key]
-
-                                // Add item event listeners
-                                item.addEventListener("dragstart", dragStart); item.addEventListener("dragend", dragEnd);
-                                item.addEventListener("click", ()=>{
-                                    description(name, amount, target_id)
-                                })
-                                loadContextMenu({target_id, context_menu_id:"equipment-context-menu", onOpen:() => { // Context menu
-
-                                    // Unequip
-                                    getId("equipment-context-menu-unequip").addEventListener("click", ()=>{
-                                        toBackend(` impersonated().unequip_item("`+key+`") `)
-                                        updateInventoryTab()
-                                    })
-
-                                }})
-                            }
-
-                        }
-                    })
-                }
-                
-                // Run
-                inventory()
-                equipment()
-            }
-            
-            //=====================================================================================================
-            // Create HTML
-            //=====================================================================================================
-
-            function loadInventoryTab() {
-                getId("inventory-tab").innerHTML += (
-                    div({style:"position:absolute; left:0; width:45%", content:(
-                        container({title:"Equipment", style:"height:41vh", content:(
-                            div({style: "margin-auto",content:(
-                                grid({
-                                    id:"equipment",
-                                    classes: "center-horizontal",
-                                    style: "position:relative; width:fit-content; text-align:center; place-items:center; margin-top:2vh",
-                                    columns: 5,
-                                    gap:"0"
-                                }) +
-                                div({
-                                    id: "equipment-armor-class",
-                                    style: `
-                                        border: 0.3vh solid #444; 
-                                        background-color: #333; 
-                                        padding: 1vh; 
-                                        font-weight:bold; 
-                                        font-size: 120%; 
-                                        border-radius: 50%; border-top-left-radius:0.3vh; border-top-right-radius:0.3vh;
-                                        margin-top: 1vh;
-                                        position:absolute;
-                                        right: 2vh;
-                                        top: 4vh;
-                                    `,
-                                    tooltip: "Armor Class"
-                                })
-                            )})
-                        )}) + "<br>" +
-                        container({title:"Description", content:(
-                            div({id:"item-description", style:`
-                                margin-top:1.5vh;
-                                margin-bottom:-2vh;
-                                height: 28vh;
-                                overflow: scroll;
-                            `, content:"Click an item to see its description."})
-                        )})
-                    )}) +
-                    div({style:"position:absolute; right:0; width:55%", content:(
-                        container({title:"Backpack", style:"", content:(
-                            div({style:"margin-auto",content:(
-                                grid({
-                                    id:"inventory",
-                                    classes: "",
-                                    style: "position:relative; width: fit-content; margin:auto; margin-top:2vh; grid-row-gap:0.2vh;",
-                                    columns: 6,
-                                    gap:""
-                                })
-                            )})
-                        )})
-
-                    )})
-                )
-            }
-            function loadPage() {
-
-                // Loading main div, tabs, and context menu
-                create_tabs({content:["character","inventory","abilities"], parent: document.body})
-
-                // Character Tab
-                getId("character-tab").appendChildren([
-                    {tag: "div", attributes: {id: "character-tab-left"}, children: [
-                        container({id: "saving-throws", title: "Saving Throws"}),
-                        container({id: "skills", title: "Skills"})
-                    ]},
-                    {tag: "div", attributes: {id: "character-tab-center"}, children: [
-                        {tag: "div", style: {height: "1vh"}},
-
-                        subtitle({text: "Name"}),
-                        {tag: "h2", attributes: {id: "name"}},
-
-                        {tag: "img", attributes: {id: "portrait"}},
-                        
-                        subtitle({text: "Class"}),
-                        {tag: "h2", attributes: {id: "class"}},
-
-                        container({title: "Ability Scores", options: {div: {style: {marginTop: "5vh"}}}, children: [
-                            ability_scores()
-                        ]})
-                        
-                    ]},
-                    {tag: "div", attributes: {id: "character-tab-right"}, children: [
-                        container({title: "Conditions", id: "character-conditions"}),
-                        container({title: "Features", id: "character-features"}),
-                        container({title: "Proficiencies", id: "character-proficiencies"}),
-                        container({title: "Resistances", id: "character-resistances"}),
-                    ]}
-                ])
-            }
-
-
-            //=====================================================================================================
-            // Execution
-            //=====================================================================================================
-
-            window.onload = function () {
-                loadPage()
-                
-                setInterval(() => {
-                    closeIfNotImpersonated()
-                    updateCharacterTab()
-                }, 100)
-            }
-
-            //=====================================================================================================
-    
-        </script>
-        ']
-    </head>
-    
-    <body>
-    </body>
-    
-    }]
+	<head>
+		
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+		<link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+		[r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
+		[r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+		[r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+		[r:'
+	
+		<style>
+			#character-tab-left {
+				position:absolute;
+				width:33%;
+				height:98%;
+				left:0;
+				top:1%;
+	
+				overflow-y:inherit
+			}
+			#character-tab-center {
+				position:absolute;
+				left: 33%;
+				width:34%;
+				height:100.5%;
+				bottom: -0.5vh;
+	
+				background-color:#2d2d2d; 
+				border: 0.2vh solid #444;
+				border-bottom: none;
+	
+				overflow-y:inherit;
+			}
+			#character-tab-right {
+				position:absolute;
+				width:33%;
+				height:98%;
+				right:0;
+				top:1%;
+	
+				overflow-y:inherit;
+			}
+
+			#character-tab-right .container {
+				padding-top: 2vh;
+				padding-right: 0;
+				padding-left: 0;
+				padding-bottom: 0;
+
+				width:85%;
+			}
+
+			#portrait {
+				height:15vh; 
+				border-radius: 50%; 
+				border: 0.3vh solid #444;
+			}
+
+			hr {
+				border: 0.1vh solid #444;
+				display:block;
+				width: 100%;
+				margin:auto;
+				margin-top: 2vh;
+				margin-bottom: 0;
+			}
+
+			#character-tab-right .table-header {
+				margin-bottom: -1.5vh;
+			}
+			#character-tab-left .container {
+				padding-top:0vh;
+				padding-bottom: 2vh;
+			}
+
+			#ability-scores-container-content > .table-container {
+				margin-right:-1.5vh;
+				margin-left:-1.5vh;
+				
+			}
+
+			.item-selected {
+				background-color: #3a3a3a;
+			}
+
+			.tooltip::after {
+				top: 120%;
+				height:fit-content;
+				font-weight:normal;
+				font-size: 1.6vh;
+			}
+		</style>
+	
+		<script>
+
+			//=====================================================================================================
+			// Helper functions
+			//=====================================================================================================
+
+			function bonusOf(number, parenthesis=false) {
+				number = Number(number) > 0 ? "+"+number : number
+				number = parenthesis ? "("+number+")" : number
+
+				return String(number)
+			}
+			function capitalizeAll(str) {
+				return str
+					.split(" ")
+					.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+					.join(" ");
+			}
+			function subtitle({text}) {
+				return {tag: "p", text, style: {opacity: "0.8", fontWeight: "bold", fontSize: "110%", marginBottom:"-1.5vh"}}
+			}
+			function ability_scores() {
+					function gridItem(text, id="") {
+						return {tag: "div",
+							style: {
+								fontWeight: "bold",
+								textAlign: "center"
+							},
+							attributes: {id},
+							text
+						}
+					}
+
+					return element(
+						{tag: "div",
+							style: {
+								display: "grid",
+								marginTop: "1vh",
+								gridTemplateColumns: "repeat(6, 1fr)",
+								gridTemplateRows: "repeat(2, auto)",
+							},
+							children: [
+								gridItem("STR"),
+								gridItem("DEX"),
+								gridItem("CON"),
+								gridItem("WIS"),
+								gridItem("INT"),
+								gridItem("CHA"),
+
+								gridItem("0", "strength"),
+								gridItem("0", "dexterity"),
+								gridItem("0", "constitution"),
+								gridItem("0", "wisdom"),
+								gridItem("0", "intelligence"),
+								gridItem("0", "charisma"),
+							]
+						}
+					)
+				}
+			function isEqualJSON(a, b) {
+				return JSON.stringify(a) === JSON.stringify(b)
+			}
+			async function closeIfNotImpersonated () {
+				if (await backend("impersonated()") == "") {closePage("Character Sheet")}
+			}
+
+			//=====================================================================================================
+			// Item Dragging
+			//=====================================================================================================
+						
+			let draggedElement = null, initialPosition = null
+
+			function dragStart(event) {
+				draggedElement = event.target;
+				draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
+				initialPosition = draggedElement.getAttribute("position");
+			}
+			
+			function dragEnd(event) {
+				draggedElement.style.visibility = "visible";
+				draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
+			}
+			
+			function dragOver(event) {
+				event.preventDefault();
+			}
+			
+			function drop(event) {
+				event.preventDefault();
+				const target = event.target.closest(".inventory-slot");
+
+				if (target) {
+					const finalPosition = target.getAttribute("position");
+
+					let request = ` impersonated().move_item(`
+					request += !isNaN(Number(initialPosition)) ? initialPosition : `"`+initialPosition+`"`
+					request += `, `
+					request += !isNaN(Number(finalPosition)) ? finalPosition : `"`+finalPosition+`"`
+					request += `)`
+					//` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `
+
+					toBackend(request)
+					updateInventoryTab()
+
+					// Reset draggedElement visibility without moving it
+					draggedElement.style.visibility = "hidden";
+				}
+			}
+			
+			//=====================================================================================================
+			// Update Page
+			//=====================================================================================================
+
+			let character_tab = {
+				basic: {}, skills: {}, saving_throws: {}, 
+				conditions: {}, features: {}, proficiencies: {}, resistances: {}
+			}
+			async function updateCharacterTab() {
+				// Character
+				const character = JSON.parse(await backend(`JSON.stringify(
+					{
+						basic: {
+							name: impersonated().name,
+							portrait: impersonated().portrait,
+							class: impersonated().class || "None",
+							ability_scores: impersonated().ability_scores,
+						},
+						skills: impersonated().skills,
+						saving_throws: impersonated().score_bonus,
+						conditions: impersonated().conditions,
+						features: impersonated().features,
+						proficiencies: impersonated().proficiencies,
+						resistances: impersonated().resistances
+					}
+				)`))
+
+				// Cancel execution if there is no update to character
+				if (isEqualJSON(character_tab, character)) { return }
+
+				// Database
+				const database = JSON.parse(await backend(`JSON.stringify(
+					{
+						conditions: database.conditions.data,
+						features: database.features.data,
+						proficiencies: database.proficiencies.data,
+						damage_types: database.damage_types.data
+					}
+				)`))
+
+				// Update name, portrait, class, and ability scores
+				function update_basic_attributes() {
+					if (!isEqualJSON(character_tab.basic, character.basic)) {
+						character_tab.basic = character.basic
+
+						document.getElementById("name").textContent = character.basic.name
+						document.getElementById("portrait").setAttribute("src", character.basic.portrait)
+						document.getElementById("class").textContent = character.basic.class
+
+						for (const score in character.basic.ability_scores) {
+							document.getElementById(score).textContent = character.basic.ability_scores[score]
+						}
+					}
+				}
+				update_basic_attributes()
+
+				// Update skills
+				function update_skills () {
+					if (!isEqualJSON(character_tab.skills, character.skills)) {
+						character_tab.skills = character.skills
+
+						// Clear Skills
+						const skills_container = document.getElementById("skills")
+						skills_container.clearChildren()
+
+						// Append Skills with bonuses
+						for (const skill in character.skills) {
+							const title = capitalize(skill)
+							const value = bonusOf(character.skills[skill])
+							skills_container.appendChild(
+								{tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
+									{tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
+									{tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
+								]}
+							)
+						}
+					}
+				}
+				update_skills()
+
+				// Update saving throws
+				function update_saving_throws () {
+					if (!isEqualJSON(character_tab.saving_throws, character.saving_throws)) {
+						character_tab.saving_throws = character.saving_throws
+
+						// Clear Saving Throws
+						const saving_throws_container = document.getElementById("saving-throws")
+						saving_throws_container.clearChildren()
+
+						// Append Saving Throws with bonuses
+						for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) {
+							const title = capitalize(score)
+							const value = bonusOf(character.saving_throws[score])
+							saving_throws_container.appendChild(
+								{tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
+									{tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
+									{tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
+								]}
+							)
+						}
+					}
+				}
+				update_saving_throws()
+
+				// Update conditions
+				function update_conditions () {
+					if (!isEqualJSON(character_tab.conditions, character.conditions)) {
+						character_tab.conditions = character.conditions
+
+						// Clear conditions
+						const conditions = document.getElementById("character-conditions")
+						conditions.clearChildren()
+
+						// Append Conditions
+						for (const name in character.conditions) {
+							// From character
+							const duration = timeUnit(character.conditions[name])
+
+							// From database
+							const condition = database.conditions[name]
+							const description = condition.description || "Description unavailable"
+							const image = condition_images[condition.type] || ""
+
+							// Element
+							collapsible(
+								{parent: conditions,
+									options: {
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+									},
+									button_children: [
+										{tag: "img", attributes: {src: image}},
+										{tag: "span", text: name},
+										{tag: "span", style: {position: "absolute", right: "1vh"}, text: duration}
+									],
+									children: [
+										{tag: "pre", style: {fontSize: "90%"}, text: description}
+									]
+								}
+							)
+						}
+
+						// Hide container if empty
+						if (conditions.children.length == 0) { 
+							conditions.parentElement.classList.add("hidden") 
+						} 
+						else { 
+							conditions.parentElement.classList.remove("hidden") 
+						}
+					}
+				}
+				update_conditions()
+
+				// Update features
+				function update_features () {
+					if (!isEqualJSON(character_tab.features, character.features)) {
+						character_tab.features = character.features
+
+						// Clear container
+						const features = document.getElementById("character-features")
+						features.clearChildren()
+
+						// Append features
+						for (const name of character.features.all) {
+							// From database
+							const feature = database.features[name]
+							const type = feature.subtype || feature.type || "None"
+							const image = class_images[type] || feature_images[type] || ""
+							const description = feature.description || "Description unavailable"
+
+							// Element
+							collapsible(
+								{parent: features,
+									options: {
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+									},
+									button_children: [
+										{tag: "img", attributes: {src: image}},
+										{tag: "span", text: name}
+									],
+									children: [
+										{tag: "pre", style: {fontSize: "90%"}, text: description}
+									]
+								}
+							)
+						}
+
+						// Hide container if empty
+						if (features.children.length == 0) { 
+							features.parentElement.classList.add("hidden") 
+						} 
+						else { 
+							features.parentElement.classList.remove("hidden") 
+						}
+					}
+				}
+				update_features()
+
+				// Update features
+				function update_proficiencies () {
+					if (!isEqualJSON(character_tab.proficiencies, character.proficiencies)) {
+						character_tab.proficiencies = character.proficiencies
+
+						// Clear container
+						const proficiencies = document.getElementById("character-proficiencies")
+						proficiencies.clearChildren()
+
+						// Append Conditions
+						for (const name in character.proficiencies) {
+							// From character
+							const level = Number(character.proficiencies[name])
+
+							// From database
+							const proficiency = database.proficiencies[name]
+							const type = proficiency.type || "None"
+							const description = proficiency.description.slice(0, level + 1)
+							const image = proficiency_images[type] || ""
+							const level_title = " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
+
+							// Create description
+							const children = []
+							for (const text of description) {
+								children.push(
+									{tag: "pre", style: {fontSize: "90%"}, text}
+								)
+							}
+
+							// Element
+							collapsible(
+								{parent: proficiencies,
+									options: {
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+									},
+									button_children: [
+										{tag: "img", attributes: {src: image}},
+										{tag: "span", text: name + (type == "language" ? "" : level_title)}
+									],
+									children
+								}
+							)
+
+							// Hide container if empty
+							if (proficiencies.children.length == 0) { 
+								proficiencies.parentElement.classList.add("hidden") 
+							} 
+							else { 
+								proficiencies.parentElement.classList.remove("hidden") 
+							}
+						}
+					}
+				}
+				update_proficiencies()
+
+				// Update resistances
+				function update_resistances () {
+					// Update
+					if (!isEqualJSON(character_tab.resistances, character.resistances)) {
+						character_tab.resistances = character.resistances
+
+						// Clear container
+						const resistances = document.getElementById("character-resistances")
+						resistances.clearChildren()
+
+						// Append Conditions
+						for (const name in character.resistances) {
+							// From character
+							const {type, reduction} = character.resistances[name]
+
+							// Skip if resistance has default values
+							if (type == "default" && reduction == 0) {continue}
+
+							// From database
+							const damage_type = database.damage_types[name]
+							const image = damage_type.image
+							const description = damage_type.description
+
+							// Resistance value shown
+							const resistance = type != "default" ? capitalize(type) : reduction
+
+							// Element
+							collapsible(
+								{parent: resistances,
+									options: {
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+									},
+									button_children: [
+										{tag: "img", attributes: {src: image}},
+										{tag: "span", text: name},
+										{tag: "span", style: {position: "absolute", right: "1vh"}, text: resistance}
+									],
+									children: [
+										{tag: "pre", style: {fontSize: "90%"}, text: description}
+									]
+								}
+							)
+						}
+
+						// Hide container if empty
+						if (resistances.children.length == 0) { 
+							resistances.parentElement.classList.add("hidden") 
+						} 
+						else { 
+							resistances.parentElement.classList.remove("hidden") 
+						}
+					}
+				}
+				update_resistances()
+			}
+
+			let inventory_tab = {
+				basic: {},
+				equipment: {},
+				inventory: []
+			}
+			async function updateInventoryTab() {
+				// Character Items
+				const character = JSON.parse(await backend(`JSON.stringify(
+					{
+						basic: {
+							armor_class: impersonated().armor_class
+						},
+						equipment: impersonated().equipment,
+						inventory: impersonated().inventory
+					}
+				)`))
+
+				// Cancel execution if there is no update to character
+				if (isEqualJSON(inventory_tab, character)) { return }
+
+				// Database
+				const database = JSON.parse(await backend(`database.items.data`))
+
+				// Equipment
+				function updateEquipment() {
+					// Verify if equipment received changes
+					if (isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
+					inventory_tab.equipment = character.equipment
+
+					// Clear Equipment
+					const equipment = document.getElementById("equipment")
+					equipment.clearChildren()
+
+					// Create slots
+					const equipment_slot_positions = [
+						"", "amulet", "head", "ammunition", "",
+						"","hands", "body", "cape", "",
+						"","left ring","belt","right ring", "",
+						"","","feet","","",
+						"","","","","",
+						"primary main hand", "primary off hand", "", "secondary main hand", "secondary off hand",
+					]
+					for (const position of equipment_slot_positions) {
+						// Defining slot from equipment, item from database
+						const slot = equipment[position]
+						const item = slot ? database[slot.name] : null
+						
+						// Offhand ~ Mainhand slot verification
+						let isTwoHanded = false, two_hand_image
+						if (key.includes("off hand")) {
+							// Gathering main hand information
+							const position = position.includes("primary") ? "primary main hand" : "secondary main hand"
+							const slot = equipment[position] || {name: null}
+							const item = database[slot.name] || null
+
+							// Updates variables based on main hand information
+							if (item) {
+								isTwoHanded = item.properties.includes("Two-handed")
+								two_hand_image = item.image
+							}
+						}
+
+						// Item element creation
+						let image = null, amount = null
+						if (item) { // --> Slot contains item
+							// Tooltip
+							const name = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+							const weight = " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
+							const tooltip = name + " " + weight
+
+							// Item amount (when slot amount > 1)
+							amount = slot.amount > 1
+								? {tag: "span", attributes: {class: "inventory-item-amount"}, text:slot.amount}
+								: null
+
+							// Item image
+							 image = (
+								{tag: "img",
+									attributes: {
+										src: item.image,
+										draggable: "true",
+										class: "inventory-item",
+										position: position,
+										tooltip: tooltip
+									}
+								}
+							)
+						} 
+						else if (isTwoHanded) { // --> No item on slot but two-handed weapon
+							// Item image
+							image = (
+								{tag: "img",
+									attributes: {
+										src: two_hand_image,
+										draggable: "true",
+										class: "inventory-item",
+										position: position
+									},
+									style: {opacity: "0.2", cursor: "default"}
+								}
+							)
+						}
+						else if (slot) { // --> Empty slot, receives placeholder image
+							image = (
+								{tag: "img",
+									attributes: {src: equipment_images[position]},
+									style: {
+										filter: "brightness(100)",
+										opacity: "0.5",
+										position: "relative",
+										height: "85%",
+										top: "7.5%",
+										userSelect: "none",
+										pointerEvents: "none"
+									}
+								}
+							)
+						}
+
+						// Slot creation
+						if (position == "") { // --> Slot is a spacer in the grid
+							equipment.appendChild({tag: "div"})
+						}
+						else { // --> Default case
+							equipment.appendChild(
+								{tag: "div", 
+									attributes: {
+										class: "inventory-slot item-tooltip-trigger",
+										position: position
+									},
+									style: key.includes("secondary") ? {opacity: "0.5", borderColor: "#333"} : {},
+									children: [image, amount]
+								}
+							)
+						}
+						
+					}
+				}
+			}
+			
+			//=====================================================================================================
+			// Create HTML
+			//=====================================================================================================
+
+			function loadPage() {
+
+				// Loading main div, tabs, and context menu
+				create_tabs({content:["character","inventory","abilities"], parent: document.body})
+
+				// Hide containers
+				const container_options = {div: {attributes: {class: "hidden"}}}
+
+				// Character tab
+				document.getElementById("character-tab").appendChildren([
+					{tag: "div", attributes: {id: "character-tab-left"}, children: [
+						container({id: "saving-throws", title: "Saving Throws"}),
+						container({id: "skills", title: "Skills"})
+					]},
+					{tag: "div", attributes: {id: "character-tab-center"}, children: [
+						{tag: "div", style: {height: "1vh"}},
+
+						subtitle({text: "Name"}),
+						{tag: "h2", attributes: {id: "name"}},
+
+						{tag: "img", attributes: {id: "portrait"}},
+						
+						subtitle({text: "Class"}),
+						{tag: "h2", attributes: {id: "class"}},
+
+						container({title: "Ability Scores", options: {div: {style: {marginTop: "5vh"}}}, children: [
+							ability_scores()
+						]})
+						
+					]},
+					{tag: "div", attributes: {id: "character-tab-right"}, children: [
+						container({title: "Conditions", id: "character-conditions", options: container_options}),
+						container({title: "Features", id: "character-features", options: container_options}),
+						container({title: "Proficiencies", id: "character-proficiencies", options: container_options}),
+						container({title: "Resistances", id: "character-resistances", options: container_options}),
+					]}
+				])
+
+				// Inventory tab
+				document.getElementById("inventory-tab").appendChildren([
+					{tag: "div", style: {position: "absolute", left: "0", width: "45%"}, children: [
+						container({title: "Equipment", options: {div: {style: {height: "41vh"}}}, children: [
+							{tag: "div", style: {margin: "auto"}, children: [
+								// Equipment
+								{tag: "div", 
+									attributes: {
+										id: "equipment", 
+										class: "center-horizontal"
+									},
+									style: {
+										position: "relative",
+										display: "grid",
+										gridTemplateColumns: "repeat(5, 1fr)",
+										gap: 0,
+										textAlign: "center",
+										placeItems: "center",
+										marginTop: "2vh"
+									}
+								},
+								// Armor Class
+								{tag: "div",
+									attributes: {
+										id: "equipment-armor-class",
+										tooltip: "Armor Class"
+									},
+									style: {
+										border: "0.3vh solid #444",
+										backgroundColor: "#333",
+										padding: "1vh",
+										fontWeight: "bold",
+										fontSize: "120%",
+										borderRadius: "50%", borderTopLeftRadius: "0.3vh", borderTopRightRadius: "0.3vh",
+										marginTop: "1vh",
+										position: "absolute",
+										right: "2vh",
+										top: "4vh"
+									}
+								}
+							]}
+						]}),
+						// Item description
+						container({title: "Description", children: [
+							{tag: "div",
+								attributes: {id: "item-description"},
+								style: {
+									marginTop: "1.5vh",
+									marginBottom: "-2vh",
+									height: "28vh",
+									overflow: "scroll"
+								},
+								children: ["Click an item to see its description"]
+							}
+						]})
+					]},
+					{tag: "div", style: {position: "absolute", right: "0", width: "55%"}, children: [
+						// Inventory (backpack)
+						container({title: "Backpack", children: [
+							{tag: "div", 
+								attributes: {id: "inventory"},
+								style: {
+									position: "relative",
+									display: "grid",
+									gridTemplateColumns: "repeat(5, 1fr)",
+									gap: 0,
+									textAlign: "center",
+									placeItems: "center",
+									marginTop: "2vh"
+								}
+							}
+						]})
+					]}
+				])
+			}
+
+			//=====================================================================================================
+			// Execution
+			//=====================================================================================================
+
+			window.onload = function () {
+				loadPage()
+				
+				setInterval(() => {
+					closeIfNotImpersonated()
+					updateCharacterTab()
+				}, 200)
+			}
+
+			//=====================================================================================================
+	
+		</script>
+		']
+	</head>
+	
+	<body>
+	</body>
+	
+	}]
