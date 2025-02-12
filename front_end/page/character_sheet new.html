@@ -556,7 +556,7 @@
 					]
 					for (const position of equipment_slot_positions) {
 						// Defining slot from equipment, item from database
-						const slot = equipment[position]
+						const slot = character.equipment[position]
 						const item = slot ? database[slot.name] : null
 						
 						// Offhand ~ Mainhand slot verification
@@ -564,7 +564,7 @@
 						if (key.includes("off hand")) {
 							// Gathering main hand information
 							const position = position.includes("primary") ? "primary main hand" : "secondary main hand"
-							const slot = equipment[position] || {name: null}
+							const slot = character.equipment[position] || {name: null}
 							const item = database[slot.name] || null
 
 							// Updates variables based on main hand information
