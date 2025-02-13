@@ -162,22 +162,18 @@
 			//=====================================================================================================
 						
 			let draggedElement = null, initialPosition = null
-
-			function dragStart(event) {
+			function dragstart(event) {
 				draggedElement = event.target;
 				draggedElement.parentNode.parentNode.parentNode.classList.remove("item-tooltip-container")
 				initialPosition = draggedElement.getAttribute("position");
 			}
-			
-			function dragEnd(event) {
+			function dragend(event) {
 				draggedElement.style.visibility = "visible";
 				draggedElement.parentNode.parentNode.parentNode.classList.add("item-tooltip-container")
 			}
-			
-			function dragOver(event) {
+			function dragover(event) {
 				event.preventDefault();
 			}
-			
 			function drop(event) {
 				event.preventDefault();
 				const target = event.target.closest(".inventory-slot");
@@ -241,7 +237,7 @@
 				)`))
 
 				// Update name, portrait, class, and ability scores
-				function update_basic_attributes() {
+				function updateBasicAttributes() {
 					if (!isEqualJSON(character_tab.basic, character.basic)) {
 						character_tab.basic = character.basic
 
@@ -254,10 +250,10 @@
 						}
 					}
 				}
-				update_basic_attributes()
+				updateBasicAttributes()
 
 				// Update skills
-				function update_skills () {
+				function updateSkills () {
 					if (!isEqualJSON(character_tab.skills, character.skills)) {
 						character_tab.skills = character.skills
 
@@ -278,10 +274,10 @@
 						}
 					}
 				}
-				update_skills()
+				updateSkills()
 
 				// Update saving throws
-				function update_saving_throws () {
+				function updateSavingThrows () {
 					if (!isEqualJSON(character_tab.saving_throws, character.saving_throws)) {
 						character_tab.saving_throws = character.saving_throws
 
@@ -302,10 +298,10 @@
 						}
 					}
 				}
-				update_saving_throws()
+				updateSavingThrows()
 
 				// Update conditions
-				function update_conditions () {
+				function updateConditions () {
 					if (!isEqualJSON(character_tab.conditions, character.conditions)) {
 						character_tab.conditions = character.conditions
 
@@ -351,10 +347,10 @@
 						}
 					}
 				}
-				update_conditions()
+				updateConditions()
 
 				// Update features
-				function update_features () {
+				function updateFeatures () {
 					if (!isEqualJSON(character_tab.features, character.features)) {
 						character_tab.features = character.features
 
@@ -397,10 +393,10 @@
 						}
 					}
 				}
-				update_features()
+				updateFeatures()
 
 				// Update features
-				function update_proficiencies () {
+				function updateProficiencies () {
 					if (!isEqualJSON(character_tab.proficiencies, character.proficiencies)) {
 						character_tab.proficiencies = character.proficiencies
 
@@ -453,10 +449,10 @@
 						}
 					}
 				}
-				update_proficiencies()
+				updateProficiencies()
 
 				// Update resistances
-				function update_resistances () {
+				function updateResistances () {
 					// Update
 					if (!isEqualJSON(character_tab.resistances, character.resistances)) {
 						character_tab.resistances = character.resistances
@@ -509,7 +505,7 @@
 						}
 					}
 				}
-				update_resistances()
+				updateResistances()
 			}
 
 			let inventory_tab = {
@@ -535,10 +531,21 @@
 				// Database
 				const database = JSON.parse(await backend(`database.items.data`))
 
+				// Basic Attributes
+				function updateBasicAttributes() {
+					// Verify if basic properties received changes
+					if (isEqualJSON(inventory_tab.basic, character.basic)) { return }
+					inventory_tab.basic = character.basic
+
+					// Armor Class
+					document.getElementById("armor-class").textContent = character.basic.armor_class
+				}
+				updateBasicAttributes()
+
 				// Equipment
 				function updateEquipment() {
 					// Verify if equipment received changes
-					if (isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
+					if (isEqualJSON(inventory_tab.inventory, character.inventory) && isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
 					inventory_tab.equipment = character.equipment
 
 					// Clear Equipment
@@ -561,11 +568,11 @@
 						
 						// Offhand ~ Mainhand slot verification
 						let isTwoHanded = false, two_hand_image
-						if (key.includes("off hand")) {
+						if (position.includes("off hand")) {
 							// Gathering main hand information
-							const position = position.includes("primary") ? "primary main hand" : "secondary main hand"
-							const slot = character.equipment[position] || {name: null}
-							const item = database[slot.name] || null
+							const main_hand_position = position.includes("primary") ? "primary main hand" : "secondary main hand"
+							const slot = character.equipment[main_hand_position]
+							const item = slot ? database[slot.name] : null
 
 							// Updates variables based on main hand information
 							if (item) {
@@ -579,79 +586,140 @@
 						if (item) { // --> Slot contains item
 							// Tooltip
 							const name = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
-							const weight = " (" + Math.round(item.weight * slot.amount*100)/100 + "lb)"
+							const weight = " (" + Math.round(item.weight * slot.amount * 100) / 100 + "lb)"
 							const tooltip = name + " " + weight
 
 							// Item amount (when slot amount > 1)
 							amount = slot.amount > 1
-								? {tag: "span", attributes: {class: "inventory-item-amount"}, text:slot.amount}
+								? {tag: "span", attributes: {class: "inventory-item-amount"}, text: String(slot.amount)}
 								: null
 
 							// Item image
-							 image = (
+							image = 
+							 {tag: "span", attributes: {class: "tooltip tooltip-img", tooltip: tooltip}, children: [
 								{tag: "img",
 									attributes: {
 										src: item.image,
 										draggable: "true",
 										class: "inventory-item",
 										position: position,
-										tooltip: tooltip
-									}
+									},
+									events: {dragstart, dragend}
 								}
-							)
+							]}
 						} 
 						else if (isTwoHanded) { // --> No item on slot but two-handed weapon
-							// Item image
-							image = (
+							image = 
 								{tag: "img",
 									attributes: {
 										src: two_hand_image,
-										draggable: "true",
 										class: "inventory-item",
 										position: position
 									},
 									style: {opacity: "0.2", cursor: "default"}
 								}
-							)
 						}
-						else if (slot) { // --> Empty slot, receives placeholder image
-							image = (
+						else { // --> Empty slot, receives placeholder image
+							image = 
 								{tag: "img",
-									attributes: {src: equipment_images[position]},
 									style: {
 										filter: "brightness(100)",
-										opacity: "0.5",
+										opacity: "0.05",
 										position: "relative",
 										height: "85%",
 										top: "7.5%",
+
+										// Prevent dragging of placeholder image
 										userSelect: "none",
 										pointerEvents: "none"
-									}
+									},
+									attributes: {src: equipment_images[position]},
 								}
-							)
 						}
 
-						// Slot creation
-						if (position == "") { // --> Slot is a spacer in the grid
-							equipment.appendChild({tag: "div"})
-						}
-						else { // --> Default case
+						// Slot
+						if (position) {
+							// Reduce opacity on secondary weapon set
+							const style = position.includes("secondary") ? {opacity: "0.5", borderColor: "#333"} : {}
+
+							// Element
 							equipment.appendChild(
 								{tag: "div", 
 									attributes: {
 										class: "inventory-slot item-tooltip-trigger",
 										position: position
 									},
-									style: key.includes("secondary") ? {opacity: "0.5", borderColor: "#333"} : {},
+									style: style,
+									events: {dragover, drop},
 									children: [image, amount]
 								}
 							)
 						}
-						
+						else {equipment.appendChild({tag: "div"})} // --> add empty div to fill grid
 					}
 				}
+				updateEquipment()
+
+				// Inventory
+				function updateInventory() {
+					// Verify if inventory received changes
+					if (isEqualJSON(inventory_tab.inventory, character.inventory) && isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
+					inventory_tab.inventory = character.inventory
+
+					// Clear Equipment
+					const inventory = document.getElementById("inventory")
+					inventory.clearChildren()
+
+					// Create slots
+					for (let position = 0 ; position < character.inventory.length ; position++) {
+						// Defining slot from equipment, item from database
+						const slot = character.inventory[position]
+						const item = slot ? database[slot.name] : null
+
+						// Item element creation
+						let image = null, amount = null
+						if (item) { // --> Slot contains item
+							// Tooltip
+							const name = slot.amount > 1 ? slot.amount + " " + item.name + "s" : item.name
+							const weight = " (" + Math.round(item.weight * slot.amount * 100) / 100 + "lb)"
+							const tooltip = name + " " + weight
+
+							// Item amount (when slot amount > 1)
+							amount = slot.amount > 1
+								? {tag: "span", attributes: {class: "inventory-item-amount"}, text: String(slot.amount)}
+								: null
+
+							// Item image
+							 image = 
+							 {tag: "span", attributes: {class: "tooltip tooltip-img", tooltip: tooltip}, children: [
+								{tag: "img",
+									attributes: {
+										src: item.image,
+										draggable: "true",
+										class: "inventory-item",
+										position: position,
+									},
+									events: {dragstart, dragend}
+								}
+							]} 
+						}
+
+						// Element
+						inventory.appendChild(
+							{tag: "div", 
+								attributes: {
+									class: "inventory-slot item-tooltip-trigger",
+									position: position
+								},
+								events: {dragover, drop},
+								children: [image, amount]
+							}
+						)
+					}
+				}
+				updateInventory()
 			}
-			
+
 			//=====================================================================================================
 			// Create HTML
 			//=====================================================================================================
@@ -718,7 +786,7 @@
 								// Armor Class
 								{tag: "div",
 									attributes: {
-										id: "equipment-armor-class",
+										id: "armor-class",
 										tooltip: "Armor Class"
 									},
 									style: {
@@ -757,11 +825,12 @@
 								attributes: {id: "inventory"},
 								style: {
 									position: "relative",
+									width: "fit-content",
+									margin: "auto",
 									display: "grid",
-									gridTemplateColumns: "repeat(5, 1fr)",
+									gridTemplateColumns: "repeat(6, 1fr)",
+									gridRowGap: "0.2vh",
 									gap: 0,
-									textAlign: "center",
-									placeItems: "center",
 									marginTop: "2vh"
 								}
 							}
@@ -780,6 +849,7 @@
 				setInterval(() => {
 					closeIfNotImpersonated()
 					updateCharacterTab()
+					updateInventoryTab()
 				}, 200)
 			}
 

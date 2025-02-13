@@ -62,8 +62,6 @@ function element(options) {
                 Node.prototype.appendChild.call(this, child);
             } else if (typeof child === "object" && child !== null) {
                 Node.prototype.appendChild.call(this, element(child));
-            } else {
-                throw new Error("Invalid child type. Must be a string, HTMLElement, or an object compatible with the element function.");
             }
         }
     });
@@ -73,8 +71,6 @@ function element(options) {
         value: function (children) {
             if (Array.isArray(children)) {
                 children.forEach(child => this.appendChild(child));
-            } else {
-                throw new Error("Invalid children type. Must be an array.");
             }
         }
     });
