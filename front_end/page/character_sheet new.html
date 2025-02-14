@@ -604,7 +604,12 @@
 										class: "inventory-item",
 										position: position,
 									},
-									events: {dragstart, dragend}
+									events: {
+										dragstart, 
+										dragend, 
+										click: ()=>{itemDescription(slot)},
+										dblclick: ()=>{itemSplit(slot)}
+									}
 								}
 							]}
 						} 
@@ -699,7 +704,12 @@
 										class: "inventory-item",
 										position: position,
 									},
-									events: {dragstart, dragend}
+									events: {
+										dragstart, 
+										dragend, 
+										click: ()=>{itemDescription(slot)},
+										dblclick: ()=>{itemSplit(slot)}
+									}
 								}
 							]} 
 						}
@@ -726,12 +736,12 @@
 					item_container.clearChildren()
 
 					// Item from database
-					const item = JSON.parse(await backend(`database.get_item(` + slot.name + `)`)) || {}
+					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
 
 					// Name
 					const name = slot.amount == 1
-						? slot.name
-						: slot.amount + " " + slot.name + "s"
+						? item.name
+						: slot.amount + " " + item.name + "s"
 
 					// Subtitle
 					const type = item.subtype || item.type
@@ -741,47 +751,59 @@
 					const subtitle = capitalizeAll(rarity + type)
 
 					// Weight
-					const weight = Math.round(item.weight * amount * 100) / 100 + "lb"
+					const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
 
 					// Damage
 					let damage = ""
 					for (let i = 0 ; i < item.damage.length ; i++) {
 						const current = item.damage[i]
 						damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
-						damage += i != damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
+						damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
 					}
 
 					// Other Arrays
-					const properties = arrayToList(item.properties) != "" ? capitalize(arrayToList(item.properties)) : ""
-					const conditions = arrayToList(item.conditions) != "" ? capitalize(arrayToList(item.conditions)) : ""
+					const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
+					const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
 
 					// Element
 					function title_value({title, value}) {
-						return {tag: "p", children: [
-							{tag: "span", style: {fontSize: "95%", fontWeight: "bold"}, text: title + ": "},
-							{tag: "span", style: {fontSize: "95%", color: "#aaa"}, text: value},
+						return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
+							{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+							{tag: "span", style: {color: "#aaa"}, text: value},
 						]}
 					}
 					item_container.appendChild(
-						{tag: "div", style: {}, children: [
-							{tag: "div", style: {textAlign: "center", marginBottom: "-1vh"}, children: [
-								{tag: "p", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
-								{tag: "p", style: {fontSize: "95%", color: "#aaa"}, text: subtitle}
+						{tag: "div", style: {padding: "0 1vh"}, children: [
+							{tag: "div", style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative"}, children: [
+								{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
+								{tag: "br"},
+								{tag: "span", style: {color: "#aaa"}, text: subtitle},
 							]},
-							{tag: "br"},
-							damage ? title_value({title: "Damage", value: damage}) : null,
-							item.recovery ? title_value({title: "Recovery Speed", value: item.recovery}) : null,
-							item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
-							weight ? title_value({title: "Weight", value: weight}) : null,
-							properties ? title_value({title: "Properties", value: properties}) : null,
-							conditions ? title_value({title: "Conditions", value: conditions}) : null,
-							{tag: "br"},
-							description ? {tag: "pre", style: {color: "#aaa", textAlign: "left", fontSize: "100%"}, text: description} : null
+							{tag: "div", style: {textAlign: "left"}, children: [
+								damage ? title_value({title: "Damage", value: damage}) : null,
+								item.recovery ? title_value({title: "Recovery Speed", value: item.recovery}) : null,
+								item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
+								weight ? title_value({title: "Weight", value: weight}) : null,
+								properties ? title_value({title: "Properties", value: properties}) : null,
+								conditions ? title_value({title: "Conditions", value: conditions}) : null,
+							]},
+							item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
 						]}
 					)
-				}
-				function itemSplit() {
 
+					console.log("single click")
+				}
+				async function itemSplit(slot) {
+					await new Promise(resolve => setTimeout(resolve, 100));  
+
+					// Clear Container
+					const item_container = document.getElementById("item-description")
+					item_container.clearChildren()
+
+					// Item from database
+					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
+
+					console.log("double click")
 				}
 
 			}
