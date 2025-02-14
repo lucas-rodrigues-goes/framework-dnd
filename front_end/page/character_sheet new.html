@@ -720,8 +720,65 @@
 				updateInventory()
 
 				// Item
-				function itemDescription() {
-					item_container = document.getElementById("item-description")
+				async function itemDescription(slot) {
+					// Clear Container
+					const item_container = document.getElementById("item-description")
+					item_container.clearChildren()
+
+					// Item from database
+					const item = JSON.parse(await backend(`database.get_item(` + slot.name + `)`)) || {}
+
+					// Name
+					const name = slot.amount == 1
+						? slot.name
+						: slot.amount + " " + slot.name + "s"
+
+					// Subtitle
+					const type = item.subtype || item.type
+					const rarity = item.rarity == "common"
+						? ""
+						: item.rarity + " "
+					const subtitle = capitalizeAll(rarity + type)
+
+					// Weight
+					const weight = Math.round(item.weight * amount * 100) / 100 + "lb"
+
+					// Damage
+					let damage = ""
+					for (let i = 0 ; i < item.damage.length ; i++) {
+						const current = item.damage[i]
+						damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+						damage += i != damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
+					}
+
+					// Other Arrays
+					const properties = arrayToList(item.properties) != "" ? capitalize(arrayToList(item.properties)) : ""
+					const conditions = arrayToList(item.conditions) != "" ? capitalize(arrayToList(item.conditions)) : ""
+
+					// Element
+					function title_value({title, value}) {
+						return {tag: "p", children: [
+							{tag: "span", style: {fontSize: "95%", fontWeight: "bold"}, text: title + ": "},
+							{tag: "span", style: {fontSize: "95%", color: "#aaa"}, text: value},
+						]}
+					}
+					item_container.appendChild(
+						{tag: "div", style: {}, children: [
+							{tag: "div", style: {textAlign: "center", marginBottom: "-1vh"}, children: [
+								{tag: "p", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
+								{tag: "p", style: {fontSize: "95%", color: "#aaa"}, text: subtitle}
+							]},
+							{tag: "br"},
+							damage ? title_value({title: "Damage", value: damage}) : null,
+							item.recovery ? title_value({title: "Recovery Speed", value: item.recovery}) : null,
+							item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
+							weight ? title_value({title: "Weight", value: weight}) : null,
+							properties ? title_value({title: "Properties", value: properties}) : null,
+							conditions ? title_value({title: "Conditions", value: conditions}) : null,
+							{tag: "br"},
+							description ? {tag: "pre", style: {color: "#aaa", textAlign: "left", fontSize: "100%"}, text: description} : null
+						]}
+					)
 				}
 				function itemSplit() {
 
