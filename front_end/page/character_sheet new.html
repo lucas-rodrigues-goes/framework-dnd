@@ -531,6 +531,113 @@
 				// Database
 				const database = JSON.parse(await backend(`database.items.data`))
 
+				// Item
+				let timeout = null, clickCount = 0;
+				function itemClick(slot) {
+					clickCount++;
+
+					// Helper
+					function resetCounter() {
+						clearTimeout(timeout);
+						clickCount = 0;
+					}
+					
+					if (clickCount === 1) {
+					// Wait 300ms to see if a second click comes
+					timeout = setTimeout(() => {
+						if (clickCount === 1) {
+							itemDescription(slot)
+						}
+						resetCounter();
+					}, 300);
+					} else if (clickCount === 2) {
+						itemSplit(slot)
+					resetCounter();
+					}
+				};
+				async function itemDescription(slot) {
+					// Clear Container
+					const item_container = document.getElementById("item-description")
+					item_container.clearChildren()
+
+					// Item from database
+					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
+
+					// Name
+					const name = slot.amount == 1
+						? item.name
+						: slot.amount + " " + item.name + "s"
+
+					// Subtitle
+					const type = item.subtype || item.type
+					const rarity = item.rarity == "common"
+						? ""
+						: item.rarity + " "
+					const subtitle = capitalizeAll(rarity + type)
+
+					// Weight
+					const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
+
+					// Damage
+					let damage = ""
+					for (let i = 0 ; i < item.damage.length ; i++) {
+						const current = item.damage[i]
+						damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+						damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
+					}
+
+					// Other Arrays
+					const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
+					const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
+
+					// Element
+					function title_value({title, value}) {
+						return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
+							{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+							{tag: "span", style: {color: "#aaa"}, text: value},
+						]}
+					}
+					item_container.appendChild(
+						{tag: "div", style: {padding: "0 1vh"}, children: [
+							{tag: "div", style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative"}, children: [
+								{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
+								{tag: "br"},
+								{tag: "span", style: {color: "#aaa"}, text: subtitle},
+							]},
+							{tag: "div", style: {textAlign: "left"}, children: [
+								damage ? title_value({title: "Damage", value: damage}) : null,
+								item.recovery ? title_value({title: "Recovery Speed", value: item.recovery}) : null,
+								item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
+								weight ? title_value({title: "Weight", value: weight}) : null,
+								properties ? title_value({title: "Properties", value: properties}) : null,
+								conditions ? title_value({title: "Conditions", value: conditions}) : null,
+							]},
+							item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
+						]}
+					)
+				}
+				async function itemSplit(slot) {
+					// Clear Container
+					const item_container = document.getElementById("item-description")
+					item_container.clearChildren()
+
+					// Item from database
+					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
+
+					item_container.appendChild({tag:"div", text: "split item"})
+				}
+				async function itemReset() {
+					if (isEqualJSON(inventory_tab.inventory, character.inventory) && isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
+					
+					// Clear Container
+					const item_container = document.getElementById("item-description")
+					item_container.clearChildren()
+
+					// Default content
+					item_container.appendChild("Click an item to see its description")
+				}
+				itemReset()
+
 				// Basic Attributes
 				function updateBasicAttributes() {
 					// Verify if basic properties received changes
@@ -607,8 +714,7 @@
 									events: {
 										dragstart, 
 										dragend, 
-										click: ()=>{itemDescription(slot)},
-										dblclick: ()=>{itemSplit(slot)}
+										click: ()=>{itemClick(slot)},
 									}
 								}
 							]}
@@ -707,8 +813,7 @@
 									events: {
 										dragstart, 
 										dragend, 
-										click: ()=>{itemDescription(slot)},
-										dblclick: ()=>{itemSplit(slot)}
+										click: ()=>{itemClick(slot)}
 									}
 								}
 							]} 
@@ -728,82 +833,6 @@
 					}
 				}
 				updateInventory()
-
-				// Item
-				async function itemDescription(slot) {
-					// Clear Container
-					const item_container = document.getElementById("item-description")
-					item_container.clearChildren()
-
-					// Item from database
-					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
-
-					// Name
-					const name = slot.amount == 1
-						? item.name
-						: slot.amount + " " + item.name + "s"
-
-					// Subtitle
-					const type = item.subtype || item.type
-					const rarity = item.rarity == "common"
-						? ""
-						: item.rarity + " "
-					const subtitle = capitalizeAll(rarity + type)
-
-					// Weight
-					const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
-
-					// Damage
-					let damage = ""
-					for (let i = 0 ; i < item.damage.length ; i++) {
-						const current = item.damage[i]
-						damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
-						damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
-					}
-
-					// Other Arrays
-					const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
-					const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
-
-					// Element
-					function title_value({title, value}) {
-						return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
-							{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-							{tag: "span", style: {color: "#aaa"}, text: value},
-						]}
-					}
-					item_container.appendChild(
-						{tag: "div", style: {padding: "0 1vh"}, children: [
-							{tag: "div", style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative"}, children: [
-								{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
-								{tag: "br"},
-								{tag: "span", style: {color: "#aaa"}, text: subtitle},
-							]},
-							{tag: "div", style: {textAlign: "left"}, children: [
-								damage ? title_value({title: "Damage", value: damage}) : null,
-								item.recovery ? title_value({title: "Recovery Speed", value: item.recovery}) : null,
-								item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
-								weight ? title_value({title: "Weight", value: weight}) : null,
-								properties ? title_value({title: "Properties", value: properties}) : null,
-								conditions ? title_value({title: "Conditions", value: conditions}) : null,
-							]},
-							item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
-						]}
-					)
-
-					console.log("single click")
-				}
-				async function itemSplit(slot) {
-					// Clear Container
-					const item_container = document.getElementById("item-description")
-					item_container.clearChildren()
-
-					// Item from database
-					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
-
-					console.log("double click")
-				}
-
 			}
 
 			//=====================================================================================================
