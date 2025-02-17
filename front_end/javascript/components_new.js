@@ -235,6 +235,61 @@ function textarea({ id = "", placeholder = "", parent, options = {} }) {
     )
 }
 
+function select({ id = "", placeholder = "", parent, children = [], options = {} }) {
+
+    // Functions
+    function updatePlaceholders () {
+        if (this.value) {
+            this.classList.add("filled")
+        } else {
+            this.classList.remove("filled")
+        }
+    }
+
+    // Destructure the options
+    const { div: div_options = {}, input: input_options = {}, placeholder: placeholder_options = {} } = options;
+    const { attributes: div_attributes = {} } = div_options;
+    const { attributes: input_attributes = {}, events: input_events } = input_options;
+    const { attributes: placeholder_attributes = {} } = placeholder_options;
+
+    // Element
+    return element(
+        {...div_options,
+            tag: "div",
+            parent,
+            attributes: {...div_attributes, 
+                id: id + "-div",
+                class: "input-container " + (div_attributes.class || "")
+            },
+            children: [
+                {...input_options,
+                    tag: "select", 
+                    attributes: {...input_attributes,
+                        id,
+                        required: true,
+                    },
+                    events: {...input_events,
+                        change: updatePlaceholders
+                    },
+                    children: [
+                        {tag: "option", attributes: {value: ""}, text: " "},
+                        ...children
+                    ]
+                },
+                {...placeholder_options,
+                    tag: "label",
+                    text: placeholder,
+                    attributes: {
+                        ...placeholder_attributes,
+                        id: id + "-placeholder",
+                        for: id
+                    }
+                }
+            ]
+        }
+    )
+}
+
 function checkbox({ id = "", title = "", parent, options = {}}) {
 
     // Options
