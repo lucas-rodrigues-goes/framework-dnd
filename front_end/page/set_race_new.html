@@ -21,45 +21,11 @@
             return JSON.stringify(a) === JSON.stringify(b)
         }
         
-        const features = []
-        function addFeature () { // --> Allows to add options to the list
-            // Read selected feature
-            const feature_choice = document.getElementById("feature-choice")
-            const feature_name = feature_choice.value
-
-            // Clear selected feature
-            feature_choice.value = ""
-            feature_choice.classList.remove("filled")
-
-            // Add to features list
-            features.push(feature_name)
-
-            // Show on features area
-            const feature = database.features_data[feature_name]
-            const feature_area = document.getElementById("features")
-            collapsible({
-                parent: feature_area,
-                options: {
-                    button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
-                    content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                },
-                button_children: [
-                    {tag: "img", attributes: {src: feature.image}},
-                    {tag: "span", text: feature.name}
-                ],
-                children: [
-                    {tag: "pre", style: {fontSize: "90%"}, text: feature.description}
-                ]
-            })
-        }
-        function removeFeature () {
-            
-        }
-
         //=====================================================================================================
         // Execution
         //=====================================================================================================
 
+        const features = []
         async function loadPage() {
             // Database
             const database = JSON.parse(await backend(`JSON.stringify(
@@ -70,12 +36,81 @@
                 }
             )`))
 
-            // Features
-            const feature_options = [] // --> Select options
-            for (const feature of database.racial_features) {
-                feature_options.push(
-                    element({tag: "option", text: feature})
+            // Function
+            function addFeature () { // --> Allows to add options to the list
+                // Read selected feature
+                const feature_choice = document.getElementById("feature-choice")
+                const feature_name = feature_choice.value
+
+                // Clear selected feature
+                feature_choice.value = ""
+                feature_choice.classList.remove("filled")
+
+                // Add to features list
+                features.push(feature_name)
+
+                // Show on features area
+                const feature = database.features_data[feature_name]
+                const feature_area = document.getElementById("features")
+                collapsible({
+                    parent: feature_area,
+                    options: {
+                        div: {attributes: {id: "features-" + feature_name}},
+                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+                    },
+                    button_children: [
+                        {tag: "img", attributes: {src: feature.image}},
+                        {tag: "span", text: feature.name},
+                        {tag: "button", style: {position: "absolute", right: 0}, text: "Remove", events: {
+                            click: () => { removeFeature(feature_name) }
+                        }}
+                    ],
+                    children: [
+                        {tag: "pre", style: {fontSize: "90%"}, text: feature.description}
+                    ]
+                })
+                
+                updateFeatureOptions()
+            }
+            function removeFeature (feature_name) {
+                // Get collapsible
+                const feature_collapsible = document.getElementById("features-" + feature_name)
+
+                // Remove from feature list
+                feature_collapsible.remove()
+                const feature_index = features.indexOf(feature_name)
+                features.splice(feature_index, 1)
+
+                updateFeatureOptions()
+            }
+            function updateFeatureOptions() {
+                // Clear current options
+                const feature_choice = document.getElementById("feature-choice")
+                feature_choice.clearChildren()
+                
+                // New options
+                feature_choice.appendChild({tag: "option", text: " "})
+                feature_choice.appendChildren(featureOptions())
+            }
+            function featureOptions () {
+                // Creates an array to store HTML
+                const feature_options = []
+                
+                // Removes from options features that are already present
+                const choosable_features = database.racial_features.filter(
+                    element => !features.includes(element)
                 )
+
+                // Create elements
+                for (const feature of choosable_features) {
+                    feature_options.push(
+                        element({tag: "option", text: feature})
+                    )
+                }
+
+                // Return
+                return feature_options
             }
 
             // Content
@@ -90,18 +125,16 @@
                     ]},
                     {tag: "div", style: {position: "absolute", width: "50%", right: 0, height: "100%"}, children: [
                         container({title: "Features", children: [
-                            {tag: "br"},
-                            {tag: "div", attributes: {id: "features"}, style: {padding: 0}},
                             select ({
-                                id: "feature-choice", 
-                                placeholder: "Choose a feature", 
-                                children: feature_options
+                                id: "feature-choice",
+                                placeholder: "Choose a feature",
+                                options: {
+                                    input: {events: {input: addFeature}}
+                                },
+                                children: featureOptions()
                             }),
-                            {tag: "button", 
-                                style: {fontWeight: "bold", padding: "0.5vh 1vh"},
-                                events: {click: addFeature},
-                                text: "Add"
-                            }
+                            {tag: "br"},{tag: "br"},
+                            {tag: "div", attributes: {id: "features"}, style: {padding: 0}},
                         ]})
                     ]},
                 ]}
