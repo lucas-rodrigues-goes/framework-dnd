@@ -219,9 +219,6 @@ try {
         reset_resources() {
             this.#resources = {
                 "data":{},
-                "type":{},
-                "subtype":{},
-                "level":{}
             }
 
             this.save()
@@ -241,38 +238,9 @@ try {
         }
 
         get_resources_list(filters = {}, sortBy = null, searchString = null) {
-            const { type, subtype, level } = filters;
+            const { } = filters;
             const database = this.#resources;
             let object_names = Object.keys(database.data);
-        
-            // Apply type filter if provided
-            if (type) {
-                if (database.type[type]) {
-                    object_names = database.type[type];
-                } else {
-                    return []; // Return empty array if type doesn't exist
-                }
-            }
-        
-            // Apply subtype filter
-            if (subtype) {
-                if (database.subtype[subtype]) {
-                    const subtype_names = database.subtype[subtype];
-                    object_names = object_names.filter(name => subtype_names.includes(name));
-                } else {
-                    return []; // Return empty array if subtype doesn't exist
-                }
-            }
-        
-            // Apply level filter
-            if (level) {
-                if (database.level[level]) {
-                    const level_names = database.level[level];
-                    object_names = object_names.filter(name => level_names.includes(name));
-                } else {
-                    return []; // Return empty array if level doesn't exist
-                }
-            }
         
             // Filter by searchString if provided
             if (searchString) {
@@ -290,80 +258,23 @@ try {
                 case "name":
                     object_names.sort((a, b) => a.localeCompare(b));
                     break;
-                case "type":
-                    object_names.sort((a, b) => {
-                        const typeA = database.data[a].type || '';
-                        const typeB = database.data[b].type || '';
-                        return typeA.localeCompare(typeB);
-                    });
-                    break;
-                case "subtype":
-                    object_names.sort((a, b) => {
-                        const subtypeA = database.data[a].subtype || '';
-                        const subtypeB = database.data[b].subtype || '';
-                        return subtypeA.localeCompare(subtypeB);
-                    });
-                    break;
-                case "level":
-                    object_names.sort((a, b) => {
-                        const levelA = database.data[a].level || '';
-                        const levelB = database.data[b].level || '';
-                        return levelA.localeCompare(levelB);
-                    });
-                    break;
                 default:
-                    // Default sorting: by type, then subtype, then level
-                    object_names.sort((a, b) => {
-                        const typeA = database.data[a].type || '';
-                        const typeB = database.data[b].type || '';
-                        if (typeA !== typeB) {
-                            return typeA.localeCompare(typeB);
-                        }
-                        const subtypeA = database.data[a].subtype || '';
-                        const subtypeB = database.data[b].subtype || '';
-                        if (subtypeA !== subtypeB) {
-                            return subtypeA.localeCompare(subtypeB);
-                        }
-                        const levelA = database.data[a].level || '';
-                        const levelB = database.data[b].level || '';
-                        return levelA.localeCompare(levelB);
-                    });
+                    object_names.sort((a, b) => a.localeCompare(b));
                     break;
             }
         
             return object_names;
         }
 
-        set_resource(name, type, subtype, level, description) {
+        set_resource(data) {
             const database = this.#resources
-            const object = new Resource(name, type, subtype, level, description)
+            const object = new Resource(data)
 
             // Verify if already exists
-            if(name in database.data) {this.remove_resource(name)}
-
-
-            // Type
-            if (!database.type[object.type]) { 
-                database.type[object.type] = [] 
-            }
-            database.type[object.type].push(object.name)
-
-            // Subtype
-            if (!database.subtype[object.subtype]) { 
-                database.subtype[object.subtype] = [] 
-            }
-            database.subtype[object.subtype].push(object.name)
-
-            // Level
-            if (!database.level[object.level]) { 
-                database.level[object.level] = [] 
-            }
-            database.level[object.level].push(object.name)
-            
+            if(object.name in database.data) {this.remove_resource(object.name)}            
 
             // Data
             database.data[object.name] = object.object()
-
 
             this.save()
         }
@@ -374,21 +285,6 @@ try {
 
             // Data
             delete database.data[object.name]
-
-            // Type
-            database.type[object.type] = database.type[object.type].filter(
-                value => value != object.name
-            )
-
-            // Subtype
-            database.subtype[object.subtype] = database.subtype[object.subtype].filter(
-                value => value != object.name
-            )
-
-            // Level
-            database.level[object.level] = database.level[object.level].filter(
-                value => value != object.name
-            )
 
             this.save()
         }

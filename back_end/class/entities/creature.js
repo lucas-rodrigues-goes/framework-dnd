@@ -10,6 +10,8 @@ try {
         #name = "unnamed"
         #type = ""
         #race = ""
+        #levels = {}
+        #experience = 0
         #ability_scores = {
             "strength": 10, "dexterity": 10, "constitution": 10,
             "wisdom": 10, "intelligence": 10, "charisma": 10,
@@ -106,6 +108,93 @@ try {
 
             // Fill health
             this.health = this.max_health
+        }
+
+        short_rest(hours) {
+            // Health
+            this.health = (this.max_health / 4) * hours
+
+            // Fill resources
+            for (const resource in this.#resources) {
+                if (resource.restored_on == "short rest") {
+                    this.set_resource_value(resource, resource.max)
+                }
+            }
+        }
+
+        long_rest() {
+            // Fill Health
+            this.health = this.max_health
+
+            // Reduce exhaustion (not implemented yet)
+
+            // Fill resources
+            for (const resource in this.#resources) {
+                const restores_on_rest = ["long rest", "short rest"].includes(resource.restored_on)
+                if (restores_on_rest) {
+                    this.set_resource_value(resource, resource.max)
+                }
+            }
+        }
+
+        //=====================================================================================================
+        // Leveling and Experience
+        //=====================================================================================================
+
+        get total_level() {
+            let total = 0
+            for (const level of this.#levels) {
+                total += this.#levels[level].level
+            }
+            return total
+        }
+
+        level_up(player_class, choices = {features: []}) {
+            const classes = {
+                wizard: {
+                    name: "Wizard",
+                    subclasses: ["School of Evocation"],
+                    choices: {
+                        1: [
+                            {type: "feature", options: [], amount: 1},
+                            {type: "spell", level: 0, class: "wizard", amount: 4}
+                        ]
+                    },
+                    starting_proficiencies: {
+                        first_class: [{name: "Mundane Weapon", level: 0}],
+                        multi_class: []
+                    },
+                    description: "A wizard likes studying"
+                }
+            }
+
+            // If first level in specified class
+            if (!this.#levels[player_class]) { 
+                // Add first level
+                this.#levels[player_class] = {level: 1}
+
+                // Starting proficiencies
+                const starting_proficiencies = this.total_level == 1 
+                    ? classes[player_class].starting_proficiencies.first_class
+                    : classes[player_class].starting_proficiencies.multi_class
+                for (const proficiency in starting_proficiencies) {
+                    this.set_proficiency(proficiency.name, proficiency.level, true)
+                }
+            }
+
+            // If second level or more in specified class
+            else { this.#levels[player_class].level += 1 }
+
+            // Save current class level (after level up)
+            const class_level = this.#levels[player_class].level
+
+            // Add features
+            const database_features = database.get_features_list({subtype: player_class, level: class_level, optional: false})
+            const features_to_add = database_features.join(choices.features)
+            for (const feature of features_to_add) {
+                this.add_feature(player_class, feature)
+            }
+
         }
 
         //=====================================================================================================
@@ -502,6 +591,26 @@ try {
 
         get resources() {return this.#resources}
 
+        set_new_resource(resource, max_value, restored_on) {
+            this.#resources[resource] = {
+                value: 0,
+                max_value: max_value, 
+                restored_on: restored_on,
+            }
+        }
+
+        set_resource_max(resource, max) {
+            this.#resources[resource].max = max
+        }
+
+        set_resource_value(resource, value) {
+            // Clamp value
+            const resource = this.#resources[resource]
+            const clamped_value = Math.min(resource.max, Math.max(0, value))
+
+            // Set
+            this.#resources[resource].value = clamped_value
+        }
 
         //=====================================================================================================
         // Features
@@ -1009,7 +1118,7 @@ try {
 
             // Check for undefined values and raise an error
             const keysToCheck = [
-                "name", "type", "race", "ability_scores", "speed", "health",
+                "name", "levels", "experience", "type", "race", "ability_scores", "speed", "health",
                 "resources", "features", "spells",
                 "conditions", "equipment", "inventory"
             ];
@@ -1021,6 +1130,8 @@ try {
             }
 
             this.#name = object.name;
+            this.#levels = object.levels;
+            this.#experience = object.experience;
             this.#type = object.type;
             this.#race = object.race;
             this.#ability_scores = object.ability_scores;
@@ -1040,6 +1151,8 @@ try {
         save() {
             let object = {
                 name: this.#name,
+                levels: this.#levels,
+                experience: this.#experience,
                 type: this.#type,
                 race: this.#race,
                 ability_scores: this.#ability_scores,

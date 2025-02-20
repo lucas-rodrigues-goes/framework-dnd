@@ -4,28 +4,22 @@ try {
     var Resource = class {
 
         //=====================================================================================================
-        // Resistance parameters
+        // Resource parameters
         //=====================================================================================================
 
         #name
-        #type
-        #subtype
-        #level
+        #image
+        #color
         #description
-
-
         
         //=====================================================================================================
         // Getter methods
         //=====================================================================================================
 
         get name() { return this.#name; }
-        get type() { return this.#type }
-        get subtype() { return this.#subtype }
-        get level() { return this.#level }
+        get image() { return this.#image; }
+        get color() { return this.#color; }
         get description() { return this.#description }
-
-
 
         //=====================================================================================================
         // Instance management
@@ -33,28 +27,15 @@ try {
 
         constructor({
             name = "", // String
-            type = "", // String
-            subtype = "", // String
-            level = 0, // Number
+            image = "", // String
+            color = "", // String
             description = "" // String
         }) {
 
-            // Validate Type
-            if ( ! [
-                "racial", "class", "feat"
-            ].includes(type)) { return }
-
-            // Validate Subtype
-            if (type != "class") { subtype = undefined }
-
-            // Validate Level
-            if (Number(level) < 0 || Number(level) > 20) { return }
-
             // Instance
             this.#name = name
-            this.#type = type
-            this.#subtype = subtype
-            this.#level = level
+            this.#image = image
+            this.#color = color
             this.#description = description
 
         }
@@ -62,9 +43,8 @@ try {
         object() {
             return {
                 name: this.#name,
-                type: this.#type,
-                subtype: this.#subtype,
-                level: this.#level,
+                image: this.#image,
+                color: this.#color,
                 description: this.#description
             };
         }

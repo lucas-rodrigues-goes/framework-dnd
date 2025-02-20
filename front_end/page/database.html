@@ -31,7 +31,7 @@
             "features", 
             "items", 
             "damage", 
-            //"resources", 
+            "resources", 
             "spells",
         ]     
         const edit_icon = "asset://f218b6ad34fe8564e0553dc2bba91cc8"
@@ -630,6 +630,80 @@
                 })
             }
             
+                        
+            // Updates resources tab
+            if (isTabActive("resources-tab")) {updateConditions()}
+            function updateConditions() {
+                
+                // Model for row component to be used in table
+                function custom_row ({
+                    name, color, description, image=""
+                }) {
+
+                    columns = [
+                        img({src:image, style:"height:2.4vh"}), 
+                        name,
+                        capitalize(type),
+                        img({src:edit_icon, id:"resources-table-row-"+name+"-edit"}) +
+                        img({src:remove_icon, id:"resources-table-row-"+name+"-remove"})
+                    ]
+
+                    return row({
+                        id:"resources-table-row-"+name, 
+                        columns, 
+                        content:pre({content:description}), 
+                        config:"3vh 1fr 1fr min-content"
+                    })
+                }
+
+                // Clearing other tables for performance
+                clearTabsBut("resources")
+
+                // Filters
+                const 
+                string_filter = getId("resources-string-filter").value
+
+                toBackend(`
+                    [
+                        database.get_resources_list({}, "", "`+string_filter+`"),
+                        database.resources.data
+                    ]
+                `, (response) => {
+
+                    // Verify if there is update
+                    const new_hash = hash(response)
+                    const old_hash = getId("resources-table").getAttribute("hash")
+                    if (new_hash == old_hash) { return }
+                    getId("resources-table").setAttribute("hash", new_hash)
+
+                    // Parsing
+                    response = JSON.parse(response)
+                    const filter_list = response[0]
+                    const data = response[1]
+
+                    // Rows
+                    let rows = ""
+                    const items = []
+                    for (const key of filter_list) {
+                        resource = data[key]
+
+                        items.push(key)
+                        rows += custom_row({...resource})
+                    }
+
+                    // Update Table
+                    getId("resources-table").children[1].innerHTML = rows
+
+                    // Adding behavior to buttons
+                    for (const value of items) {
+                        getId("resources-table-row-"+value+"-edit").addEventListener("click", ()=>{ openPage("set_resource.html", value) }) // Edit
+                        getId("resources-table-row-"+value+"-remove").addEventListener("click", ()=>{ toBackend(`database.remove_resource("`+value+`")`) }) // Remove
+                    }
+
+                    updateColapsible()
+                })
+            }
+
             // Updates spells tab
             if (isTabActive("spells-tab")) {updateSpells()}
             function updateSpells() {
@@ -878,6 +952,17 @@
             )
 
             getId("damage-new").addEventListener("click", ()=>{ openPage("set_damage.html","") }) 
+
+            loadSelect()
+        }
+        function resourcesTab() {
+            getId("resources-tab").innerHTML += (
+                input({id:"resources-string-filter", placeholder:"Search", style:"width:95%"}) +
+                table({id:"resources-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
+                button({id:"resources-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})
+            )
+
+            getId("resources-new").addEventListener("click", ()=>{ openPage("set_resource.html","") }) 
 
             loadSelect()
         }
