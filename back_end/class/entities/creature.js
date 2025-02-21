@@ -10,7 +10,7 @@ try {
         #name = "unnamed"
         #type = ""
         #race = ""
-        #levels = {}
+        #classes = {}
         #experience = 0
         #ability_scores = {
             "strength": 10, "dexterity": 10, "constitution": 10,
@@ -141,10 +141,10 @@ try {
         // Leveling and Experience
         //=====================================================================================================
 
-        get total_level() {
+        get level() {
             let total = 0
-            for (const level of this.#levels) {
-                total += this.#levels[level].level
+            for (const player_class of this.#classes) {
+                total += this.#classes[player_class].level
             }
             return total
         }
@@ -153,7 +153,12 @@ try {
             const classes = {
                 wizard: {
                     name: "Wizard",
+                    base_health: 4,
+                    spellcasting: "full",
                     subclasses: ["School of Evocation"],
+                    resources: {
+                        1: [{resource: "Arcane Recovery", max: "2", restored_on: "long rest"}]
+                    },
                     choices: {
                         1: [
                             {type: "feature", options: [], amount: 1},
@@ -168,29 +173,38 @@ try {
                 }
             }
 
-            // If first level in specified class
-            if (!this.#levels[player_class]) { 
-                // Add first level
-                this.#levels[player_class] = {level: 1}
+            // Increase level and add starting proficiencies (1st level only)
+            if (!this.#classes[player_class]) { 
+                this.#classes[player_class] = {level: 1}
 
                 // Starting proficiencies
-                const starting_proficiencies = this.total_level == 1 
+                const starting_proficiencies = this.level == 1 
                     ? classes[player_class].starting_proficiencies.first_class
                     : classes[player_class].starting_proficiencies.multi_class
-                for (const proficiency in starting_proficiencies) {
-                    this.set_proficiency(proficiency.name, proficiency.level, true)
+                for (const {name, level} of starting_proficiencies) {
+                    this.set_proficiency(name, level, true)
+                }
+            }
+            else { 
+                this.#classes[player_class].level += 1 
+            }
+            const class_level = this.#classes[player_class].level
+
+            // Add resources
+            const resources_to_add = classes[player_class].resources[class_level] || []
+            if (resources_to_add.length > 0) {
+                for (const {resource, max, restored_on} of resources_to_add) {
+                    if (restored_on) { //--> New resource
+                        this.set_new_resource(resource, max, restored_on)
+                    } else {
+                        this.set_resource_max(resource, max)
+                    }
                 }
             }
 
-            // If second level or more in specified class
-            else { this.#levels[player_class].level += 1 }
-
-            // Save current class level (after level up)
-            const class_level = this.#levels[player_class].level
-
             // Add features
             const database_features = database.get_features_list({subtype: player_class, level: class_level, optional: false})
-            const features_to_add = database_features.join(choices.features)
+            const features_to_add = database_features.concat(choices.features)
             for (const feature of features_to_add) {
                 this.add_feature(player_class, feature)
             }
@@ -337,8 +351,14 @@ try {
         get health() { return this.#health }
         
         get max_health() {
-            const level = this.level || 1
             let calculated_max_health = this.#ability_scores.constitution
+
+            // Level based health increase
+            for (const player_class of this.classes) {
+                const class_base_health = database.player_classes.data[player_class].base_health || 6
+                const class_level = this.classes[player_class].level
+                calculated_max_health += class_base_health * class_level
+            }
 
             // Feature-based modifiers
             const feature_modifiers = {
@@ -591,10 +611,10 @@ try {
 
         get resources() {return this.#resources}
 
-        set_new_resource(resource, max_value, restored_on) {
+        set_new_resource(resource, max, restored_on) {
             this.#resources[resource] = {
                 value: 0,
-                max_value: max_value, 
+                max: max, 
                 restored_on: restored_on,
             }
         }
@@ -1118,7 +1138,7 @@ try {
 
             // Check for undefined values and raise an error
             const keysToCheck = [
-                "name", "levels", "experience", "type", "race", "ability_scores", "speed", "health",
+                "name", "classes", "experience", "type", "race", "ability_scores", "speed", "health",
                 "resources", "features", "spells",
                 "conditions", "equipment", "inventory"
             ];
@@ -1130,7 +1150,7 @@ try {
             }
 
             this.#name = object.name;
-            this.#levels = object.levels;
+            this.#classes = object.classes;
             this.#experience = object.experience;
             this.#type = object.type;
             this.#race = object.race;
@@ -1151,7 +1171,7 @@ try {
         save() {
             let object = {
                 name: this.#name,
-                levels: this.#levels,
+                classes: this.#classes,
                 experience: this.#experience,
                 type: this.#type,
                 race: this.#race,
