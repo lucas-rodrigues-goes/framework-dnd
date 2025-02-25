@@ -211,6 +211,33 @@ try {
 
         }
 
+        get spellcasting_level() {
+
+            let total = 0
+            for (const player_class in this.#classes) {
+                const class_level = this.#classes[player_class].level
+                const spellcasting = database.get_player_class(player_class).spellcasting
+
+                switch (spellcasting) {
+                    case "full":
+                        total += class_level
+                        break
+                    case "half":
+                        total += Math.floor(class_level / 2)
+                        break
+                    case 'third':
+                        total += Math.floor(class_level / 3)
+                        break
+                }
+
+                return total
+            }
+        }
+
+        update_spell_slots() {
+            
+        }
+
         //=====================================================================================================
         // Name
         //=====================================================================================================
