@@ -155,6 +155,7 @@ try {
                     name: "Wizard",
                     base_health: 4,
                     spellcasting: "full",
+                    spellcasting_ability: "intelligence",
                     subclasses: ["School of Evocation"],
                     resources: {
                         1: [{resource: "Arcane Recovery", max: "2", restored_on: "long rest"}]
@@ -172,6 +173,7 @@ try {
                     description: "A wizard likes studying"
                 }
             }
+            const player_class_data = classes[player_class]
 
             // Increase level and add starting proficiencies (1st level only)
             if (!this.#classes[player_class]) { 
@@ -179,8 +181,8 @@ try {
 
                 // Starting proficiencies
                 const starting_proficiencies = this.level == 1 
-                    ? classes[player_class].starting_proficiencies.first_class
-                    : classes[player_class].starting_proficiencies.multi_class
+                    ? player_class_data.starting_proficiencies.first_class
+                    : player_class_data.starting_proficiencies.multi_class
                 for (const {name, level} of starting_proficiencies) {
                     this.set_proficiency(name, level, true)
                 }
@@ -191,7 +193,7 @@ try {
             const class_level = this.#classes[player_class].level
 
             // Add resources
-            const resources_to_add = classes[player_class].resources[class_level] || []
+            const resources_to_add = player_class_data.resources[class_level] || []
             if (resources_to_add.length > 0) {
                 for (const {resource, max, restored_on} of resources_to_add) {
                     if (restored_on) { //--> New resource
@@ -209,33 +211,6 @@ try {
                 this.add_feature(player_class, feature)
             }
 
-        }
-
-        get spellcasting_level() {
-
-            let total = 0
-            for (const player_class in this.#classes) {
-                const class_level = this.#classes[player_class].level
-                const spellcasting = database.get_player_class(player_class).spellcasting
-
-                switch (spellcasting) {
-                    case "full":
-                        total += class_level
-                        break
-                    case "half":
-                        total += Math.floor(class_level / 2)
-                        break
-                    case 'third':
-                        total += Math.floor(class_level / 3)
-                        break
-                }
-
-                return total
-            }
-        }
-
-        update_spell_slots() {
-            
         }
 
         //=====================================================================================================
@@ -750,6 +725,173 @@ try {
             return -1
         }
 
+        //=====================================================================================================
+        // Spells
+        //=====================================================================================================
+
+        get spells() { return this.#spells }
+
+        get spellcasting_level() {
+
+            let total = 0
+            for (const player_class in this.#classes) {
+                const class_level = this.#classes[player_class].level
+                const spellcasting = database.get_player_class(player_class).spellcasting
+
+                switch (spellcasting) {
+                    case "full":
+                        total += class_level
+                        break
+                    case "half":
+                        total += Math.floor(class_level / 2)
+                        break
+                    case 'third':
+                        total += Math.floor(class_level / 3)
+                        break
+                }
+
+                return total
+            }
+        }
+
+        update_spell_slots() {
+            // Find spellcasting slots on table based on spellcasting level
+            const spellcasting_table = [
+                {},
+                {1: 2},   // Level 1
+                {1: 3},   // Level 2
+                {1: 4, 2: 2},   // Level 3
+                {1: 4, 2: 3},   // Level 4
+                {1: 4, 2: 3, 3: 2},   // Level 5
+                {1: 4, 2: 3, 3: 3},   // Level 6
+                {1: 4, 2: 3, 3: 3, 4: 1},   // Level 7
+                {1: 4, 2: 3, 3: 3, 4: 2},   // Level 8
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 1},   // Level 9
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2},   // Level 10
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1},   // Level 11
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1},   // Level 12
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1},   // Level 13
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1},   // Level 14
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1},   // Level 15
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1},   // Level 16
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 1},   // Level 17
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 1, 7: 1, 8: 1, 9: 1},   // Level 18
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 1, 8: 1, 9: 1},   // Level 19
+                {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1}    // Level 20
+            ]
+            const spellcasting_level_slots = spellcasting_table[this.spellcasting_level]
+
+            // Update spellcasting slot resources
+            for (const slot in spellcasting_level_slots) {
+                const max = spellcasting_level_slots[slot]
+                const resource = `Level ${slot} Slot`
+
+                // Update max value if exists, or creates new resource
+                if (this.#resources[resource]) {
+                    this.set_resource_max(resource, max)
+                } else {
+                    this.set_new_resource(resource, max, "long rest")
+                }
+            }
+        }
+
+        learn_spell(player_class, spell_name) {
+            // Verify if spell exists
+            if (!database.get_spell(spell_name)) { return }
+
+            // Create spellcasting info if needed
+            if (!this.#spells[player_class]) {
+                this.#spells[player_class] = {}
+            }
+
+            // Create spellcasting known list if needed
+            if (!this.#spells[player_class].known) {
+                this.#spells[player_class].known = []
+            }
+
+            // Adding spell to known list
+            this.#spells[player_class].known.push(spell_name)
+        }
+
+        unlearn_spell(player_class, spell_name) {
+            // Validates if spell exists, and if character has it
+            if (!database.get_spell(spell_name)) { return }
+            if (!this.#spells[player_class]) { return }
+            if (!this.#spells[player_class].known) { return }
+            if (!this.#spells[player_class.known.includes(spell_name)]) { return }
+
+            // Removes spell from known list
+            this.#spells[player_class].known = this.#spells[player_class].known.filter(
+                item => item != spell_name
+            )
+        }
+
+        memorize_spell(player_class, spell_name) {
+            // Verify if spell exists
+            if (!database.get_spell(spell_name)) { return }
+
+            // Create spellcasting info if needed
+            if (!this.#spells[player_class]) {
+                this.#spells[player_class] = {}
+            }
+
+            // Create spellcasting memorized list if needed
+            if (!this.#spells[player_class].memorized) {
+                this.#spells[player_class].memorized = []
+            }
+
+            // Verify if character can memorize spell
+            const player_class_data = database.get_player_class(player_class)
+            const spellcasting_modifier = this.score_bonus[player_class_data.spellcasting_ability]
+            const memorization_maximum = Math.max(0, spellcasting_modifier + this.classes[player_class].level)
+            const currently_memorized_count = this.#spells[player_class].memorized.length
+            if (currently_memorized_count >= memorization_maximum) { return }
+
+            // Adding spell to memorized list
+            this.#spells[player_class].memorized.push(spell_name)
+        }
+
+        set_always_prepared_spell(player_class, spell_name) {
+            // Verify if spell exists
+            if (!database.get_spell(spell_name)) { return }
+
+            // Create spellcasting info if needed
+            if (!this.#spells[player_class]) {
+                this.#spells[player_class] = {}
+            }
+
+            // Create spellcasting always prepared list if needed
+            if (!this.#spells[player_class].always_prepared) {
+                this.#spells[player_class].always_prepared = []
+            }
+
+            // Adding spell to always prepared list
+            this.#spells[player_class].always_prepared.push(spell_name)
+        }
+
+        forget_spell(player_class, spell_name) {
+            // Validates if spell exists, and if has it memorized
+            if (!database.get_spell(spell_name)) { return }
+            if (!this.#spells[player_class]) { return }
+
+            // Remove spell from memorized list
+            if (this.#spells[player_class].memorized) {
+                if (this.#spells[player_class.memorized.includes(spell_name)]) {
+                    this.#spells[player_class].memorized = this.#spells[player_class].memorized.filter(
+                        item => item != spell_name
+                    )
+                }
+            }
+
+            // Remove spell from always prepared list
+            if (this.#spells[player_class].always_prepared) {
+                if (this.#spells[player_class.always_prepared.includes(spell_name)]) {
+                    this.#spells[player_class].always_prepared = this.#spells[player_class].always_prepared.filter(
+                        item => item != spell_name
+                    )
+                }
+            }
+        }
         
         //=====================================================================================================
         // Skills
