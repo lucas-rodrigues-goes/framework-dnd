@@ -112,6 +112,32 @@ try {
         //=====================================================================================================
     }
 
+    // Example usage
+
+   var PlayerClass_example = new PlayerClass(
+        {
+            name: "Wizard",
+            base_health: 4,
+            spellcasting: "full",
+            spellcasting_ability: "intelligence",
+            subclasses: ["School of Evocation"],
+            resources: {
+                1: [{resource: "Arcane Recovery", max: "2", restored_on: "long rest"}]
+            },
+            choices: {
+                1: [
+                    {type: "feature", options: [], amount: 1},
+                    {type: "spell", level: 0, class: "wizard", amount: 4}
+                ]
+            },
+            starting_proficiencies: {
+                first_class: [{name: "Mundane Weapon", level: 0}],
+                multi_class: []
+            },
+            description: "A wizard likes studying"
+        }
+    )
+
 
 } catch (e) {
     MapTool.chat.broadcast("" + e + "\n" + e.stack);

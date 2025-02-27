@@ -143,37 +143,16 @@ try {
 
         get level() {
             let total = 0
-            for (const player_class of this.#classes) {
-                total += this.#classes[player_class].level
+            if (this.#classes != {}) {
+                for (const player_class in this.#classes) {
+                    total += this.#classes[player_class].level
+                }
             }
             return total
         }
 
         level_up(player_class, choices = {features: []}) {
-            const classes = {
-                wizard: {
-                    name: "Wizard",
-                    base_health: 4,
-                    spellcasting: "full",
-                    spellcasting_ability: "intelligence",
-                    subclasses: ["School of Evocation"],
-                    resources: {
-                        1: [{resource: "Arcane Recovery", max: "2", restored_on: "long rest"}]
-                    },
-                    choices: {
-                        1: [
-                            {type: "feature", options: [], amount: 1},
-                            {type: "spell", level: 0, class: "wizard", amount: 4}
-                        ]
-                    },
-                    starting_proficiencies: {
-                        first_class: [{name: "Mundane Weapon", level: 0}],
-                        multi_class: []
-                    },
-                    description: "A wizard likes studying"
-                }
-            }
-            const player_class_data = classes[player_class]
+            const player_class_data = database.player_classes.data[player_class]
 
             // Increase level and add starting proficiencies (1st level only)
             if (!this.#classes[player_class]) { 
@@ -353,12 +332,13 @@ try {
         get health() { return this.#health }
         
         get max_health() {
+            const level = this.level || 0
             let calculated_max_health = this.#ability_scores.constitution
 
             // Level based health increase
-            for (const player_class of this.classes) {
+            for (const player_class in this.#classes) {
                 const class_base_health = database.player_classes.data[player_class].base_health || 6
-                const class_level = this.classes[player_class].level
+                const class_level = this.#classes[player_class].level
                 calculated_max_health += class_base_health * class_level
             }
 
@@ -592,11 +572,11 @@ try {
             }
 
             // Condition-based modifiers
-            const cnodition_modifiers = {
+            const condition_modifiers = {
                 "Haste": { type: "multiply", value: 2 },
                 "Slow": { type: "multiply", value: 0.5 },
             };
-            for (const [condition, modifier] of Object.entries(cnodition_modifiers)) {
+            for (const [condition, modifier] of Object.entries(condition_modifiers)) {
                 if (this.has_condition(condition)) {
                     if (modifier.type === "add") { baseSpeed += modifier.value; } 
                     else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
@@ -627,8 +607,8 @@ try {
 
         set_resource_value(resource, value) {
             // Clamp value
-            const resource = this.#resources[resource]
-            const clamped_value = Math.min(resource.max, Math.max(0, value))
+            const resource_data = this.#resources[resource]
+            const clamped_value = Math.min(resource_data.max, Math.max(0, value))
 
             // Set
             this.#resources[resource].value = clamped_value
@@ -649,7 +629,7 @@ try {
             ]
 
             if (!valid_feature_types.includes(type)) {
-                log(this.#name + " attempted to receive the feature " + name + ", but failed due to invalid type '" + type + "'.");
+                log(this.#name + " attempted to receive the feature " + name + ", but failed due to invalid type" + type + ".");
                 return;
             }
             if (this.#features[type].includes(name)) {
@@ -745,13 +725,13 @@ try {
                     case "half":
                         total += Math.floor(class_level / 2)
                         break
-                    case 'third':
+                    case "third":
                         total += Math.floor(class_level / 3)
                         break
                 }
-
-                return total
             }
+
+            return total
         }
 
         update_spell_slots() {
@@ -1067,7 +1047,7 @@ try {
         }
 
         move_item(from_index, to_index, amount) {
-            // Helper function inside move_item (since it's not needed elsewhere)
+            // Helper function inside move_item (since its not needed elsewhere)
             const isInventoryIndex = (index) => !isNaN(Number(index));
         
             this.update_inventory_slots();
@@ -1308,7 +1288,7 @@ try {
             // Check for undefined values and raise an error
             const keysToCheck = [
                 "name", "classes", "experience", "type", "race", "ability_scores", "speed", "health",
-                "resources", "features", "spells",
+                "resources", "features", "spells", "proficiencies",
                 "conditions", "equipment", "inventory"
             ];
 
