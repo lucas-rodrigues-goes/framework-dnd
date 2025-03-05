@@ -7,91 +7,6 @@ try {
         // Race management
         //=====================================================================================================
 
-        #player_classes = {
-            "data":{},
-        }
-
-        reset_player_classes() {
-            this.#player_classes = {
-                "data":{},
-            }
-
-            this.save()
-        }
-
-        get player_classes() {return this.#player_classes}
-
-        get_player_class(name) {
-            const database = this.#player_classes;
-            
-            // Check if the resource exists
-            if (name in database.data) {
-                return database.data[name];
-            } else {
-                return null;  // Return null if the resource doesn't exist
-            }
-        }
-
-        get_player_classes_list(filters = {}, sortBy = null, searchString = null) {
-            const { } = filters;
-            const database = this.#player_classes;
-            let object_names = Object.keys(database.data);
-        
-            // Filter by searchString if provided
-            if (searchString) {
-                const lowerSearchString = searchString.toLowerCase();
-                object_names = object_names.filter(name => {
-                    const resource = database.data[name];
-                    return Object.values(resource).some(value =>
-                        String(value).toLowerCase().includes(lowerSearchString)
-                    );
-                });
-            }
-        
-            // Sort the object names if a sortBy parameter is provided
-            switch (sortBy) {
-                case "name":
-                    object_names.sort((a, b) => a.localeCompare(b));
-                    break;
-                default:
-                    object_names.sort((a, b) => a.localeCompare(b));
-                    break;
-            }
-        
-            return object_names;
-        }
-
-        set_player_class(data) {
-            const database = this.#player_classes
-            const object = new PlayerClass({...data})
-
-            // Verify if already exists
-            if(object.name in database.data) {this.remove_player_class(object.name)}
-            
-
-            // Data
-            database.data[object.name] = object.object()
-
-
-            this.save()
-        }
-
-        remove_player_class(name) {
-            const database = this.#player_classes
-            const object = database.data[name]
-
-            // Data
-            delete database.data[object.name]
-
-            this.save()
-        }
-
-
-
-        //=====================================================================================================
-        // Race management
-        //=====================================================================================================
-
         #races = {
             "data":{},
         }
@@ -1279,7 +1194,7 @@ try {
             };
 
             this.token.setProperty("object", JSON.stringify(object));
-            this.token.setProperty("class", "Database");
+            this.token.setProperty("class", getInheritanceChain(this.constructor));
         }
 
 

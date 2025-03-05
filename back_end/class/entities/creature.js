@@ -10,8 +10,6 @@ try {
         #name = "unnamed"
         #type = ""
         #race = ""
-        #classes = {}
-        #experience = 0
         #ability_scores = {
             "strength": 10, "dexterity": 10, "constitution": 10,
             "wisdom": 10, "intelligence": 10, "charisma": 10,
@@ -24,51 +22,11 @@ try {
             "fly":0,
             "burrow":0,
         }
-        #resources = {
-            "mana": {
-                "current": 0,
-                "maximum": 0
-            },
-        }
-        #features = {
-            "all": [], "racial": [], "feat": [],
-            "barbarian": [], "bard": [], "cleric": [],
-            "druid": [], "fighter": [], "monk": [],
-            "paladin": [], "ranger": [], "rogue": [],
-            "sorcerer": [], "warlock": [], "wizard": []
-        }
+        #spellcasting_level = 0
+        #resources = {}
+        #features = []
         #proficiencies = {}
-        #spells = {
-            "bard": {
-                "known": []
-            },
-            "cleric": {
-                "always_prepared": [],
-                "memorized": []
-            },
-            "druid": {
-                "always_prepared": [],
-                "memorized": []
-            },
-            "paladin": {
-                "always_prepared": [],
-                "memorized": []
-            },
-            "ranger": {
-                "known": []
-            },
-            "sorcerer": {
-                "known": []
-            },
-            "warlock": {
-                "known": []
-            },
-            "wizard": {
-                "known": [],
-                "always_prepared": [],
-                "memorized": []
-            }
-        }
+        #spells = {}
         #conditions = {}
         #equipment = {
             "head": null,
@@ -92,23 +50,6 @@ try {
         //=====================================================================================================
         // Methods
         //=====================================================================================================
-
-        create_character({name, type, race, ability_scores}) {
-
-            // Ability Scores
-            for (const [score, value] of Object.entries(ability_scores)) {
-                this.set_ability_score(score, value)
-            }
-
-            // Set basic information
-            this.name = name
-            this.type = type
-            this.race = race
-            
-
-            // Fill health
-            this.health = this.max_health
-        }
 
         short_rest(hours) {
             // Health
@@ -135,61 +76,6 @@ try {
                     this.set_resource_value(resource, resource.max)
                 }
             }
-        }
-
-        //=====================================================================================================
-        // Leveling and Experience
-        //=====================================================================================================
-
-        get level() {
-            let total = 0
-            if (this.#classes != {}) {
-                for (const player_class in this.#classes) {
-                    total += this.#classes[player_class].level
-                }
-            }
-            return total
-        }
-
-        level_up(player_class, choices = {features: []}) {
-            const player_class_data = database.player_classes.data[player_class]
-
-            // Increase level and add starting proficiencies (1st level only)
-            if (!this.#classes[player_class]) { 
-                this.#classes[player_class] = {level: 1}
-
-                // Starting proficiencies
-                const starting_proficiencies = this.level == 1 
-                    ? player_class_data.starting_proficiencies.first_class
-                    : player_class_data.starting_proficiencies.multi_class
-                for (const {name, level} of starting_proficiencies) {
-                    this.set_proficiency(name, level, true)
-                }
-            }
-            else { 
-                this.#classes[player_class].level += 1 
-            }
-            const class_level = this.#classes[player_class].level
-
-            // Add resources
-            const resources_to_add = player_class_data.resources[class_level] || []
-            if (resources_to_add.length > 0) {
-                for (const {resource, max, restored_on} of resources_to_add) {
-                    if (restored_on) { //--> New resource
-                        this.set_new_resource(resource, max, restored_on)
-                    } else {
-                        this.set_resource_max(resource, max)
-                    }
-                }
-            }
-
-            // Add features
-            const database_features = database.get_features_list({subtype: player_class, level: class_level, optional: false})
-            const features_to_add = database_features.concat(choices.features)
-            for (const feature of features_to_add) {
-                this.add_feature(player_class, feature)
-            }
-
         }
 
         //=====================================================================================================
@@ -229,62 +115,13 @@ try {
         get race() { return this.#race }
 
         set race(race) {
-            // Old race information
-            const old_race_data = database.get_race(this.race) || {};
-            const old_ability_scores = old_race_data.ability_scores || {};
-        
-            // Remove old racial features
-            for (const feature of this.#features.racial || []) {
-                this.remove_feature("racial", feature);
-            }
-        
-            // Remove ability score bonuses
-            for (const [score, value] of Object.entries(this.ability_scores)) {
-                const bonus = old_ability_scores[score] || 0;
-                const total_value = Number(value) - Number(bonus);
-                this.set_ability_score(score, total_value);
-            }
+            this.#race = race
 
-            //=================================================================================================
-        
-            // New race information
-            const new_race_data = database.get_race(race) || {};
-        
-            const features = new_race_data.features || [];
-            const proficiencies = new_race_data.proficiencies || [];
-            const ability_scores = new_race_data.ability_scores || {};
-        
-            // Add new racial features
-            for (const feature of features) {
-                this.add_feature("racial", feature);
-            }
-        
-            // Add new proficiencies
-            for (const proficiency of proficiencies) {
-                this.set_proficiency(proficiency.name, proficiency.level, true);
-            }
-        
-            // Add ability score bonuses
-            for (const [score, value] of Object.entries(this.ability_scores)) {
-                const bonus = ability_scores[score] || 0;
-                const total_value = Number(value) + Number(bonus);
-                this.set_ability_score(score, total_value);
-            }
-        
-            // Fill HP
-            this.health = this.max_health;
-        
-            // Change race
-            this.#race = race;
-        
-            // Save state
-            this.save();
-        
-            log(this.#name + " race set to " + race + ".");
+            this.save()
+
+            log(this.#name + " race set to " + race + ".")
         }
         
-        
-
 
         //=====================================================================================================
         // Ability Scores
@@ -332,26 +169,7 @@ try {
         get health() { return this.#health }
         
         get max_health() {
-            const level = this.level || 0
             let calculated_max_health = this.#ability_scores.constitution
-
-            // Level based health increase
-            for (const player_class in this.#classes) {
-                const class_base_health = database.player_classes.data[player_class].base_health || 6
-                const class_level = this.#classes[player_class].level
-                calculated_max_health += class_base_health * class_level
-            }
-
-            // Feature-based modifiers
-            const feature_modifiers = {
-                "Dwarven Toughness": { type: "add", value: 1 * level }
-            };
-            for (const [feature, modifier] of Object.entries(feature_modifiers)) {
-                if (this.has_feature(feature)) {
-                    if (modifier.type === "add") { calculated_max_health += modifier.value; } 
-                    else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
-                }
-            }
 
             return calculated_max_health
         }
@@ -620,53 +438,24 @@ try {
 
         get features() {return this.#features}
 
-        add_feature(type, name) {
-
-            const valid_feature_types = [
-                "racial", "feat",
-                "barbarian", "bard", "cleric", "druid", "fighter", "monk",
-                "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"
-            ]
-
-            if (!valid_feature_types.includes(type)) {
-                log(this.#name + " attempted to receive the feature " + name + ", but failed due to invalid type" + type + ".");
-                return;
-            }
-            if (this.#features[type].includes(name)) {
-                log(this.#name + " attempted to receive the " + type + " feature " + name + ", but failed because they already have it.");
-                return;
-            }
-
-            this.#features.all.push(name);
-            this.#features[type].push(name);
+        add_feature(name) {
+            this.#features.push(name);
 
             this.save();
-            log(this.#name + " received the " + type + " feature " + name + ".");
+            log(this.#name + " received the feature " + name + ".");
         }
 
-        remove_feature(type, name) {
-
-            const valid_feature_types = [
-                "racial", "feat",
-                "barbarian", "bard", "cleric", "druid", "fighter", "monk",
-                "paladin", "ranger", "rogue", "sorcerer", "warlock", "wizard"
-            ]
-
-            if (!valid_feature_types.includes(type)) { return; }
-
-            // Removes only one instance from ALL in case gained from multiple classes  
-            const index = this.#features.all.indexOf(name); if (index !== -1) { this.#features.all.splice(index, 1);}
-            
-            this.#features[type] = this.#features[type].filter(value => value != name);
+        remove_feature(name) {
+            this.#features = this.#features.filter(value => value != name);
 
             this.save();
             log(this.#name + " lost the " + type + " feature " + name + ".");
         }
 
         has_feature(name) {
-            return this.#features.all.includes(name);
+            return this.#features.includes(name);
         }
-
+    
 
         //=====================================================================================================
         // Proficiencies
@@ -711,28 +500,7 @@ try {
 
         get spells() { return this.#spells }
 
-        get spellcasting_level() {
-
-            let total = 0
-            for (const player_class in this.#classes) {
-                const class_level = this.#classes[player_class].level
-                const spellcasting = database.get_player_class(player_class).spellcasting
-
-                switch (spellcasting) {
-                    case "full":
-                        total += class_level
-                        break
-                    case "half":
-                        total += Math.floor(class_level / 2)
-                        break
-                    case "third":
-                        total += Math.floor(class_level / 3)
-                        break
-                }
-            }
-
-            return total
-        }
+        get spellcasting_level() { return this.#spellcasting_level }
 
         update_spell_slots() {
             // Find spellcasting slots on table based on spellcasting level
@@ -872,6 +640,28 @@ try {
                 }
             }
         }
+
+        //=====================================================================================================
+        // Saving Throws
+        //=====================================================================================================
+
+        get saving_throws() {
+            let saving_throws = this.score_bonus
+
+            // Capitalize String
+            function capitalize(str) {
+                if (str.length === 0) return str;
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
+            // Apply Proficiency Bonus
+            for (const ability in saving_throws) {
+                saving_throws[ability] += (this.get_proficiency_level( capitalize(ability) + " Saves") + 1) * 2
+            }
+            
+            return saving_throws
+        }
+        
         
         //=====================================================================================================
         // Skills
@@ -1287,7 +1077,7 @@ try {
 
             // Check for undefined values and raise an error
             const keysToCheck = [
-                "name", "classes", "experience", "type", "race", "ability_scores", "speed", "health",
+                "name", "type", "race", "ability_scores", "speed", "spellcasting_level", "health",
                 "resources", "features", "spells", "proficiencies",
                 "conditions", "equipment", "inventory"
             ];
@@ -1299,12 +1089,11 @@ try {
             }
 
             this.#name = object.name;
-            this.#classes = object.classes;
-            this.#experience = object.experience;
             this.#type = object.type;
             this.#race = object.race;
             this.#ability_scores = object.ability_scores;
             this.#speed = object.speed;
+            this.#spellcasting_level = object.spellcasting_level;
             this.#health = object.health
             this.#resources = object.resources;
             this.#features = object.features;
@@ -1320,12 +1109,11 @@ try {
         save() {
             let object = {
                 name: this.#name,
-                classes: this.#classes,
-                experience: this.#experience,
                 type: this.#type,
                 race: this.#race,
                 ability_scores: this.#ability_scores,
                 speed: this.#speed,
+                spellcasting_level: this.#spellcasting_level,
                 health: this.#health,
                 resources: this.#resources,
                 features: this.#features,
@@ -1339,7 +1127,7 @@ try {
             
             this.token.setName(this.#name);
             this.token.setProperty("object", JSON.stringify(object));
-            this.token.setProperty("class", "Creature");
+            this.token.setProperty("class", getInheritanceChain(this.constructor));
         }
 
         //=====================================================================================================
