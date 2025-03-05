@@ -7,7 +7,7 @@ try {
         // Default Parameters
         //=====================================================================================================
 
-        #name = "unnamed"
+        #name = ""
         #type = ""
         #race = ""
         #ability_scores = {
@@ -1046,25 +1046,21 @@ try {
         // Instance
         //=====================================================================================================
 
-        constructor(id, reset) {
+        constructor(id, reset, inherit) { // Now explicitly takes (id, reset)
             super(id)
-            let has_property_object = String(this.token.getProperty("object")) != "null";
 
-            // Reset if no previous data or if reset flag is true
-            if (!has_property_object || reset) {
+            // Reset validation
+            const noObject = String(this.token.getProperty("object")) === "null"
+
+            const needsReset = noObject || reset
+            if (needsReset) {
                 this.#name = this.token.getName();
                 log(this.#name + " was reset.");
-                this.save();
-            }
-            else {
-                try {
-                    this.load();
-                }
-                catch {
-                    this.#name = this.token.getName();
-                    log(this.#name + " failed to load and was reset.");
-                    this.save();
-                }
+
+                // Saves if not inheriting, else sends save as return
+                if (!inherit) {this.save()}
+            } else {
+                if (!inherit) {this.load()}
             }
         }
 
@@ -1073,47 +1069,30 @@ try {
         //=====================================================================================================
 
         load() {
-            let object = JSON.parse(this.token.getProperty("object"));
-
-            // Check for undefined values and raise an error
-            const keysToCheck = [
-                "name", "type", "race", "ability_scores", "speed", "spellcasting_level", "health",
-                "resources", "features", "spells", "proficiencies",
-                "conditions", "equipment", "inventory"
-            ];
-
-            for (const key of keysToCheck) {
-                if (object[key] === undefined) {
-                    throw new Error(`Property "${key}" is undefined in the loaded object.`);
-                }
-            }
-
-            this.#name = object.name;
-            this.#type = object.type;
-            this.#race = object.race;
-            this.#ability_scores = object.ability_scores;
-            this.#speed = object.speed;
-            this.#spellcasting_level = object.spellcasting_level;
-            this.#health = object.health
-            this.#resources = object.resources;
-            this.#features = object.features;
-            this.#proficiencies = object.proficiencies;
-            this.#spells = object.spells;
-            this.#conditions = object.conditions;
-            this.#equipment = object.equipment;
-            this.#inventory = object.inventory;
-
-            this.token.setProperty("class", "Creature");
+            const object = JSON.parse(this.token.getProperty("object"));
+            
+            this.#name = object.name || this.#name;
+            this.#type = object.type || this.#type;
+            this.#race = object.race || this.#race;
+            this.#ability_scores = object.ability_scores || this.#ability_scores;
+            this.#speed = object.speed || this.#speed;
+            this.#health = object.health ?? this.#health; // Use ?? to preserve 0 as valid
+            this.#resources = object.resources || this.#resources;
+            this.#features = object.features || this.#features;
+            this.#proficiencies = object.proficiencies || this.#proficiencies;
+            this.#spells = object.spells || this.#spells;
+            this.#conditions = object.conditions || this.#conditions;
+            this.#equipment = object.equipment || this.#equipment;
+            this.#inventory = object.inventory || this.#inventory;
         }
-
+        
         save() {
-            let object = {
+            const object = {
                 name: this.#name,
                 type: this.#type,
                 race: this.#race,
                 ability_scores: this.#ability_scores,
                 speed: this.#speed,
-                spellcasting_level: this.#spellcasting_level,
                 health: this.#health,
                 resources: this.#resources,
                 features: this.#features,
@@ -1123,11 +1102,13 @@ try {
                 equipment: this.#equipment,
                 inventory: this.#inventory
             };
-            
-            
+        
             this.token.setName(this.#name);
+
             this.token.setProperty("object", JSON.stringify(object));
-            this.token.setProperty("class", getInheritanceChain(this.constructor));
+            this.token.setProperty("class", JSON.stringify(["Creature", "Entity"]));
+
+            return object;
         }
 
         //=====================================================================================================

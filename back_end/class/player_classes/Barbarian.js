@@ -54,6 +54,8 @@ try {
                     break
                 }
             }
+
+            humanoid.save()
         }
     }
 

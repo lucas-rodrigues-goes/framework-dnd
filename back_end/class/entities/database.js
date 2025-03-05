@@ -1194,7 +1194,7 @@ try {
             };
 
             this.token.setProperty("object", JSON.stringify(object));
-            this.token.setProperty("class", getInheritanceChain(this.constructor));
+            this.token.setProperty("class", JSON.stringify(["Database", "Entity"]));
         }
 
 

@@ -14,19 +14,18 @@ try {
         // Methods
         //=====================================================================================================
 
-        new({name, type, race, ability_scores}) {
+        create({name, race, ability_scores}) {
 
-            // Ability Scores
+            /* // Ability Scores
             for (const [score, value] of Object.entries(ability_scores)) {
                 this.set_ability_score(score, value)
-            }
+            } */
 
             // Set basic information
             this.name = name
-            this.type = type
+            this.type = "Humanoid"
             this.race = race
             
-
             // Fill health
             this.health = this.max_health
         }
@@ -45,12 +44,12 @@ try {
             return total
         }
 
-        get classes() { return this.#classes }
+        get experience () { return this.#experience }
+        get classes () { return this.#classes }
 
-        level_up(class_choice, choices = {features: []}) {
+        level_up(class_choice, choices = {features: [], skills: []}) {
             // Create class object
-            const firstLevelInClass = this.#classes[class_choice] != undefined
-            if (firstLevelInClass) {
+            if (!this.#classes[class_choice]) {
                 this.#classes[class_choice] = {level: 0, features: []}
             }
 
@@ -62,11 +61,15 @@ try {
                 "barbarian": Barbarian,
             }
             player_class[class_choice].level_up(this, choices)
+
+            this.save()
         }
 
         //=====================================================================================================
         // Race
         //=====================================================================================================
+
+        get race() { return super.race }
 
         set race(race) {
             // Old race information
@@ -108,8 +111,6 @@ try {
         
             // Save state
             this.save();
-        
-            log(this.name + " race set to " + race + ".");
         }
 
         //=====================================================================================================
@@ -150,7 +151,7 @@ try {
             const racial_features = database.get_race(this.race).features
         
             // Features received from classes
-            const class_features = database.get_features_list().filter((feature) => {
+            /* const class_features = database.get_features_list().filter((feature) => {
                 const feature_data = database.get_feature(feature)
 
                 // Check if feature is optional
@@ -165,9 +166,9 @@ try {
                 const class_level = this.#classes[feature_class].level
                 const feature_level = feature_data.level
                 return feature_level <= class_level
-            })
+            }) */
         
-            return [...super.features, ...racial_features, ...class_features]
+            return [...super.features, ...racial_features]
         }
 
         //=====================================================================================================
@@ -200,25 +201,21 @@ try {
         // Instance
         //=====================================================================================================
 
-        constructor(id, reset) {
-            super(id)
-            let has_property_object = String(this.token.getProperty("object")) != "null";
+        constructor(id, reset, inherit) {
+            super(id, reset, true);
+            
+            // Reset validation
+            const noObject = String(this.token.getProperty("object")) === "null"
+            const notHumanoid = String(this.token.getProperty("class")) !== "null"
+                ? !JSON.parse(this.token.getProperty("class")).includes("Humanoid")
+                : true
 
-            // Reset if no previous data or if reset flag is true
-            if (!has_property_object || reset) {
+            const needsReset = noObject || reset || notHumanoid
+            if (needsReset) {
                 this.name = this.token.getName();
-                log(this.name + " was reset.");
-                this.save();
-            }
-            else {
-                try {
-                    this.load();
-                }
-                catch {
-                    this.name = this.token.getName();
-                    log(this.name + " failed to load and was reset.");
-                    this.save();
-                }
+                if (!inherit) this.save()
+            } else {
+                if (!inherit) this.load()
             }
         }
 
@@ -227,63 +224,24 @@ try {
         //=====================================================================================================
 
         load() {
-            let object = JSON.parse(this.token.getProperty("object"));
-
-            // Check for undefined values and raise an error
-            const keysToCheck = [
-                "name", "classes", "experience", "type", "race", "ability_scores", "speed", "health",
-                "resources", "features", "spells", "proficiencies",
-                "conditions", "equipment", "inventory"
-            ];
-
-            for (const key of keysToCheck) {
-                if (object[key] === undefined) {
-                    throw new Error(`Property "${key}" is undefined in the loaded object.`);
-                }
-            }
-
-            this.name = object.name;
-            this.#classes = object.classes;
-            this.#experience = object.experience;
-            this.type = object.type;
-            this.race = object.race;
-            this.ability_scores = object.ability_scores;
-            this.speed = object.speed;
-            this.health = object.health
-            this.resources = object.resources;
-            this.features = object.features;
-            this.proficiencies = object.proficiencies;
-            this.spells = object.spells;
-            this.conditions = object.conditions;
-            this.equipment = object.equipment;
-            this.inventory = object.inventory;
-
-            this.token.setProperty("class", "Creature");
+            super.load()
+            const object = JSON.parse(this.token.getProperty("object"));
+        
+            this.#classes = object.classes || this.#classes
+            this.#experience = object.experience ?? this.#experience
+        
+            this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
         }
-
+        
         save() {
-            let object = {
-                name: this.name,
-                classes: this.classes,
+            const object = {
+                ...super.save(),
                 experience: this.experience,
-                type: this.type,
-                race: this.race,
-                ability_scores: this.ability_scores,
-                speed: this.speed,
-                health: this.health,
-                resources: this.resources,
-                features: this.features,
-                proficiencies: this.proficiencies,
-                spells: this.spells,
-                conditions: this.conditions,
-                equipment: this.equipment,
-                inventory: this.inventory
-            };
+                classes: this.classes,
+            }
             
-            
-            this.token.setName(this.name);
+            this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
             this.token.setProperty("object", JSON.stringify(object));
-            this.token.setProperty("class", getInheritanceChain(this.constructor));
         }
 
         //=====================================================================================================

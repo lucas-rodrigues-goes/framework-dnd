@@ -215,7 +215,7 @@
 							ability_scores: impersonated().ability_scores,
 						},
 						skills: impersonated().skills,
-						saving_throws: impersonated().score_bonus,
+						saving_throws: impersonated().saving_throws,
 						conditions: impersonated().conditions,
 						features: impersonated().features,
 						proficiencies: impersonated().proficiencies,
@@ -359,7 +359,7 @@
 						features.clearChildren()
 
 						// Append features
-						for (const name of character.features.all) {
+						for (const name of character.features) {
 							// From database
 							const feature = database.features[name]
 							const type = feature.subtype || feature.type || "None"
@@ -411,6 +411,8 @@
 
 							// From database
 							const proficiency = database.proficiencies[name]
+							if (!proficiency) continue;
+							
 							const type = proficiency.type || "None"
 							const description = proficiency.description.slice(0, level + 1)
 							const image = proficiency_images[type] || ""
