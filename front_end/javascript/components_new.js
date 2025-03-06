@@ -9,6 +9,7 @@
 Parameters accepted include:
     tag: Determines tag of the element, defaults to "div"
     text: Determine textContent of the element, should be a string
+    textHTML: Overrides text, accepts HTML tags for its content.
     parent: Calls appendChild on the element specified here to append this element.
     attributes: An object attribute:value
     style: An object style:value
@@ -44,6 +45,12 @@ function element(options) {
     // Set text content
     if (typeof options.text === "string") {
         created_element.textContent = options.text;
+    }
+
+    // Set text content with HTML tags
+    if (typeof options.textHTML === "string") {
+        created_element.textContent = "";
+        created_element.insertAdjacentHTML("beforeend", options.textHTML);
     }
 
     // Add event listeners
