@@ -231,7 +231,7 @@
 					{
 						conditions: database.conditions.data,
 						features: database.features.data,
-						proficiencies: database.proficiencies.data,
+						proficiencies: database.proficiencies.data, proficiencies_ordered: database.get_proficiencies_list(),
 						damage_types: database.damage_types.data
 					}
 				)`))
@@ -400,23 +400,31 @@
 					if (!isEqualJSON(character_tab.proficiencies, character.proficiencies)) {
 						character_tab.proficiencies = character.proficiencies
 
+						// Ordered proficiencies
+						const character_proficiencies_ordered = database.proficiencies_ordered.filter(
+							item => Object.keys(character.proficiencies).includes(item)
+						)
+
 						// Clear container
 						const proficiencies = document.getElementById("character-proficiencies")
 						proficiencies.clearChildren()
 
 						// Append Conditions
-						for (const name in character.proficiencies) {
+						for (const name of character_proficiencies_ordered) {
 							// From character
 							const level = Number(character.proficiencies[name])
 
 							// From database
 							const proficiency = database.proficiencies[name]
-							if (!proficiency) continue;
+							if (!proficiency) { continue }
 							
 							const type = proficiency.type || "None"
-							const description = proficiency.description.slice(0, level + 1)
+							const description = proficiency.description.slice(0, level + 1) || ""
 							const image = proficiency_images[type] || ""
 							const level_title = " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
+
+							// Skip certain types
+							if (["skill"].includes(type)) {continue}
 
 							// Create description
 							const children = []

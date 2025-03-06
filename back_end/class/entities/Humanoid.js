@@ -1,6 +1,12 @@
 "use strict";
 try {
 
+    var classes_map = function () {
+        return {
+            "barbarian": Barbarian,
+        }
+    }
+
     var Humanoid = class extends Creature {
 
         //=====================================================================================================
@@ -11,35 +17,13 @@ try {
         #experience = 0
 
         //=====================================================================================================
-        // Methods
-        //=====================================================================================================
-
-        create({name, race, ability_scores}) {
-
-            /* // Ability Scores
-            for (const [score, value] of Object.entries(ability_scores)) {
-                this.set_ability_score(score, value)
-            } */
-
-            // Set basic information
-            this.name = name
-            this.type = "Humanoid"
-            this.race = race
-            
-            // Fill health
-            this.health = this.max_health
-        }
-
-        //=====================================================================================================
         // Leveling and Experience
         //=====================================================================================================
 
         get level() {
             let total = 0
-            if (this.#classes != {}) {
-                for (const player_class in this.#classes) {
-                    total += this.#classes[player_class].level
-                }
+            for (const player_class in this.#classes) {
+                total += Number(this.#classes[player_class].level)
             }
             return total
         }
@@ -48,6 +32,8 @@ try {
         get classes () { return this.#classes }
 
         level_up(class_choice, choices = {features: [], skills: []}) {
+            if (this.level >= 20) { return }
+
             // Create class object
             if (!this.#classes[class_choice]) {
                 this.#classes[class_choice] = {level: 0, features: []}
@@ -57,10 +43,7 @@ try {
             this.#classes[class_choice].level += 1
 
             // Call class level up
-            const player_class = {
-                "barbarian": Barbarian,
-            }
-            player_class[class_choice].level_up(this, choices)
+            classes_map()[class_choice].level_up(this, choices)
 
             this.save()
         }
@@ -123,7 +106,8 @@ try {
 
             // Level based health increase
             for (const player_class in this.#classes) {
-                const class_base_health = database.player_classes.data[player_class].base_health || 6
+                const class_base_health = classes_map()[player_class].healthPerLevel || 4
+
                 const class_level = this.#classes[player_class].level
                 calculated_max_health += class_base_health * class_level
             }
@@ -148,27 +132,29 @@ try {
 
         get features() {
             // Features received from race
-            const racial_features = database.get_race(this.race).features
+            const racial_features = database.get_race(this.race) 
+                ? database.get_race(this.race).features 
+                : []
         
             // Features received from classes
-            /* const class_features = database.get_features_list().filter((feature) => {
+            const class_features = database.get_features_list().filter(feature => {
                 const feature_data = database.get_feature(feature)
 
                 // Check if feature is optional
-                const feature_optional = feature_data.feature_optional
-                if (feature_optional) { return false }
-        
+                const feature_optional = feature_data.optional
+                if (feature_optional == "true") { return false }
+
                 // Check if belong to any class the character has
                 const feature_class = feature_data.subtype
-                if (!this.#classes.includes(feature_class)) { return false }
-        
+                if (!this.#classes[feature_class]) { return false }
+
                 // Checks if class level is enough for feature
                 const class_level = this.#classes[feature_class].level
                 const feature_level = feature_data.level
                 return feature_level <= class_level
-            }) */
+            })
         
-            return [...super.features, ...racial_features]
+            return [...super.features, ...racial_features, ...class_features]
         }
 
         //=====================================================================================================
@@ -213,6 +199,7 @@ try {
             const needsReset = noObject || reset || notHumanoid
             if (needsReset) {
                 this.name = this.token.getName();
+                this.type = "Humanoid"
                 if (!inherit) this.save()
             } else {
                 if (!inherit) this.load()

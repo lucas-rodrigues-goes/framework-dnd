@@ -2,11 +2,21 @@
 try {
 
     var Barbarian = class {
+
+        //=====================================================================================================
+        // Parameters
+        //=====================================================================================================
+
         static #description = ``
         static #healthPerLevel = 7
 
         static get description() { return this.#description }
         static get healthPerLevel () { return this.#healthPerLevel }
+
+
+        //=====================================================================================================
+        // Leveling
+        //=====================================================================================================
 
         static level_up(humanoid, choices = {skills: []}) {
             const current_level = humanoid.classes.barbarian.level
@@ -45,6 +55,13 @@ try {
                     break
                 }
 
+                case 5: {
+                    // Add extra attack feature
+                    if (!humanoid.has_feature("Extra Attack")) { humanoid.add_feature("Extra Attack") }
+
+                    break
+                }
+
                 case 20: {
                     // Increase STR and CON by 4 each
                     for (const score of ["strength", "constitution"]) {
@@ -57,6 +74,9 @@ try {
 
             humanoid.save()
         }
+
+        //=====================================================================================================
+
     }
 
 } catch (e) {

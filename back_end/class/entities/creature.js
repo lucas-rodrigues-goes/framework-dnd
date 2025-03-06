@@ -473,7 +473,7 @@ try {
                 this.proficiencies[name] = Math.max(this.get_proficiency_level(name), level)
             }
 
-            this.proficiencies[name] = level
+            this.proficiencies[name] = String(level)
             log(this.#name + " received the proficiency " + name + ".");
             
             this.save()
@@ -488,7 +488,7 @@ try {
         }
 
         get_proficiency_level(name) {
-            if (this.proficiencies[name]) {
+            if (this.proficiencies[name] || this.proficiencies[name] == 0) {
                 return this.proficiencies[name]
             }
             return -1
