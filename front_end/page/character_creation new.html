@@ -1,0 +1,296 @@
+    [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
+    [h,if(id==""):id = getImpersonated()]
+
+    [dialog5("Character Creation", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+    <head>
+        <script>
+            const id = "{id}"
+        </script>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+
+        [r:'
+        <style>
+            .container pre {
+                margin: 1vh 2vh;
+            }
+            .container p {
+                margin-bottom: 2vh;
+            }
+        </style>
+        <script>
+
+        //=====================================================================================================
+        // Helper functions
+        //=====================================================================================================
+        
+        function submit() {
+
+            const ability_scores = {
+                strength: getId("strength").getAttribute("value"),
+                dexterity: getId("dexterity").getAttribute("value"),
+                constitution: getId("constitution").getAttribute("value"),
+                wisdom: getId("wisdom").getAttribute("value"),
+                intelligence: getId("intelligence").getAttribute("value"),
+                charisma: getId("charisma").getAttribute("value"),
+            }
+
+            backend(
+                "var character = new Humanoid(getImpersonated(), true);" +
+                "character.create_character({" +
+                    "name: `" + getId("name").value + "`," +
+                    "race: `" + getId("race").value + "`," +
+                    getId("class").value 
+                        ?  "class: `" + getId("class").value + "`,"
+                        : "" +
+                    "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
+                "})"
+            )
+            closePage("Character Creation")
+
+        }
+
+        //=====================================================================================================
+        // Update Page
+        //=====================================================================================================
+
+        async function updateRace() {
+            const race = getId("race").value
+
+            // Retrieve data
+            const data = JSON.parse(await backend(`JSON.stringify({
+                race: database.get_race("`+race+`"),
+                features: database.features.data,
+                proficiencies: database.proficiencies.data
+            })`)) || {}
+
+            // Description
+            const race_description_div = getId("race-description")
+            race_description_div.clearChildren()
+            if (data.race) {
+                race_description_div.appendChild({tag: "pre", textHTML: data.race.description})
+            } 
+            else { race_description_div.appendChild({tag: "p", text: "Choose a race to see its description."}) }
+
+            // Features
+            const race_features_div = getId("race-features")
+            race_features_div.clearChildren()
+            if (data.race) {
+                for (const feature_name of data.race.features) {
+                    const feature = data.features[feature_name]
+
+                    // If feature exists in database
+                    if (feature) {
+                        race_features_div.appendChild(
+                            {tag: "p", style: {textAlign: "left"}, children: [
+                                {tag: "b", text: feature.name}, 
+                                {tag: "pre", text: feature.description}
+                            ]}
+                        )
+                    }
+                }
+            } 
+            else { race_features_div.appendChild({tag: "p", text: "Choose a race to see its features."}) }
+
+            // Proficiencies
+            const race_proficiencies_div = getId("race-proficiencies")
+            race_proficiencies_div.clearChildren()
+            if (data.race) {
+                for (const item of data.race.proficiencies) {
+                    const proficiency = data.proficiencies[item.name]
+
+                    // If proficiency exists in database
+                    if (proficiency) {
+                        const title = proficiency.type == "language" 
+                            ? "Language"
+                            : {0: "Proficiency", 1: "Expertise"}[item.level]
+
+                        race_proficiencies_div.appendChild(
+                            {tag: "p", style: {textAlign: "left"}, children: [
+                                {tag: "b", text: proficiency.name + " " + title},
+                                {tag: "pre", children: [
+                                    Number(item.level) >= 0 ? {tag: "span", text: proficiency.description[0]} : null,
+                                    Number(item.level) >= 1 ? {tag: "span", text: proficiency.description[1]} : null,
+                                ]}
+                            ]}
+                        )
+                    }
+                }
+            } 
+            else { race_proficiencies_div.appendChild({tag: "p", text: "Choose a race to see its proficiencies."}) }
+
+            // Ability Scores
+            const race_ability_scores_div = getId("race-ability-scores")
+            race_ability_scores_div.clearChildren()
+            if (data.race) {
+                // Helper variables
+                let first_score = true, shown_scores = 0
+
+                const ability_scores_text = []
+                for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) {
+                    const value = data.race.ability_scores[score]
+
+                    if (value != 0) {
+                        ability_scores_text.push(
+                            first_score ? null : {tag: "span", text: ", "},
+                            shown_scores == 3 ? {tag: "br"} : null,
+                            {tag: "b", text: capitalize(score) + ": "},
+                            Number(value) > 0 ? {tag: "span", text: "+"} : null,
+                            {tag: "span", text: value}
+                        )
+
+                        if (first_score) { first_score = false }
+                        shown_scores ++
+                    }
+                }
+            
+                race_ability_scores_div.appendChild({tag: "p", children: ability_scores_text})
+            } 
+            else { race_ability_scores_div.appendChild({tag: "p", text: "Choose a race to see its ability score bonuses."}) }
+        }
+
+        async function updateClass() {
+            const cls = getId("class").value
+
+            // Retrieve data
+            const data = JSON.parse(await backend(`JSON.stringify({
+                description: `+cls+`.description,
+                features_list: database.get_features_list({subtype: "`+cls.toLowerCase()+`", level: 1}),
+                features: database.features.data,
+            })`)) || {}
+
+            console.log(data)
+
+            // Features
+            const features_div = getId("class-features")
+            features_div.clearChildren()
+            if (true) {
+                for (const feature_name of data.features_list) {
+                    const feature = data.features[feature_name]
+
+                    // If feature exists in database
+                    if (feature) {
+                        features_div.appendChild(
+                            {tag: "p", style: {textAlign: "left"}, children: [
+                                {tag: "b", text: feature.name}, 
+                                {tag: "pre", text: feature.description}
+                            ]}
+                        )
+                    }
+                }
+            } 
+            else { features_div.appendChild({tag: "p", text: "Choose a class to see its features."}) }
+        }
+
+        //=====================================================================================================
+        // Load HTML
+        //=====================================================================================================
+
+        async function loadPage() {
+            // Load tabs
+            create_tabs({content: ["race", "class", "attributes"], parent: document.body})
+
+            // Database
+            const data = JSON.parse(await backend(`JSON.stringify({
+                name: MapTool.tokens.getTokenByID(getImpersonated()).getName(),
+                races: database.get_races_list(),
+            })`))
+
+            // Options
+            const race_options = []
+            for (const race of data.races) {
+                race_options.push({tag: "option", text: race})
+            }
+            const class_options = []
+            for (const class_ of ["Barbarian"]) {
+                class_options.push({tag: "option", text: class_})
+            }
+
+            // Race Tab
+            document.getElementById("race-tab").appendChildren([
+                {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                    container({title: "Basic", children: [
+                        input({id: "name", placeholder: "Name", options: {input: {attributes: {value: data.name}}}}),
+                        select({id: "race", placeholder: "Race", children: race_options, options: {
+                            input: {events: {input: updateRace}}
+                        }})
+                    ]}),
+                    container({title: "Description", id: "race-description", children: [
+                        {tag: "p", text: "Choose a race to see its description."}
+                    ]}),
+                    container({title: "Attribute Scores", id: "race-ability-scores", children: [
+                        {tag: "p", text: "Choose a race to see its bonuses to ability scores."}
+                    ]})
+                ]},
+                {tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
+                    container({title: "Features", id: "race-features", children: [
+                        {tag: "p", text: "Choose a race to see its features."}
+                    ]}),
+                    container({title: "Proficiencies", id: "race-proficiencies", children: [
+                        {tag: "p", text: "Choose a race to see its proficiencies."}
+                    ]}),
+                ]},
+                {tag: "button", text: "Next", attributes: {class: "bottom right page-turner"}, 
+                    events: {click: () => getId("class-switch").click()}
+                }
+            ])
+
+            // Class Tab
+            document.getElementById("class-tab").appendChildren([
+                {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                    container({title: "Basic", children: [
+                        select({id: "class", placeholder: "Class", children: class_options,
+                            options: {
+                                input: {events: {input: updateClass}}
+                            }
+                        })
+                    ]}),
+                    container({title: "Description", id: "class-description", children: [
+                        {tag: "p", text: "Choose a class to see its description."}
+                    ]}),
+                ]},
+                {tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
+                    container({title: "Features", id: "class-features", children: [
+                        {tag: "p", text: "Choose a class to see its features."}
+                    ]}),
+                    container({title: "Proficiencies", id: "class-proficiencies", children: [
+                        {tag: "p", text: "Choose a class to see its proficiencies."}
+                    ]}),
+                ]},
+                {tag: "button", text: "Back", attributes: {class: "bottom left page-turner"}, 
+                    events: {click: () => getId("race-switch").click()}
+                },
+                {tag: "button", text: "Next", attributes: {class: "bottom right page-turner"}, 
+                    events: {click: () => getId("attributes-switch").click()}
+                }
+            ])
+
+            // Attributes Tab
+            document.getElementById("attributes-tab").appendChildren([
+                {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                    events: {click: submit}
+                }
+            ])
+        }
+        
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        window.onload = function () {
+            loadPage()
+        }
+
+        //=====================================================================================================
+
+        </script>
+        ']
+    </head>
+
+    <body>
+    </body>
+
+    }]

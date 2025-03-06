@@ -30,17 +30,14 @@
                 charisma: getId("charisma").getAttribute("value"),
             }
 
-            const request = (
-            "var creature = new Creature(getImpersonated(), true);" +
-            "creature.create_character({" +
-                "name: `" + getId("name").value + "`," +
-                "type: `" + "Humanoid" + "`," +
-                "race: `" + getId("race").value + "`," +
-                "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
-            "})"
+            backend(
+                "var character = new Humanoid(getImpersonated(), true);" +
+                "character.create_character({" +
+                    "name: `" + getId("name").value + "`," +
+                    "race: `" + getId("race").value + "`," +
+                    "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
+                "})"
             )
-
-            toBackend(request)
             closePage("Character Creation")
 
         }

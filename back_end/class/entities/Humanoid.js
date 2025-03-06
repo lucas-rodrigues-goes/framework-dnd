@@ -17,6 +17,28 @@ try {
         #experience = 0
 
         //=====================================================================================================
+        // Character Creation
+        //=====================================================================================================
+
+        create_character({name, race, character_class, ability_scores}) {
+
+            // Ability Scores
+            for (const [score, value] of Object.entries(ability_scores)) {
+                this.set_ability_score(score, value)
+            }
+
+            // Set basic information
+            this.name = name
+            this.race = race
+
+            // Add class
+            if (character_class) { this.level_up(character_class) }
+
+            // Fill health
+            this.health = this.max_health
+        }
+
+        //=====================================================================================================
         // Leveling and Experience
         //=====================================================================================================
 
