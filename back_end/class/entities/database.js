@@ -503,18 +503,18 @@ try {
             }
         
             const classOrder = {
-                "barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
-                "bard": ["College of Lore", "College of Valor"],
-                "cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
-                "druid": ["Circle of the Land", "Circle of the Moon"],
-                "fighter": ["Champion", "Battle Master", "Eldritch Knight"],
-                "monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
-                "paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
-                "ranger": ["Hunter", "Beast Master"],
-                "rogue": ["Thief", "Assassin", "Arcane Trickster"],
-                "sorcerer": ["Draconic Bloodline", "Wild Magic"],
-                "warlock": ["The Archfey", "The Fiend", "The Great Old One"],
-                "wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
+                "Barbarian": ["Path of the Berserker", "Path of the Totem Warrior"],
+                "Bard": ["College of Lore", "College of Valor"],
+                "Cleric": ["Knowledge Domain", "Life Domain", "Light Domain", "Nature Domain", "Tempest Domain", "Trickery Domain", "War Domain"],
+                "Druid": ["Circle of the Land", "Circle of the Moon"],
+                "Fighter": ["Champion", "Battle Master", "Eldritch Knight"],
+                "Monk": ["Way of the Open Hand", "Way of Shadow", "Way of the Four Elements"],
+                "Paladin": ["Oath of Devotion", "Oath of the Ancients", "Oath of Vengeance"],
+                "Ranger": ["Hunter", "Beast Master"],
+                "Rogue": ["Thief", "Assassin", "Arcane Trickster"],
+                "Sorcerer": ["Draconic Bloodline", "Wild Magic"],
+                "Warlock": ["The Archfey", "The Fiend", "The Great Old One"],
+                "Wizard": ["School of Abjuration", "School of Conjuration", "School of Divination", "School of Enchantment", "School of Evocation", "School of Illusion", "School of Necromancy", "School of Transmutation"]
             };
             const flatOrder = [];
             Object.entries(classOrder).forEach(([mainClass, subclasses]) => {

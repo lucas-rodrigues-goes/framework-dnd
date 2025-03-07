@@ -44,10 +44,11 @@
             "impersonated().create_character({" +
                 "name: `" + getId("name").value + "`," +
                 "race: `" + getId("race").value + "`," +
-                (getId("class").value ?  "character_class: `" + getId("class").value.toLowerCase() + "`," : "") +
+                (getId("class").value ?  "character_class: `" + getId("class").value + "`," : "") +
                 // "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
             "})"
         )
+        console.log(request)
         backend(request)
         closePage("Character Creation")
 
@@ -158,7 +159,7 @@
         // Retrieve data
         const data = JSON.parse(await backend(`JSON.stringify({
             description: `+cls+`.description,
-            features_list: database.get_features_list({subtype: "`+cls.toLowerCase()+`", level: 1}),
+            features_list: database.get_features_list({subtype: "`+cls+`", level: 1}),
             features: database.features.data,
         })`)) || {}
 
@@ -203,7 +204,7 @@
             race_options.push({tag: "option", text: race})
         }
         const class_options = []
-        for (const class_ of ["Barbarian"]) {
+        for (const class_ of ["Barbarian", "Wizard"]) {
             class_options.push({tag: "option", text: class_})
         }
 

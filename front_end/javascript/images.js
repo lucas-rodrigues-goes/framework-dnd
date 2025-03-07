@@ -8,21 +8,21 @@ const condition_images = {
 };
 
 const class_images = {
-    barbarian: "asset://d963c8b40a27e349e6239dcc3a1cbce2",
-    bard: "asset://17a9f3a727fb50c75bff76d4e8ed6d27",
-    cleric: "asset://039a32067cd1c26bf1e18c423a218f5c",
-    druid: "asset://f03485d26b9728b00fc54c9e4e4b5b4c",
-    fighter: "asset://0775774cade2e68e4a9c4bd5c83ea282",
+    Barbarian: "asset://d963c8b40a27e349e6239dcc3a1cbce2",
+    Bard: "asset://17a9f3a727fb50c75bff76d4e8ed6d27",
+    Cleric: "asset://039a32067cd1c26bf1e18c423a218f5c",
+    Druid: "asset://f03485d26b9728b00fc54c9e4e4b5b4c",
+    Fighter: "asset://0775774cade2e68e4a9c4bd5c83ea282",
         "Battle Master": "asset://e44045582f8f31922e6c0bd793b10077",
         Champion: "asset://1e718dbea4b8624c664fd346724216d6",
         "Eldritch Knight": "asset://d616194e11b05843b3553697ae268e05",
-    monk: "asset://8047e1c0694233eb11d5a0f669e61a54",
-    paladin: "asset://f3fcf46aaf9c1a13e33f40c62a91f541",
-    ranger: "asset://90baa66f12545c72476e0cfd3050620f",
-    rogue: "asset://e105c25e25210a5e107d49ef0af2bfb5",
-    sorcerer: "asset://57460f85630f7d84602ff9128eccfef4",
-    warlock: "asset://9663e79e3e5c493352a92ca0ba6acc60",
-    wizard: "asset://feb415509eb88654c71b1fa53d0879f1",
+    Monk: "asset://8047e1c0694233eb11d5a0f669e61a54",
+    Paladin: "asset://f3fcf46aaf9c1a13e33f40c62a91f541",
+    Ranger: "asset://90baa66f12545c72476e0cfd3050620f",
+    Rogue: "asset://e105c25e25210a5e107d49ef0af2bfb5",
+    Sorcerer: "asset://57460f85630f7d84602ff9128eccfef4",
+    Warlock: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+    Wizard: "asset://feb415509eb88654c71b1fa53d0879f1",
 };
 
 const feature_images = {

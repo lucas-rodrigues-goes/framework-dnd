@@ -1,12 +1,6 @@
 "use strict";
 try {
 
-    var classes_map = function () {
-        return {
-            "barbarian": Barbarian,
-        }
-    }
-
     var Humanoid = class extends Creature {
 
         //=====================================================================================================
@@ -23,8 +17,10 @@ try {
         create_character({name, race, character_class, ability_scores}) {
 
             // Ability Scores
-            for (const [score, value] of Object.entries(ability_scores)) {
-                this.set_ability_score(score, value)
+            if (ability_scores) {
+                for (const [score, value] of Object.entries(ability_scores)) {
+                    this.set_ability_score(score, value)
+                }
             }
 
             // Set basic information
@@ -65,7 +61,7 @@ try {
             this.#classes[class_choice].level += 1
 
             // Call class level up
-            classes_map()[class_choice].level_up(this, choices)
+            eval(class_choice).level_up(this, choices)
 
             this.save()
         }
@@ -128,7 +124,7 @@ try {
 
             // Level based health increase
             for (const player_class in this.#classes) {
-                const class_base_health = classes_map()[player_class].healthPerLevel || 4
+                const class_base_health = eval(player_class).healthPerLevel || 4
 
                 const class_level = this.#classes[player_class].level
                 calculated_max_health += class_base_health * class_level

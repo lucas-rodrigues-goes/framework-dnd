@@ -4,21 +4,26 @@ try {
     var Barbarian = class {
 
         //=====================================================================================================
-        // Parameters
+        // Class Information
         //=====================================================================================================
 
-        static #description = ``
-        static #healthPerLevel = 7
-
-        static get description() { return this.#description }
-        static get healthPerLevel () { return this.#healthPerLevel }
+        static get description() { 
+            return `
+                For some, their rage springs from a communion with fierce animal spirits. 
+                Others draw from a roiling reservoir of anger at a world full of pain. 
+                For every barbarian, rage is a power that fuels not just a battle frenzy 
+                but also uncanny reflexes, resilience, and feats of strength.
+            ` 
+        }
+        static get healthPerLevel () { return 7 }
+        static get image () { return "asset://d963c8b40a27e349e6239dcc3a1cbce2" }
 
         //=====================================================================================================
         // Leveling
         //=====================================================================================================
 
         static level_up(humanoid, choices = {skills: []}) {
-            const current_level = humanoid.classes.barbarian.level
+            const current_level = humanoid.classes.Barbarian.level
 
             // Update Rage
             if (current_level == 1) humanoid.set_new_resource("Rage", 2, "long rest") //--> Creates resource
