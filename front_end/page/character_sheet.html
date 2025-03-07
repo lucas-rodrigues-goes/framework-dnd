@@ -211,7 +211,7 @@
 						basic: {
 							name: impersonated().name,
 							portrait: impersonated().portrait,
-							class: impersonated().class || "None",
+							classes: impersonated().classes,
 							ability_scores: impersonated().ability_scores,
 						},
 						skills: impersonated().skills,
@@ -243,7 +243,13 @@
 
 						document.getElementById("name").textContent = character.basic.name
 						document.getElementById("portrait").setAttribute("src", character.basic.portrait)
-						document.getElementById("class").textContent = character.basic.class
+
+						let class_text = ""
+						for (const cls in character.basic.classes) {
+							class_text += class_text ? " / " : ""
+							class_text += capitalize(cls)
+						}
+						document.getElementById("class").textContent = class_text
 
 						for (const score in character.basic.ability_scores) {
 							document.getElementById(score).textContent = character.basic.ability_scores[score]
@@ -870,13 +876,15 @@
 						{tag: "h2", attributes: {id: "name"}},
 
 						{tag: "img", attributes: {id: "portrait"}},
-						
-						subtitle({text: "Class"}),
-						{tag: "h2", attributes: {id: "class"}},
+
+						{tag: "div", children: [
+							subtitle({text: "Class"}),
+							{tag: "h2", attributes: {id: "class"}},
+						]},
 
 						container({title: "Ability Scores", options: {div: {style: {marginTop: "5vh"}}}, children: [
 							ability_scores()
-						]})
+						]}),
 						
 					]},
 					{tag: "div", attributes: {id: "character-tab-right"}, children: [
