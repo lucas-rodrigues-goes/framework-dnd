@@ -461,18 +461,15 @@
             // GM Menu
             const gm_display = gm ? "block" : "none"
             element(
-                {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display}, children: [
-                    {tag: "button",
-                        text: "Character Creation",
-                        events: {
-                            click: () => openClosePage("", "Character Creation", "character_creation.html")
-                        }
+                {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
+                    {tag: "button", text: "Character Creation", 
+                        events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
                     },
-                    {tag: "button", 
-                        text: "Database",
-                        events: {
-                            click: () => openClosePage("", "Database", "database.html")
-                        }
+                    {tag: "button", text: "Give Item",
+                        events: {click: () => openClosePage("", "Give Item", "give_item.html")}
+                    },
+                    {tag: "button", text: "Database", 
+                        events: {click: () => openClosePage("", "Database", "database.html")}
                     },
                 ]}
             )

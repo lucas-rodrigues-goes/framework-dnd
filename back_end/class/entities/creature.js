@@ -453,7 +453,7 @@ try {
         }
 
         has_feature(name) {
-            return this.#features.includes(name);
+            return this.features.includes(name);
         }
     
 
