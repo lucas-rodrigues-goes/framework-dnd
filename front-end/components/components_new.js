@@ -443,6 +443,56 @@ function create_tabs({content=[], parent}) {
     )
 }
 
+function modal({children = [], options = {}}) {
+
+    // Options
+    const { div: div_options = {}, content: content_options = {} } = options;
+    const { style: div_style = {}, events: div_events = {}, attributes: div_attributes = {} } = div_options;
+    const { events: content_events = {} } = content_options;
+
+    // Content click behavior
+    function content_click (event) {
+        event.stopPropagation()
+
+        if (content_events.click) {
+            content_events.click()
+        }
+    }
+
+    // Element
+    return element(
+        {...div_options,
+            tag: "div",
+            parent: document.body,
+            attributes: {...div_attributes,
+                id: "modal"
+            },
+            style: {...div_style,
+                position: "absolute", 
+                height: "100vh", width: "100vw", 
+                backgroundColor: "rgba(0, 0, 0, 0.5)", 
+                zIndex: 1000
+            },
+            events: {...div_events,
+                click: close_modal
+            },
+            children: [
+                {...content_options,
+                    tag: "div",
+                    events: {...content_events,
+                        click: content_click
+                    },
+                    children: children
+                }
+            ]
+        }
+    )
+}
+
+function close_modal() {
+    document.getElementById("modal").remove()
+}
+
 //=====================================================================================================
 
 `']`
