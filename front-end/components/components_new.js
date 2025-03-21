@@ -443,8 +443,7 @@ function create_tabs({content=[], parent}) {
     )
 }
 
-function modal({children = [], options = {}}) {
-
+function modal({children = [], options = {}, parent = document.body}) {
     // Options
     const { div: div_options = {}, content: content_options = {} } = options;
     const { style: div_style = {}, events: div_events = {}, attributes: div_attributes = {} } = div_options;
@@ -463,15 +462,20 @@ function modal({children = [], options = {}}) {
     return element(
         {...div_options,
             tag: "div",
-            parent: document.body,
+            parent: parent,
             attributes: {...div_attributes,
                 id: "modal"
             },
             style: {...div_style,
-                position: "absolute", 
-                height: "100vh", width: "100vw", 
-                backgroundColor: "rgba(0, 0, 0, 0.5)", 
-                zIndex: 1000
+                position: "absolute",
+                top: "0",
+                left: "0",
+                right: "0",
+                bottom: "0",
+                margin: "0",
+                height: "100%",
+                width: "100%",
+                zIndex: "10000",
             },
             events: {...div_events,
                 click: close_modal
@@ -488,9 +492,106 @@ function modal({children = [], options = {}}) {
         }
     )
 }
-
 function close_modal() {
     document.getElementById("modal").remove()
+}
+
+// Buttons object receives "title: function"
+function context_menu({buttons = {}, options = {}, parent = document.body, event}) {
+    // Options
+    const { div: div_options = {}, content: content_options = {} } = options;
+    const { style: div_style = {}, events: div_events = {}, attributes: div_attributes = {} } = div_options;
+    const { events: content_events = {} } = content_options;
+
+    // Content click behavior
+    function content_mousedown (event) {
+        event.stopPropagation()
+
+        if (content_events.mousedown) {
+            content_events.mousedown()
+        }
+    }
+
+    // Create buttons
+    const children = []
+    for (const button_title in buttons) {
+        const button_click = buttons[button_title]
+
+        children.push({
+            tag: "li", 
+            text: button_title,
+            events: {click: () => {button_click(); close_context_menu()}}
+        })
+    }
+
+    // Element
+    const return_element = element(
+        {...div_options,
+            tag: "div",
+            parent: parent,
+            attributes: {...div_attributes,
+                id: "context-menu"
+            },
+            style: {...div_style,
+                position: "absolute",
+                top: "0",
+                left: "0",
+                right: "0",
+                bottom: "0",
+                margin: "0",
+                height: "100%",
+                width: "100%",
+                zIndex: "10000",
+            },
+            events: {...div_events,
+                mousedown: close_context_menu,
+            },
+            children: [
+                {...content_options,
+                    tag: "div",
+                    style: {width: "fit-content"},
+                    events: {...content_events,
+                        mousedown: content_mousedown,
+                    },
+                    children: children
+                }
+            ]
+        }
+    );
+
+    // Position the content and handle viewport edges
+    function position_menu() {
+        const content = return_element.children[0]
+
+        const rect = content.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        let left = event.clientX - 1;
+        let top = event.clientY - 1;
+
+        // Adjust horizontal position if needed
+        if (left + rect.width > viewportWidth) {
+            left = viewportWidth - rect.width - 8;
+        }
+
+        // Adjust vertical position if needed
+        if (top + rect.height > viewportHeight) {
+            top = viewportHeight - rect.height - 8;
+        }
+
+        content.style.position = "absolute"
+        content.style.left = left + `px`;
+        content.style.top = top + `px`;
+    }
+    position_menu();
+
+    return return_element
+}
+function close_context_menu() {
+    for (const element of document.querySelectorAll("#context-menu")) {
+        element.remove()
+    }
 }
 
 //=====================================================================================================

@@ -222,6 +222,149 @@
 			}
 			
 			//=====================================================================================================
+			// Modals and context menus
+			//=====================================================================================================
+
+			function itemContext(event, slot, position) {
+				if (event.button != 2) return;
+
+				// Define context-menu buttons
+				const buttons = {
+					"Description": () => {itemDescription(slot)},
+					"Unequip": () => {itemUnequip(position)},
+					"Split": () => {itemSplit(slot, position)},
+					"Send to Target": () => {backend(`impersonated().send_item("`+position+`")`)},
+					"Drop": () => {itemDrop(slot, position)},
+				}
+
+				// Remove invalid options
+				if (!isNaN(Number(position))) delete buttons["Unequip"]
+				if (slot.amount == 1) delete buttons["Split"]
+				
+				context_menu({event: event, buttons: buttons})
+			};
+			async function itemDescription(slot) {
+				// Item from database
+				const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
+
+				// Name
+				const name = slot.amount == 1
+					? item.name
+					: slot.amount + " " + item.name + "s"
+
+				// Subtitle
+				const type = item.subtype || item.type
+				const rarity = item.rarity == "common"
+					? ""
+					: item.rarity + " "
+				const subtitle = capitalizeAll(rarity + type)
+
+				// Weight
+				const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
+
+				// Damage
+				let damage = ""
+				for (let i = 0 ; i < item.damage.length ; i++) {
+					const current = item.damage[i]
+					damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+					damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
+				}
+
+				// Other Arrays
+				const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
+				const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
+
+				// Element
+				function title_value({title, value}) {
+					return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
+						{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+						{tag: "span", style: {color: "#aaa"}, text: value},
+					]}
+				}
+
+				modal({parent: document.getElementById("inventory-tab"), children: [
+					{tag: "div", style: {padding: "0 1vh"}, children: [
+						{tag: "div", 
+							style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative", margin: "auto", marginBottom: "2vh", width: "fit-content"}, 
+							children: [
+								{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
+								{tag: "br"},
+								{tag: "span", style: {color: "#aaa"}, text: subtitle},
+								{tag: "img", attributes: {src: item.image}, style: {position: "absolute", left: "-5.5vh", top: 0, height: "4vh"}}
+							]
+						},
+						{tag: "div", style: {textAlign: "left"}, children: [
+							damage ? title_value({title: "Damage", value: damage}) : null,
+							item.recovery ? title_value({title: "Recovery Speed", value: String(item.recovery)}) : null,
+							item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
+							weight ? title_value({title: "Weight", value: weight}) : null,
+							properties ? title_value({title: "Properties", value: properties}) : null,
+							conditions ? title_value({title: "Conditions", value: conditions}) : null,
+						]},
+						item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
+					]}
+				]})
+			}
+			async function itemUnequip(position) {
+				backend(`impersonated().split_item("`+position+`")`)
+			}
+			async function itemSplit(slot, position) {
+				// Item from database
+				const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
+
+				modal({parent: document.getElementById("inventory-tab"), children: [
+					// Collect split amount
+					input({id: "modal-split-amount", placeholder: "Ammount to split", options: {div: {style: {width: "70%"}}}}), 
+					
+					// Spacing
+					{tag: "div", style: {height: "1vh"}},
+
+					// Uses drop amount inserted on input field for drop function
+					{tag: "button", text: "Split", events: {click: () => {
+						const split_amount = document.getElementById("modal-split-amount").value
+
+						backend(`impersonated().split_item("`+position+`", `+split_amount+`)`)
+						close_modal()
+					}}}
+				]})
+
+				// Set value for the input field
+				const split_amount = document.getElementById("modal-split-amount")
+				split_amount.value = Math.floor(slot.amount / 2)
+				split_amount.dispatchEvent(new Event("input"))
+			}
+			async function itemDrop(slot, position) {
+				// If single item in slot automatically drops
+				if (slot.amount == 1) {
+					backend(`impersonated().drop_item("`+position+`")`)
+					return
+				}
+
+				// Create modal to ask how many to drop
+				modal({parent: document.getElementById("inventory-tab"), children: [
+					// Collect drop amount
+					input({id: "modal-drop-amount", placeholder: "Ammount to drop", options: {div: {style: {width: "70%"}}}}), 
+					
+					// Spacing
+					{tag: "div", style: {height: "1vh"}},
+
+					// Uses drop amount inserted on input field for drop function
+					{tag: "button", text: "Drop", events: {click: () => {
+						const drop_amount = document.getElementById("modal-drop-amount").value
+
+						backend(`impersonated().drop_item("`+position+`", `+drop_amount+`)`)
+						close_modal()
+					}}}
+				]})
+
+				// Set value for the input field
+				const drop_amount = document.getElementById("modal-drop-amount")
+				drop_amount.value = slot.amount
+				drop_amount.dispatchEvent(new Event("input"))
+			}
+
+
+			//=====================================================================================================
 			// Update Page
 			//=====================================================================================================
 
@@ -614,117 +757,6 @@
 				// Database
 				const database = JSON.parse(await backend(`database.items.data`))
 
-				// Item
-				let timeout = null, clickCount = 0;
-				function itemClick(slot) {
-					clickCount++;
-
-					// Helper
-					function resetCounter() {
-						clearTimeout(timeout);
-						clickCount = 0;
-					}
-					
-					if (clickCount === 1) {
-					// Wait 300ms to see if a second click comes
-					timeout = setTimeout(() => {
-						if (clickCount === 1) {
-							itemDescription(slot)
-						}
-						resetCounter();
-					}, 300);
-					} else if (clickCount === 2) {
-						itemSplit(slot)
-					resetCounter();
-					}
-				};
-				async function itemDescription(slot) {
-					// Clear Container
-					const item_container = document.getElementById("item-description")
-					item_container.clearChildren()
-
-					// Item from database
-					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
-
-					// Name
-					const name = slot.amount == 1
-						? item.name
-						: slot.amount + " " + item.name + "s"
-
-					// Subtitle
-					const type = item.subtype || item.type
-					const rarity = item.rarity == "common"
-						? ""
-						: item.rarity + " "
-					const subtitle = capitalizeAll(rarity + type)
-
-					// Weight
-					const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
-
-					// Damage
-					let damage = ""
-					for (let i = 0 ; i < item.damage.length ; i++) {
-						const current = item.damage[i]
-						damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
-						damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
-					}
-
-					// Other Arrays
-					const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
-					const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
-
-					// Element
-					function title_value({title, value}) {
-						return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
-							{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-							{tag: "span", style: {color: "#aaa"}, text: value},
-						]}
-					}
-					item_container.appendChild(
-						{tag: "div", style: {padding: "0 1vh"}, children: [
-							{tag: "div", 
-								style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative", margin: "auto", marginBottom: "2vh", width: "fit-content"}, 
-								children: [
-									{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
-									{tag: "br"},
-									{tag: "span", style: {color: "#aaa"}, text: subtitle},
-									{tag: "img", attributes: {src: item.image}, style: {position: "absolute", left: "-5.5vh", top: 0, height: "4vh"}}
-								]
-							},
-							{tag: "div", style: {textAlign: "left"}, children: [
-								damage ? title_value({title: "Damage", value: damage}) : null,
-								item.recovery ? title_value({title: "Recovery Speed", value: String(item.recovery)}) : null,
-								item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
-								weight ? title_value({title: "Weight", value: weight}) : null,
-								properties ? title_value({title: "Properties", value: properties}) : null,
-								conditions ? title_value({title: "Conditions", value: conditions}) : null,
-							]},
-							item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
-						]}
-					)
-				}
-				async function itemSplit(slot) {
-					// Clear Container
-					const item_container = document.getElementById("item-description")
-					item_container.clearChildren()
-
-					// Item from database
-					const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
-
-					item_container.appendChild({tag:"div", text: "split item"})
-				}
-				async function itemReset() {
-					if (isEqualJSON(inventory_tab.inventory, character.inventory) && isEqualJSON(inventory_tab.equipment, character.equipment)) { return }
-					
-					// Clear Container
-					const item_container = document.getElementById("item-description")
-					item_container.clearChildren()
-
-					// Default content
-					item_container.appendChild("Click an item to see its description")
-				}
-				itemReset()
-
 				// Basic Attributes
 				function updateBasicAttributes() {
 					// Verify if basic properties received changes
@@ -785,7 +817,7 @@
 
 							// Item amount (when slot amount > 1)
 							amount = slot.amount > 1
-								? {tag: "span", attributes: {class: "inventory-item-amount"}, text: String(slot.amount)}
+								? {tag: "span", attributes: {class: "inventory-item-amount"}, style: {pointerEvents: "none"}, text: String(slot.amount)}
 								: null
 
 							// Item image
@@ -801,7 +833,7 @@
 									events: {
 										dragstart, 
 										dragend, 
-										click: ()=>{itemClick(slot)},
+										mousedown: (event)=> itemContext(event, slot, position),
 									}
 								}
 							]}
@@ -884,7 +916,7 @@
 
 							// Item amount (when slot amount > 1)
 							amount = slot.amount > 1
-								? {tag: "span", attributes: {class: "inventory-item-amount"}, text: String(slot.amount)}
+								? {tag: "span", attributes: {class: "inventory-item-amount"}, style: {pointerEvents: "none"}, text: String(slot.amount)}
 								: null
 
 							// Item image
@@ -900,7 +932,7 @@
 									events: {
 										dragstart, 
 										dragend, 
-										click: ()=>{itemClick(slot)}
+										mousedown: (event)=> itemContext(event, slot, position)
 									}
 								}
 							]} 
@@ -1028,19 +1060,6 @@
 									}
 								}
 							]}
-						]}),
-						// Item description
-						container({title: "Item", children: [
-							{tag: "div",
-								attributes: {id: "item-description"},
-								style: {
-									marginTop: "1.5vh",
-									marginBottom: "-2vh",
-									height: "28vh",
-									overflow: "scroll"
-								},
-								children: ["Click an item to see its description"]
-							}
 						]})
 					]},
 					{tag: "div", style: {position: "absolute", right: "0", width: "55%"}, children: [

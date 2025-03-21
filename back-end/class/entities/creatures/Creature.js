@@ -806,37 +806,53 @@ try {
                 }
             };
             const isInventoryIndex = (index) => !isNaN(Number(index));
-
+        
             // Update inventory
             this.update_inventory_slots();
-
+        
             // Define slot item
             const container = isInventoryIndex(index) ? "inventory" : "equipment"
             const slot = getSlot(container, index)
             const item = database.get_item(slot.name);
-
+        
             if (!slot.name) {
                 log("No item to drop at the specified index.");
                 return;
             }
-    
+        
             // Clamp amount to drop
-            amount = amount ? Math.min(amount, item.amount) : item.amount;
-    
+            amount = amount ? Math.min(amount, slot.amount) : slot.amount;
+        
             if (item.stackable) {
                 if (amount < slot.amount) {
                     slot.amount -= amount;
+                    setSlot(container, index, slot); // Update the slot with the new amount
                 } else {
-                    setSlot(container,index,null);
+                    setSlot(container, index, null); // Remove the item if all are dropped
                 }
             } else {
-                setSlot(container,index,null);
+                setSlot(container, index, null); // Non-stackable items are removed entirely
             }
-    
+        
             this.save();
         }
 
+        split_item(index, amount) {
+            for(const dest_index in this.inventory) {
+                const slot = this.inventory[dest_index]
+
+                // If find empty slot
+                if (slot == null) {
+                    this.move_item(index, dest_index , amount)
+                    return
+                }
+            }
+        }
+
         move_item(from_index, to_index, amount) {
+            // Validate if not moving to same spot
+            if (from_index == to_index) return;
+
             // Helper function inside move_item (since its not needed elsewhere)
             const isInventoryIndex = (index) => !isNaN(Number(index));
         
