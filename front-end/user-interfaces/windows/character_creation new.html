@@ -152,14 +152,14 @@
         } 
         else { race_ability_scores_div.appendChild({tag: "p", text: "Choose a race to see its ability score bonuses."}) }
     }
-
     async function updateClass() {
-        const cls = getId("class").value
+        const player_class = getId("class").value
 
         // Retrieve data
         const data = JSON.parse(await backend(`JSON.stringify({
-            description: `+cls+`.description,
-            features_list: database.get_features_list({subtype: "`+cls+`", level: 1}),
+            description: `+player_class+`.description,
+            choices: `+player_class+`,
+            features_list: database.get_features_list({subtype: "`+player_class+`", level: 1}),
             features: database.features.data,
         })`)) || {}
 

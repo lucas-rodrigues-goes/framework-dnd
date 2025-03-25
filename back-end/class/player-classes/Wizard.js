@@ -62,6 +62,39 @@ try {
             humanoid.save()
         }
 
+        static level_up_choices(humanoid) {
+            const current_level = humanoid.classes.Wizard.level + 1 || 1
+            const multi_class = humanoid.level != 0
+            const max_spell_slot_level = Math.ceiling(current_level / 2)
+
+            // Choices structure
+            const choices = { skills: [], features: [], spells: [], subclass: [] }
+
+            // On every new level learn 2 spells
+            choices.spells.push({amount: 2, player_class: "Wizard", level: max_spell_slot_level})
+
+            // Choices based on level
+            switch (current_level) {
+                case 1: {
+                    // Choose two skills if not multiclassing
+                    if (!multi_class) choices.skills.push({amount: 2, options: ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]})
+
+                    // Choose three new spells
+                    choices.spells.push({amount: 3, player_class: "Wizard", level: 0})
+
+                    break
+                }
+                case 2: {
+                    // Choose a subclass
+                    choices.subclass.push({options: ["School of Evocation"]})
+
+                    break
+                }
+            }
+            
+            return choices
+        }
+
         //=====================================================================================================
 
     }
