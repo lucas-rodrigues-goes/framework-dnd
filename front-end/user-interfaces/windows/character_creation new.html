@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
 
@@ -185,6 +186,117 @@
     }
 
     //=====================================================================================================
+    // Modals
+    //=====================================================================================================
+
+    async function spellSelectModal() {
+        // Retrieve spell data from backend
+        const database = JSON.parse(await backend(`JSON.stringify({
+            data: database.spells.data,
+            list: database.get_spells_list()
+        })`))
+
+        // Function to show spell description
+        function showSpellDescription(spell_name) {
+            const description = document.getElementById("modal-description")
+
+            // Clear description
+            description.clearChildren()
+
+            // Data
+            const spell = database.data[spell_name]
+
+            // Element
+            function title_value({title, value}) {
+                return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
+                    {tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+                    {tag: "span", style: {color: "#aaa"}, text: value},
+                ]}
+            }
+
+            // Show description
+            description.appendChildren([
+                // Title
+                {tag: "div", style: {marginTop: "1vh", marginBottom: "2vh"}, children: [
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell_name},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell.school) + " Spell"},
+                ]},
+                // Attributes
+                {tag: "div", style: {textAlign: "left"}, children: [
+                    spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+                    spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
+                    spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
+                    spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
+                    spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+                    spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+                ]},
+                // Description
+                spell.description 
+                    && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell.description},
+                spell.description_higher_levels 
+                    && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
+                        {tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
+                        {tag: "span", text: spell.description_higher_levels}
+                    ]},
+                // Select Button
+                {tag: "button", text: "Select Spell", style: {position: "sticky", bottom: 0, marginTop: "2vh"}}
+            ])
+        }
+
+        // Store spells user choose
+        const choosenSpells = []
+
+        // Show available spell choices
+        const spellList = []
+        for (const spell_name of database.list) {
+            const spell = database.data[spell_name]
+            const spell_image = spell_school_images[spell.school]
+
+            spellList.push(
+                {tag: "div", 
+                    attributes: {class: "collapsible-div"}, 
+                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh"},
+                    events: {
+                        click: () => showSpellDescription(spell_name)
+                    },
+                    children: [
+                        {tag: "img", attributes: {src: spell_image}},
+                        {tag: "span", text: spell_name},
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(spell.level)},
+                    ]
+                }
+            )
+        }
+
+        // Create modal
+        modal({parent: document.getElementById("class-tab"), options: {content: {style: {height: "85%", width: "85%"}}}, children: [
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "90%"}, children: [
+                container({title: "Available Spells", 
+                    options: {
+                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
+                        content: {style: {overflow: "scroll", height: "100%", padding: "0 0.5vh"}}
+                    },
+                    children: spellList
+                })
+            ]},
+            {tag: "div", style: {position: "absolute", right: "0", width: "50%", height: "90%"}, children: [
+                container({title: "Description", id: "modal-description",
+                    options: {
+                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
+                        content: {style: {overflow: "scroll", height: "100%", paddingRight: "0.5vh"}}
+                    },
+                    children: [
+                        {tag: "p", text: "Click a spell to show its description."}
+                    ]
+                })
+            ]},
+            {tag: "button", text: "Confirm", attributes: {class: "bottom page-turner"}, style: {transform: "translate(-50%)"}, 
+                events: {click: () => getId("race-switch").click()}
+            },
+        ]})
+    }
+
+    //=====================================================================================================
     // Load HTML
     //=====================================================================================================
 
@@ -211,7 +323,7 @@
         // Race Tab
         document.getElementById("race-tab").appendChildren([
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                container({title: "Basic", children: [
+                container({title: "Choices", children: [
                     input({id: "name", placeholder: "Name", options: {input: {attributes: {value: data.name}}}}),
                     select({id: "race", placeholder: "Race", children: race_options, options: {
                         input: {events: {input: updateRace}}
@@ -240,10 +352,23 @@
         // Class Tab
         document.getElementById("class-tab").appendChildren([
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                container({title: "Basic", children: [
+                container({title: "Choices", children: [
                     select({id: "class", placeholder: "Class", children: class_options,
                         options: {
                             input: {events: {input: updateClass}}
+                        }
+                    }),
+                    select({id: "choice-spell", 
+                        placeholder: "Choose a spell", 
+                        options: {
+                            input: {
+                                events: {
+                                    mousedown: function (e) {
+                                        e.preventDefault()
+                                        spellSelectModal()
+                                    }
+                                }
+                            }
                         }
                     })
                 ]}),
