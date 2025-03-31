@@ -201,17 +201,17 @@
             spell: spellSelectModal,
         }
 
-        // Text
+        // Placeholder
         const amount = config.amount || 1
         const plural = amount > 1 ? "s" : ""
-        const text = "Choose " + amount + " new " + type + plural
+        const placeholder = "Choose " + amount + " new " + type + plural
 
         // Id
         const id = "choice-" + type + "-" + index
 
         // Element
         input({id: id,
-            placeholder: "Choose six spells",
+            placeholder: placeholder,
             options: { input: { events: { mousedown: function (e) {
                 document.activeElement.blur()
                 e.preventDefault()
