@@ -63,9 +63,9 @@ try {
         }
 
         static level_up_choices(humanoid) {
-            const current_level = humanoid.classes.Wizard.level + 1 || 1
+            const current_level = (humanoid.classes.Wizard?.level + 1) || 1
             const multi_class = humanoid.level != 0
-            const max_spell_slot_level = Math.ceiling(current_level / 2)
+            const max_spell_slot_level = Math.ceil(current_level / 2)
 
             // Choices structure
             const choices = { skills: [], features: [], spells: [], subclass: [] }

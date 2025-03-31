@@ -360,6 +360,11 @@
         z-index:5;
     }
 
+    .collapsible-div.selected {
+        background-color:#ccc;
+        color: #222
+    }
+
     .table-row img, .collapsible-div img{
         height:2.4vh;
     }
@@ -372,6 +377,10 @@
 
     .table-row:hover, .collapsible-div:hover {
         background-color: #383838;
+    }
+
+    .collapsible-div.selected:hover {
+        background-color: #aaa;
     }
 
     .collapsible-content {

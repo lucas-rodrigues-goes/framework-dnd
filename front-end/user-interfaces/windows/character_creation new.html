@@ -54,6 +54,12 @@
         closePage("Character Creation")
 
     }
+    function title_value({title, value}) {
+        return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
+            {tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+            {tag: "span", style: {color: "#aaa"}, text: value},
+        ]}
+    }
 
     //=====================================================================================================
     // Update Page
@@ -189,32 +195,81 @@
     // Modals
     //=====================================================================================================
 
-    async function spellSelectModal() {
+    function choiceInput(type, index, config) {
+        // Modal Functions
+        const modalByType = {
+            spell: spellSelectModal,
+        }
+
+        // Text
+        const amount = config.amount || 1
+        const plural = amount > 1 ? "s" : ""
+        const text = "Choose " + amount + " new " + type + plural
+
+        // Id
+        const id = "choice-" + type + "-" + index
+
+        // Element
+        input({id: id,
+            placeholder: "Choose six spells",
+            options: { input: { events: { mousedown: function (e) {
+                document.activeElement.blur()
+                e.preventDefault()
+                modalByType[type](this, config)
+            }}}}
+        })
+    }
+    async function spellSelectModal(inputElement, {amount=1, level, player_class, school}) {
+        // Store spells user choose
+        const chosenSpells = inputElement ? inputElement.value.split(", ").filter(element => element != "") : []
+
         // Retrieve spell data from backend
         const database = JSON.parse(await backend(`JSON.stringify({
             data: database.spells.data,
             list: database.get_spells_list()
         })`))
 
-        // Function to show spell description
-        function showSpellDescription(spell_name) {
-            const description = document.getElementById("modal-description")
+        // Functions
+        function selectSpell(spell_name) {
+            // Add spell to chosen list
+            chosenSpells.push(spell_name)
 
+            // Add indicator that spell is selected
+            document.getElementById("modal-spell-" + spell_name).classList.add("selected")
+
+            // Update description screen
+            showSpellDescription(spell_name)
+        }
+        function unselectSpell(spell_name) {
+            // Remove spell from chosen list
+            chosenSpells.splice(chosenSpells.indexOf(spell_name), 1)
+
+            // Remove indicator that spell is selected
+            document.getElementById("modal-spell-" + spell_name).classList.remove("selected")
+
+            // Update description screen
+            showSpellDescription(spell_name)
+        }
+        function showSpellDescription(spell_name) {
             // Clear description
+            const description = document.getElementById("modal-description")
             description.clearChildren()
 
-            // Data
-            const spell = database.data[spell_name]
-
-            // Element
-            function title_value({title, value}) {
-                return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
-                    {tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-                    {tag: "span", style: {color: "#aaa"}, text: value},
-                ]}
+            // Button element
+            let button = null
+            if (chosenSpells.includes(spell_name)) {
+                button = {tag: "button", text: "Unselect Spell", events: {click: () => unselectSpell(spell_name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
             }
-
+            else if (chosenSpells.length >= amount) {
+                button = {tag: "button", text: "Selection Limit", style: {position: "sticky", bottom: 0, marginTop: "5vh", opacity: 0.3}}
+            }
+            else {
+                button = {tag: "button", text: "Select Spell", events: {click: () => selectSpell(spell_name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
+            }
+            
+            
             // Show description
+            const spell = database.data[spell_name]
             description.appendChildren([
                 // Title
                 {tag: "div", style: {marginTop: "1vh", marginBottom: "2vh"}, children: [
@@ -238,23 +293,39 @@
                         {tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
                         {tag: "span", text: spell.description_higher_levels}
                     ]},
-                // Select Button
-                {tag: "button", text: "Select Spell", style: {position: "sticky", bottom: 0, marginTop: "2vh"}}
+                // Selection Button
+                button
             ])
         }
-
-        // Store spells user choose
-        const choosenSpells = []
+        function confirm() {
+            inputElement.value = chosenSpells.join(", ")
+            inputElement.dispatchEvent(new Event("input"))
+            close_modal()
+        }
 
         // Show available spell choices
         const spellList = []
         for (const spell_name of database.list) {
             const spell = database.data[spell_name]
-            const spell_image = spell_school_images[spell.school]
 
+            // Validation
+            if (level != undefined) { // Level
+                if (level == 0 && spell.level != "cantrip") continue
+                if (level > 0 && (Number(spell.level[0]) > level || spell.level == "cantrip")) continue
+            }
+            if (player_class) { // Player Class
+                if (!spell.classes.includes(player_class)) continue
+            }
+            if (school) { // School
+                if (spell.school != school) continue
+            }
+
+            // Create element
+            const spell_image = spell_school_images[spell.school]
+            const elem_class = chosenSpells.includes(spell_name) ? "collapsible-div selected" : "collapsible-div"
             spellList.push(
                 {tag: "div", 
-                    attributes: {class: "collapsible-div"}, 
+                    attributes: {class: elem_class, id: "modal-spell-" + spell_name}, 
                     style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh"},
                     events: {
                         click: () => showSpellDescription(spell_name)
@@ -291,7 +362,7 @@
                 })
             ]},
             {tag: "button", text: "Confirm", attributes: {class: "bottom page-turner"}, style: {transform: "translate(-50%)"}, 
-                events: {click: () => getId("race-switch").click()}
+                events: {click: confirm}
             },
         ]})
     }
@@ -358,19 +429,14 @@
                             input: {events: {input: updateClass}}
                         }
                     }),
-                    select({id: "choice-spell", 
-                        placeholder: "Choose a spell", 
-                        options: {
-                            input: {
-                                events: {
-                                    mousedown: function (e) {
-                                        e.preventDefault()
-                                        spellSelectModal()
-                                    }
-                                }
-                            }
-                        }
-                    })
+                    input({id: "choice-spell", 
+                        placeholder: "Choose three cantrips", 
+                        options: { input: { events: { mousedown: function (e) {
+                            document.activeElement.blur()
+                            e.preventDefault()
+                            spellSelectModal(this, {amount: 3, player_class: "Wizard", level: 0})
+                        }}}}
+                    }),
                 ]}),
                 container({title: "Description", id: "class-description", children: [
                     {tag: "p", text: "Choose a class to see its description."}
