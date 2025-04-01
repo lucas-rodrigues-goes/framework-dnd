@@ -28,7 +28,7 @@
     // Helper functions
     //=====================================================================================================
     
-    function submit() {
+    async function submit() {
 
         /* const ability_scores = {
             strength: getId("strength").getAttribute("value"),
@@ -39,17 +39,36 @@
             charisma: getId("charisma").getAttribute("value"),
         } */
 
-        
+        // Player Class
+        const player_class = getId("class") ? getId("class").value : undefined
+
+        // Class Choices
+        const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
+        if (player_class) {
+            const level_up_choices = JSON.parse(await backend(player_class + ".level_up_info().choices"))
+            for (const type in level_up_choices) {
+                const array = level_up_choices[type]
+                for (let index = 0; index < array.length; index++) {
+                    const choice_input = document.getElementById("choice-" + type + "-" + index)
+                    if (choice_input) {
+                        const choice_value = choice_input.value.split(", ")
+                        choices[type].push(...choice_value)
+                    }
+                }
+            }
+        }
+
+        // Backend
         const request = (
             "new Humanoid(getImpersonated(), true);" +
             "impersonated().create_character({" +
                 "name: `" + getId("name").value + "`," +
                 "race: `" + getId("race").value + "`," +
-                (getId("class").value ?  "character_class: `" + getId("class").value + "`," : "") +
-                // "ability_scores: `" + JSON.stringify(ability_scores) + "`," +
+                //"ability_scores: " + JSON.stringify(ability_scores) + "," +
+                "character_class: `" + player_class + "`," +
+                "class_choices: " + JSON.stringify(choices) + "," +
             "})"
         )
-        console.log(request)
         backend(request)
         closePage("Character Creation")
 
