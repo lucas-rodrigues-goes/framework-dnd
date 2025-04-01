@@ -10,8 +10,13 @@ try {
             const player_class = eval(JSON.parse(token_classes)[0])
             return new player_class(id)
         } catch {
-            const player_class = eval(token_classes)
-            return new player_class(id)
+            try {
+                const player_class = eval(token_classes)
+                return new player_class(id)
+            }
+            catch {
+                return undefined
+            }
         }
         
     }
