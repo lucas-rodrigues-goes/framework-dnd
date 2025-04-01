@@ -7,13 +7,22 @@ try {
         // Class Information
         //=====================================================================================================
 
-        static get description() { 
+        static get lore() { 
             return `
-                For some, their rage springs from a communion with fierce animal spirits. 
-                Others draw from a roiling reservoir of anger at a world full of pain. 
-                For every barbarian, rage is a power that fuels not just a battle frenzy 
-                but also uncanny reflexes, resilience, and feats of strength.
-            ` 
+                Barbarians are primal warriors, defined by their fierce rage and unyielding endurance. 
+                Channeling the untamed fury of the wilderness or their ancestral spirits, barbarians 
+                unleash devastating blows, shrug off mortal wounds, and dominate the battlefield through 
+                raw physical power and indomitable will.`
+        }
+        static get description() {
+            return `
+                Barbarians are brutal combatants who excel in close-quarters combat, trading defense for 
+                overwhelming offense. While raging, they deal massive damage and resist harm, but their 
+                power wanes as their fury fades. Barbarians grow stronger by embracing their primal instincts, 
+                gaining supernatural resilience and ferocity as they master their rage.
+                <br><br>
+                Barbarians rely on Strength for attacks and Constitution for survival. They typically abstain
+                from heavy armor, trusting their toughened bodies and battle instincts to protect them.`
         }
         static get healthPerLevel () { return 7 }
         static get image () { return "asset://d963c8b40a27e349e6239dcc3a1cbce2" }
@@ -22,7 +31,7 @@ try {
         // Leveling
         //=====================================================================================================
 
-        static level_up(humanoid, choices = {skills: []}) {
+        static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
             const current_level = humanoid.classes.Barbarian.level
 
             // Update Rage
@@ -37,22 +46,22 @@ try {
                     const multi_class = humanoid.level != 1
 
                     // Valid choices
-                    choices.skills = choices.skills || []
+                    choices.proficiencies = choices.proficiencies || []
                     const skill_options = ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"]
 
                     // Add starting proficiencies
-                    const proficiencies = !multi_class
+                    const starting_proficiencies = !multi_class
                         ? ["Light Armor", "Medium Armor", "Shield", "Martial Weapon", "Strength Saves", "Constitution Saves"]
                         : ["Shield", "Martial Weapon"] //--> Reduced list for multiclassing
-                    for (const proficiency of proficiencies) {
+                    for (const proficiency of starting_proficiencies) {
                         humanoid.set_proficiency(proficiency, 0, true)
                     }
 
                     // Add skills
-                    const skills = choices.skills.filter(skill => skill_options.includes(skill))
+                    const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
                     if (!multi_class) {
-                        for (const skill of skills) {
-                            humanoid.set_proficiency(skill, 0, true)
+                        for (const proficiency of proficiencies) {
+                            humanoid.set_proficiency(proficiency, 0, true)
                         }
                     }
 
@@ -77,6 +86,41 @@ try {
             }
 
             humanoid.save()
+        }
+
+        static level_up_info(humanoid) {
+            const current_level = humanoid ? (humanoid.classes.Barbarian?.level + 1) || 1 : 1
+            const multi_class = humanoid ? humanoid.level != 0 : false
+
+            // Return structures
+            const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
+            const proficiencies = []
+
+            // Choices based on level
+            switch (current_level) {
+                case 1: {
+                    // Starting proficiencies
+                    const starting_proficiencies = !multi_class
+                        ? ["Light Armor", "Medium Armor", "Shield", "Martial Weapon", "Strength Saves", "Constitution Saves"]
+                        : ["Shield", "Martial Weapon"] //--> Reduced list for multiclassing
+                    for (const item of starting_proficiencies) {
+                        proficiencies.push({name: item, level: 0})
+                    }
+
+                    // Choose two skills if not multiclassing
+                    if (!multi_class) choices.proficiencies.push({amount: 2, options: ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"], level: 0})
+
+                    break
+                }
+                case 3: {
+                    // Choose a subclass
+                    choices.subclass.push({options: ["Berserker"]})
+
+                    break
+                }
+            }
+            
+            return {proficiencies: proficiencies, choices: choices}
         }
 
         //=====================================================================================================

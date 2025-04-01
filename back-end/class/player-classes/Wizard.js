@@ -7,12 +7,19 @@ try {
         // Parameters
         //=====================================================================================================
 
-        static get description() { 
+        static get lore() { 
             return `
-                Wizards are supreme magic-users, defined and united as a class by the spells they cast. 
-                Drawing on the subtle weave of magic that permeates the cosmos, wizards cast spells of 
-                explosive fire, arcing lightning, subtle deception, brute-force mind control, and much more.
-            ` 
+                Wizards are supreme magic-users, defined and united as a class by the spells they cast.
+                Drawing on the subtle weave of magic that permeates the cosmos, wizards cast spells of
+                explosive fire, arcing lightning, subtle deception, brute-force mind control, and much more.`
+        }
+        static get description() {
+            return `
+                Wizards are arcane casters who are capable of providing excelent utility and decent damage, 
+                but at the cost of being very fragile. A wizard can learn spells as they come across scrolls 
+                and spellbooks in their adventures, but can only memorize a portion of these every day.
+                <br><br>
+                Wizards rely on their Intelligence score for their spells. And usually have no martial training.`
         }
         static get healthPerLevel () { return 4 }
         static get image () { return "asset://feb415509eb88654c71b1fa53d0879f1" }
@@ -21,7 +28,7 @@ try {
         // Leveling
         //=====================================================================================================
 
-        static level_up(humanoid, choices = {skills: []}) {
+        static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
             const current_level = humanoid.classes.Wizard.level
 
             // Update Arcane Recovery
@@ -36,22 +43,22 @@ try {
                     const multi_class = humanoid.level != 1
 
                     // Valid choices
-                    choices.skills = choices.skills || []
+                    choices.proficiencies = proficiencies.skills || []
                     const skill_options = ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]
 
                     // Add starting proficiencies
-                    const proficiencies = !multi_class
+                    const starting_proficiencies = !multi_class
                         ? ["Mundane Weapon", "Wisdom Saves", "Intelligence Saves"]
                         : [] //--> Reduced list for multiclassing
-                    for (const proficiency of proficiencies) {
+                    for (const proficiency of starting_proficiencies) {
                         humanoid.set_proficiency(proficiency, 0, true)
                     }
 
                     // Add skills
-                    const skills = choices.skills.filter(skill => skill_options.includes(skill))
+                    const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
                     if (!multi_class) {
-                        for (const skill of skills) {
-                            humanoid.set_proficiency(skill, 0, true)
+                        for (const proficiency of proficiencies) {
+                            humanoid.set_proficiency(proficiency, 0, true)
                         }
                     }
 
@@ -62,25 +69,31 @@ try {
             humanoid.save()
         }
 
-        static level_up_choices(humanoid) {
+        static level_up_info(humanoid) {
             const current_level = humanoid ? (humanoid.classes.Wizard?.level + 1) || 1 : 1
             const multi_class = humanoid ? humanoid.level != 0 : false
             const max_spell_slot_level = Math.ceil(current_level / 2)
 
-            // Choices structure
-            const choices = { skills: [], features: [], spells: [], subclass: [] }
-
-            // On every new level learn 2 spells
-            choices.spells.push({amount: 2, player_class: "Wizard", level: max_spell_slot_level})
+            // Return structures
+            const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
+            const proficiencies = []
 
             // Choices based on level
             switch (current_level) {
                 case 1: {
-                    // Choose two skills if not multiclassing
-                    if (!multi_class) choices.skills.push({amount: 2, options: ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]})
+                    // Starting proficiencies
+                    if (!multi_class) for (const item of ["Mundane Weapon", "Wisdom Saves", "Intelligence Saves"]) {
+                        proficiencies.push({name: item, level: 0})
+                    }
 
-                    // Choose three new spells
+                    // Choose two skills if not multiclassing
+                    if (!multi_class) choices.proficiencies.push({amount: 2, options: ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"], level: 0})
+
+                    // Choose 3 new cantrips
                     choices.spells.push({amount: 3, player_class: "Wizard", level: 0})
+
+                    // Choose 6 new spells
+                    choices.spells.push({amount: 6, player_class: "Wizard", level: max_spell_slot_level})
 
                     break
                 }
@@ -91,8 +104,11 @@ try {
                     break
                 }
             }
+
+            // On every new level learn 2 spells
+            if (current_level != 1) choices.spells.push({amount: 2, player_class: "Wizard", level: max_spell_slot_level})
             
-            return choices
+            return {proficiencies: proficiencies, choices: choices}
         }
 
         //=====================================================================================================
