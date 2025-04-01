@@ -594,6 +594,79 @@ function close_context_menu() {
     }
 }
 
+function point_buy_calculator() {
+    const ability_scores = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
+
+    // Functions
+    function updatePoints() {
+        document.getElementById("point-buy-points").textContent = availablePoints()
+    }
+    function availablePoints() {
+        let total_points = Number(document.getElementById("point-buy-points").textContent)
+        for (const score of ability_scores) {
+            const ability_score = document.getElementById(score)
+            const value = ability_score.getAttribute("value")
+
+            const additional_cost = Math.max(value - 13, 0)
+            const cost = Math.max(value - 8, 0)
+            total_points = total_points - cost - additional_cost
+        }
+        return total_points
+    }
+    function ability_score_box(score) {
+        return {tag: "div", attributes: {class: "score"}, children: [
+            {tag: "div", attributes: {class: "score-label"}, text: capitalize(score)},
+            {tag: "div", attributes: {class: "score-value", id: score, value: 10}, text: "10"},
+            {tag: "div", attributes: {class: "score-bonus", id: "bonus_" + score, value: 0}, text: "0"},
+            {tag: "button", attributes: {class: "decrease"}, text: "-", events: {
+                click: () => {
+                    const ability_score = document.getElementById(score)
+                    const value = ability_score.getAttribute("value")
+
+                    if (value > 8) {
+                        ability_score.setAttribute("value", value - 1)
+                        ability_score.textContent = Number(ability_score.textContent) - 1
+                    }
+
+                    updatePoints()
+                }
+            }},
+            {tag: "button", attributes: {class: "increase"}, text: "+", events: {
+                click: () => {
+                    const ability_score = document.getElementById(score)
+                    const value = ability_score.getAttribute("value")
+
+                    if (value < 15) {
+                        const cost = value >= 13 ? 2 : 1
+                        if (availablePoints() - cost < 0) return
+
+                        ability_score.setAttribute("value", value + 1)
+                        ability_score.textContent = Number(ability_score.textContent) + 1
+
+                        updatePoints()
+                    }
+                }
+            }},
+        ]}
+    }
+
+    // Creating children
+    const children = []
+    for (const score of ability_scores) children.push(ability_score_box(score))
+    
+    // Element
+    return element(
+        {tag: "div", attributes: {id: "point-buy-calculator"}, children: [
+            {tag: "h4", children: [
+                {tag: "span", text: "Available Points: "},
+                {tag: "span", attributes: {id: "point-buy-points"}, text: "27"}
+            ]},
+            {tag: "div", attributes: {class: "spacer"}},
+            {tag: "div", attributes: {class: "score-container"}, children: children}
+        ]}
+    )
+}
+
 //=====================================================================================================
 
 `']`
