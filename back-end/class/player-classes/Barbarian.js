@@ -43,11 +43,7 @@ try {
             // Level based specific changes
             switch(current_level) {
                 case 1: {
-                    const multi_class = humanoid.level != 1
-
-                    // Valid choices
-                    choices.proficiencies = choices.proficiencies || []
-                    const skill_options = ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"]
+                    const multi_class = humanoid.level != 1           
 
                     // Add starting proficiencies
                     const starting_proficiencies = !multi_class
@@ -57,7 +53,8 @@ try {
                         humanoid.set_proficiency(proficiency, 0, true)
                     }
 
-                    // Add skills
+                    // Add skills from choice
+                    const skill_options = ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"]
                     const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
                     if (!multi_class) {
                         for (const proficiency of proficiencies) {
