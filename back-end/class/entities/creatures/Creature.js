@@ -559,6 +559,8 @@ try {
 
             // Adding spell to known list
             this.#spells[player_class].known.push(spell_name)
+
+            log(this.name + "has learned the " + spell_name + " spell.")
         }
 
         unlearn_spell(player_class, spell_name) {
@@ -588,15 +590,20 @@ try {
                 this.#spells[player_class].memorized = []
             }
 
-            // Verify if character can memorize spell
-            const player_class_data = database.get_player_class(player_class)
-            const spellcasting_modifier = this.score_bonus[player_class_data.spellcasting_ability]
-            const memorization_maximum = Math.max(0, spellcasting_modifier + this.classes[player_class].level)
-            const currently_memorized_count = this.#spells[player_class].memorized.length
-            if (currently_memorized_count >= memorization_maximum) { return }
+            // Verify if character can memorize spell in that class
+            const spellcasting = eval(player_class).spellcasting
+            if (spellcasting) {
+                const spellcasting_modifier = this.score_bonus[spellcasting.ability]
+                const memorization_maximum = Math.max(0, spellcasting_modifier + this.classes[player_class].level)
+                const currently_memorized_count = this.#spells[player_class].memorized.length
+                if (currently_memorized_count >= memorization_maximum) { return }
+            }
+            else return
 
             // Adding spell to memorized list
             this.#spells[player_class].memorized.push(spell_name)
+
+            log(this.name + "has memorized the " + spell_name + " spell.")
         }
 
         set_always_prepared_spell(player_class, spell_name) {
@@ -615,6 +622,8 @@ try {
 
             // Adding spell to always prepared list
             this.#spells[player_class].always_prepared.push(spell_name)
+
+            log(this.name + "has the " + spell_name + " spell always prepared.")
         }
 
         forget_spell(player_class, spell_name) {
@@ -639,6 +648,8 @@ try {
                     )
                 }
             }
+
+            log(this.name + "has unmemorized the " + spell_name + " spell.")
         }
 
         //=====================================================================================================

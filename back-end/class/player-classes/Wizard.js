@@ -22,6 +22,14 @@ try {
                 Wizards rely on their Intelligence score for their spells. And usually have no martial training.`
         }
         static get healthPerLevel () { return 4 }
+        static get spellcasting () {
+            return {
+                type: "full",
+                memorization: true,
+                known: true,
+                ability: "intelligence"
+            }
+        }
         static get image () { return "asset://feb415509eb88654c71b1fa53d0879f1" }
 
         //=====================================================================================================
@@ -37,14 +45,15 @@ try {
                 humanoid.set_resource_max("Arcane Recovery", humanoid.resources["Arcane Recovery"].max + 1)
             }
 
+            // Learn Spells
+            for (const spell of choices.spells) {
+                humanoid.learn_spell("Wizard", spell)
+            }
+
             // Level based specific changes
             switch(current_level) {
                 case 1: {
                     const multi_class = humanoid.level != 1
-
-                    // Valid choices
-                    choices.proficiencies = proficiencies.skills || []
-                    const skill_options = ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]
 
                     // Add starting proficiencies
                     const starting_proficiencies = !multi_class
@@ -54,7 +63,8 @@ try {
                         humanoid.set_proficiency(proficiency, 0, true)
                     }
 
-                    // Add skills
+                    // Add skills from choice
+                    const skill_options = ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]
                     const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
                     if (!multi_class) {
                         for (const proficiency of proficiencies) {

@@ -14,8 +14,7 @@ try {
         // Character Creation
         //=====================================================================================================
 
-        create_character({name, race, character_class, ability_scores}) {
-
+        create_character({name, race, ability_scores, character_class, class_choices}) {
             // Ability Scores
             if (ability_scores) {
                 for (const [score, value] of Object.entries(ability_scores)) {
@@ -28,7 +27,7 @@ try {
             this.race = race
 
             // Add class
-            if (character_class) { this.level_up(character_class) }
+            if (character_class) { this.level_up(character_class, class_choices) }
 
             // Fill health
             this.health = this.max_health
@@ -62,7 +61,7 @@ try {
 
         get classes () { return this.#classes }
 
-        level_up(class_choice, choices = {features: [], skills: []}) {
+        level_up(class_choice, choices) {
             if (this.level >= 20) { return }
 
             // Create class object
@@ -75,6 +74,7 @@ try {
 
             // Call class level up
             eval(class_choice).level_up(this, choices)
+            log(this.name + " received a " + class_choice + " level.")
 
             this.save()
         }
@@ -196,18 +196,20 @@ try {
             let total = 0
             for (const player_class in this.#classes) {
                 const class_level = this.#classes[player_class].level
-                const spellcasting = database.get_player_class(player_class).spellcasting
+                const spellcasting = eval(player_class).spellcasting
 
-                switch (spellcasting) {
-                    case "full":
-                        total += class_level
-                        break
-                    case "half":
-                        total += Math.floor(class_level / 2)
-                        break
-                    case "third":
-                        total += Math.floor(class_level / 3)
-                        break
+                if (spellcasting) {
+                    switch (spellcasting.type) {
+                        case "full":
+                            total += class_level
+                            break
+                        case "half":
+                            total += Math.floor(class_level / 2)
+                            break
+                        case "third":
+                            total += Math.floor(class_level / 3)
+                            break
+                    }
                 }
             }
 
