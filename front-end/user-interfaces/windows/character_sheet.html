@@ -9,6 +9,34 @@
 		[r:'
 	
 		<style>
+			#level-div {
+				position: absolute; 
+				right: 0;  
+				bottom: 0; 
+				margin: 0; 
+				font-size: 130%;
+				background-color: #292929;
+				border: 0.2vh solid #555;
+				border-radius: 100%;
+				height: 4.5vh;
+				width: 4.5vh;
+			}
+			#level-div > span {
+				position: relative;
+				top: 25%;
+				font-weight: bold
+			}
+
+			#level-div.level-up {
+				border-color: #ddd;
+				cursor: pointer;
+			}
+
+			#level-div.level-up:hover {
+				background-color: #666;
+				cursor: pointer;
+			}
+
 			#character-tab-left {
 				position:absolute;
 				width:33%;
@@ -116,6 +144,19 @@
 			// Helper functions
 			//=====================================================================================================
 
+			function warning({parent, text}) {
+				modal({parent: parent, children: [
+					{tag: "p", style: {textAlign: "center", fontWeight: "bold", fontSize: "110%", marginTop: "0.5vh"}, text: "Warning"},
+					{tag: "p", text: text},
+					{tag: "button", text: "Close", events:{click: close_modal}}
+				]})
+			}
+			function title_value({title, value}) {
+				return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
+					{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+					{tag: "span", style: {color: "#aaa"}, text: value},
+				]}
+			}
 			function updateEXPBar(percent) {
 				function crunchNumber(num) {
 					// Define the input and output ranges
@@ -435,13 +476,26 @@
 				function updateBasicAttributes () {
 					if (!isEqualJSON(character_tab.basic, character.basic)) {
 						character_tab.basic = character.basic
+						const experiencePercent = (character.basic.experience / character.basic.level_up_experience) * 100
 
 						document.getElementById("name").textContent = character.basic.name
 						document.getElementById("portrait").setAttribute("src", character.basic.portrait)
-						document.getElementById("level").textContent = character.basic.level
 
-						// Experience bar
-						updateEXPBar((character.basic.experience / character.basic.level_up_experience) * 100)
+						// Level and Experience bar
+						const level_div = document.getElementById("level-div")
+						level_div.clearChildren()
+						updateEXPBar(experiencePercent)
+						if(experiencePercent >= 100) {
+							level_div.classList.add("level-up")
+							level_div.appendChild({tag:"img", 
+								attributes: {src: "asset://7f3308bb1bcfeada642381f311195601"}, 
+								style: {height: "4vh", marginTop: "0.2vh", cursor: "pointer", filter: "brightness(0.8)"}
+							})
+						}
+						else {
+							level_div.classList.remove("level-up")
+							level_div.appendChild({tag:"span", text: character.level})
+						}
 
 						// Classes text
 						let class_text = ""
@@ -968,6 +1022,160 @@
 				updateInventory()
 			}
 
+			let abilities_tab = {
+				classes: {},
+				spells: {}
+			}
+			async function updateAbilitiesTab() {
+				// Helpers
+				function getMainClass(classObj) {
+					let highestLevel = -Infinity;
+					let highestClass = null;
+
+					for (const [className, classInfo] of Object.entries(classObj)) {
+						if (classInfo.level > highestLevel) {
+						highestLevel = classInfo.level;
+						highestClass = className;
+						}
+					}
+
+					return highestClass;
+				}
+				function spellDescription(spell) {
+					// Show description
+					modal({parent: document.getElementById("abilities-tab"), children: [
+						{tag: "div", style: {padding: "0 1vh"}, children: [
+							// Title
+							{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+								{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell.name},
+								{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell.school) + " Spell"},
+							]},
+							// Attributes
+							{tag: "div", style: {textAlign: "left"}, children: [
+								spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+								spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
+								spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
+								spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
+								spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+								spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+							]},
+							// Description
+							spell.description 
+								&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell.description},
+							spell.description_higher_levels 
+								&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
+									{tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
+									{tag: "span", text: spell.description_higher_levels}
+								]},
+						]}
+					]})
+				}
+
+				// Character Abilities
+				const character = JSON.parse(await backend(`JSON.stringify(
+					{
+						classes: impersonated().classes,
+						spells: impersonated().spells,
+					}
+				)`))
+
+				// Cancel execution if there is no update to character
+				if (isEqualJSON(abilities_tab, character)) return
+				else abilities_tab.classes = character.classes
+
+				// Database
+				const { database, spells_list } = JSON.parse(await backend(`JSON.stringify({
+					database: database.spells.data,
+					spells_list: database.get_spells_list()
+				})`))
+
+				// Update Spells
+				async function updateSpells() {
+					abilities_tab.spells = character.spells
+
+					// Get main class
+					const main_class = getMainClass(character.classes)
+					const spellcasting = JSON.parse(await backend(main_class + `.spellcasting || undefined`))
+					if (!spellcasting) return
+
+					// Clear container
+					const abilities_container = document.getElementById("abilities-tab-abilities")
+					abilities_container.clearChildren()
+
+					// Create spell elements
+					let previous_level = undefined
+					for (const name of character.spells[main_class].known) {
+						const spell = database[name]
+						const spell_image = spell_school_images[spell.school]
+
+						// Add spacing between levels
+						if (previous_level != spell.level) {
+							const text = spell.level == "cantrip" ? capitalize(spell.level) + "s" : spell.level + " Level Spells"
+							abilities_container.appendChild({tag: "div", style: {paddingTop: "1.5vh", fontWeight: "bold"}, text: text})
+							previous_level = spell.level
+						}
+
+						// Conditions
+						if (!character.spells[main_class].memorized) character.spells[main_class].memorized = []
+						const spellIsMemorized = character.spells[main_class].memorized.includes(spell.name)
+						const spellIsCantrip = spell.level == "cantrip"
+
+						// Add element
+						abilities_container.appendChild(
+							{tag: "div", 
+								attributes: {class: "collapsible-div"}, 
+								style: {
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									opacity: spellIsMemorized || spellIsCantrip || !spellcasting.memorization ? 1 : 0.4
+								},
+								events: {
+									mousedown: (event) => {
+										switch (event.button) {
+											case 0: // Left Click
+												break
+											case 2: { // Right Click
+												// Buttons
+												const buttons = {
+													"Description": () => spellDescription(spell),
+												}
+
+												// Conditional buttons
+												if (spellcasting.memorization) {
+													if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
+														const result = await backend(`impersonated().memorize_spell("` + main_class + `", "` + spell.name + `")`)
+														
+														// Show warning if no memorization occurred
+														if (!result) warning(
+															{parent: document.getElementById("abilities-tab"), text: "You have reached memorization limit."}
+														)
+
+														updateAbilitiesTab()
+													}
+													if(spellIsMemorized) buttons["Forget"] =  () => {
+														backend(`impersonated().forget_spell("` + main_class + `", "` + spell.name + `")`)
+														updateAbilitiesTab()
+													}
+												}
+
+												// Run context menu
+												context_menu({event: event, buttons: buttons})
+												break
+											}
+										}
+									}
+								},
+								children: [
+									{tag: "img", attributes: {src: spell_image}},
+									{tag: "span", text: name},
+									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(spell.level)},
+								]
+							}
+						)
+					}
+				}
+				updateSpells()
+			}
+
 			//=====================================================================================================
 			// Create HTML
 			//=====================================================================================================
@@ -1000,14 +1208,12 @@
 									{tag: "img", attributes: {id: "portrait"}},
 								]
 							},
-							{tag: "div", 
-								style: {
-									position: "absolute", right: 0, bottom: 0, margin: 0,
-									fontSize: "130%", backgroundColor: "#292929", border: "0.2vh solid #555", borderRadius: "100%", height: "4.5vh", width: "4.5vh"
+							{tag: "div",
+								attributes: {
+									id: "level-div"
 								},
 								children: [
-									{tag:"span", text: "", attributes: {id: "level"}, style: {position: "relative", top: "25%", fontWeight: "bold"}}
-								]
+									{tag:"span", text: "", attributes: {id: "level"}}								]
 							}
 						]},
 
@@ -1034,7 +1240,7 @@
 
 				// Inventory tab
 				document.getElementById("inventory-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "0", width: "45%"}, children: [
+					{tag: "div", style: {width: "45%", left: "27.5%", position: "relative", marginBottom: "3.5vh"}, children: [
 						container({title: "Equipment", options: {div: {style: {height: "41vh"}}}, children: [
 							{tag: "div", style: {margin: "auto", width: "fit-content"}, children: [
 								// Equipment
@@ -1074,36 +1280,30 @@
 									}
 								}
 							]}
-						]})
+						]}),
 					]},
-					{tag: "div", style: {position: "absolute", right: "0", width: "55%"}, children: [
-						// Inventory (backpack)
-						container({title: "Backpack", children: [
-							{tag: "div", 
-								attributes: {id: "inventory"},
-								style: {
-									position: "relative",
-									width: "fit-content",
-									margin: "auto",
-									display: "grid",
-									gridTemplateColumns: "repeat(6, 1fr)",
-									gridRowGap: "0.2vh",
-									gap: 0,
-									marginTop: "2vh"
-								}
+					container({title: "Backpack", options: {div: {style: {width: "85%"}}}, children: [
+						{tag: "div", 
+							attributes: {id: "inventory"},
+							style: {
+								position: "relative",
+								width: "fit-content",
+								margin: "auto",
+								display: "grid",
+								gridTemplateColumns: "repeat(12, 1fr)",
+								gridRowGap: "0.2vh",
+								gap: 0,
+								marginTop: "2vh"
 							}
-						]})
-					]}
+						}
+					]})
 				])
 			
 				// Abilities tab
 				document.getElementById("abilities-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-						container({title: "Abilites", options: {div: {style: {height: "80vh"}}}})
+					{tag: "div", style: {position: "absolute", left: "1%", width: "50%"}, children: [
+						container({title: "Abilites & Spells", id: "abilities-tab-abilities", options: {div: {style: {height: "80vh"}}}})
 					]},
-					{tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
-						container({title: "Description"})
-					]}
 				])
 			}
 
@@ -1116,11 +1316,13 @@
 				closeIfNotImpersonated()
 				updateInventoryTab()
 				updateCharacterTab()
+				updateAbilitiesTab()
 
 				// Set update intervals
 				setInterval(()=> {
 					closeIfNotImpersonated()
 					updateInventoryTab()
+					updateAbilitiesTab()
 				}, 500)
 				setInterval(() => updateCharacterTab(), 1000)
 			}

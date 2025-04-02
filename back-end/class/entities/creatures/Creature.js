@@ -541,6 +541,8 @@ try {
                     this.set_new_resource(resource, max, "long rest")
                 }
             }
+
+            this.save()
         }
 
         learn_spell(player_class, spell_name) {
@@ -561,6 +563,7 @@ try {
             this.#spells[player_class].known.push(spell_name)
 
             log(this.name + " has learned the " + spell_name + " spell.")
+            this.save()
         }
 
         unlearn_spell(player_class, spell_name) {
@@ -604,6 +607,8 @@ try {
             this.#spells[player_class].memorized.push(spell_name)
 
             log(this.name + "has memorized the " + spell_name + " spell.")
+            this.save()
+            return true
         }
 
         set_always_prepared_spell(player_class, spell_name) {
@@ -624,6 +629,7 @@ try {
             this.#spells[player_class].always_prepared.push(spell_name)
 
             log(this.name + "has the " + spell_name + " spell always prepared.")
+            this.save()
         }
 
         forget_spell(player_class, spell_name) {
@@ -633,7 +639,7 @@ try {
 
             // Remove spell from memorized list
             if (this.#spells[player_class].memorized) {
-                if (this.#spells[player_class.memorized.includes(spell_name)]) {
+                if (this.#spells[player_class].memorized.includes(spell_name)) {
                     this.#spells[player_class].memorized = this.#spells[player_class].memorized.filter(
                         item => item != spell_name
                     )
@@ -642,7 +648,7 @@ try {
 
             // Remove spell from always prepared list
             if (this.#spells[player_class].always_prepared) {
-                if (this.#spells[player_class.always_prepared.includes(spell_name)]) {
+                if (this.#spells[player_class].always_prepared.includes(spell_name)) {
                     this.#spells[player_class].always_prepared = this.#spells[player_class].always_prepared.filter(
                         item => item != spell_name
                     )
@@ -650,6 +656,7 @@ try {
             }
 
             log(this.name + "has unmemorized the " + spell_name + " spell.")
+            this.save()
         }
 
         //=====================================================================================================
@@ -758,7 +765,7 @@ try {
         }
 
         update_inventory_slots() {
-            const max_inventory_size = 72;
+            const max_inventory_size = 60;
             const current_size = this.#inventory.length;
     
             if (current_size < max_inventory_size) {
