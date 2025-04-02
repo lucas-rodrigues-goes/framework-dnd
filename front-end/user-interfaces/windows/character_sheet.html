@@ -117,10 +117,24 @@
 			//=====================================================================================================
 
 			function updateEXPBar(percent) {
-				percent = Math.floor(percent)
-				const end_percent = percent == 0 ? 0 : percent + 1
+				function crunchNumber(num) {
+					// Define the input and output ranges
+					const inputMin = 0;
+					const inputMax = 100;
+					const outputMin = 10;
+					const outputMax = 90;
+					
+					// Calculate the proportion and map to new range
+					const proportion = (num - inputMin) / (inputMax - inputMin);
+					const crunched = outputMin + proportion * (outputMax - outputMin);
+					
+					return crunched;
+				}
 
-				getId("experience").style.background = `linear-gradient(0deg, #782f78 ` + percent + `%, rgba(0,0,0,0.15) ` + end_percent + `%)`
+				percent = Math.floor(percent)
+				const end_percent = (percent == 0 ? 0 : percent + 1)
+
+				getId("experience").style.background = `linear-gradient(-45deg, #782f78 ` + crunchNumber(percent) + `%, rgba(0,0,0,0.15) ` + crunchNumber(end_percent) + `%)`
 			}
 			function bonusOf(number, parenthesis=false) {
 				number = Number(number) > 0 ? "+"+number : number
