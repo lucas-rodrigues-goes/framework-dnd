@@ -560,7 +560,7 @@ try {
             // Adding spell to known list
             this.#spells[player_class].known.push(spell_name)
 
-            log(this.name + "has learned the " + spell_name + " spell.")
+            log(this.name + " has learned the " + spell_name + " spell.")
         }
 
         unlearn_spell(player_class, spell_name) {

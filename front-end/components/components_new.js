@@ -660,8 +660,9 @@ function point_buy_calculator() {
     for (const score of ability_scores) children.push(ability_score_box(score))
     
     // Element
+    setInterval(updateView, 200)
     return element(
-        {tag: "div", attributes: {id: "point-buy-calculator"}, events:{mousedown: updateView}, children: [
+        {tag: "div", attributes: {id: "point-buy-calculator"}, children: [
             {tag: "h4", children: [
                 {tag: "span", text: "Available Points: "},
                 {tag: "span", attributes: {id: "point-buy-points"}, text: "15"}
@@ -677,7 +678,7 @@ function mask_point_buy_calculator(mask) {
         const ability_score = document.getElementById(score)
         const value = Number(ability_score.getAttribute("value"))
 
-        ability_score.textContent = value + (mask[score] || 0)
+        ability_score.textContent = value + Number(mask[score] || 0)
         document.getElementById("point-buy-calculator").dispatchEvent(new Event("mousedown"))
     }
 }

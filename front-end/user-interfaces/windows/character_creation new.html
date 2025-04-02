@@ -30,14 +30,14 @@
         
         async function submit() {
 
-            /* const ability_scores = {
+            const ability_scores = {
                 strength: getId("strength").getAttribute("value"),
                 dexterity: getId("dexterity").getAttribute("value"),
                 constitution: getId("constitution").getAttribute("value"),
                 wisdom: getId("wisdom").getAttribute("value"),
                 intelligence: getId("intelligence").getAttribute("value"),
                 charisma: getId("charisma").getAttribute("value"),
-            } */
+            }
 
             // Player Class
             const player_class = getId("class") ? getId("class").value : undefined
@@ -64,7 +64,7 @@
                 "impersonated().create_character({" +
                     "name: `" + getId("name").value + "`," +
                     "race: `" + getId("race").value + "`," +
-                    //"ability_scores: " + JSON.stringify(ability_scores) + "," +
+                    "ability_scores: " + JSON.stringify(ability_scores) + "," +
                     "character_class: `" + player_class + "`," +
                     "class_choices: " + JSON.stringify(choices) + "," +
                 "})"
@@ -91,7 +91,7 @@
             const data = JSON.parse(await backend(`JSON.stringify({
                 race: database.get_race("`+race+`"),
                 features: database.features.data,
-                proficiencies: database.proficiencies.data
+                proficiencies: database.proficiencies.data,
             })`)) || {}
 
             // Description
@@ -150,8 +150,11 @@
             else { race_proficiencies_div.appendChild({tag: "p", text: "Choose a race to see its proficiencies."}) }
 
             // Ability Scores
+            mask_point_buy_calculator(data.race.ability_scores)
             const race_ability_scores_div = getId("race-ability-scores")
+            const attributes_ability_scores_div = getId("attributes-ability-scores")
             race_ability_scores_div.clearChildren()
+            attributes_ability_scores_div.clearChildren()
             if (data.race) {
                 // Helper variables
                 let first_score = true, shown_scores = 0
@@ -175,8 +178,12 @@
                 }
             
                 race_ability_scores_div.appendChild({tag: "p", children: ability_scores_text})
+                attributes_ability_scores_div.appendChild({tag: "p", children: ability_scores_text})
             } 
-            else { race_ability_scores_div.appendChild({tag: "p", text: "Choose a race to see its ability score bonuses."}) }
+            else { 
+                race_ability_scores_div.appendChild({tag: "p", text: "Choose a race to see its ability score bonuses."})
+                attributes_ability_scores_div.appendChild({tag: "p", text: "Choose a race to see its ability score bonuses."})
+            }
         }
         async function updateClass() {
             const player_class = document.getElementById("class").value
@@ -681,6 +688,10 @@
                 {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
                     container({title: "Ability Scores", children: [
                         point_buy_calculator()
+                    ]}),
+                    {tag: "div", style: {height: "2vh"}},
+                    container({title: "Racial Bonuses", id: "attributes-ability-scores", children: [
+                        {tag: "p", text: "Choose a race to see its bonuses to ability scores."}
                     ]})
                 ]},
                 {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
