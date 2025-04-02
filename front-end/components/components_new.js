@@ -598,14 +598,23 @@ function point_buy_calculator() {
     const ability_scores = ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]
 
     // Functions
-    function updatePoints() {
+    function updateView() {
         document.getElementById("point-buy-points").textContent = availablePoints()
-    }
-    function availablePoints() {
-        let total_points = Number(document.getElementById("point-buy-points").textContent)
+
         for (const score of ability_scores) {
             const ability_score = document.getElementById(score)
-            const value = ability_score.getAttribute("value")
+            const ability_score_bonus = document.getElementById("bonus-" + score)
+
+            const show_value = Number(ability_score.textContent)
+            const bonus_value = Math.floor((show_value - 10) / 2)
+            ability_score_bonus.textContent = bonus_value > 0 ? "+" + bonus_value : bonus_value
+        }
+    }
+    function availablePoints() {
+        let total_points = 27
+        for (const score of ability_scores) {
+            const ability_score = document.getElementById(score)
+            const value = Number(ability_score.getAttribute("value"))
 
             const additional_cost = Math.max(value - 13, 0)
             const cost = Math.max(value - 8, 0)
@@ -617,7 +626,7 @@ function point_buy_calculator() {
         return {tag: "div", attributes: {class: "score"}, children: [
             {tag: "div", attributes: {class: "score-label"}, text: capitalize(score)},
             {tag: "div", attributes: {class: "score-value", id: score, value: 10}, text: "10"},
-            {tag: "div", attributes: {class: "score-bonus", id: "bonus_" + score, value: 0}, text: "0"},
+            {tag: "div", attributes: {class: "score-bonus", id: "bonus-" + score, value: 0}, text: "0"},
             {tag: "button", attributes: {class: "decrease"}, text: "-", events: {
                 click: () => {
                     const ability_score = document.getElementById(score)
@@ -627,14 +636,12 @@ function point_buy_calculator() {
                         ability_score.setAttribute("value", value - 1)
                         ability_score.textContent = Number(ability_score.textContent) - 1
                     }
-
-                    updatePoints()
                 }
             }},
             {tag: "button", attributes: {class: "increase"}, text: "+", events: {
                 click: () => {
                     const ability_score = document.getElementById(score)
-                    const value = ability_score.getAttribute("value")
+                    const value = Number(ability_score.getAttribute("value"))
 
                     if (value < 15) {
                         const cost = value >= 13 ? 2 : 1
@@ -642,8 +649,6 @@ function point_buy_calculator() {
 
                         ability_score.setAttribute("value", value + 1)
                         ability_score.textContent = Number(ability_score.textContent) + 1
-
-                        updatePoints()
                     }
                 }
             }},
@@ -656,15 +661,25 @@ function point_buy_calculator() {
     
     // Element
     return element(
-        {tag: "div", attributes: {id: "point-buy-calculator"}, children: [
+        {tag: "div", attributes: {id: "point-buy-calculator"}, events:{mousedown: updateView}, children: [
             {tag: "h4", children: [
                 {tag: "span", text: "Available Points: "},
-                {tag: "span", attributes: {id: "point-buy-points"}, text: "27"}
+                {tag: "span", attributes: {id: "point-buy-points"}, text: "15"}
             ]},
             {tag: "div", attributes: {class: "spacer"}},
             {tag: "div", attributes: {class: "score-container"}, children: children}
         ]}
     )
+}
+
+function mask_point_buy_calculator(mask) {
+    for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) {
+        const ability_score = document.getElementById(score)
+        const value = Number(ability_score.getAttribute("value"))
+
+        ability_score.textContent = value + (mask[score] || 0)
+        document.getElementById("point-buy-calculator").dispatchEvent(new Event("mousedown"))
+    }
 }
 
 //=====================================================================================================
