@@ -113,12 +113,12 @@ function element(options) {
 // Components
 //=====================================================================================================
 
-function container({ id = "", title = "", parent, children, options = {} } = {}) {
+function container({ id = "", title = "", parent, scroll = false, children, options = {} } = {}) {
 
     // Destructure the options
     const { div: div_options = {}, content: content_options = {}, title: title_options = {} } = options;
     const { attributes: div_attributes = {} } = div_options;
-    const { attributes: content_attributes = {} } = content_options;
+    const { attributes: content_attributes = {}, style: content_style } = content_options;
     const { attributes: title_attributes = {} } = title_options;
 
     // Element
@@ -136,8 +136,9 @@ function container({ id = "", title = "", parent, children, options = {} } = {})
                     children,
                     attributes: {...content_attributes,
                         id: id,
-                        class: "content " + (content_attributes.class || ""),
-                    }
+                        class: "container-content " + (content_attributes.class || ""),
+                    },
+                    style: scroll ? { overflow: "scroll", height: "100%", ...content_style } : content_style
                 },
                 {...title_options,
                     tag: "h4",

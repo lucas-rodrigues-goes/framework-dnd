@@ -83,11 +83,16 @@
 
         margin-top: 2.5vh;
         margin-bottom: 1vh;
-        padding: 1.5vh;
+        padding: 1vh;
+        padding-top: 1.5vh;
 
         border: 0.1vh solid #888;
         background-color: #262626;
         border-radius: 1vh;
+    }
+
+    .container-content {
+        padding: 0.5vh 0.75vh;
     }
 
     .container-title {
