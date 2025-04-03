@@ -1028,7 +1028,8 @@
 
 			let abilities_tab = {
 				classes: {},
-				spells: {}
+				spells: {},
+				resources: {}
 			}
 			async function updateAbilitiesTab() {
 				// Helpers
@@ -1038,8 +1039,8 @@
 
 					for (const [className, classInfo] of Object.entries(classObj)) {
 						if (classInfo.level > highestLevel) {
-						highestLevel = classInfo.level;
-						highestClass = className;
+							highestLevel = classInfo.level;
+							highestClass = className;
 						}
 					}
 
@@ -1080,6 +1081,7 @@
 					{
 						classes: impersonated().classes || {},
 						spells: impersonated().spells || {},
+						resources: impersonated().resources || {}
 					}
 				)`))
 
@@ -1089,7 +1091,10 @@
 
 				// Database
 				const { database, spells_list } = JSON.parse(await backend(`JSON.stringify({
-					database: database.spells.data,
+					database: {
+						spells: database.spells.data,
+						resources: database.resources.data,
+					},
 					spells_list: database.get_spells_list()
 				})`))
 
@@ -1109,7 +1114,7 @@
 					// Create spell elements
 					let previous_level = undefined
 					for (const name of character.spells[main_class].known) {
-						const spell = database[name]
+						const spell = database.spells[name]
 						const spell_image = spell_school_images[spell.school]
 
 						// Add spacing between levels
@@ -1177,6 +1182,56 @@
 					}
 				}
 				updateSpells()
+
+				// Update Resources
+				async function updateResources() {
+					abilities_tab.resources = character.resources
+
+					// Clear container
+					const resources_container = document.getElementById("abilities-tab-resources")
+					resources_container.clearChildren()
+
+					// Create elements
+					for (const name in character.resources) {
+						const resource = character.resources[name]
+						const resource_image = spell_school_images["abjuration"]
+
+						// Add element
+						resources_container.appendChild(
+							{tag: "div", 
+								attributes: {class: "collapsible-div"}, 
+								style: {
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									opacity: resource.value > 0 ? 1 : 0.4
+								},
+								events: {
+									mousedown: (event) => {
+										switch (event.button) {
+											case 0: // Left Click
+												break
+											case 2: { // Right Click
+												// Buttons
+												const buttons = {
+													"Description": () => {},
+												}
+
+												// Run context menu
+												context_menu({event: event, buttons: buttons})
+												break
+											}
+										}
+									}
+								},
+								children: [
+									//{tag: "img", attributes: {src: resource_image}},
+									{tag: "span", text: name},
+									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: resource.value + " / " + resource.max},
+								]
+							}
+						)
+					}
+				}
+				updateResources()
 			}
 
 			//=====================================================================================================
@@ -1306,7 +1361,12 @@
 				// Abilities tab
 				document.getElementById("abilities-tab").appendChildren([
 					{tag: "div", style: {position: "absolute", left: "1%", width: "50%"}, children: [
-						container({title: "Abilites & Spells", id: "abilities-tab-abilities", scroll: true, options: {
+						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
+							div: {style: {height: "80vh"}},
+						}})
+					]},
+					{tag: "div", style: {position: "absolute", right: "1%", width: "50%"}, children: [
+						container({title: "Resources", id: "abilities-tab-resources", scroll: true, options: {
 							div: {style: {height: "80vh"}},
 						}})
 					]},

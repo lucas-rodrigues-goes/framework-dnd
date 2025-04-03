@@ -51,14 +51,16 @@ try {
         // Methods
         //=====================================================================================================
 
-        short_rest(hours) {
+        short_rest(hours = 1) {
             // Health
             this.health = (this.max_health / 4) * hours
 
             // Fill resources
-            for (const resource in this.#resources) {
-                if (resource.restored_on == "short rest") {
-                    this.set_resource_value(resource, resource.max)
+            for (const name in this.#resources) {
+                const resource = this.#resources[name]
+                
+                if (["short rest"].includes(resource.restored_on)) {
+                    this.set_resource_value(name, resource.max)
                 }
             }
         }
@@ -70,10 +72,11 @@ try {
             // Reduce exhaustion (not implemented yet)
 
             // Fill resources
-            for (const resource in this.#resources) {
-                const restores_on_rest = ["long rest", "short rest"].includes(resource.restored_on)
-                if (restores_on_rest) {
-                    this.set_resource_value(resource, resource.max)
+            for (const name in this.#resources) {
+                const resource = this.#resources[name]
+
+                if (["long rest", "short rest"].includes(resource.restored_on)) {
+                    this.set_resource_value(name, resource.max)
                 }
             }
         }
@@ -417,10 +420,14 @@ try {
                 max: max, 
                 restored_on: restored_on,
             }
+
+            this.save()
         }
 
         set_resource_max(resource, max) {
             this.#resources[resource].max = max
+
+            this.save()
         }
 
         set_resource_value(resource, value) {
@@ -430,6 +437,8 @@ try {
 
             // Set
             this.#resources[resource].value = clamped_value
+
+            this.save()
         }
 
         //=====================================================================================================
@@ -532,7 +541,8 @@ try {
             // Update spellcasting slot resources
             for (const slot in spellcasting_level_slots) {
                 const max = spellcasting_level_slots[slot]
-                const resource = `Level ${slot} Slot`
+                const postfix = ["st", "nd", "rd"].length >= slot ? ["st", "nd", "rd"][slot - 1] : "th"
+                const resource = `${slot}${postfix} Level Spell Slot`
 
                 // Update max value if exists, or creates new resource
                 if (this.#resources[resource]) {

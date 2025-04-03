@@ -79,8 +79,11 @@ try {
 
             // Call class level up
             eval(class_choice).level_up(this, choices)
-            log(this.name + " received a " + class_choice + " level.")
 
+            // Update spellslots
+            this.update_spell_slots()
+
+            log(this.name + " received a " + class_choice + " level.")
             this.save()
         }
 
