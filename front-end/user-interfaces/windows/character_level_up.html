@@ -61,7 +61,6 @@
 
             // Backend
             const request = `impersonated().level_up("`+player_class+`", ` + JSON.stringify(choices) + `)`
-            console.log(request)
             backend(request)
             closePage("Level Up")
 
@@ -499,7 +498,7 @@
 
         async function loadPage() {
             // Load tabs
-            create_tabs({content: ["class", "attributes"], parent: document.body})
+            element({tag: "div", attributes: {class: "outer", id: "class-tab"}, parent: document.body})
 
             // Options
             const class_options = []
@@ -532,25 +531,6 @@
                     container({title: "Proficiencies", id: "class-proficiencies", children: [
                         {tag: "p", text: "Choose a class to see its proficiencies."}
                     ]}),
-                ]},
-                {tag: "button", text: "Back", attributes: {class: "bottom left page-turner"}, 
-                    events: {click: () => getId("race-switch").click()}
-                },
-                {tag: "button", text: "Next", attributes: {class: "bottom right page-turner"}, 
-                    events: {click: () => getId("attributes-switch").click()}
-                }
-            ])
-
-            // Attributes Tab
-            document.getElementById("attributes-tab").appendChildren([
-                {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                    container({title: "Ability Scores", children: [
-                        point_buy_calculator()
-                    ]}),
-                    {tag: "div", style: {height: "2vh"}},
-                    container({title: "Racial Bonuses", id: "attributes-ability-scores", children: [
-                        {tag: "p", text: "Choose a race to see its bonuses to ability scores."}
-                    ]})
                 ]},
                 {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
                     events: {click: submit}
