@@ -30,17 +30,18 @@
         
         async function submit() {
 
-            const ability_scores = {
+            /* const ability_scores = {
                 strength: getId("strength").getAttribute("value"),
                 dexterity: getId("dexterity").getAttribute("value"),
                 constitution: getId("constitution").getAttribute("value"),
                 wisdom: getId("wisdom").getAttribute("value"),
                 intelligence: getId("intelligence").getAttribute("value"),
                 charisma: getId("charisma").getAttribute("value"),
-            }
+            } */
 
             // Player Class
-            const player_class = getId("class") ? getId("class").value : undefined
+            const player_class = document.getElementById("class").value
+            if (!player_class) return
 
             // Class Choices
             const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
@@ -59,18 +60,10 @@
             }
 
             // Backend
-            const request = (
-                "new Humanoid(getImpersonated(), true);" +
-                "impersonated().create_character({" +
-                    "name: `" + getId("name").value + "`," +
-                    "race: `" + getId("race").value + "`," +
-                    "ability_scores: " + JSON.stringify(ability_scores) + "," +
-                    "character_class: `" + player_class + "`," +
-                    "class_choices: " + JSON.stringify(choices) + "," +
-                "})"
-            )
+            const request = `impersonated().level_up("`+player_class+`", ` + JSON.stringify(choices) + `)`
+            console.log(request)
             backend(request)
-            closePage("Character Creation")
+            closePage("Level Up")
 
         }
         function title_value({title, value}) {
@@ -86,6 +79,7 @@
 
         async function updateClass() {
             const player_class = document.getElementById("class").value
+            const level_in_class = JSON.parse(await backend(`impersonated().classes`))[player_class]?.level + 1 || 1
 
             // Retrieve data
             const data = JSON.parse(await backend(`JSON.stringify({
@@ -94,11 +88,23 @@
                 level_up_info: `+player_class+`.level_up_info(impersonated()),
                 features_list: database.get_features_list({
                     subtype: "`+player_class+`", 
-                    level: impersonated().classes["`+player_class+`"].level,
+                    level: `+level_in_class+`,
                 }),
                 features: database.features.data,
                 proficiencies: database.proficiencies.data
             })`)) || {}
+
+            // Lore
+            const lore_div = getId("class-lore")
+            lore_div.clearChildren()
+            if (player_class != "") lore_div.appendChild({tag: "p", style: {textAlign: "left", fontStyle: "italic"}, textHTML: data.lore})
+            else lore_div.appendChild({tag: "p", text: "Choose a class to see its lore."})
+
+            // Description
+            const description_div = getId("class-description")
+            description_div.clearChildren()
+            if (player_class != "") description_div.appendChild({tag: "p", style: {textAlign: "left"}, textHTML: data.description})
+            else description_div.appendChild({tag: "p", text: "Choose a class to see its description."})
 
             // Choices
             const class_choices = document.getElementById("class-choices")
@@ -109,7 +115,7 @@
 
                     for (let i = 0; i < array.length; i++) {
                         const config = array[i]
-                        const element = choice_input(type, i, config)
+                        const element = choice_input(type, i, config, player_class)
                         if (element) class_choices.appendChild(element)
                     }
                 }
@@ -166,7 +172,7 @@
         // Modals
         //=====================================================================================================
 
-        function choice_input(type, index, config) {
+        function choice_input(type, index, config, player_class) {
             // Modal Functions
             const modalByType = {
                 spells: spell_choice_modal,
@@ -189,18 +195,19 @@
                 options: { input: { events: { mousedown: function (e) {
                     document.activeElement.blur()
                     e.preventDefault()
-                    modalByType[type](this, config)
+                    modalByType[type](this, config, player_class)
                 }}}}
             })
         }
-        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}) {
+        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class) {
             // Store spells user choose
             const chosen_options = inputElement ? inputElement.value.split(", ").filter(element => element != "") : []
 
             // Retrieve spell data from backend
             const database = JSON.parse(await backend(`JSON.stringify({
                 data: database.spells.data,
-                list: database.get_spells_list()
+                list: database.get_spells_list().reverse(),
+                known_spells: impersonated().spells?.`+player_current_class+`?.known || [],
             })`))
 
             // Functions
@@ -285,6 +292,8 @@
                 const spell = database.data[name]
 
                 // Validation
+                if (database.known_spells.includes(name)) // Already has spell
+                    continue 
                 if (level != undefined) { // Level
                     if (level == 0 && spell.level != "cantrip") continue
                     if (level > 0 && (Number(spell.level[0]) > level || spell.level == "cantrip")) continue
@@ -329,19 +338,17 @@
             // Create modal
             modal({parent: document.getElementById("class-tab"), options: {content: {style: {height: "85%", width: "85%"}}}, children: [
                 {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "90%"}, children: [
-                    container({title: "Available Spells", 
+                    container({title: "Available Spells", scroll: true,
                         options: {
                             div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
-                            content: {style: {overflow: "scroll", height: "100%", padding: "0 0.5vh"}}
                         },
                         children: spellList
                     })
                 ]},
                 {tag: "div", style: {position: "absolute", right: "0", width: "50%", height: "90%"}, children: [
-                    container({title: "Description", id: "modal-description",
+                    container({title: "Description", id: "modal-description", scroll: true,
                         options: {
                             div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
-                            content: {style: {overflow: "scroll", height: "100%", paddingRight: "0.5vh"}}
                         },
                         children: [
                             {tag: "p", text: "Click an option to show its description."}

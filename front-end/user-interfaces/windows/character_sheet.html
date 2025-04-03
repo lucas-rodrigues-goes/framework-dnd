@@ -437,7 +437,7 @@
 							portrait: impersonated().portrait,
 							level: impersonated().level,
 							experience: impersonated().experience,
-							level_up_experience: impersonated().level_up_experience,
+							level_up_experience: impersonated().level_up_experience || 0,
 							classes: impersonated().classes,
 							ability_scores: impersonated().ability_scores,
 						},
@@ -486,7 +486,7 @@
 						const level_div = document.getElementById("level-div")
 						level_div.clearChildren()
 						updateEXPBar(experiencePercent)
-						if(experiencePercent >= 100) {
+						if(character.basic.experience >= character.basic.level_up_experience) {
 							level_div.classList.add("level-up")
 							level_div.setAttribute("tooltip", "Click here to level up!")
 							level_div.appendChild({tag:"img", 
@@ -507,7 +507,7 @@
 							class_text += class_text ? " / " : ""
 							class_text += capitalize(cls)
 						}
-						document.getElementById("class").textContent = class_text
+						document.getElementById("class").textContent = class_text || "None"
 
 						// Ability Scores
 						for (const score in character.basic.ability_scores) {
@@ -1078,8 +1078,8 @@
 				// Character Abilities
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
-						classes: impersonated().classes,
-						spells: impersonated().spells,
+						classes: impersonated().classes || {},
+						spells: impersonated().spells || {},
 					}
 				)`))
 
@@ -1099,12 +1099,12 @@
 
 					// Get main class
 					const main_class = getMainClass(character.classes)
-					const spellcasting = JSON.parse(await backend(main_class + `.spellcasting || undefined`))
-					if (!spellcasting) return
+					const spellcasting = JSON.parse(await backend(main_class + `?.spellcasting || {}`))
 
 					// Clear container
 					const abilities_container = document.getElementById("abilities-tab-abilities")
 					abilities_container.clearChildren()
+					if (isEqualJSON(spellcasting, {})) return
 
 					// Create spell elements
 					let previous_level = undefined
@@ -1120,8 +1120,7 @@
 						}
 
 						// Conditions
-						if (!character.spells[main_class].memorized) character.spells[main_class].memorized = []
-						const spellIsMemorized = character.spells[main_class].memorized.includes(spell.name)
+						const spellIsMemorized = character.spells[main_class]?.memorized?.includes(spell.name) || false
 						const spellIsCantrip = spell.level == "cantrip"
 
 						// Add element
@@ -1218,7 +1217,7 @@
 									class: "tooltip",
 								},
 								children: [
-									{tag:"span", text: "", attributes: {id: "level"}}								]
+									{tag:"span", text: "", attributes: {id: "level"}}]
 							}
 						]},
 
@@ -1307,7 +1306,9 @@
 				// Abilities tab
 				document.getElementById("abilities-tab").appendChildren([
 					{tag: "div", style: {position: "absolute", left: "1%", width: "50%"}, children: [
-						container({title: "Abilites & Spells", id: "abilities-tab-abilities", options: {div: {style: {height: "80vh"}}}})
+						container({title: "Abilites & Spells", id: "abilities-tab-abilities", scroll: true, options: {
+							div: {style: {height: "80vh"}},
+						}})
 					]},
 				])
 			}
