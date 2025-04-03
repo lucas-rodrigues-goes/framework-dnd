@@ -98,7 +98,7 @@
         /* Circular Health Bar */
         /*===================================================================================================*/
     
-        .circular-health {
+        .circular-bar {
             position: relative;
             width: 13vh;
             height: 13vh;
@@ -113,26 +113,21 @@
             align-items: center;
         }
     
-        .circular-health img {
+        .circular-bar img {
             border-radius: 50%;
             border: 0.3vh solid #444;
             height: 11.5vh;
         }
     
-        .circular-health img:hover {
+        .circular-bar img:hover {
             filter: brightness(1.1)
         }
     
-        .circular-health img:active {
+        .circular-bar img:active {
             filter: brightness(1.3)
         }
-    
-        #current-party {
-            position: absolute;
-            bottom: 18vh;
-        }
-    
-        .circular-health-small {
+
+        .circular-bar-small {
             width: 6.5vh;
             height: 6.5vh;
             min-height: 0;
@@ -140,9 +135,14 @@
             margin: 1vh 0vh;
         }
     
-        .circular-health-small img {
+        .circular-bar-small img {
             height: 5.5vh;
             min-height: 0;
+        }
+    
+        #current-party {
+            position: absolute;
+            bottom: 18vh;
         }
     
         /*===================================================================================================*/
@@ -282,7 +282,7 @@
     
             // Element
             return element(
-                {tag: "div", parent: getId("current-party"), attributes: {class: "circular-health circular-health-small"}, style: {background}, children: [
+                {tag: "div", parent: getId("current-party"), attributes: {class: "circular-bar circular-bar-small"}, style: {background}, children: [
                     {tag: "img", attributes: {src: portrait}, events: {click: goTo}} 
                 ]}
             )
@@ -308,7 +308,7 @@
         async function updateCurrentCharacter() {
     
             const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
-                isImpersonated: getImpersonated() != undefined,
+                isImpersonated: getImpersonated() != "",
                 isInstanced: impersonated() != undefined
             })`))
     
@@ -317,18 +317,19 @@
             const create_character_menu = document.getElementById("create-character-menu")
     
             // Stop exectuion if not impersonated
-            if (!isInstanced && !isImpersonated) { 
-                character_menu.classList.add("hidden")
+            if (isInstanced) {
+                character_menu.classList.remove("hidden")
                 create_character_menu.classList.add("hidden")
-                return 
             }
-            else if (!isInstanced && isImpersonated) {
+            else if (isImpersonated) { 
                 character_menu.classList.add("hidden")
                 create_character_menu.classList.remove("hidden")
-                return
+                return 
             }
             else {
+                character_menu.classList.add("hidden")
                 create_character_menu.classList.add("hidden")
+                return
             }
     
             // Character
@@ -448,7 +449,7 @@
                 {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left hidden"}, children: [
                     {tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
                         {tag: "div", 
-                            attributes: {class: "circular-health", id: "current-character-health"},
+                            attributes: {class: "circular-bar", id: "current-character-health"},
                             style: {background: "rgba(0,0,0,0.15)"},
                             children: [
                                 {tag: "img", 
