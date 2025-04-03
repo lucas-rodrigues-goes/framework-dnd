@@ -46,9 +46,9 @@ try {
         return party_info
     }
 
-    var resetSelected = function () {
-        MTScript.evalMacro(`[r:setProperty("object", "", getSelected())]`)
-        MTScript.evalMacro(`[r:setProperty("class", "", getSelected())]`)
+    var resetImpersonated = function () {
+        MTScript.evalMacro(`[r:resetProperty("object", getImpersonated())]`)
+        MTScript.evalMacro(`[r:resetProperty("class", getImpersonated())]`)
     }
 
     // Returns current characters tokenID

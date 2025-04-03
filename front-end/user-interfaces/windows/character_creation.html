@@ -303,7 +303,7 @@
                 }}}}
             })
         }
-        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class="none") {
+        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class="None") {
             // Store spells user choose
             const chosen_options = inputElement ? inputElement.value.split(", ").filter(element => element != "") : []
 
@@ -311,7 +311,7 @@
             const database = JSON.parse(await backend(`JSON.stringify({
                 data: database.spells.data,
                 list: database.get_spells_list().reverse(),
-                known_spells: impersonated().spells?.`+player_current_class+`?.known || [],
+                known_spells: impersonated()?.spells?.`+player_current_class+`?.known || [],
             })`))
 
             // Functions
@@ -396,8 +396,8 @@
                 const spell = database.data[name]
 
                 // Validation
-                /* if (database.known_spells.includes(name) || true) // Already has spell (disabled for new character)
-                    continue  */
+                if (database.known_spells.includes(name)) // Already has spell
+                    continue
                 if (level != undefined) { // Level
                     if (level == 0 && spell.level != "cantrip") continue
                     if (level > 0 && (Number(spell.level[0]) > level || spell.level == "cantrip")) continue
