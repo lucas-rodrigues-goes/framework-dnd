@@ -484,8 +484,8 @@
             const gm_display = gm ? "block" : "none"
             element(
                 {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
-                    {tag: "button", text: "Reset Character", 
-                        events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
+                    {tag: "button", text: "Reset Selected", 
+                        events: {click: () => backend(`resetSelected()`)}
                     },
                     {tag: "button", text: "Give Item",
                         events: {click: () => openClosePage("", "Give Item", "give_item.html")}

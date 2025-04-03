@@ -303,7 +303,7 @@
                 }}}}
             })
         }
-        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class) {
+        async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class="none") {
             // Store spells user choose
             const chosen_options = inputElement ? inputElement.value.split(", ").filter(element => element != "") : []
 
