@@ -36,8 +36,10 @@ try {
                 const party_member = instance(token.getId())
 
                 // Push token information
-                const object = [party_member.health, party_member.max_health, party_member.portrait, token.getId()]
-                party_info.push(object)
+                if (party_member) {
+                    const object = [party_member.health, party_member.max_health, party_member.portrait, token.getId()]
+                    party_info.push(object)
+                }
             }
         }
 

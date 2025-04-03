@@ -307,15 +307,28 @@
         let current_character = {}
         async function updateCurrentCharacter() {
     
-            const isImpersonated = await backend("impersonated()") != ""
+            const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
+                isImpersonated: getImpersonated() != undefined,
+                isInstanced: impersonated() != undefined
+            })`))
     
             // Character Menu
-            const character_menu = getId("character-menu")
+            const character_menu = document.getElementById("character-menu")
+            const create_character_menu = document.getElementById("create-character-menu")
     
             // Stop exectuion if not impersonated
-            if (!isImpersonated) { 
+            if (!isInstanced && !isImpersonated) { 
                 character_menu.classList.add("hidden")
+                create_character_menu.classList.add("hidden")
                 return 
+            }
+            else if (!isInstanced && isImpersonated) {
+                character_menu.classList.add("hidden")
+                create_character_menu.classList.remove("hidden")
+                return
+            }
+            else {
+                create_character_menu.classList.add("hidden")
             }
     
             // Character
@@ -457,12 +470,21 @@
                     ]}
                 ]}
             )
+
+            // Character Creation
+            element(
+                {tag: "div", parent: document.body, attributes: {id: "create-character-menu", class: "menu bottom left hidden"}, style: {width: "18vh"}, children: [
+                    {tag: "button", text: "Character Creation", 
+                        events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
+                    },
+                ]}
+            )
     
             // GM Menu
             const gm_display = gm ? "block" : "none"
             element(
                 {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
-                    {tag: "button", text: "Character Creation", 
+                    {tag: "button", text: "Reset Character", 
                         events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
                     },
                     {tag: "button", text: "Give Item",
