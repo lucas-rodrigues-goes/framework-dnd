@@ -23,12 +23,12 @@
 			}
 			#level-div > span {
 				position: relative;
+				color: #ddd;
 				top: 25%;
-				font-weight: bold
+				font-weight: bold;
 			}
 
 			#level-div.level-up {
-				border-color: #ccc;
 				cursor: pointer;
 			}
 
@@ -111,11 +111,8 @@
 				background-color: #3a3a3a;
 			}
 
-			.tooltip::after {
+			.tooltip.tooltip-bottom::after {
 				top: 120%;
-				height:fit-content;
-				font-weight:normal;
-				font-size: 1.6vh;
 			}
 
 			/*=====================================================================================================*/
@@ -158,12 +155,12 @@
 				]}
 			}
 			function updateEXPBar(percent) {
-				function crunchNumber(num) {
+				function crunchNumber(num, from = [0, 100], to = [0, 100]) {
 					// Define the input and output ranges
-					const inputMin = 0;
-					const inputMax = 100;
-					const outputMin = 10;
-					const outputMax = 90;
+					const inputMin = from[0];
+					const inputMax = from[1];
+					const outputMin = to[0];
+					const outputMax = to[1];
 					
 					// Calculate the proportion and map to new range
 					const proportion = (num - inputMin) / (inputMax - inputMin);
@@ -171,11 +168,15 @@
 					
 					return crunched;
 				}
+				// Crunching
+				const from = [0, 100]
+				const to = [0, 100]
 
-				percent = Math.floor(percent)
-				const end_percent = (percent == 0 ? 0 : percent + 1)
+				const start_percent = crunchNumber(percent, from, to)
+				const end_percent = crunchNumber(percent == 0 ? 0 : percent + 1, from, to)
+				const color = percent >= 100 ? "#ddd" : "#782f78"
 
-				getId("experience").style.background = `linear-gradient(-45deg, #782f78 ` + crunchNumber(percent) + `%, rgba(0,0,0,0.15) ` + crunchNumber(end_percent) + `%)`
+				getId("experience").style.background = `linear-gradient(0deg, ` + color + ` ` + start_percent + `%, rgba(0,0,0,0.15) ` + end_percent + `%)`
 			}
 			function bonusOf(number, parenthesis=false) {
 				number = Number(number) > 0 ? "+"+number : number
@@ -487,14 +488,17 @@
 						updateEXPBar(experiencePercent)
 						if(experiencePercent >= 100) {
 							level_div.classList.add("level-up")
+							level_div.setAttribute("tooltip", "Click here to level up!")
 							level_div.appendChild({tag:"img", 
-								attributes: {src: "asset://7f3308bb1bcfeada642381f311195601"}, 
-								style: {height: "4vh", marginTop: "0.2vh", cursor: "pointer", filter: "brightness(0.8)"}
+								attributes: {src: "asset://5282add24bd7663d499861e313980245"}, 
+								style: {height: "1.5em", marginTop: "0.7vh", cursor: "pointer"},
+								events: {click: () => openPage("character_level_up.html", "")}
 							})
 						}
 						else {
 							level_div.classList.remove("level-up")
-							level_div.appendChild({tag:"span", text: character.level})
+							level_div.setAttribute("tooltip", character.basic.experience + " / " + character.basic.level_up_experience + " XP")
+							level_div.appendChild({tag:"span", text: String(character.basic.level)})
 						}
 
 						// Classes text
@@ -890,7 +894,7 @@
 
 							// Item image
 							image = 
-							 {tag: "span", attributes: {class: "tooltip tooltip-img", tooltip: tooltip}, children: [
+							 {tag: "span", attributes: {class: "tooltip tooltip-bottom", tooltip: tooltip}, children: [
 								{tag: "img",
 									attributes: {
 										src: item.image,
@@ -988,8 +992,8 @@
 								: null
 
 							// Item image
-							 image = 
-							 {tag: "span", attributes: {class: "tooltip tooltip-img", tooltip: tooltip}, children: [
+							image = 
+							 {tag: "span", attributes: {class: "tooltip tooltip-bottom", tooltip: tooltip}, children: [
 								{tag: "img",
 									attributes: {
 										src: item.image,
@@ -1210,7 +1214,8 @@
 							},
 							{tag: "div",
 								attributes: {
-									id: "level-div"
+									id: "level-div",
+									class: "tooltip",
 								},
 								children: [
 									{tag:"span", text: "", attributes: {id: "level"}}								]

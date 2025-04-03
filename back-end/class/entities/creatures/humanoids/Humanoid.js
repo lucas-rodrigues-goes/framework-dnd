@@ -46,11 +46,13 @@ try {
         }
 
         get level_up_experience () { 
-                return {
-                    1: 300, 2: 900, 3: 2700, 4: 6500, 5: 14000, 6: 23000, 7: 34000, 8: 48000,
+                const level_table = {
+                    0: 0, 1: 300, 2: 900, 3: 2700, 4: 6500, 5: 14000, 6: 23000, 7: 34000, 8: 48000,
                     9: 64000, 10: 85000, 11: 100000, 12: 120000, 13: 140000, 14: 165000, 15: 195000,
                     16: 225000, 17: 265000, 18: 305000, 19: 355000
-                }[this.level]
+                }
+                
+                return level_table[this.level] - level_table[this.level - 1]
         }
 
         get experience () { return this.#experience }
@@ -63,6 +65,9 @@ try {
 
         level_up(class_choice, choices) {
             if (this.level >= 20) { return }
+
+            // Pay experience cost
+            this.experience = this.experience - this.level_up_experience
 
             // Create class object
             if (!this.#classes[class_choice]) {
