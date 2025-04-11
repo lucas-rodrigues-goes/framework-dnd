@@ -23,7 +23,32 @@ try {
             "burrow":0,
         }
         #spellcasting_level = 0
-        #resources = {}
+        #resources = {
+            "Action": {
+                value: 1,
+                max: 1,
+                restored_on: "turn start",
+            },
+            "Bonus Action": {
+                value: 1,
+                max: 1,
+                restored_on: "turn start",
+            },
+            "Reaction": {
+                value: 1,
+                max: 1,
+                restored_on: "turn start",
+            },
+            "Attacks": {
+                value: 0,
+                max: 1,
+            },
+            "Movement": {
+                value: 30,
+                max: 30,
+                restored_on: "turn start",
+            },
+        }
         #features = []
         #proficiencies = {}
         #spells = {}
@@ -51,6 +76,20 @@ try {
         // Methods
         //=====================================================================================================
 
+        turn_start() {
+            // Update resource maxes
+            this.set_resource_max("Movement", this.speed) //--> Speed
+
+            // Fill Resources
+            for (const name in this.#resources) {
+                const resource = this.#resources[name]
+                
+                if (["turn start"].includes(resource.restored_on)) {
+                    this.set_resource_value(name, resource.max)
+                }
+            }
+        }
+
         short_rest(hours = 1) {
             // Health
             this.health = (this.max_health / 4) * hours
@@ -59,7 +98,7 @@ try {
             for (const name in this.#resources) {
                 const resource = this.#resources[name]
                 
-                if (["short rest"].includes(resource.restored_on)) {
+                if (["short rest", "turn start"].includes(resource.restored_on)) {
                     this.set_resource_value(name, resource.max)
                 }
             }
@@ -75,7 +114,7 @@ try {
             for (const name in this.#resources) {
                 const resource = this.#resources[name]
 
-                if (["long rest", "short rest"].includes(resource.restored_on)) {
+                if (["long rest", "short rest", "turn start"].includes(resource.restored_on)) {
                     this.set_resource_value(name, resource.max)
                 }
             }

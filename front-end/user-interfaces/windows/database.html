@@ -643,7 +643,6 @@
                     columns = [
                         img({src:image, style:"height:2.4vh"}), 
                         name,
-                        capitalize(type),
                         img({src:edit_icon, id:"resources-table-row-"+name+"-edit"}) +
                         img({src:remove_icon, id:"resources-table-row-"+name+"-remove"})
                     ]
@@ -678,15 +677,13 @@
 
                     // Parsing
                     response = JSON.parse(response)
-                    const filter_list = response[0]
-                    const data = response[1]
+                    const [filter_list, data] = response
 
                     // Rows
                     let rows = ""
                     const items = []
                     for (const key of filter_list) {
                         resource = data[key]
-
                         items.push(key)
                         rows += custom_row({...resource})
                     }
