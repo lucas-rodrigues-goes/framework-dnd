@@ -43,12 +43,12 @@ function element(options) {
     }
 
     // Set text content
-    if (typeof options.text === "string") {
+    if (options.text) {
         created_element.textContent = String(options.text);
     }
 
     // Set text content with HTML tags
-    if (typeof options.textHTML === "string") {
+    if (options.textHTML) {
         created_element.textContent = "";
         created_element.insertAdjacentHTML("beforeend", String(options.textHTML));
     }
