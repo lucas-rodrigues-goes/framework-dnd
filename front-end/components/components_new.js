@@ -43,12 +43,12 @@ function element(options) {
     }
 
     // Set text content
-    if (options.text) {
+    if (options.text || options.text == 0) {
         created_element.textContent = String(options.text);
     }
 
     // Set text content with HTML tags
-    if (options.textHTML) {
+    if (options.textHTML || options.textHTML == 0) {
         created_element.textContent = "";
         created_element.insertAdjacentHTML("beforeend", String(options.textHTML));
     }
@@ -499,6 +499,8 @@ function close_modal() {
 
 // Buttons object receives "title: function"
 function context_menu({buttons = {}, options = {}, parent = document.body, event}) {
+    if (Object.keys(buttons).length == 0) return
+
     // Options
     const { div: div_options = {}, content: content_options = {} } = options;
     const { style: div_style = {}, events: div_events = {}, attributes: div_attributes = {} } = div_options;

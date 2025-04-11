@@ -280,7 +280,8 @@
 			//=====================================================================================================
 			// Modals and context menus
 			//=====================================================================================================
-
+			
+			// Items
 			function itemContext(event, slot, position) {
 				if (event.button != 2) return;
 
@@ -418,7 +419,63 @@
 				drop_amount.value = slot.amount
 				drop_amount.dispatchEvent(new Event("input"))
 			}
+			
+			// Spells
+			function spellDescription(spell) {
+				// Show description
+				modal({parent: document.getElementById("abilities-tab"), children: [
+					{tag: "div", style: {padding: "0 1vh"}, children: [
+						// Title
+						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell.name},
+							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell.school) + " Spell"},
+						]},
+						// Attributes
+						{tag: "div", style: {textAlign: "left"}, children: [
+							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
+							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
+							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
+							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+						]},
+						// Description
+						spell.description 
+							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell.description},
+						spell.description_higher_levels 
+							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
+								{tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
+								{tag: "span", text: spell.description_higher_levels}
+							]},
+					]}
+				]})
+			}
 
+			// Resources
+			function resourceDescription(resource) {
+				// Show description
+				modal({parent: document.getElementById("abilities-tab"), children: [
+					{tag: "div", style: {padding: "0 1vh"}, children: [
+						// Title
+						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: resource.name},
+							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: "Resource"},
+						]},
+						// Attributes
+						/* {tag: "div", style: {textAlign: "left"}, children: [
+							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
+							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
+							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
+							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+						]}, */
+						// Description
+						resource.description
+							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: resource.description},
+					]}
+				]})
+			}
 
 			//=====================================================================================================
 			// Update Page
@@ -1046,35 +1103,6 @@
 
 					return highestClass;
 				}
-				function spellDescription(spell) {
-					// Show description
-					modal({parent: document.getElementById("abilities-tab"), children: [
-						{tag: "div", style: {padding: "0 1vh"}, children: [
-							// Title
-							{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-								{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell.name},
-								{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell.school) + " Spell"},
-							]},
-							// Attributes
-							{tag: "div", style: {textAlign: "left"}, children: [
-								spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
-								spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
-								spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
-								spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
-								spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
-								spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
-							]},
-							// Description
-							spell.description 
-								&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell.description},
-							spell.description_higher_levels 
-								&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
-									{tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
-									{tag: "span", text: spell.description_higher_levels}
-								]},
-						]}
-					]})
-				}
 
 				// Character Abilities
 				const character = JSON.parse(await backend(`JSON.stringify(
@@ -1192,16 +1220,22 @@
 					resources_container.clearChildren()
 
 					// Create elements
+					let combatActions = false
 					for (const name in character.resources) {
 						const resource = character.resources[name]
-						const resource_image = spell_school_images["abjuration"]
+						const resource_data = database.resources[name] || {}
+						const color = {color: resource_data.color || ""}
+
+						// Validation
+						if(name == "Attack Action" && resource.value <= 0) continue
+						if(name.includes("Level Spell Slot")) continue
 
 						// Add element
-						resources_container.appendChild(
+						resources_container.appendChildren([
 							{tag: "div", 
 								attributes: {class: "collapsible-div"}, 
 								style: {
-									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									display: combatActions ? "none" : "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
 									opacity: resource.value > 0 ? 1 : 0.4
 								},
 								events: {
@@ -1211,9 +1245,11 @@
 												break
 											case 2: { // Right Click
 												// Buttons
-												const buttons = {
-													"Description": () => {},
-												}
+												const buttons = {}
+												
+												// Conditional Buttons
+												if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + name + `")`); updateResources()}
+												if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
 
 												// Run context menu
 												context_menu({event: event, buttons: buttons})
@@ -1223,12 +1259,18 @@
 									}
 								},
 								children: [
-									//{tag: "img", attributes: {src: resource_image}},
+									{tag: "img", attributes: {src: resource_data.image}},
 									{tag: "span", text: name},
-									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: resource.value + " / " + resource.max},
+									{tag: "span", style: {position: "absolute", right: "0.5vh"}, children: [
+										{tag: "span", style: color, text: resource.value},
+										{tag: "span", text: " / "},
+										{tag: "span", style: color, text: resource.max},
+									]}
 								]
-							}
-						)
+							},
+							name == "Movement" && {tag: "div", style: {height: "1vh"}}
+						])
+						if (name == "Movement") combatActions = false
 					}
 				}
 				updateResources()
@@ -1241,7 +1283,7 @@
 			function loadPage() {
 
 				// Loading main div, tabs, and context menu
-				create_tabs({content:["character","inventory","abilities"], parent: document.body})
+				create_tabs({content:["character","inventory","abilities", "spells"], parent: document.body})
 
 				// Hide containers
 				const container_options = {div: {attributes: {class: "hidden"}, style: {paddingBottom: "1vh"}}}

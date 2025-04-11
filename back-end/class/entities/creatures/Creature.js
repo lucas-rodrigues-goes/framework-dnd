@@ -29,6 +29,10 @@ try {
                 max: 1,
                 restored_on: "turn start",
             },
+            "Attack Action": {
+                value: 0,
+                max: 1,
+            },
             "Bonus Action": {
                 value: 1,
                 max: 1,
@@ -38,10 +42,6 @@ try {
                 value: 1,
                 max: 1,
                 restored_on: "turn start",
-            },
-            "Attacks": {
-                value: 0,
-                max: 1,
             },
             "Movement": {
                 value: 30,
@@ -452,6 +452,13 @@ try {
         //=====================================================================================================
 
         get resources() {return this.#resources}
+
+        use_resource(resource) {
+            const resource_data = this.#resources[resource]
+            if (!resource_data) return
+
+            this.set_resource_value(resource, resource_data.value - 1)
+        }
 
         set_new_resource(resource, max, restored_on) {
             this.#resources[resource] = {
