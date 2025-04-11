@@ -71,7 +71,7 @@ try {
             ].includes(school)) { return }
 
             // Validate Cast Time
-            if (Number(cast_time) < 1 || Number(cast_time) > 12) { return }
+            if (Number(cast_time) < -2 || Number(cast_time) > 12) { return }
 
             // Remove Invalid Spellcasting Classes
             classes = classes.filter(value => [

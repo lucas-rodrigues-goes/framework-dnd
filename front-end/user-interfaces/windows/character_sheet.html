@@ -422,8 +422,13 @@
 			
 			// Spells
 			function spellDescription(spell) {
+				let cast_time = ""
+				if (spell.cast_time >= 0) cast_time = spell.cast_time / 2 + " Seconds"
+				else if (spell.cast_time == -1) cast_time = "Bonus Action"
+				else if (spell.cast_time == -2) cast_time = "Reaction"
+
 				// Show description
-				modal({parent: document.getElementById("abilities-tab"), children: [
+				modal({parent: document.getElementById("spells-tab"), children: [
 					{tag: "div", style: {padding: "0 1vh"}, children: [
 						// Title
 						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
@@ -436,7 +441,7 @@
 							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
 							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
 							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
-							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+							spell.cast_time && title_value({title: "Casting Time", value: capitalize(cast_time)}),
 							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
 						]},
 						// Description
@@ -1085,7 +1090,6 @@
 
 			let abilities_tab = {
 				classes: {},
-				spells: {},
 				resources: {}
 			}
 			async function updateAbilitiesTab() {
@@ -1094,9 +1098,9 @@
 					let highestLevel = -Infinity;
 					let highestClass = null;
 
-					for (const [className, classInfo] of Object.entries(classObj)) {
-						if (classInfo.level > highestLevel) {
-							highestLevel = classInfo.level;
+					for (const [className, class_info] of Object.entries(classObj)) {
+						if (class_info.level > highestLevel) {
+							highestLevel = class_info.level;
 							highestClass = className;
 						}
 					}
@@ -1125,91 +1129,6 @@
 					},
 					spells_list: database.get_spells_list()
 				})`))
-
-				// Update Spells
-				async function updateSpells() {
-					abilities_tab.spells = character.spells
-
-					// Get main class
-					const main_class = getMainClass(character.classes)
-					const spellcasting = JSON.parse(await backend(main_class + `?.spellcasting || {}`))
-
-					// Clear container
-					const abilities_container = document.getElementById("abilities-tab-abilities")
-					abilities_container.clearChildren()
-					if (isEqualJSON(spellcasting, {})) return
-
-					// Create spell elements
-					let previous_level = undefined
-					for (const name of character.spells[main_class].known) {
-						const spell = database.spells[name]
-						const spell_image = spell_school_images[spell.school]
-
-						// Add spacing between levels
-						if (previous_level != spell.level) {
-							const text = spell.level == "cantrip" ? capitalize(spell.level) + "s" : spell.level + " Level Spells"
-							abilities_container.appendChild({tag: "div", style: {paddingTop: "1.5vh", fontWeight: "bold"}, text: text})
-							previous_level = spell.level
-						}
-
-						// Conditions
-						const spellIsMemorized = character.spells[main_class]?.memorized?.includes(spell.name) || false
-						const spellIsCantrip = spell.level == "cantrip"
-
-						// Add element
-						abilities_container.appendChild(
-							{tag: "div", 
-								attributes: {class: "collapsible-div"}, 
-								style: {
-									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
-									opacity: spellIsMemorized || spellIsCantrip || !spellcasting.memorization ? 1 : 0.4
-								},
-								events: {
-									mousedown: (event) => {
-										switch (event.button) {
-											case 0: // Left Click
-												break
-											case 2: { // Right Click
-												// Buttons
-												const buttons = {
-													"Description": () => spellDescription(spell),
-												}
-
-												// Conditional buttons
-												if (spellcasting.memorization) {
-													if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
-														const result = await backend(`impersonated().memorize_spell("` + main_class + `", "` + spell.name + `")`)
-														
-														// Show warning if no memorization occurred
-														if (!result) warning(
-															{parent: document.getElementById("abilities-tab"), text: "You have reached memorization limit."}
-														)
-
-														updateAbilitiesTab()
-													}
-													if(spellIsMemorized) buttons["Forget"] =  () => {
-														backend(`impersonated().forget_spell("` + main_class + `", "` + spell.name + `")`)
-														updateAbilitiesTab()
-													}
-												}
-
-												// Run context menu
-												context_menu({event: event, buttons: buttons})
-												break
-											}
-										}
-									}
-								},
-								children: [
-									{tag: "img", attributes: {src: spell_image}},
-									{tag: "span", text: name},
-									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(spell.level)},
-								]
-							}
-						)
-					}
-				}
-				updateSpells()
 
 				// Update Resources
 				async function updateResources() {
@@ -1280,36 +1199,29 @@
 			let spells_tab = {
 				classes: {},
 				spells: {},
-				resources: {}
+				resources: {},
+				filters: {},
+				spellcasting: {},
+				score_bonus: {},
 			}
 			async function updateSpellsTab() {
-				// Helpers
-				function getMainClass(classObj) {
-					let highestLevel = -Infinity;
-					let highestClass = null;
-
-					for (const [className, classInfo] of Object.entries(classObj)) {
-						if (classInfo.level > highestLevel) {
-							highestLevel = classInfo.level;
-							highestClass = className;
-						}
-					}
-
-					return highestClass;
-				}
+				const chosen_class = document.getElementById("spells-tab-class").value || "None"
 
 				// Character Abilities
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
 						classes: impersonated().classes || {},
 						spells: impersonated().spells || {},
-						resources: impersonated().resources || {}
+						resources: impersonated().resources || {},
+						spellcasting: ` + (chosen_class == "None" 
+							? `{}` 
+							: chosen_class + `.spellcasting`) + `,
+						score_bonus: impersonated().score_bonus || {},
 					}
 				)`))
 
 				// Cancel execution if there is no update to character
 				if (isEqualJSON(spells_tab, character)) return
-				else spells_tab.classes = character.classes
 
 				// Database
 				const { database, spells_list } = JSON.parse(await backend(`JSON.stringify({
@@ -1319,39 +1231,107 @@
 					},
 					spells_list: database.get_spells_list()
 				})`))
+				
+				// Update Class Option
+				async function updateClass() {
+					if (isEqualJSON(spells_tab.classes, character.classes)) return
+					spells_tab.classes = character.classes
+
+					const class_select = document.getElementById("spells-tab-class")
+					class_select.clearChildren()
+
+					for (const name in character.classes) {
+						class_select.appendChild({tag: "option", text: name})
+					}
+					class_select.dispatchEvent(new Event("change"))
+				}
+				updateClass()
+
+				// Update Spellcasting
+				async function updateSpellcasting() {
+					if (isEqualJSON(spells_tab.spellcasting, character.spellcasting) && 
+						isEqualJSON(spells_tab.score_bonus, character.score_bonus)) return
+					spells_tab.spellcasting = character.spellcasting
+					spells_tab.score_bonus = character.score_bonus
+
+					const class_info = document.getElementById("spells-tab-class-info")
+					class_info.clearChildren()
+
+					if(isEqualJSON(character.spellcasting, {})) {return}
+
+					const modifier = character.score_bonus[character.spellcasting.ability]
+					const values = {
+						"Spellcasting Ability": capitalize(character.spellcasting.ability),
+						"Spellcasting Modifier": modifier > 0 ? "+ " + modifier : modifier,
+						" ": " ",
+						"Spell Save DC": 10 + modifier,
+						"Spell Hit Bonus": modifier + 2 > 0 ? "+ " + (modifier + 2) : (modifier + 2)
+					}
+					for (const item in values) {
+						const value = values[item]
+
+						class_info.appendChild(
+							{tag: "div", attributes: {class: "collapsible-div"}, 
+							style: {
+								display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "0.5vh", 
+								backgroundColor: "rgba(0,0,0,0)", border: "none",
+							}, 
+							children: [
+								{tag: "span", style: {filter: "brightness(0.8)", fontWeight: "300"}, text: item},
+								{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, text: value}
+							]}
+						)
+					}
+				}
+				updateSpellcasting()
 
 				// Update Spells
 				async function updateSpells() {
 					spells_tab.spells = character.spells
 
+					// Active spells filter
+					const showAll = document.getElementById("spells-tab-spells-all").getAttribute("value") == "true"
+					const levelFilter = document.getElementById("spells-tab-spells-level").getAttribute("value")
+					spells_tab.filters.showAll = showAll
+					spells_tab.filters.levelFilter = levelFilter
+					
 					// Get main class
-					const main_class = getMainClass(character.classes)
+					const main_class = chosen_class
 					const spellcasting = JSON.parse(await backend(main_class + `?.spellcasting || {}`))
 
 					// Clear container
-					const container = document.getElementById("spells-tab-spells")
-					container.clearChildren()
+					const abilities_container = document.getElementById("spells-tab-spells")
+					abilities_container.clearChildren()
 					if (isEqualJSON(spellcasting, {})) return
 
 					// Create spell elements
 					let previous_level = undefined
-					for (const name of character.spells[main_class].known) {
+					for (const name of spells_list.filter(spell => character.spells[main_class].known.includes(spell))) {
 						const spell = database.spells[name]
 						const spell_image = spell_school_images[spell.school]
-
-						// Add spacing between levels
-						if (previous_level != spell.level) {
-							const text = spell.level == "cantrip" ? capitalize(spell.level) + "s" : spell.level + " Level Spells"
-							container.appendChild({tag: "div", style: {paddingTop: "1.5vh", fontWeight: "bold"}, text: text})
-							previous_level = spell.level
-						}
+						
+						// Action type
+						let action_type
+						if (spell.cast_time > 0) action_type =  "Action"
+						if (spell.cast_time == -1) action_type = "Bonus Action"
+						if (spell.cast_time == -2) action_type = "Reaction"
 
 						// Conditions
 						const spellIsMemorized = character.spells[main_class]?.memorized?.includes(spell.name) || false
 						const spellIsCantrip = spell.level == "cantrip"
 
+						// Validation
+						if (!(spellIsCantrip || spellIsMemorized) && !showAll) continue
+						if (levelFilter && (levelFilter != spell.level)) continue
+
+						// Add spacing between levels
+						if (previous_level != spell.level) {
+							abilities_container.appendChild({tag: "div", style: {margin: "1vh", marginTop: "1.5vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
+							previous_level = spell.level
+						}
+
 						// Add element
-						container.appendChild(
+						abilities_container.appendChild(
 							{tag: "div", 
 								attributes: {class: "collapsible-div"}, 
 								style: {
@@ -1376,14 +1356,14 @@
 														
 														// Show warning if no memorization occurred
 														if (!result) warning(
-															{parent: document.getElementById("abilities-tab"), text: "You have reached memorization limit."}
+															{parent: document.getElementById("spells-tab"), text: "You have reached memorization limit."}
 														)
 
-														updateAbilitiesTab()
+														updateSpellsTab()
 													}
 													if(spellIsMemorized) buttons["Forget"] =  () => {
 														backend(`impersonated().forget_spell("` + main_class + `", "` + spell.name + `")`)
-														updateAbilitiesTab()
+														updateSpellsTab()
 													}
 												}
 
@@ -1397,7 +1377,7 @@
 								children: [
 									{tag: "img", attributes: {src: spell_image}},
 									{tag: "span", text: name},
-									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(spell.level)},
+									{tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
 								]
 							}
 						)
@@ -1405,31 +1385,30 @@
 				}
 				updateSpells()
 
-				// Update Resources
-				async function updateResources() {
+				// Update Spell Slots
+				async function updateSpellSlots() {
 					spells_tab.resources = character.resources
 
 					// Clear container
-					const container = document.getElementById("spells-tab-spell-slots")
-					container.clearChildren()
+					const slot_container = document.getElementById("spells-tab-spell-slots")
+					slot_container.clearChildren()
 
 					// Create elements
-					let combatActions = false
-					for (const name in character.resources) {
-						const resource = character.resources[name]
-						const resource_data = database.resources[name] || {}
+					for (const key in character.resources) {
+						const resource = character.resources[key]
+						const resource_data = database.resources[key] || {}
 						const color = {color: resource_data.color || ""}
 
 						// Validation
-						if(name == "Attack Action" && resource.value <= 0) continue
-						if(name.includes("Level Spell Slot")) continue
+						if(!key.includes("Level Spell Slot")) continue
+						const name = key.replace("Spell Slot", "")
 
 						// Add element
-						container.appendChildren([
+						slot_container.appendChild(
 							{tag: "div", 
 								attributes: {class: "collapsible-div"}, 
 								style: {
-									display: combatActions ? "none" : "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
 									opacity: resource.value > 0 ? 1 : 0.4
 								},
 								events: {
@@ -1442,8 +1421,7 @@
 												const buttons = {}
 												
 												// Conditional Buttons
-												if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + name + `")`); updateResources()}
-												if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
+												if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + key + `")`); updateSpellSlots()}
 
 												// Run context menu
 												context_menu({event: event, buttons: buttons})
@@ -1461,13 +1439,11 @@
 										{tag: "span", style: color, text: resource.max},
 									]}
 								]
-							},
-							name == "Movement" && {tag: "div", style: {height: "1vh"}}
-						])
-						if (name == "Movement") combatActions = false
+							}
+						)
 					}
 				}
-				updateResources()
+				updateSpellSlots()
 			}
 
 			//=====================================================================================================
@@ -1577,31 +1553,33 @@
 							]}
 						]}),
 					]},
-					container({title: "Backpack", options: {div: {style: {width: "85%"}}}, children: [
-						{tag: "div", 
-							attributes: {id: "inventory"},
-							style: {
-								position: "relative",
-								width: "fit-content",
-								margin: "auto",
-								display: "grid",
-								gridTemplateColumns: "repeat(12, 1fr)",
-								gridRowGap: "0.2vh",
-								gap: 0,
-								marginTop: "2vh"
+					{tag: "div", style: {width: "110%", left: "-4.5%", position: "relative"}, children: [
+						container({title: "Backpack", options: {div: {style: {width: "85%"}}}, children: [
+							{tag: "div", 
+								attributes: {id: "inventory"},
+								style: {
+									position: "relative",
+									width: "fit-content",
+									margin: "auto",
+									display: "grid",
+									gridTemplateColumns: "repeat(13, 1fr)",
+									gridRowGap: "0.2vh",
+									gap: 0,
+									marginTop: "2vh"
+								}
 							}
-						}
-					]})
+						]})
+					]}
 				])
 			
 				// Abilities tab
 				document.getElementById("abilities-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "1%", width: "50%"}, children: [
+					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
 						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
 							div: {style: {height: "80vh"}},
 						}})
 					]},
-					{tag: "div", style: {position: "absolute", right: "1%", width: "50%"}, children: [
+					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
 						container({title: "Resources", id: "abilities-tab-resources", scroll: true, options: {
 							div: {style: {height: "80vh"}},
 						}})
@@ -1609,16 +1587,71 @@
 				])
 
 				// Spells tab
+				const buttonStyle = {boxShadow: "1px 1px 5px rgba(0,0,0,0.3)", fontSize: "110%", borderColor: "#777"}
+				const spellLevelButtons = []
+				for (let i = 0; i <= 9; i++) {
+					spellLevelButtons.push(
+						{tag: "button", text: i, style: buttonStyle, events: {
+							click: function () {
+								const isActive = this.classList.contains("active")
+								const levelButtons = this.parentNode.children
+								for (button of levelButtons) {
+									button.classList.remove("active")
+								}
+
+								const postfix = ["st", "nd", "rd"].length >= i ? ["st", "nd", "rd"][i - 1] || "" : "th"
+								const name = i == 0 ? "cantrip" : i + postfix
+
+								if (isActive) {
+									this.classList.remove("active")
+									this.parentNode.setAttribute("value", "")
+								}
+								else {
+									this.classList.add("active")
+									this.parentNode.setAttribute("value", name)
+								}
+
+								updateSpellsTab()
+							}
+						}}
+				)}
 				document.getElementById("spells-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "1%", width: "50%"}, children: [
-						container({title: "Abilites", id: "spells-tab-spells", scroll: true, options: {
+					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
+						container({title: "Spells", scroll: false, options: {
 							div: {style: {height: "80vh"}},
-						}})
+						}, children: [
+							{tag: "div", style: {display: "flex", justifyContent: "center", padding: "0.5vh", margin: 0}, children: [
+								{tag: "div", attributes: {id: "spells-tab-spells-level", value: ""}, children: spellLevelButtons},
+								{tag: "button", text: "M", attributes: {id: "spells-tab-spells-all", value: "true", class: "active"}, style: {...buttonStyle, display: "none"}, events: {
+									click: function () {
+										const isActive = this.getAttribute("value") == "true"
+
+										// Update Value
+										this.setAttribute("value", isActive ? "false" : "true")
+
+										// Update style
+										if (isActive) this.classList.remove("active")
+										else this.classList.add("active")
+
+										updateSpellsTab()
+									}
+								}}
+							]},
+							{tag: "div", attributes: {id: "spells-tab-spells"}, style: {overflow: "scroll", height: "93%", padding: "0 1vh", paddingRight: "1.5vh"}}
+						]})
 					]},
-					{tag: "div", style: {position: "absolute", right: "1%", width: "50%"}, children: [
-						container({title: "Resources", id: "spells-tab-spell-slots", scroll: true, options: {
-							div: {style: {height: "80vh"}},
-						}})
+					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
+						container({title: "Class", scroll: true, options: {
+							div: {style: {height: "29.7vh"}},
+						}, children: [
+							select({id: "spells-tab-class", placeholder: "Class", events: {change: updateSpellsTab}}),
+							{tag: "div", attributes: {id: "spells-tab-class-info"}, style: {marginTop: "3vh"}}
+						]}),
+						container({title: "Spell Slots", scroll: true, options: {
+							div: {style: {height: "45vh"}},
+						}, children: [
+							{tag: "div", attributes: {id: "spells-tab-spell-slots"}, style: {padding: "0"}}
+						]})
 					]},
 				])
 			}
@@ -1634,12 +1667,14 @@
 				updateInventoryTab()
 				updateCharacterTab()
 				updateAbilitiesTab()
+				updateSpellsTab()
 
 				// Set update intervals
 				setInterval(()=> {
 					closeIfNotImpersonated()
 					updateInventoryTab()
 					updateAbilitiesTab()
+					updateSpellsTab()
 				}, 500)
 				setInterval(() => updateCharacterTab(), 1000)
 			}

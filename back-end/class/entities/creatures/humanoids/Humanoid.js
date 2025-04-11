@@ -29,8 +29,8 @@ try {
             // Add class
             if (character_class) { this.level_up(character_class, class_choices) }
 
-            // Fill health
-            this.health = this.max_health
+            // Fill Resources
+            this.long_rest()
         }
 
         //=====================================================================================================

@@ -437,18 +437,32 @@
         font-weight: bold;
         padding: 0.5vh;
         cursor: pointer;
-        border: 0.1vh solid #666;
-        background-color: #ddd;
-        color: #333;
+        border: 0.1vh solid #444;
+        background-color: #333;
+        color: #ddd;
         border-radius: 1vh;
         margin: 0 0.2vh;
     }
 
     button:hover {
-        background-color: #eee;
+        background-color: #444;
     }
 
     button:active {
+        background-color: #555;
+    }
+
+    button.active {
+        border: 0.1vh solid #666;
+        background-color: #ddd;
+        color: #333;
+    }
+
+    button.active:hover {
+        background-color: #eee;
+    }
+
+    button.active:active {
         background-color: #ccc;
     }
 

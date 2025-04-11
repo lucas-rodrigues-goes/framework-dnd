@@ -60,12 +60,12 @@
                 getId("duration").value = response[id].duration
                 getId("duration-unit").value = "rounds"
 
-                getId("bard").setAttribute("data-checked", response[id].classes.includes("bard"))
-                getId("cleric").setAttribute("data-checked", response[id].classes.includes("cleric"))
-                getId("druid").setAttribute("data-checked", response[id].classes.includes("druid"))
-                getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("sorcerer"))
-                getId("warlock").setAttribute("data-checked", response[id].classes.includes("warlock"))
-                getId("wizard").setAttribute("data-checked", response[id].classes.includes("wizard"))
+                getId("bard").setAttribute("data-checked", response[id].classes.includes("Bard"))
+                getId("cleric").setAttribute("data-checked", response[id].classes.includes("Cleric"))
+                getId("druid").setAttribute("data-checked", response[id].classes.includes("Druid"))
+                getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("Sorcerer"))
+                getId("warlock").setAttribute("data-checked", response[id].classes.includes("Warlock"))
+                getId("wizard").setAttribute("data-checked", response[id].classes.includes("Wizard"))
 
                 getId("vocal").setAttribute("data-checked", response[id].components.includes("vocal"))
                 getId("somatic").setAttribute("data-checked", response[id].components.includes("somatic"))
@@ -106,7 +106,7 @@
             // Classes
             let classes = []
             for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {classes.push(value)}
+                if(getId(value).getAttribute("data-checked") == "true") {classes.push(capitalize(value))}
             }
             classes = JSON.stringify(classes)
 
