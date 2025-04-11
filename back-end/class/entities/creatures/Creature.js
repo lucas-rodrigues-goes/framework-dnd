@@ -811,6 +811,28 @@ try {
         // Inventory & Equipment
         //=====================================================================================================
 
+        get carry_weight () {
+            const strength_score = Number(this.ability_scores.strength)
+            const max = strength_score * 15
+            const encumberance = strength_score * 10
+            let current = 0
+
+            // Increase current
+            for (const slot of this.#inventory) {
+                if (!slot) continue
+                const item = database.items.data[slot.name] || {}
+                current += (item.weight || 0) * slot.amount
+            }
+            for (const key in this.#equipment) {
+                const slot = this.#equipment[key]
+                if (!slot) continue
+                const item = database.items.data[slot.name] || {}
+                current += (item.weight || 0) * slot.amount
+            }
+
+            return { max, encumberance, current }
+        }
+
         get inventory () {
             this.update_inventory_slots()
             return this.#inventory
@@ -818,6 +840,22 @@ try {
 
         get equipment() {
             return this.#equipment
+        }
+
+        switch_weapon_sets() {
+            // Save current
+            const current_main_hand = this.#equipment["primary main hand"]
+            const current_off_hand = this.#equipment["primary off hand"]
+
+            // Update main slots
+            this.#equipment["primary main hand"] = this.#equipment["secondary main hand"]
+            this.#equipment["primary off hand"] = this.#equipment["secondary off hand"]
+        
+            // Update secondary slots
+            this.#equipment["secondary main hand"] = current_main_hand
+            this.#equipment["secondary off hand"] = current_off_hand
+
+            this.save()
         }
 
         update_inventory_slots() {

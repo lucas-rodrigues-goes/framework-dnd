@@ -149,9 +149,14 @@
 				]})
 			}
 			function title_value({title, value}) {
-				return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
-					{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-					{tag: "span", style: {color: "#aaa"}, text: value},
+				return {tag: "div", attributes: {class: "collapsible-div"}, 
+				style: {
+					display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh", marginBottom: "-0.8vh",
+					backgroundColor: "rgba(0,0,0,0)", border: "none",
+				}, 
+				children: [
+					{tag: "span", style: {filter: "brightness(0.8)", fontWeight: "300"}, text: title},
+					{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, text: value}
 				]}
 			}
 			function updateEXPBar(percent) {
@@ -507,11 +512,12 @@
 							"Type": impersonated().type,
 							"Race": impersonated().race,
 							" ":" ",
+							"  ":"",
 							"Health": impersonated().health + " / " + impersonated().max_health,
 							"Armor Class": impersonated().armor_class,
 							"Initiative": 0,
 							"Passive Perception": 10,
-							"Speed": impersonated().speed + "ft",
+							"Walking Speed": impersonated().speed + "ft",
 						},
 						skills: impersonated().skills,
 						saving_throws: impersonated().saving_throws,
@@ -548,7 +554,7 @@
 						const level_div = document.getElementById("level-div")
 						level_div.clearChildren()
 						updateEXPBar(experiencePercent)
-						if(character.basic.experience >= character.basic.level_up_experience) {
+						if(character.basic.experience >= character.basic.level_up_experience && character.basic.level < 20) {
 							level_div.classList.add("level-up")
 							level_div.setAttribute("tooltip", "Click here to level up!")
 							level_div.appendChild({tag:"img", 
@@ -559,7 +565,7 @@
 						}
 						else {
 							level_div.classList.remove("level-up")
-							level_div.setAttribute("tooltip", character.basic.experience + " / " + character.basic.level_up_experience + " XP")
+							level_div.setAttribute("tooltip", character.basic.level < 20 ? character.basic.experience + " / " + character.basic.level_up_experience + " XP" : "Maximum Level")
 							level_div.appendChild({tag:"span", text: String(character.basic.level)})
 						}
 
@@ -591,12 +597,7 @@
 						// Append Skills with bonuses
 						for (const title in character.info) {
 							const value = character.info[title] + ""
-							info_container.appendChild(
-								{tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-									{tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-									{tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-								]}
-							)
+							info_container.appendChild(title_value({title, value}))
 						}
 					}
 				}
@@ -615,12 +616,7 @@
 						for (const skill in character.skills) {
 							const title = capitalize(skill)
 							const value = bonusOf(character.skills[skill])
-							skills_container.appendChild(
-								{tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-									{tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-									{tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-								]}
-							)
+							skills_container.appendChild(title_value({title, value}))
 						}
 					}
 				}
@@ -639,12 +635,7 @@
 						for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) {
 							const title = capitalize(score)
 							const value = bonusOf(character.saving_throws[score])
-							saving_throws_container.appendChild(
-								{tag:"div", style: {height: "2vh", marginBottom: "1vh", position: "relative"}, children: [
-									{tag: "p", style: {position: "absolute", left: "1vh", textAlign: "left", fontWeight: "bold"}, text: title},
-									{tag: "p", style: {position: "absolute", right: "1vh", textAlign: "left"}, text: value}
-								]}
-							)
+							saving_throws_container.appendChild(title_value({title, value}))
 						}
 					}
 				}
@@ -918,6 +909,7 @@
 						"","hands", "body", "cape", "",
 						"","left ring","belt","right ring", "",
 						"","","feet","","",
+						"","","","","",
 						"","","","","",
 						"primary main hand", "primary off hand", "", "secondary main hand", "secondary off hand",
 					]
@@ -1195,7 +1187,6 @@
 				updateResources()
 			}
 
-
 			let spells_tab = {
 				classes: {},
 				spells: {},
@@ -1262,25 +1253,17 @@
 					const modifier = character.score_bonus[character.spellcasting.ability]
 					const values = {
 						"Spellcasting Ability": capitalize(character.spellcasting.ability),
-						"Spellcasting Modifier": modifier > 0 ? "+ " + modifier : modifier,
-						" ": " ",
+						"Spellcasting Modifier": modifier > 0 ? "+" + modifier : modifier,
+						" ": "",
+						"  ":"",
+						"   ":"",
 						"Spell Save DC": 10 + modifier,
-						"Spell Hit Bonus": modifier + 2 > 0 ? "+ " + (modifier + 2) : (modifier + 2)
+						"Spell Hit Bonus": modifier + 2 > 0 ? "+" + (modifier + 2) : (modifier + 2)
 					}
-					for (const item in values) {
-						const value = values[item]
+					for (const title in values) {
+						const value = values[title]
 
-						class_info.appendChild(
-							{tag: "div", attributes: {class: "collapsible-div"}, 
-							style: {
-								display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "0.5vh", 
-								backgroundColor: "rgba(0,0,0,0)", border: "none",
-							}, 
-							children: [
-								{tag: "span", style: {filter: "brightness(0.8)", fontWeight: "300"}, text: item},
-								{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, text: value}
-							]}
-						)
+						class_info.appendChild(title_value({title, value}))
 					}
 				}
 				updateSpellcasting()
@@ -1511,47 +1494,55 @@
 
 				// Inventory tab
 				document.getElementById("inventory-tab").appendChildren([
-					{tag: "div", style: {width: "45%", left: "27.5%", position: "relative", marginBottom: "3.5vh"}, children: [
-						container({title: "Equipment", options: {div: {style: {height: "41vh"}}}, children: [
-							{tag: "div", style: {margin: "auto", width: "fit-content"}, children: [
-								// Equipment
-								{tag: "div", 
-									attributes: {
-										id: "equipment", 
-										class: "center-horizontal"
+					{tag: "div", style: {width: "100%", position: "relative", height: "45vh"}, children: [
+						{tag: "div", style: {width: "45%", left: "28%", position: "absolute", marginBottom: "3.5vh"}, children: [
+							container({title: "Equipment", options: {div: {style: {height: "39vh"}}}, children: [
+								{tag: "div", style: {margin: "auto", width: "fit-content"}, children: [
+									// Equipment
+									{tag: "div", 
+										attributes: {
+											id: "equipment", 
+											class: "center-horizontal"
+										},
+										style: {
+											position: "relative",
+											display: "grid",
+											gridTemplateColumns: "repeat(5, 1fr)",
+											gap: 0,
+											textAlign: "center",
+											placeItems: "center",
+											marginTop: "2vh"
+										}
 									},
-									style: {
-										position: "relative",
-										display: "grid",
-										gridTemplateColumns: "repeat(5, 1fr)",
-										gap: 0,
-										textAlign: "center",
-										placeItems: "center",
-										marginTop: "2vh"
+									// Armor Class
+									{tag: "div",
+										attributes: {
+											id: "armor-class",
+											tooltip: "Armor Class"
+										},
+										style: {
+											border: "0.3vh solid #444",
+											backgroundColor: "#333",
+											padding: "1vh",
+											fontWeight: "bold",
+											fontSize: "120%",
+											borderRadius: "50%", borderTopLeftRadius: "0.3vh", borderTopRightRadius: "0.3vh",
+											marginTop: "1vh",
+											position: "absolute",
+											width: "2vh",
+											right: "2vh",
+											top: "4vh"
+										}
 									}
-								},
-								// Armor Class
-								{tag: "div",
-									attributes: {
-										id: "armor-class",
-										tooltip: "Armor Class"
-									},
-									style: {
-										border: "0.3vh solid #444",
-										backgroundColor: "#333",
-										padding: "1vh",
-										fontWeight: "bold",
-										fontSize: "120%",
-										borderRadius: "50%", borderTopLeftRadius: "0.3vh", borderTopRightRadius: "0.3vh",
-										marginTop: "1vh",
-										position: "absolute",
-										width: "2vh",
-										right: "2vh",
-										top: "4vh"
-									}
-								}
-							]}
-						]}),
+								]}
+							]}),
+						]},
+						{tag: "div", style: {width: "30%", right: "0", position: "absolute", marginBottom: "3.5vh"}, children: [
+							container({title: "Info", options: {div: {style: {height: "39vh"}}}, children: []})
+						]},
+						{tag: "div", style: {width: "30%", left: "1%", position: "absolute", marginBottom: "3.5vh"}, children: [
+							container({title: "Item Proficiencies", options: {div: {style: {height: "39vh"}}}, children: []})
+						]}
 					]},
 					{tag: "div", style: {width: "110%", left: "-4.5%", position: "relative"}, children: [
 						container({title: "Backpack", options: {div: {style: {width: "85%"}}}, children: [
