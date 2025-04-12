@@ -159,6 +159,12 @@
 					{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, text: value}
 				]}
 			}
+			function title_value_simple({title, value}) {
+				return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
+					{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
+					{tag: "span", style: {color: "#aaa"}, text: value},
+				]}
+			}
 			function updateEXPBar(percent) {
 				function crunchNumber(num, from = [0, 100], to = [0, 100]) {
 					// Define the input and output ranges
@@ -336,14 +342,6 @@
 				const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
 				const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
 
-				// Element
-				function title_value({title, value}) {
-					return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
-						{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-						{tag: "span", style: {color: "#aaa"}, text: value},
-					]}
-				}
-
 				modal({parent: document.getElementById("inventory-tab"), children: [
 					{tag: "div", style: {padding: "0 1vh"}, children: [
 						{tag: "div", 
@@ -356,12 +354,12 @@
 							]
 						},
 						{tag: "div", style: {textAlign: "left"}, children: [
-							damage ? title_value({title: "Damage", value: damage}) : null,
-							item.recovery ? title_value({title: "Recovery Speed", value: String(item.recovery)}) : null,
-							item.base_armor_class ? title_value({title: "Armor Class", value: item.base_armor_class}) : null,
-							weight ? title_value({title: "Weight", value: weight}) : null,
-							properties ? title_value({title: "Properties", value: properties}) : null,
-							conditions ? title_value({title: "Conditions", value: conditions}) : null,
+							damage ? title_value_simple({title: "Damage", value: damage}) : null,
+							item.recovery ? title_value_simple({title: "Recovery Speed", value: String(item.recovery)}) : null,
+							item.base_armor_class ? title_value_simple({title: "Armor Class", value: item.base_armor_class}) : null,
+							weight ? title_value_simple({title: "Weight", value: weight}) : null,
+							properties ? title_value_simple({title: "Properties", value: properties}) : null,
+							conditions ? title_value_simple({title: "Conditions", value: conditions}) : null,
 						]},
 						item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
 					]}
@@ -427,6 +425,7 @@
 			
 			// Spells
 			function spellDescription(spell) {
+
 				let cast_time = ""
 				if (spell.cast_time >= 0) cast_time = spell.cast_time / 2 + " Seconds"
 				else if (spell.cast_time == -1) cast_time = "Bonus Action"
@@ -442,12 +441,12 @@
 						]},
 						// Attributes
 						{tag: "div", style: {textAlign: "left"}, children: [
-							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
-							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
-							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
-							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
-							spell.cast_time && title_value({title: "Casting Time", value: capitalize(cast_time)}),
-							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+							spell.classes && title_value_simple({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+							spell.components && title_value_simple({title: "Components", value: capitalize(spell.components.join(", "))}),
+							spell.target && title_value_simple({title: "Target", value: capitalize(spell.target)}),
+							spell.range && title_value_simple({title: "Range", value: capitalize(spell.range)}),
+							spell.cast_time && title_value_simple({title: "Casting Time", value: capitalize(cast_time)}),
+							spell.duration && title_value_simple({title: "Duration", value: capitalize(spell.duration)}),
 						]},
 						// Description
 						spell.description 
@@ -869,7 +868,10 @@
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
 						basic: {
-							armor_class: impersonated().armor_class
+							"armor_class": impersonated().armor_class,
+							"initiative_mod": impersonated().initiative_mod,
+							"carry_weight": impersonated().carry_weight,
+							"score_bonus": impersonated().score_bonus,
 						},
 						equipment: impersonated().equipment,
 						inventory: impersonated().inventory
@@ -884,12 +886,73 @@
 
 				// Basic Attributes
 				function updateBasicAttributes() {
-					// Verify if basic properties received changes
-					if (isEqualJSON(inventory_tab.basic, character.basic)) { return }
 					inventory_tab.basic = character.basic
 
-					// Armor Class
-					document.getElementById("armor-class").textContent = character.basic.armor_class
+					// Clear
+					const info_div = document.getElementById("inventory-tab-info")
+					info_div.clearChildren()
+
+					const weapons_stats = []
+
+					// Main Hand Stats
+					const main_hand = database[character.equipment["primary main hand"]?.name]
+					if (main_hand?.subtype == "weapon") {
+						const isFinesse = main_hand.properties.includes("Finesse")
+
+						// Damage Modifier
+						const str_bonus = character.basic.score_bonus["strength"]
+						const dex_bonus = isFinesse ? character.basic.score_bonus["dexterity"] : 0
+						const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3))
+						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
+
+						// Add up weapon damages
+						let minimum = damage_bonus, maximum = damage_bonus
+						for (const damage of main_hand.damage) {
+							minimum += Number(damage.die_ammount)
+							maximum += Number(damage.die_size) * Number(damage.die_ammount)
+						}
+
+						// Element
+						weapons_stats.push(
+							title_value({title: character.equipment["primary main hand"]?.name + " Damage", value: minimum + " - " + maximum}),
+							title_value({title: character.equipment["primary main hand"]?.name + " Hit Bonus", value: hit_bonus > 0 ? "+" + hit_bonus : hit_bonus})
+						)
+					}
+					// Off Hand Stats
+					const off_hand = database[character.equipment["primary off hand"]?.name]
+					if (off_hand?.subtype == "weapon") {
+						const isFinesse = off_hand.properties.includes("Finesse")
+
+						// Damage Modifier
+						const str_bonus = character.basic.score_bonus["strength"]
+						const dex_bonus = isFinesse ? character.basic.score_bonus["dexterity"] : 0
+						const damage_bonus = 0
+						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
+
+						// Add up weapon damages
+						let minimum = damage_bonus, maximum = damage_bonus
+						for (const damage of off_hand.damage) {
+							minimum += Number(damage.die_ammount)
+							maximum += Number(damage.die_size) * Number(damage.die_ammount)
+						}
+
+						// Element
+						weapons_stats.push(
+							weapons_stats.length > 0 && {tag:"br"},
+							title_value({title: character.equipment["primary off hand"]?.name + " Damage", value: minimum + " - " + maximum}),
+							title_value({title: character.equipment["primary off hand"]?.name + " Hit Bonus", value: hit_bonus > 0 ? "+" + hit_bonus : hit_bonus})
+						)
+					}
+
+					info_div.appendChildren([
+						title_value({title: "Armor Class", value: character.basic.armor_class}),
+						title_value({title: "Initiative Penalty", value: (character.basic.initiative_mod && "+") + character.basic.initiative_mod}),
+						{tag: "br"},
+						...weapons_stats,
+						{tag: "div", style: {position: "absolute", bottom: "1vh", width: "87.5%"}, children: [
+							title_value({title: "Carry Weight", value: character.basic.carry_weight.current + " / " + character.basic.carry_weight.max + " lb"}),
+						]}
+					])
 				}
 				updateBasicAttributes()
 
@@ -996,7 +1059,7 @@
 						// Slot
 						if (position) {
 							// Reduce opacity on secondary weapon set
-							const style = position.includes("secondary") ? {opacity: "0.5", borderColor: "#333"} : {}
+							const style = position.includes("secondary") ? {opacity: 0.7, border: "none", padding: "0.2vh"} : {}
 
 							// Element
 							equipment.appendChild(
@@ -1495,6 +1558,9 @@
 				// Inventory tab
 				document.getElementById("inventory-tab").appendChildren([
 					{tag: "div", style: {width: "100%", position: "relative", height: "45vh"}, children: [
+						{tag: "div", style: {width: "30%", left: "1%", position: "absolute", marginBottom: "3.5vh"}, children: [
+							container({title: "Item Proficiencies", options: {div: {style: {height: "39vh"}}}, children: []})
+						]},
 						{tag: "div", style: {width: "45%", left: "28%", position: "absolute", marginBottom: "3.5vh"}, children: [
 							container({title: "Equipment", options: {div: {style: {height: "39vh"}}}, children: [
 								{tag: "div", style: {margin: "auto", width: "fit-content"}, children: [
@@ -1514,35 +1580,16 @@
 											marginTop: "2vh"
 										}
 									},
-									// Armor Class
-									{tag: "div",
-										attributes: {
-											id: "armor-class",
-											tooltip: "Armor Class"
-										},
-										style: {
-											border: "0.3vh solid #444",
-											backgroundColor: "#333",
-											padding: "1vh",
-											fontWeight: "bold",
-											fontSize: "120%",
-											borderRadius: "50%", borderTopLeftRadius: "0.3vh", borderTopRightRadius: "0.3vh",
-											marginTop: "1vh",
-											position: "absolute",
-											width: "2vh",
-											right: "2vh",
-											top: "4vh"
-										}
-									}
+									// Switch Weapon Set
+									{tag: "button", style: {position: "relative", bottom: "5vh"}, events: {
+										click: () => backend(`impersonated().switch_weapon_sets()`)
+									}, text: "Switch"}
 								]}
 							]}),
 						]},
 						{tag: "div", style: {width: "30%", right: "0", position: "absolute", marginBottom: "3.5vh"}, children: [
-							container({title: "Info", options: {div: {style: {height: "39vh"}}}, children: []})
+							container({title: "Info", id: "inventory-tab-info", options: {div: {style: {height: "39vh"}}}, children: []})
 						]},
-						{tag: "div", style: {width: "30%", left: "1%", position: "absolute", marginBottom: "3.5vh"}, children: [
-							container({title: "Item Proficiencies", options: {div: {style: {height: "39vh"}}}, children: []})
-						]}
 					]},
 					{tag: "div", style: {width: "110%", left: "-4.5%", position: "relative"}, children: [
 						container({title: "Backpack", options: {div: {style: {width: "85%"}}}, children: [

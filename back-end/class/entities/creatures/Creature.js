@@ -354,9 +354,53 @@ try {
         // Armor Class
         //=====================================================================================================
 
+        get initiative_mod() {
+            const body_slot = this.equipment.body;
+            let armor_type;
+            let initiative_mod = 0;
+
+            console.log("here")
+        
+            // Updating armor_type based on currently equipped armor
+            if (body_slot) {
+                const item = database.get_item(body_slot.name);
+                if (item) {
+                    // Match armor weight by its properties
+                    const type = ["Heavy", "Medium", "Light"].find(prop => 
+                        item.properties?.includes(prop)
+                    );
+                    armor_type = type || armor_type;
+                }
+            }
+        
+            // Add armor mod
+            switch (armor_type) {
+                case "Heavy":
+                    initiative_mod += 3;
+                    break;
+                case "Medium":
+                    initiative_mod += 2;
+                    break;
+                case "Light":
+                    initiative_mod += 1;
+                    break;
+                default:
+                    break;
+            }
+
+            // Add shield mod
+            const slot = this.equipment["primary off hand"]
+            if (slot) {
+                const item = database.items.data[slot.name]
+                if (item.subtype == "shield") initiative_mod += 2
+            }
+        
+            return initiative_mod;
+        }
+
         get armor_class() {
             const body_slot = this.equipment.body;
-            let armor_type = "None";
+            let armor_type;
             let armor_class;
         
             // Updating armor_type based on currently equipped armor
@@ -387,21 +431,22 @@ try {
                 case "Light":
                     armor_class = item_armor_class + dexterity_modifier;
                     break;
-                case "None":
-                    armor_class = 10 + dexterity_modifier;
-                    break;
                 default:
                     armor_class = 10 + dexterity_modifier; // Default to unarmored behavior
                     break;
             }
 
             // Calculate armor class bonus
-            const equipment = this.#equipment
-            let equipment_bonus = 0
+            const equipment = this.#equipment;
+            let equipment_bonus = 0;
             for (const slot in equipment) {
-                if (equipment[slot] && !slot.includes("secondary")) {
-                    const bonus_ac = database.get_item(equipment[slot].name).bonus_armor_class || 0
-                    equipment_bonus += Number(bonus_ac)
+                const itemData = equipment[slot];
+                if (itemData && !slot.includes("secondary")) {
+                    const item = database.items.data[itemData.name]; // Access the item name first
+                    if (item) {
+                        const bonus_ac = item.bonus_armor_class || 0;
+                        equipment_bonus += Number(bonus_ac);
+                    }
                 }
             }
         
