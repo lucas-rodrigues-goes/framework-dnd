@@ -858,8 +858,8 @@ try {
 
         get carry_weight () {
             const strength_score = Number(this.ability_scores.strength)
-            const max = strength_score * 15
-            const encumberance = strength_score * 10
+            const max = strength_score * 10
+            const encumberance = strength_score * 7
             let current = 0
 
             // Increase current

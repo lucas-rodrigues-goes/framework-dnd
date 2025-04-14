@@ -898,10 +898,11 @@
 					const main_hand = database[character.equipment["primary main hand"]?.name]
 					if (main_hand?.subtype == "weapon") {
 						const isFinesse = main_hand.properties.includes("Finesse")
+						const isAmmo = main_hand.properties.includes("Ammunition")
 
 						// Damage Modifier
 						const str_bonus = character.basic.score_bonus["strength"]
-						const dex_bonus = isFinesse ? character.basic.score_bonus["dexterity"] : 0
+						const dex_bonus = isFinesse || isAmmo ? character.basic.score_bonus["dexterity"] : 0
 						const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3))
 						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
 
@@ -918,14 +919,16 @@
 							title_value({title: character.equipment["primary main hand"]?.name + " Hit Bonus", value: hit_bonus > 0 ? "+" + hit_bonus : hit_bonus})
 						)
 					}
+					
 					// Off Hand Stats
 					const off_hand = database[character.equipment["primary off hand"]?.name]
 					if (off_hand?.subtype == "weapon") {
-						const isFinesse = off_hand.properties.includes("Finesse")
+						const isFinesse = main_hand.properties.includes("Finesse")
+						const isAmmo = main_hand.properties.includes("Ammunition")
 
 						// Damage Modifier
 						const str_bonus = character.basic.score_bonus["strength"]
-						const dex_bonus = isFinesse ? character.basic.score_bonus["dexterity"] : 0
+						const dex_bonus = isFinesse || isAmmo ? character.basic.score_bonus["dexterity"] : 0
 						const damage_bonus = 0
 						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
 
@@ -944,13 +947,31 @@
 						)
 					}
 
+					// Weight
+					let weight_style = character.basic.carry_weight.current > character.basic.carry_weight.encumberance ? {color: "yellow"} : {}
+					weight_style = character.basic.carry_weight.current > character.basic.carry_weight.max ? {color: "red"} : weight_style
+
 					info_div.appendChildren([
 						title_value({title: "Armor Class", value: character.basic.armor_class}),
 						title_value({title: "Initiative Penalty", value: (character.basic.initiative_mod && "+") + character.basic.initiative_mod}),
 						{tag: "br"},
 						...weapons_stats,
 						{tag: "div", style: {position: "absolute", bottom: "1vh", width: "87.5%"}, children: [
-							title_value({title: "Carry Weight", value: character.basic.carry_weight.current + " / " + character.basic.carry_weight.max + " lb"}),
+							{tag: "div", attributes: {class: "collapsible-div"}, 
+								style: {
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh", marginBottom: "-0.8vh",
+									backgroundColor: "rgba(0,0,0,0)", border: "none",
+								}, 
+								children: [
+									{tag: "span", style: {filter: "brightness(0.8)", fontWeight: "300"}, text: "Carry Weight"},
+									{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, children: [
+										{tag: "span", style: weight_style, text: character.basic.carry_weight.current},
+										{tag: "span", text: " / "},
+										{tag: "span", text: character.basic.carry_weight.encumberance},
+										{tag: "span", text: " lb"},
+									]}
+								]
+							}	
 						]}
 					])
 				}
@@ -1304,7 +1325,8 @@
 				// Update Spellcasting
 				async function updateSpellcasting() {
 					if (isEqualJSON(spells_tab.spellcasting, character.spellcasting) && 
-						isEqualJSON(spells_tab.score_bonus, character.score_bonus)) return
+						isEqualJSON(spells_tab.score_bonus, character.score_bonus) && 
+						isEqualJSON(spells_tab.spells, character.spells)) return
 					spells_tab.spellcasting = character.spellcasting
 					spells_tab.score_bonus = character.score_bonus
 
@@ -1313,16 +1335,23 @@
 
 					if(isEqualJSON(character.spellcasting, {})) {return}
 
+					// Info construction
 					const modifier = character.score_bonus[character.spellcasting.ability]
 					const values = {
 						"Spellcasting Ability": capitalize(character.spellcasting.ability),
 						"Spellcasting Modifier": modifier > 0 ? "+" + modifier : modifier,
-						" ": "",
 						"  ":"",
-						"   ":"",
 						"Spell Save DC": 10 + modifier,
-						"Spell Hit Bonus": modifier + 2 > 0 ? "+" + (modifier + 2) : (modifier + 2)
+						"Spell Hit Bonus": modifier + 2 > 0 ? "+" + (modifier + 2) : (modifier + 2),
+						"   ":"",
 					}
+
+					// Conditional info
+					if (character.spellcasting.memorization) {
+						values["Spells Memorized"] = character.spells[chosen_class].memorized.length + " / " + (modifier + character.classes[chosen_class].level)
+					}
+
+					// Elements
 					for (const title in values) {
 						const value = values[title]
 
@@ -1336,7 +1365,7 @@
 					spells_tab.spells = character.spells
 
 					// Active spells filter
-					const showAll = document.getElementById("spells-tab-spells-all").getAttribute("value") == "true"
+					const showAll = document.getElementById("spells-tab-spells-memorized-only").getAttribute("value") == "false"
 					const levelFilter = document.getElementById("spells-tab-spells-level").getAttribute("value")
 					spells_tab.filters.showAll = showAll
 					spells_tab.filters.levelFilter = levelFilter
@@ -1660,7 +1689,7 @@
 						}, children: [
 							{tag: "div", style: {display: "flex", justifyContent: "center", padding: "0.5vh", margin: 0}, children: [
 								{tag: "div", attributes: {id: "spells-tab-spells-level", value: ""}, children: spellLevelButtons},
-								{tag: "button", text: "M", attributes: {id: "spells-tab-spells-all", value: "true", class: "active"}, style: {...buttonStyle, display: "none"}, events: {
+								{tag: "button", text: "M", attributes: {id: "spells-tab-spells-memorized-only", value: "true", class: "active"}, style: buttonStyle, events: {
 									click: function () {
 										const isActive = this.getAttribute("value") == "true"
 
