@@ -7,23 +7,24 @@ try {
         // Parameters
         //=====================================================================================================
 
-        static actions_list(creature) {
+        static actions_list() {
+            const creature = impersonated();
             const actions = {
                 attack: {
                     resources: ["Attack Action"],
-                    description: "Use your main equipped weapon (or fists) to deliver a blow to th enemy.",
+                    description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
                 },
                 grapple: {
                     resources: ["Attack Action"],
-                    description: "Attempt to grapple th enemy, impeding their movement.",
+                    description: "Attempt to grapple the enemy, impeding their movement.",
                 },
                 push: {
                     resources: ["Attack Action"],
-                    description: "Attempt to push th enemy 5ft.",
+                    description: "Attempt to push the enemy 5ft.",
                 },
                 knock_prone: {
                     resources: ["Attack Action"],
-                    description: "Attempt to knock down th enemy.",
+                    description: "Attempt to knock down the enemy.",
                 },
                 dash: {
                     resources: ["Action"],
@@ -56,131 +57,193 @@ try {
             }
 
             // Conditional Actions
-            const off_hand_slot = creature?.equipment["primary off hand"]?.name
-            const hasOffHandWeapon = off_hand_slot ? database.items.data[off_hand_slot.name].subtype == "weapon" : false
+            const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
+            const hasOffHandWeapon = weapon ? weapon.subtype == "weapon" : false
             if (hasOffHandWeapon) {
                 actions["off_hand_attack"] = {
                     resources: ["Bonus Action"],
-                    description: "Use your off hand weapon to deliver a blow to th enemy.",
+                    description: "Use your off hand weapon to deliver a blow to the enemy.",
                 }
             }
+
+            return actions
         }
 
         //=====================================================================================================
         // Helpers
         //=====================================================================================================
 
-        static has_resources_available(creature, resources) {
+        static has_resources_available(resources) {
+            const creature = impersonated();
             for (const name of resources) {
                 const resource = creature?.resources[name]?.value || 0
                 if (name == "Attack Action") {
                     const action_res = creature?.resources["Action"]?.value || 0
-
                     return (resource > 0 || action_res > 0)
                 }
-                return 
-                
+                return resource > 0
             }
+        }
+
+        static calculate_hit_bonus(weapon) {
+            const creature = impersonated();
+            const isFinesse = weapon?.properties?.includes("Finesse") || false;
+            const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+            const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
+            const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+            return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
+        }
+
+        static calculate_damage(weapon, is_critical, off_hand=false) {
+            const creature = impersonated();
+            const isFinesse = weapon?.properties?.includes("Finesse") || false;
+            const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+            const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
+
+            const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
+            const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+            const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3));
+            const crit_multiplier = is_critical ? 2 : 1;
+
+            const calculated_damage = {};
+            for (const damage of damage_list) {
+                let total_damage = off_hand ? 0 : damage_bonus;
+                for (let i = 0; i < damage.die_ammount * crit_multiplier; i++) {
+                    total_damage += Math.ceil(Math.random() * damage.die_size);
+                }
+                calculated_damage[damage.damage_type] = total_damage;
+            }
+
+            return calculated_damage;
+        }
+
+        static roll_attack(hit_bonus, target_ac) {
+            const roll = Math.ceil(Math.random() * 20);
+            let roll_result;
+
+            if (roll === 20) roll_result = "lands a critical hit";
+            else if (roll === 1) roll_result = "critically misses";
+            else if (roll + hit_bonus >= target_ac) roll_result = "hits";
+            else roll_result = "misses";
+
+            return {
+                result: roll_result,
+                roll_text: roll_result.includes("critical") ? "Nat " + roll : roll + hit_bonus,
+            };
+        }
+
+        static build_attack_message(target, roll_result, roll_text, damage_data) {
+            const attacker = impersonated();
+            let message = attacker.name + " attacks " + target.name + " and " + roll_result + " (" + roll_text + ")";
+
+            if (damage_data) {
+                message += " dealing ";
+                const damage_parts = [];
+                for (const type in damage_data) {
+                    target.receive_damage(damage_data[type], type);
+                    damage_parts.push(damage_data[type] + " " + type.toLowerCase());
+                }
+                message += damage_parts.join(", ") + " damage.";
+            } else {
+                message += ".";
+            }
+
+            return message;
         }
 
         //=====================================================================================================
         // Actions
         //=====================================================================================================
 
-        static attack(creature) {
-            const actions_list = this.actions_list(creature)
+        static attack() {
+            const creature = impersonated();
 
-            // Validation
-            if (!selected()) return // --> has no target
-            if (!actions_list?.attack) return //--> no access to action
-            if (!this.has_resources_available(creature, actions_list.attack.resources)) return // no resources
-
-            // Attack
-            const weapon = database.data.items[creature?.equipment["primary main hand"]?.name] || undefined
-            const damage_list = weapon.damage || {die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}
-
-            // Creature Modifiers
-            const str_bonus = creature.score_bonus["strength"]
-            const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
-            const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3))
-            const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
-
-            // Calculate Hit
-            const roll = Math.ceil(Math.random() * 20)
-            let roll_result
-            if (roll == 20) roll_result = "critical hit"
-            else if (roll == 1) roll_result = "critical fail"
-            else if (roll + hit_bonus >= selected().armor_class) roll_result = "hit"
-            else roll_result = "fail"
-
-            // If attack hits
-            if (["critical hit", "hit"].includes(roll_result)) {
-
-                // Calcualate damage
-                const crit_multiplier = roll_result == "critical hit" ? 1 : 0
-                const damage_composition = {}
-                for (const damage of damage_list) {
-                    let total_damage = 0
-                    for (let i = 0; i < damage.die_amount * crit_multiplier; i++) {
-                        total_damage += Math.ceil(Math.random() * die_size)
-                    }
-                    damage_composition[damage.damage_type] = (damage_composition[damage.damage_type] ?? 0) + total_damage;
-
-                }
-
+            // Requirements
+            const actions_list = this.actions_list();
+            if (!selected() || !actions_list?.attack || !this.has_resources_available(actions_list.attack.resources)) {
+                return;
             }
 
+            // Weapon
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
+            const hit_bonus = this.calculate_hit_bonus(weapon);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+
+            // Damage
+            let damage_data = null;
+            if (result === "lands a critical hit" || result === "hits") {
+                damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
+            }
+
+            // Logging
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
+        }
+
+        static off_hand_attack() {
+            const creature = impersonated();
             
+            // Requirements
+            const actions_list = this.actions_list();
+            if (!selected() || !actions_list?.off_hand_attack || !this.has_resources_available(actions_list.off_hand_attack.resources)) {
+                return;
+            }
 
-            return
+            // Weapon
+            const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
+            const hit_bonus = this.calculate_hit_bonus(weapon);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+
+            // Damage
+            let damage_data = null;
+            if (result === "lands a critical hit" || result === "hits") {
+                damage_data = this.calculate_damage(weapon, result === "lands a critical hit", true);
+            }
+
+            // Logging
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
         }
 
-        static off_hand_attack(creature) {
-            return
+        static grapple() {
+            return;
         }
 
-        static grapple(creature) {
-            return
+        static push() {
+            return;
         }
 
-        static push(creature) {
-            return
+        static knock_prone() {
+            return;
         }
 
-        static knock_prone(creature) {
-            return
+        static dash() {
+            return;
         }
 
-        static dash(creature) {
-            return
+        static disengage() {
+            return;
         }
 
-        static disengage(creature) {
-            return
+        static dodge() {
+            return;
         }
 
-        static dodge(creature) {
-            return
+        static help() {
+            return;
         }
 
-        static help(creature) {
-            return
-        }
-
-        static hide(creature) {
-            return
+        static hide() {
+            return;
         }
         
-        static ready(creature) {
-            return
+        static ready() {
+            return;
         }
 
-        static search(creature) {
-            return
+        static search() {
+            return;
         }
 
         //=====================================================================================================
-
     }
 
 } catch (e) {

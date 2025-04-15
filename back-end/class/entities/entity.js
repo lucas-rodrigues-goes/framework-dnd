@@ -1,11 +1,5 @@
 "use strict";
 try {
-
-    // Function to facilitate logging, and easy log disabling.
-    var log = function (string) {
-        MapTool.chat.broadcast(string);
-    }
-
     var Entity = class {
 
         //=====================================================================================================
