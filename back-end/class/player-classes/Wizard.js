@@ -1,7 +1,7 @@
 "use strict";
 try {
 
-    var Wizard = class {
+    var Wizard = class extends Common {
 
         //=====================================================================================================
         // Parameters

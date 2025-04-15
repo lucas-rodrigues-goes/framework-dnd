@@ -1,7 +1,7 @@
 "use strict";
 try {
 
-    var Barbarian = class {
+    var Barbarian = class extends Common {
 
         //=====================================================================================================
         // Class Information
