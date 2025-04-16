@@ -74,9 +74,9 @@ try {
             };
         }
 
-        static build_attack_message(target, roll_result, roll_text, damage_data) {
+        static build_attack_message(target, roll_result, roll_text, damage_data, means) {
             const attacker = impersonated();
-            let message = attacker.name + " attacks " + target.name + " and " + roll_result + " (" + roll_text + ")";
+            let message = attacker.name + " attacks " + target.name + " with " + means + " and " + roll_result + " (" + roll_text + ")";
 
             if (damage_data) {
                 message += " dealing ";
@@ -205,7 +205,8 @@ try {
             }
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
+            const means = weapon ? "a " + weapon?.name : "their fists"
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 
         static opportunity_attack() {
@@ -229,7 +230,8 @@ try {
             }
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
+            const means = weapon ? "a " + weapon?.name : "their fists"
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 
         static off_hand_attack() {
@@ -253,7 +255,8 @@ try {
             }
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
+            const means = weapon ? "their " + weapon?.name : "their fists"
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 
         static grapple() {
