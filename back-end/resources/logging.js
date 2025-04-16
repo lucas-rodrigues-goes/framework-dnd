@@ -1,3 +1,5 @@
+
+
 var getTimestamp = function() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
