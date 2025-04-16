@@ -834,13 +834,15 @@ try {
             return this.#conditions
         }
 
-        set_condition(condition, value) {
-            value = Number(value)
+        set_condition(condition, duration) {
+            duration = Number(duration)
 
-            if (value >= 1) {
-                this.#conditions[condition] = value;
-                log(this.#name + " received " + condition + " for " + value + " rounds.");
-            } else if (value == 0) {
+            if (duration >= 1) {
+                this.#conditions[condition] = {
+                    duration: duration,
+                }
+                log(this.#name + " received " + condition + " for " + duration + " rounds.");
+            } else if (duration <= 0) {
                 delete this.#conditions[condition]
                 log(this.#name + " lost the condition " + condition + ".");
             }
