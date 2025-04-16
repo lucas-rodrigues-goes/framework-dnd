@@ -48,6 +48,7 @@
                 }
                 getId("damage").value = damage
                 getId("recovery").value = object.recovery
+                getId("range").value = object.range?.join("/") || 5
 
                 loadSelect()
             })
@@ -101,6 +102,8 @@
                     break
             }
 
+            console.log(getId("range").value.split("/") || "")
+
             switch(getId("subtype").value) {
                 case "armor":
                     request += (
@@ -110,7 +113,8 @@
                 case "weapon":
                     request += (
                         "damage: " + JSON.stringify(damage) + "," +
-                        "recovery: " + getId("recovery").value + ","
+                        "recovery: " + getId("recovery").value + "," +
+                        "range: " + JSON.stringify(getId("range").value.split("/")) + ","
                     )
                 default:
                     break
@@ -215,7 +219,13 @@
                         }) +
                         input({
                             id:"recovery",
-                            placeholder:"Recovery"
+                            placeholder:"Recovery",
+                            style: "width: 49%"
+                        }) +
+                        input({
+                            id:"range",
+                            placeholder:"Range (normal/extended)",
+                            style: "width: 49%"
                         })
                     )})
                 )}) +

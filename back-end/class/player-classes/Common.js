@@ -19,12 +19,48 @@ try {
             }
         }
 
+        static validate_range(weapon) {
+            // Helper
+            function calculateDistance(x1, y1, x2, y2) {
+                const dx = x2 - x1; // Difference in X-coordinates
+                const dy = y2 - y1; // Difference in Y-coordinates
+                const distance = Math.round(Math.sqrt(dx * dx + dy * dy))
+                //log("Distance: " + distance)
+                return distance;
+            }
+
+            // Conditions
+            const usesAmmo = weapon?.properties?.includes("Ammunition") || false;
+            const isThrown = weapon?.properties?.includes("Thrown") || false
+            const isReach = weapon?.properties?.includes("Reach") || false
+            const range = weapon?.range || (isReach ? [10] : [5])
+
+            // Parameters
+            const creature = impersonated()
+            const target = selected()
+            const distance = calculateDistance(creature.x, creature.y, target.x, target.y) * 5
+
+            if (usesAmmo || isThrown) {
+                if (distance > range[1]) return "Unsufficient"
+                else if (distance > range[0]) return "Extended"
+                else return "Normal"
+            } else {
+                if (distance > range[0]) return "Unsufficient"
+                else return "Normal"
+            }
+        }
+
         static calculate_hit_bonus(weapon) {
+            // Validations
             const creature = impersonated();
             const isFinesse = weapon?.properties?.includes("Finesse") || false;
             const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+
+
+            // Applicable bonuses
             const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
             const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+
             return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
         }
 
@@ -54,6 +90,9 @@ try {
         static roll_attack(hit_bonus, target) {
             const roll = Math.ceil(Math.random() * 20);
             const target_visibility = impersonated().target_visibility();
+
+            // Face target
+            impersonated().face_target()
             
             // Target AC
             let cover = 0
@@ -197,6 +236,14 @@ try {
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
             const { result, roll_text } = this.roll_attack(hit_bonus, selected());
+            const means = weapon ? "their " + weapon?.name : "their fists"
+
+            // Validate Range
+            const range_validation = this.validate_range(weapon)
+            if (range_validation == "Unsufficient") {
+                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
+                return
+            }
 
             // Damage
             let damage_data = null;
@@ -205,7 +252,6 @@ try {
             }
 
             // Logging
-            const means = weapon ? "a " + weapon?.name : "their fists"
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 
@@ -222,6 +268,13 @@ try {
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
             const { result, roll_text } = this.roll_attack(hit_bonus, selected());
+            const means = weapon ? "their " + weapon?.name : "their fists"
+
+            // Validate Range
+            const range_validation = this.validate_range(weapon)
+            if (range_validation == "Unsufficient") {
+                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
+            }
 
             // Damage
             let damage_data = null;
@@ -230,7 +283,6 @@ try {
             }
 
             // Logging
-            const means = weapon ? "a " + weapon?.name : "their fists"
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 
@@ -247,6 +299,13 @@ try {
             const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
             const { result, roll_text } = this.roll_attack(hit_bonus, selected());
+            const means = weapon ? "their " + weapon?.name : "their fists"
+
+            // Validate Range
+            const range_validation = this.validate_range(weapon)
+            if (range_validation == "Unsufficient") {
+                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
+            }
 
             // Damage
             let damage_data = null;
@@ -255,7 +314,6 @@ try {
             }
 
             // Logging
-            const means = weapon ? "their " + weapon?.name : "their fists"
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
 

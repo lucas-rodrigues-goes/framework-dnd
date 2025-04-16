@@ -71,6 +71,19 @@ try {
                     break
             }
         }
+        face_target(target=selected()) {
+            const mode = "tokens"
+            const tokenId1 = this.id
+            const tokenId2 = target.id
+
+            MTScript.evalMacro(`[r:setFacing(
+                json.set("",
+                    "mode","` + mode + `",
+                    "tokenId1","` + tokenId1 + `",
+                    "tokenId2","` + tokenId2 + `"
+                )
+            )]`)
+        }
         
 
         //=====================================================================================================
