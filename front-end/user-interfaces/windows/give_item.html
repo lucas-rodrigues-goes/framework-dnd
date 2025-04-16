@@ -23,7 +23,6 @@
             const amount = getId("amount").value || 1
             const request = `selected().receive_item("` + item + `", ` + amount + `)`
 
-            console.log(request)
             backend(request)
         }
 
