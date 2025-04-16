@@ -1239,10 +1239,9 @@
 						const resources = []
 						let i = 0
 						for (const resource of action.resources) {
-							const text = i < (action.resources.length - 1) ? ", " + resource : resource
-
-							resources.push({tag: "img", style: {position: "relative", bottom: "0.2vh"}, attributes: {src: database?.resources[resource]?.image || ""}})
-							//resources.push({tag: "span", text: text})
+							if (i < (action.resources.length) && i != 0) resources.push({tag: "span", text: ", "})
+							resources.push({tag: "img", style: {position: "relative", bottom: "0.2vh", margin: "0 0.3vh"}, attributes: {src: database?.resources[resource]?.image || ""}})
+							resources.push({tag: "span", text: resource})
 							i++
 						}
 
