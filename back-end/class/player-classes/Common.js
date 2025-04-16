@@ -51,10 +51,18 @@ try {
             return calculated_damage;
         }
 
-        static roll_attack(hit_bonus, target_ac) {
+        static roll_attack(hit_bonus, target) {
             const roll = Math.ceil(Math.random() * 20);
-            let roll_result;
+            const target_visibility = impersonated().target_visibility();
+            
+            // Target AC
+            let cover = 0
+            if (target_visibility <= 0.25) cover = 5 // Three quarters cover
+            else if (target_visibility <= 0.5) cover = 2 // Half cover
+            const target_ac = target.armor_class + cover
 
+            // Roll Result
+            let roll_result;
             if (roll === 20) roll_result = "lands a critical hit";
             else if (roll === 1) roll_result = "critically misses";
             else if (roll + hit_bonus >= target_ac) roll_result = "hits";
@@ -188,7 +196,7 @@ try {
             // Weapon
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
 
             // Damage
             let damage_data = null;
@@ -212,7 +220,7 @@ try {
             // Weapon
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
 
             // Damage
             let damage_data = null;
@@ -236,7 +244,7 @@ try {
             // Weapon
             const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
             const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
 
             // Damage
             let damage_data = null;
