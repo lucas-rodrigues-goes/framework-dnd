@@ -122,6 +122,29 @@ try {
         }
 
         //=====================================================================================================
+        // Actions
+        //=====================================================================================================
+
+        static actions_list() {
+            const character = impersonated();
+            const origin = "Wizard"
+            const actions = {}
+
+            // Rage
+            if (character.has_feature("Arcane Recovery")) actions["arcane_recovery"] = {
+                resources: ["Arcane Recovery"],
+                description: database.features.data["Arcane Recovery"].description,
+                origin: origin,
+            }
+
+            return actions
+        }
+
+        static arcane_recovery() {
+            return
+        }
+
+        //=====================================================================================================
 
     }
 

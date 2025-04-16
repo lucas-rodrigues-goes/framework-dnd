@@ -121,6 +121,29 @@ try {
         }
 
         //=====================================================================================================
+        // Actions
+        //=====================================================================================================
+
+        static actions_list() {
+            const character = impersonated();
+            const origin = "Barbarian"
+            const actions = {}
+
+            // Rage
+            if (character.has_feature("Rage")) actions["rage"] = {
+                resources: ["Bonus Action", "Rage"],
+                description: database.features.data["Rage"].description,
+                origin: origin,
+            }
+
+            return actions
+        }
+
+        static rage() {
+            return
+        }
+
+        //=====================================================================================================
 
     }
 

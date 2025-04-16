@@ -572,7 +572,7 @@
 						let class_text = ""
 						for (const cls in character.basic.classes) {
 							class_text += class_text ? " / " : ""
-							class_text += capitalize(cls)
+							class_text += capitalize(cls) + " " + character.basic.classes[cls].level
 						}
 						document.getElementById("class").textContent = class_text || "None"
 
@@ -923,8 +923,8 @@
 					// Off Hand Stats
 					const off_hand = database[character.equipment["primary off hand"]?.name]
 					if (off_hand?.subtype == "weapon") {
-						const isFinesse = main_hand.properties.includes("Finesse")
-						const isAmmo = main_hand.properties.includes("Ammunition")
+						const isFinesse = off_hand.properties.includes("Finesse")
+						const isAmmo = off_hand.properties.includes("Ammunition")
 
 						// Damage Modifier
 						const str_bonus = character.basic.score_bonus["strength"]
@@ -1166,7 +1166,8 @@
 
 			let abilities_tab = {
 				classes: {},
-				resources: {}
+				resources: {},
+				abilities: {},
 			}
 			async function updateAbilitiesTab() {
 				// Helpers
@@ -1184,27 +1185,103 @@
 					return highestClass;
 				}
 
-				// Character Abilities
+				// Character Attributes
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
 						classes: impersonated().classes || {},
-						spells: impersonated().spells || {},
 						resources: impersonated().resources || {}
 					}
 				)`))
+
+				// Character Classes Request
+				let classes_actions_list = ""
+				for (const item of Object.keys(character.classes)) {
+					classes_actions_list += "..." + item + ".actions_list(),"
+				}
+
+				// Character Classes
+				character["abilities"] = JSON.parse(await backend(`JSON.stringify({
+					...Common.actions_list(),
+					`+classes_actions_list+`
+				})`))
 
 				// Cancel execution if there is no update to character
 				if (isEqualJSON(abilities_tab, character)) return
 				else abilities_tab.classes = character.classes
 
 				// Database
-				const { database, spells_list } = JSON.parse(await backend(`JSON.stringify({
-					database: {
-						spells: database.spells.data,
-						resources: database.resources.data,
-					},
-					spells_list: database.get_spells_list()
+				const database = JSON.parse(await backend(`JSON.stringify({
+					spells: database.spells.data,
+					resources: database.resources.data,
 				})`))
+
+				// Update Abilities
+				let previous_type = undefined
+				async function updateAbilities() {
+					abilities_tab.abilities = character.abilities
+
+					// Clear container
+					const abilities_container = document.getElementById("abilities-tab-abilities")
+					abilities_container.clearChildren()
+
+					// Create ability elements
+					for (const name in character.abilities) {
+						const action = character.abilities[name]
+
+						// Add spacing between levels
+						const type = action.origin == "Common" ? "Common Abilities" : "Class Abilities"
+						if (previous_type != type) {
+							abilities_container.appendChild({tag: "div", style: {margin: "1vh", marginTop: "1.5vh", padding: 0, fontWeight: "bold"}, text: type})
+							previous_type = type
+						}
+
+						// Resources Element
+						const resources = []
+						let i = 0
+						for (const resource of action.resources) {
+							const text = i < (action.resources.length - 1) ? ", " + resource : resource
+
+							resources.push({tag: "img", style: {position: "relative", bottom: "0.2vh"}, attributes: {src: database?.resources[resource]?.image || ""}})
+							//resources.push({tag: "span", text: text})
+							i++
+						}
+
+						// Add element
+						abilities_container.appendChild(
+							{tag: "div", 
+								attributes: {class: "collapsible-div"}, 
+								style: {
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+								},
+								events: {
+									mousedown: (event) => {
+										switch (event.button) {
+											case 0: // Left Click
+												break
+											case 2: { // Right Click
+												// Buttons
+												const buttons = {
+													"Description": () => {},
+													"Use": () => {backend(action.origin + `.` + name + `()`)}
+												}
+
+												// Run context menu
+												context_menu({event: event, buttons: buttons})
+												break
+											}
+										}
+									}
+								},
+								children: [
+									{tag: "img", attributes: {src: ""}},
+									{tag: "span", text: capitalize(name.replaceAll("_", " "))},
+									{tag: "div", style: {position: "absolute", right: "0.5vh", padding: 0, margin: 0}, children: resources},
+								]
+							}
+						)
+					}
+				}
+				updateAbilities()
 
 				// Update Resources
 				async function updateResources() {
@@ -1315,7 +1392,19 @@
 					const class_select = document.getElementById("spells-tab-class")
 					class_select.clearChildren()
 
+					// Verifies which of the player classes can spellcast
+					let classes_search_text = ""
 					for (const name in character.classes) {
+						classes_search_text += name + `: ` + name + `?.spellcasting || "", `
+					}
+					const classes_spellcasting = JSON.parse(await backend(`JSON.stringify({
+						`+classes_search_text+`
+					})`))
+					
+					// Adds option for all spellcasting classes
+					for (const name in classes_spellcasting) {
+						if (classes_spellcasting[name] == "") continue
+
 						class_select.appendChild({tag: "option", text: name})
 					}
 					class_select.dispatchEvent(new Event("change"))
@@ -1348,7 +1437,7 @@
 
 					// Conditional info
 					if (character.spellcasting.memorization) {
-						values["Spells Memorized"] = character.spells[chosen_class].memorized.length + " / " + (modifier + character.classes[chosen_class].level)
+						values["Spells Memorized"] = (character?.spells[chosen_class]?.memorized?.length || 0) + " / " + (modifier + character.classes[chosen_class].level)
 					}
 
 					// Elements
@@ -1644,6 +1733,7 @@
 					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
 						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
 							div: {style: {height: "80vh"}},
+							content: {style: {padding: "0 2vh", paddingRight: "2.5vh"}}
 						}})
 					]},
 					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
@@ -1689,7 +1779,10 @@
 						}, children: [
 							{tag: "div", style: {display: "flex", justifyContent: "center", padding: "0.5vh", margin: 0}, children: [
 								{tag: "div", attributes: {id: "spells-tab-spells-level", value: ""}, children: spellLevelButtons},
-								{tag: "button", text: "M", attributes: {id: "spells-tab-spells-memorized-only", value: "true", class: "active"}, style: buttonStyle, events: {
+								{tag: "button", text: "M", 
+									attributes: {id: "spells-tab-spells-memorized-only", value: "false", class: "tooltip", tooltip: "Show only memorized"}, 
+									style: {...buttonStyle, marginLeft: "2vh"},
+								events: {
 									click: function () {
 										const isActive = this.getAttribute("value") == "true"
 

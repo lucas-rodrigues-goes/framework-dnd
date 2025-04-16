@@ -4,72 +4,6 @@ try {
     var Common = class {
 
         //=====================================================================================================
-        // Parameters
-        //=====================================================================================================
-
-        static actions_list() {
-            const creature = impersonated();
-            const actions = {
-                attack: {
-                    resources: ["Attack Action"],
-                    description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
-                },
-                grapple: {
-                    resources: ["Attack Action"],
-                    description: "Attempt to grapple the enemy, impeding their movement.",
-                },
-                push: {
-                    resources: ["Attack Action"],
-                    description: "Attempt to push the enemy 5ft.",
-                },
-                knock_prone: {
-                    resources: ["Attack Action"],
-                    description: "Attempt to knock down the enemy.",
-                },
-                dash: {
-                    resources: ["Action"],
-                    description: "Gain additional movement equal to your speed.",
-                },
-                disengage: {
-                    resources: ["Action"],
-                    description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
-                },
-                dodge: {
-                    resources: ["Action"],
-                    description: "Focus on avoiding attacks. Attack rolls against you have disadvantage.",
-                },
-                help: {
-                    resources: ["Action"],
-                    description: "Aid another creature in attacking or avoiding attacks.",
-                },
-                hide: {
-                    resources: ["Action"],
-                    description: "Attempt to hide from enemies using Stealth.",
-                },
-                ready: {
-                    resources: ["Action"],
-                    description: "Prepare to take an action later in response to a trigger.",
-                },
-                search: {
-                    resources: ["Action"],
-                    description: "Devote your attention to finding something using Perception or Investigation.",
-                },
-            }
-
-            // Conditional Actions
-            const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
-            const hasOffHandWeapon = weapon ? weapon.subtype == "weapon" : false
-            if (hasOffHandWeapon) {
-                actions["off_hand_attack"] = {
-                    resources: ["Bonus Action"],
-                    description: "Use your off hand weapon to deliver a blow to the enemy.",
-                }
-            }
-
-            return actions
-        }
-
-        //=====================================================================================================
         // Helpers
         //=====================================================================================================
 
@@ -155,12 +89,123 @@ try {
         // Actions
         //=====================================================================================================
 
+        static actions_list() {
+            const creature = impersonated();
+            const origin = "Common"
+            const actions = {
+                attack: {
+                    resources: ["Attack Action"],
+                    description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
+                    origin: origin
+                },
+                grapple: {
+                    resources: ["Attack Action"],
+                    description: "Attempt to grapple the enemy, impeding their movement.",
+                    origin: origin
+                },
+                push: {
+                    resources: ["Attack Action"],
+                    description: "Attempt to push the enemy 5ft.",
+                    origin: origin
+                },
+                knock_prone: {
+                    resources: ["Attack Action"],
+                    description: "Attempt to knock down the enemy.",
+                    origin: origin
+                },
+                dash: {
+                    resources: ["Action"],
+                    description: "Gain additional movement equal to your speed.",
+                    origin: origin
+                },
+                disengage: {
+                    resources: ["Action"],
+                    description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
+                    origin: origin
+                },
+                dodge: {
+                    resources: ["Action"],
+                    description: "Focus on avoiding attacks. Attack rolls against you have disadvantage.",
+                    origin: origin
+                },
+                help: {
+                    resources: ["Action"],
+                    description: "Aid another creature in attacking or avoiding attacks.",
+                    origin: origin
+                },
+                hide: {
+                    resources: ["Action"],
+                    description: "Attempt to hide from enemies using Stealth.",
+                    origin: origin
+                },
+                ready: {
+                    resources: ["Action"],
+                    description: "Prepare to take an action later in response to a trigger.",
+                    origin: origin
+                },
+                search: {
+                    resources: ["Action"],
+                    description: "Devote your attention to finding something using Perception or Investigation.",
+                    origin: origin
+                },
+            }
+
+            // Off Hand Attack
+            const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
+            const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
+            if (hasOffHandWeapon) {
+                actions["off_hand_attack"] = {
+                    resources: ["Bonus Action"],
+                    description: "Use your off hand weapon to deliver a blow to the enemy.",
+                    origin: origin
+                }
+            }
+
+            // Opportunity Attack
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
+            const isWeaponRanged = weapon ? weapon.properties.includes("Ammunition") : false
+            if (!isWeaponRanged) {
+                actions["opportunity_attack"] = {
+                    resources: ["Reaction"],
+                    description: "You can make an opportunity attack when a hostile creature that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking creature. The attack occurs right before the creature leaves your reach.",
+                    origin: origin
+                }
+            }
+            
+
+            return actions
+        }
+
         static attack() {
             const creature = impersonated();
 
             // Requirements
             const actions_list = this.actions_list();
             if (!selected() || !actions_list?.attack || !this.has_resources_available(actions_list.attack.resources)) {
+                return;
+            }
+
+            // Weapon
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
+            const hit_bonus = this.calculate_hit_bonus(weapon);
+            const { result, roll_text } = this.roll_attack(hit_bonus, selected().armor_class);
+
+            // Damage
+            let damage_data = null;
+            if (result === "lands a critical hit" || result === "hits") {
+                damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
+            }
+
+            // Logging
+            public_log(this.build_attack_message(selected(), result, roll_text, damage_data));
+        }
+
+        static opportunity_attack() {
+            const creature = impersonated();
+
+            // Requirements
+            const actions_list = this.actions_list();
+            if (!selected() || !actions_list?.opportunity_attack || !this.has_resources_available(actions_list.opportunity_attack.resources)) {
                 return;
             }
 
