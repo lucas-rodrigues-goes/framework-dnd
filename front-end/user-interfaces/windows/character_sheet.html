@@ -652,7 +652,7 @@
 						// Append Conditions
 						for (const name in character.conditions) {
 							// From character
-							const duration = timeUnit(character.conditions[name])
+							const duration = timeUnit(character.conditions[name].duration)
 
 							// From database
 							const condition = database.conditions[name]
