@@ -2,20 +2,19 @@
 
 // Instances a token by its ID
 var instance = function (id) {
-    const token = MapTool.tokens.getTokenByID(id);
-    const token_classes = token.getProperty("class");
-
     try {
-        const player_class = eval(JSON.parse(token_classes)[0])
-        return new player_class(id)
-    } catch {
+        const token = MapTool?.tokens?.getTokenByID(id);
+        const token_classes = token.getProperty("class");
         try {
+            const player_class = eval(JSON.parse(token_classes)[0])
+            return new player_class(id)
+        } catch {
             const player_class = eval(token_classes)
             return new player_class(id)
         }
-        catch {
-            return undefined
-        }
+    }
+    catch {
+        return undefined
     }
     
 }
@@ -67,9 +66,11 @@ var impersonated = function () {
 
 // Returns currently selected characters token ID
 var getSelected = function () {
-    if (MapTool.tokens.getSelected()) {
-        return MapTool.tokens.getSelected().getId()
-    }
+    const return_array = MTScript.evalMacro(`[r:getSelected()]`).split(",")
+
+    if (return_array.length > 1) return return_array
+    else if (return_array.length == 1) return return_array[0]
+    else return undefined
 }
 
 // Returns currently selected characters portrait
@@ -85,4 +86,18 @@ var selected = function () {
     if (selected_id) {
         return instance(selected_id)
     }
+}
+
+// All selected tokens
+var allSelected = function () {
+    const return_array = []
+    const mt_getSelected = MTScript.evalMacro(`[r:getSelected()]`) || ""
+    const id_array = mt_getSelected != "" ? mt_getSelected.split(",") : []
+
+    for (let i = 0; i < id_array.length; i++) {
+        const creature = instance(id_array[i])
+        if (creature) return_array.push(creature)
+    }
+
+    return return_array
 }

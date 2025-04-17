@@ -330,17 +330,22 @@
                 if (isPlaying) image = "asset://ca3a35626f1849b6872f2ca0704a1a1d"
                 else if (description == "Spellcasting") image = "asset://aa7f0c22bbac48d11eaf34a4b294baf8"
 
+                const show_initiative = initiative >= 12 ? initiative - 12 : initiative
+
                 return element(
                     {tag: "div", style: {position: "relative", height: "9.5vh"},
                         children: [
                             {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
-                                {tag: "img", style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover"}, attributes: {src: portrait, class: "clickable"}, events: {
-                                    click: () => {
-                                        const instance = `instance("`+id+`")`
-                                        backend(instance + `.go_to(); ` + instance + `.select()`)
+                                {tag: "img", 
+                                    style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover", filter: initiative >= 12 && "saturate(0)"},
+                                    attributes: {src: portrait, class: "clickable"}, 
+                                    events: {
+                                        click: () => {
+                                            const instance = `instance("`+id+`")`
+                                            backend(instance + `.go_to(); ` + instance + `.select()`)
 
-                                        if (isGM) backend(instance+`.impersonate()`)
-                                    }
+                                            if (isGM) backend(instance+`.impersonate()`)
+                                        }
                                 }},
                             ]},
                             {tag: "div", attributes: {class: "center-horizontal"}, 
@@ -353,7 +358,7 @@
                                 children: [
                                     image != ""
                                         ? {tag: "img", attributes: {src: image}, style: {height: "2.5vh"}} 
-                                        : {tag: "span", text: initiative}
+                                        : {tag: "span", text: show_initiative}
                             ]}
                         ]
                     }
@@ -367,10 +372,14 @@
             })`))
             if (isEqualJSON(current_initiative, {round, creatures})) return
             current_initiative = {round, creatures}
+            if ("'+isGM()+'" == 1) backend(`instance(Initiative.current_creature).impersonate()`)
 
-            // Create elements
+            // Clear elements
             const initative_creatures_div = document.getElementById("initiative-creatures")
             initative_creatures_div.clearChildren()
+            if (creatures.length < 1) return
+
+            // Create elements
             for (const creature of creatures) {
                 //if (initative_creatures_div.children.length >= 8) break
                 initative_creatures_div.appendChild(characterElement(creature))
@@ -588,6 +597,7 @@
             element (
                 {tag: "div", parent: document.body, attributes: {class: "center-horizontal"}, children: [
                     {tag: "div", attributes: {id: "initiative-creatures"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
+                    {tag: "div", attributes: {id: "initiative-controls"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
                     {tag: "div", attributes: {id: "current-target"}, style: {display: "none"}, children: [
                         {tag: "div", attributes: {class: "top center-horizontal"}, children: [
                             {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},

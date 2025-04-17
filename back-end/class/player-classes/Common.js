@@ -181,56 +181,67 @@ try {
                 attack: {
                     resources: ["Attack Action"],
                     description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
+                    recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
                     origin: origin
                 },
                 grapple: {
                     resources: ["Attack Action"],
                     description: "Attempt to grapple the enemy, impeding their movement.",
+                    recovery: 4,
                     origin: origin
                 },
                 push: {
                     resources: ["Attack Action"],
                     description: "Attempt to push the enemy 5ft.",
+                    recovery: 4,
                     origin: origin
                 },
                 knock_prone: {
                     resources: ["Attack Action"],
                     description: "Attempt to knock down the enemy.",
+                    recovery: 4,
                     origin: origin
                 },
                 dash: {
                     resources: ["Action"],
                     description: "Gain additional movement equal to your speed.",
+                    recovery: 1,
                     origin: origin
                 },
                 disengage: {
                     resources: ["Action"],
                     description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
+                    recovery: 1,
                     origin: origin
                 },
                 dodge: {
                     resources: ["Action"],
                     description: "Focus on avoiding attacks. Attack rolls against you have disadvantage.",
+                    recovery: 1,
                     origin: origin
                 },
                 help: {
                     resources: ["Action"],
                     description: "Aid another creature in attacking or avoiding attacks.",
+                    recovery: 4,
                     origin: origin
                 },
                 hide: {
                     resources: ["Action"],
                     description: "Attempt to hide from enemies using Stealth.",
+                    recovery: 1,
                     origin: origin
                 },
                 ready: {
                     resources: ["Action"],
                     description: "Prepare to take an action later in response to a trigger.",
+                    recovery: 0,
                     origin: origin
                 },
                 search: {
                     resources: ["Action"],
                     description: "Devote your attention to finding something using Perception or Investigation.",
+                    recovery: 1,
                     origin: origin
                 },
             }
@@ -293,6 +304,7 @@ try {
 
             // Consume resources
             this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
@@ -329,6 +341,7 @@ try {
 
             // Consume resources
             this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
@@ -365,6 +378,7 @@ try {
 
             // Consume resources
             this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
@@ -401,6 +415,7 @@ try {
 
             // Consume resources
             this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
             public_log(creature.name + " dashes, gaining extra movement for this round.")
