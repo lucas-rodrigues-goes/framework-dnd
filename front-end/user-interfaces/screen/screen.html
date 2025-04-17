@@ -324,10 +324,12 @@
 
                 // Border color
                 let color
-                if (isPlaying) color = "#ddd"
+                if (description == "Spellcasting") color = "#66f"
+                else if (status == "Suspended") color = "#fb6"
                 else if (!player) color = "#b44"
-                else if (description == "Spellcasting") color = "#66f"
-                else color = "#5ab350"
+                else if (isPlaying) color = "#ddd"
+                // else if (player) color = "#5ab350"
+                else color = "#666"
 
                 // Status image
                 let image = ""
@@ -337,12 +339,12 @@
                 const show_initiative = initiative >= 12 ? initiative - 12 : initiative
 
                 return element(
-                    {tag: "div", attributes: {class: "box-shadow"}, style: {position: "relative", height: "9.5vh"},
+                    {tag: "div", style: {transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", position: "relative", height: "9.5vh"},
                         children: [
                             {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
                                 {tag: "img", 
                                     style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover", filter: initiative >= 12 && "saturate(0)"},
-                                    attributes: {src: portrait, class: "clickable"}, 
+                                    attributes: {src: portrait, class: "clickable box-shadow"}, 
                                     events: {
                                         click: () => {
                                             const instance = `instance("`+id+`")`
@@ -354,9 +356,9 @@
                             ]},
                             {tag: "div", attributes: {class: "center-horizontal"}, 
                                 style: {
-                                    position: "absolute", bottom: "-0.1vh", 
+                                    position: "absolute", bottom: "-0.5vh", 
                                     backgroundColor: "#232323", borderRadius: "1.5vh", 
-                                    height: "2.5vh", width: "3vh", display: "flex", alignItems: "center", justifyContent: "center",
+                                    height: "2.5vh", width: "2.5vh", display: "flex", alignItems: "center", justifyContent: "center",
                                     fontWeight: "bold", fontSize: "85%", border: "0.3vh solid " + color,
                                 },
                                 children: [

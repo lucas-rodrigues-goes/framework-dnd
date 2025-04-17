@@ -50,7 +50,7 @@ var Initiative = class {
         return return_list
     }
 
-    static add_creature (creature=selected()) {
+    static add_creature (creature=selected(), nextRound = false) {
         if (!creature) return
 
         // Roll
@@ -60,7 +60,7 @@ var Initiative = class {
         this.creatures = {
             ...this.creatures,
             [creature.id]: {
-                initiative: initiative_roll + creature.initiative_mod,
+                initiative: initiative_roll + creature.initiative_mod + (nextRound ? 12 : 0),
                 recovery: 0,
                 status: "None", // None, Playing, Suspended
                 description: ""
@@ -79,9 +79,21 @@ var Initiative = class {
     static add_creatures (creatures=allSelected()) {
         if (creatures.length < 1) return
 
-        for (const creature of creatures) {
-            this.add_creature(creature)
+        // Verifies if round has already started
+        let hasPlayer = false
+        for (const id in this.creatures) {
+            if (this.creatures[id].status == "Playing") {
+                hasPlayer = true
+            }
         }
+
+        // Adds new character
+        for (const creature of creatures) {
+            this.add_creature(creature, hasPlayer)
+        }
+
+        // If round hasnt started, starts it
+        if (!hasPlayer) this.#next_creature()
     }
 
     static remove_creature (id=getSelected()) {
@@ -143,7 +155,6 @@ var Initiative = class {
     //=====================================================================================================
 
     static #next_creature() {
-
         // Next playing creature
         const creature = instance(this.current_creature)
         const creature_init = this.creatures[this.current_creature]
@@ -153,8 +164,8 @@ var Initiative = class {
         const recovery = isSuspended ? creature_init.recovery : 0
 
         // Update initiative info
-        this.creature = {
-            ...this.creature,
+        this.creatures = {
+            ...this.creatures,
             [creature.id]: {
                 ...creature_init,
                 recovery: recovery,
@@ -176,8 +187,8 @@ var Initiative = class {
 
         // Update initiative info
         const creature_init = this.creatures[this.current_creature]
-        this.creature = {
-            ...this.creature,
+        this.creatures = {
+            ...this.creatures,
             [creature.id]: {
                 ...creature_init,
                 initiative: creature_init.initiative + time,
@@ -203,8 +214,8 @@ var Initiative = class {
 
         // Update initiative info
         const creature_init = this.creatures[this.current_creature]
-        this.creature = {
-            ...this.creature,
+        this.creatures = {
+            ...this.creatures,
             [creature.id]: {
                 initiative: Math.max(12 + creature_init.recovery + creature.initiative_mod, 12),
                 recovery: 0,
@@ -219,4 +230,17 @@ var Initiative = class {
         // Next creature
         this.#next_creature()
     }
+
+    static set_recovery(value, creature=impersonated()) {
+        // Update initiative info
+        const creature_init = this.creatures[creature.id]
+        this.creatures = {
+            ...this.creatures,
+            [creature.id]: {
+                ...creature_init,
+                recovery: value,
+            }
+        }
+    }
+
 }
