@@ -9,13 +9,51 @@ try {
 
         static has_resources_available(resources) {
             const creature = impersonated();
+
+            let return_value = true
+            const missing_resources = []
             for (const name of resources) {
                 const resource = creature?.resources[name]?.value || 0
                 if (name == "Attack Action") {
                     const action_res = creature?.resources["Action"]?.value || 0
-                    return (resource > 0 || action_res > 0)
+                    if(resource < 1 && action_res < 1) {
+                        return_value = false
+                        missing_resources.push("Action")
+                    }
+                    continue
                 }
-                return resource > 0
+
+                if (resource < 1) {
+                    return_value = false
+                    missing_resources.push(name)
+                }
+            }
+
+            if(!return_value) public_log(creature.name +" has insuficient resources for this ability (" + missing_resources.join(", ") + ").")
+            return return_value
+        }
+
+        static use_resources(resources) {
+            const creature = impersonated()
+
+            for (const name of resources) {
+                const resource = creature.resources[name]
+                
+                // Consume action to create attack actions
+                if (name == "Attack Action" && resource.value == 0) {
+
+                    // Reduce action
+                    const action_resource = creature.resources["Action"]
+                    creature.set_resource_value("Action", action_resource.value - 1)
+
+                    // Recharge attack action
+                    creature.set_resource_value("Attack Action", resource.max)
+                    resource.value = creature.resources[name].value
+                }
+
+                // Consume resource
+                if (resource.value < 1) log("An error occurred when calculating resources, that led an empty resource ("+name+") to be spent")
+                creature.set_resource_value(name, resource.value - 1)
             }
         }
 
@@ -227,8 +265,10 @@ try {
             const creature = impersonated();
 
             // Requirements
-            const actions_list = this.actions_list();
-            if (!selected() || !actions_list?.attack || !this.has_resources_available(actions_list.attack.resources)) {
+            const function_name = "attack"
+            const action_details = this.actions_list()[function_name];
+            if (!action_details) return
+            if (!selected() || !this.has_resources_available(action_details.resources)) {
                 return;
             }
 
@@ -251,6 +291,9 @@ try {
                 damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
             }
 
+            // Consume resources
+            this.use_resources(action_details.resources)
+
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
@@ -259,8 +302,10 @@ try {
             const creature = impersonated();
 
             // Requirements
-            const actions_list = this.actions_list();
-            if (!selected() || !actions_list?.opportunity_attack || !this.has_resources_available(actions_list.opportunity_attack.resources)) {
+            const function_name = "opportunity_attack"
+            const action_details = this.actions_list()[function_name];
+            if (!action_details) return
+            if (!selected() || !this.has_resources_available(action_details.resources)) {
                 return;
             }
 
@@ -282,6 +327,9 @@ try {
                 damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
             }
 
+            // Consume resources
+            this.use_resources(action_details.resources)
+
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
@@ -290,8 +338,10 @@ try {
             const creature = impersonated();
             
             // Requirements
-            const actions_list = this.actions_list();
-            if (!selected() || !actions_list?.off_hand_attack || !this.has_resources_available(actions_list.off_hand_attack.resources)) {
+            const function_name = "off_hand_attack"
+            const action_details = this.actions_list()[function_name];
+            if (!action_details) return
+            if (!selected() || !this.has_resources_available(action_details.resources)) {
                 return;
             }
 
@@ -313,6 +363,9 @@ try {
                 damage_data = this.calculate_damage(weapon, result === "lands a critical hit", true);
             }
 
+            // Consume resources
+            this.use_resources(action_details.resources)
+
             // Logging
             public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
         }
@@ -330,7 +383,27 @@ try {
         }
 
         static dash() {
-            return;
+            const creature = impersonated()
+
+            // Requirements
+            const function_name = "dash"
+            const action_details = this.actions_list()[function_name];
+            if (!action_details) return
+            if (!selected() || !this.has_resources_available(action_details.resources)) {
+                return;
+            }
+
+            // New movement
+            const current_movement = creature.resources["Movement"]
+            const speed = creature.speed
+            creature.set_resource_max("Movement", current_movement.max + speed)
+            creature.set_resource_value("Movement", current_movement.value + speed)
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+
+            // Logging
+            public_log(creature.name + " dashes, gaining extra movement for this round.")
         }
 
         static disengage() {

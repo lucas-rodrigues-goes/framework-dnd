@@ -19,6 +19,7 @@
         body {
             all:unset;
             font-size: 1.7vh;
+            color: #ddd;
         }
     
         .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
@@ -32,6 +33,10 @@
             display: flex;
             align-items: end;
             gap: 1vh;
+        }
+
+        .clickable:hover {
+            filter: brightness(1.1);
         }
 
         .hidden { display: none }
@@ -212,7 +217,6 @@
         }
     
     
-    
         /*===================================================================================================*/
     
         </style>
@@ -301,8 +305,78 @@
         
     
         //=====================================================================================================
-        // Execution
+        // Updates
         //=====================================================================================================
+
+        current_initiative = {
+            round: 0,
+            creatures: []
+        }
+        async function updateInitiative() {
+            function characterElement(creature) {
+                const {id = "", player = false, portrait = "", name = "", status = "", description = "", initiative = 0} = creature
+                const isPlaying = status == "Playing"
+                const isGM = "'+isGM()+'" == 1
+
+                // Border color
+                let color
+                if (isPlaying) color = "#ddd"
+                else if (!player) color = "#b44"
+                else if (description == "Spellcasting") color = "#66f"
+                else color = "#5ab350"
+
+                // Status image
+                let image = ""
+                if (isPlaying) image = "asset://ca3a35626f1849b6872f2ca0704a1a1d"
+                else if (description == "Spellcasting") image = "asset://aa7f0c22bbac48d11eaf34a4b294baf8"
+
+                return element(
+                    {tag: "div", style: {position: "relative", height: "9.5vh"},
+                        children: [
+                            {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
+                                {tag: "img", style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover"}, attributes: {src: portrait, class: "clickable"}, events: {
+                                    click: () => {
+                                        const instance = `instance("`+id+`")`
+                                        backend(instance + `.go_to(); ` + instance + `.select()`)
+
+                                        if (isGM) backend(instance+`.impersonate()`)
+                                    }
+                                }},
+                            ]},
+                            {tag: "div", attributes: {class: "center-horizontal"}, 
+                                style: {
+                                    position: "absolute", bottom: "-0.1vh", 
+                                    backgroundColor: "#232323", borderRadius: "1.5vh", 
+                                    height: "2.5vh", width: "3vh", display: "flex", alignItems: "center", justifyContent: "center",
+                                    fontWeight: "bold", fontSize: "85%", border: "0.3vh solid " + color,
+                                },
+                                children: [
+                                    image != ""
+                                        ? {tag: "img", attributes: {src: image}, style: {height: "2.5vh"}} 
+                                        : {tag: "span", text: initiative}
+                            ]}
+                        ]
+                    }
+                )
+            }
+
+            // Data
+            const {round, creatures} = JSON.parse(await backend(`JSON.stringify({
+                round: Initiative.current_round,
+                creatures: Initiative.creatures_info,
+            })`))
+            if (isEqualJSON(current_initiative, {round, creatures})) return
+            current_initiative = {round, creatures}
+
+            // Create elements
+            const initative_creatures_div = document.getElementById("initiative-creatures")
+            initative_creatures_div.clearChildren()
+            for (const creature of creatures) {
+                //if (initative_creatures_div.children.length >= 8) break
+                initative_creatures_div.appendChild(characterElement(creature))
+            }
+
+        }
     
         let current_character = {}
         async function updateCurrentCharacter() {
@@ -369,15 +443,15 @@
             }
     
             // Target
-            const target = {
-                name: await backend("selected().name"),
-                type: await backend("selected().race || selected().type || selected().token.getProperty(`class`)") || "Entity",
-                portrait: await backend("selected().portrait"),
-                player: await backend("selected().player"),
-                armor_class: await backend("selected().armor_class"),
-                health: await backend("selected().health"),
-                max_health: await backend("selected().max_health"),
-            }
+            const target = JSON.parse(await backend(`JSON.stringify({
+                name: selected().name,
+                type: selected().race || selected().type || selected().token.getProperty("class") || "Entity",
+                portrait: selected().portrait,
+                player: selected().player,
+                armor_class: selected().armor_class,
+                health: selected().health,
+                max_health: selected().max_health,
+            })`))
     
             // Verify if there is need for update
             if (!isEqualJSON(current_target, target)) {
@@ -385,7 +459,7 @@
     
                 // Calculated attributes
                 let hp_percent = target.health / target.max_health * 100
-                let color = target.player == "true" ? "#5ab350" : "#b44"
+                let color = target.player ? "#5ab350" : "#b44"
     
                 // Update values
                 getId("current-target-name").textContent = target.name
@@ -411,8 +485,11 @@
         async function updateCurrentParty() {
     
             // Gather party info
-            const party = JSON.parse(await backend("party_info()"))
-            const impersonated_ID = await backend("getImpersonated()")
+            const {party, impersonated_ID, isPlayer} = JSON.parse(await backend(`JSON.stringify({
+                party: party_info(),
+                impersonated_ID: getImpersonated(),
+                isPlayer: impersonated().player
+            })`))
             
             // Verify if there is need for update
             if (!isEqualJSON(current_party, party) || current_party_impersonated_id != impersonated_ID) {
@@ -421,6 +498,8 @@
     
                 // Clear
                 getId("current-party").clearChildren()
+                if (!isPlayer) return
+
     
                 for (const character_info of party) {
     
@@ -441,9 +520,11 @@
             }
         }
     
+        //=====================================================================================================
+        // Create HTML
+        //=====================================================================================================
     
         function loadPage() {
-    
             // Character menu
             element(
                 {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left hidden"}, children: [
@@ -496,35 +577,60 @@
                     },
                 ]}
             )
-    
-            // Current target
+
+            // Top left
             element (
-                {tag: "div", parent: document.body, attributes: {id: "current-target", class: "center-horizontal"}, style: {display: "none"}, children: [
-                    {tag: "div", attributes: {class: "top center-horizontal"}, children: [
-                        {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},
-                        {tag: "p", style: {textAlign: "center"}, children: [
-                            {tag: "span", attributes: {id: "current-target-name", class: "text-shadow"}, style: {fontSize: "120%", fontWeight: "bold"}}, 
-                            {tag: "br"},
-                            {tag: "span", attributes: {id: "current-target-type", class: "text-shadow"}, style: {color: "#aaa"}}
+                {tag: "div", parent: document.body, attributes: {class: "menu left"}, children: [
+                ]}
+            )
+    
+            // Top area
+            element (
+                {tag: "div", parent: document.body, attributes: {class: "center-horizontal"}, children: [
+                    {tag: "div", attributes: {id: "initiative-creatures"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
+                    {tag: "div", attributes: {id: "current-target"}, style: {display: "none"}, children: [
+                        {tag: "div", attributes: {class: "top center-horizontal"}, children: [
+                            {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},
+                            {tag: "p", style: {textAlign: "center"}, children: [
+                                {tag: "span", attributes: {id: "current-target-name", class: "text-shadow"}, style: {fontSize: "120%", fontWeight: "bold"}}, 
+                                {tag: "br"},
+                                {tag: "span", attributes: {id: "current-target-type", class: "text-shadow"}, style: {color: "#aaa"}}
+                            ]}
+                        ]},
+                        {tag: "div", attributes: {class: "center-horizontal"}, children: [
+                            {tag: "div", attributes: {id: "current-target-health"}},
+                            {tag: "div", style: {display: "flex", gap: "1vh"}, children: [
+                                {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}}
+                            ]}
                         ]}
-                    ]},
-                    {tag: "div", attributes: {id: "current-target-health"}},
-                    {tag: "div", style: {display: "flex", gap: "1vh"}, children: [
-                        {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}}
                     ]}
                 ]}
             )
         }
     
-        window.onload = function () {
-            loadPage()
-    
-            setInterval(()=>{
+        //=====================================================================================================
+        // Execution
+        //=====================================================================================================
+
+        function updatePage () {
+            // Run first time
+            updateInitiative()
+            updateCurrentCharacter()
+            updateCurrentTarget()
+            updateCurrentParty()
+
+            // Set update intervals
+            setInterval(()=> {
+                updateInitiative()
                 updateCurrentCharacter()
                 updateCurrentTarget()
                 updateCurrentParty()
             }, 100)
-    
+        }
+
+        window.onload = function () {
+            loadPage()
+            updatePage()
         }
     
         //=====================================================================================================

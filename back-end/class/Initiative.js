@@ -3,18 +3,16 @@
 var Initiative = class {
 
     //=====================================================================================================
-    // Attributes
+    // Stored Attributes
     //=====================================================================================================
 
     static #creatures = {}
-    static #total_rounds = 1
 
     //=====================================================================================================
     // Getters
     //=====================================================================================================
 
     static get creatures () {return this.#creatures}
-    static get total_rounds () {return this.#total_rounds}
     static get current_creature() {return this.turn_order[0] || null}
     static get turn_order () {
         const creatures = this.#creatures
@@ -24,9 +22,33 @@ var Initiative = class {
 
         return turn_order
     }
+    static get current_round () {
+        const init = this?.creatures[this?.current_creature]?.initiative || 0
+        const return_value = Math.floor(init / 12)
+        return return_value
+    }
+    static get creatures_info () {
+        const return_list = []
+        for (const id of this.turn_order) {
+            const creature = instance(id)
+            const initiative_info = this.#creatures[id]
+
+            return_list.push({
+                id: id,
+                player: creature.player,
+                portrait: creature.portrait,
+                name: creature.name,
+                status: initiative_info.status,
+                description: initiative_info.description,
+                initiative: initiative_info.initiative,
+            })
+        }
+
+        return return_list
+    }
 
     //=====================================================================================================
-    // Setters
+    // Management
     //=====================================================================================================
 
     static clear_initiative() { this.#creatures = {} }
@@ -56,11 +78,6 @@ var Initiative = class {
 
         // Logging
         log(creature.name + " has been removed from the initiative tracker.")
-    }
-
-    static set_recovery(value, creature=impersonated()) {
-        const current_recovery = this.#creatures[creature.id].recovery
-        this.#creatures[creature.id].recovery = Math.max(current_recovery, value)
     }
 
     static start_turn() {
@@ -97,8 +114,36 @@ var Initiative = class {
             }
 
             // Logging
-            public_log(creature.name + " resumed their turn.")
+            public_log(creature.name + " has finished " + init_creature.description + ".")
         }
+    }
+
+    //=====================================================================================================
+    // Creature
+    //=====================================================================================================
+
+    static set_recovery(value, creature=impersonated()) {
+        const current_recovery = this.#creatures[creature.id].recovery
+        this.#creatures[creature.id].recovery = Math.max(current_recovery, value)
+    }
+
+    static suspend_turn(time, description, creature=impersonated()) {
+        // Validation
+        if (creature.id != this.current_creature) return
+
+        // Update creature initiative object
+        const init_creature = this.creatures[this.current_creature]
+        this.#creatures[this.current_creature] = {
+            initiative: init_creature.initiative + time,
+            status: "Suspended",
+            description: description
+        }
+
+        // Logging
+        public_log(creature.name + " has started " + description + ".")
+
+        // Start next turn
+        this.start_turn()
     }
 
     static end_turn(creature=impersonated()) {
