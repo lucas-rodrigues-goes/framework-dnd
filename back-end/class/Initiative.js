@@ -6,56 +6,35 @@ var Initiative = class {
     // Stored Attributes
     //=====================================================================================================
 
-    static #creatures = {}
-    static #current_round = 0
+    static #data = MapTool.tokens.getTokenByID("6C44FBFB69674787B1D79E5DF5DCDC12")
 
     //=====================================================================================================
-    // Getters
+    // Creatures
     //=====================================================================================================
 
-    static get creatures () {return this.#creatures}
-    static get current_creature() {
-        if (this.turn_order.length < 1) return null
-        
-        // Gather creature ID
-        const creature_id = this.turn_order[0]
-
-        // If initiative for that ID is higher than or 12, subtract 12 from all initiatives
-        while (this.creatures[creature_id].initiative >= 12) {
-            for (const id of this.turn_order) {
-                this.#creatures[id].initiative -= 12
-            }
-
-            this.#current_round += 1
-        }
-
-        return creature_id
+    static get creatures () {
+        const object = JSON.parse(this.#data.getProperty("object"))
+        return object?.creatures || {}
     }
-    static get current_round () { return this.#current_round }
-    static get turn_order() {
-        // Create a new object with only valid creatures
-        const validCreatures = {};
-        for (const id of Object.keys(this.#creatures)) {
-            if (instance(id)) {
-                validCreatures[id] = this.#creatures[id];
-            }
-        }
-        
-        // Update #creatures if any were removed
-        if (Object.keys(validCreatures).length !== Object.keys(this.#creatures).length) {
-            this.#creatures = validCreatures;
-        }
-    
-        // Sort the remaining creatures
-        return Object.keys(this.#creatures).sort(
-            (a, b) => this.#creatures[a].initiative - this.#creatures[b].initiative
-        );
+
+    static set creatures (creatures) {
+        const object = JSON.parse(this.#data.getProperty("object")) || {}
+        object.creatures = creatures
+
+        this.#data.setProperty("object", JSON.stringify(object))
     }
+
     static get creatures_info () {
         const return_list = []
+        const creatures = this.creatures
+
         for (const id of this.turn_order) {
             const creature = instance(id)
-            const initiative_info = this.#creatures[id]
+            if (!creature) {
+                this.remove_creature(id)
+                continue
+            }
+            const initiative_info = creatures[id]
 
             return_list.push({
                 id: id,
@@ -71,140 +50,173 @@ var Initiative = class {
         return return_list
     }
 
-    //=====================================================================================================
-    // Private
-    //=====================================================================================================
+    static add_creature (creature=selected()) {
+        if (!creature) return
 
-    static #start_turn() {
-        // Validation
-        if (this.turn_order.length < 2) {
-            public_log("End of initiative.")
-            return
-        }
+        // Roll
+        const initiative_roll = Math.ceil(Math.random() * 6)
 
-        // New playing creature
-        const init_creature = this.creatures[this.current_creature]
-        const creature = instance(this.current_creature)
-
-        if (init_creature.status == "None") {
-            // Update creature initiative object
-            this.#creatures[this.current_creature] = {
-                ...init_creature,
-                recovery: 0,
-                status: "Playing",
-                description: "",
-            }
-            
-            // Reset per turn resources
-            creature.turn_start()
-
-            // Logging
-            public_log(creature.name + " started their turn.")
-        }
-        else if (init_creature.status == "Suspended") {
-            this.#creatures[this.current_creature] = {
-                ...init_creature,
-                status: "Playing",
-                description: "",
-            }
-
-            // Logging
-            public_log(creature.name + " has finished " + init_creature.description + ".")
-        }
-    }
-
-    //=====================================================================================================
-    // Management
-    //=====================================================================================================
-
-    static clear_initiative() { this.#creatures = {} }
-    
-    static add_creatures(creatures=allSelected()) {
-        // Add creatures to initiative
-        for (let i = 0; i < creatures.length; i++) {
-            const creature = creatures[i]
-            const initiative_roll = Math.ceil(Math.random() * 6)
-
-            // Add creature to initiative
-            this.#creatures[creature.id] = {
+        // Object
+        this.creatures = {
+            ...this.creatures,
+            [creature.id]: {
                 initiative: initiative_roll + creature.initiative_mod,
                 recovery: 0,
                 status: "None", // None, Playing, Suspended
                 description: ""
             }
+        }
 
-            // Clear creature combat resources
-            for (const name of ["Action", "Bonus Action", "Attack Action", "Reaction", "Movement"]) {
-                creature.set_resource_value(name, 0)
+        // Clear creature combat resources
+        for (const name of ["Action", "Bonus Action", "Attack Action", "Reaction", "Movement"]) {
+            creature.set_resource_value(name, 0)
+        }
+
+        // Logging
+        log(creature.name + " has been added to the initiative tracker.")
+    }
+
+    static add_creatures (creatures=allSelected()) {
+        if (creatures.length < 1) return
+
+        for (const creature of creatures) {
+            this.add_creature(creature)
+        }
+    }
+
+    static remove_creature (id=getSelected()) {
+        const temp_creatures = this.creatures
+        delete temp_creatures[id]
+        this.creatures = temp_creatures
+    }
+
+    static clear_initiative () {
+        this.creatures = {}
+    }
+
+    //=====================================================================================================
+    // Rounds
+    //=====================================================================================================
+
+    static get current_round () {
+        const object = JSON.parse(this.#data.getProperty("object"))
+        return object?.current_round || 0
+    }
+
+    static set current_round (current_round) {
+        const object = JSON.parse(this.#data.getProperty("object")) || 0
+        object.current_round = current_round
+
+        this.#data.setProperty("object", JSON.stringify(object))
+    }
+
+    static get turn_order () {
+        return Object.keys(this.creatures).sort(
+            (a, b) => this.creatures[a].initiative - this.creatures[b].initiative
+        );
+    }
+
+    static get current_creature () {
+        if (this.turn_order.length < 1) return null
+        const current_creature_id = this.turn_order[0]
+
+        // Decrease initiative for all if current init > 12
+        while (this.creatures[current_creature_id].initiative >= 12) {
+            for (const id of this.turn_order) {
+                this.creatures = {
+                    ...this.creatures,
+                    [id]: {
+                        ...this.creatures[id],
+                        initiative: this.creatures[id].initiative - 12,
+                    }
+                }
             }
 
-            // Logging
-            log(creature.name + " has been added to the initiative tracker.")
+            this.current_round += 1
         }
-        this.#start_turn()
-    }
 
-    static remove_creatures(creatures=allSelected()) {
-        // Remove creatures from initiative
-        for (let i = 0; i < creatures.length; i++) {
-            const creature = creatures[i]
-            delete this.#creatures[creature.id]
-
-            // Logging
-        log(creature.name + " has been removed from the initiative tracker.")
-        }
+        return current_creature_id
     }
 
     //=====================================================================================================
-    // Creature
+    // Methods
     //=====================================================================================================
 
-    static set_recovery(value, creature=impersonated()) {
-        const current_recovery = this.#creatures[creature.id].recovery
-        this.#creatures[creature.id].recovery = Math.max(current_recovery, value)
+    static #next_creature() {
+
+        // Next playing creature
+        const creature = instance(this.current_creature)
+        const creature_init = this.creatures[this.current_creature]
+
+        // If was suspended don't reset values
+        const isSuspended = creature_init.status == "Suspended"
+        const recovery = isSuspended ? creature_init.recovery : 0
+
+        // Update initiative info
+        this.creature = {
+            ...this.creature,
+            [creature.id]: {
+                ...creature_init,
+                recovery: recovery,
+                status: "Playing",
+                description: ""
+            }
+        }
+        
+        // Recover resources
+        if (!isSuspended) creature.turn_start()
+
+        // Logging
+        if (!isSuspended) public_log(creature.name + " started their turn.")
+        else public_log(creature.name + " has finished " + creature_init.description + ".")
     }
 
     static suspend_turn(time, description, creature=impersonated()) {
-        // Validation
         if (creature.id != this.current_creature) return
 
-        // Update creature initiative object
-        const init_creature = this.creatures[this.current_creature]
-        this.#creatures[this.current_creature] = {
-            initiative: init_creature.initiative + time,
-            status: "Suspended",
-            description: description
+        // Update initiative info
+        const creature_init = this.creatures[this.current_creature]
+        this.creature = {
+            ...this.creature,
+            [creature.id]: {
+                ...creature_init,
+                initiative: creature_init.initiative + time,
+                status: "Suspended",
+                description: description
+            }
         }
 
         // Logging
         public_log(creature.name + " has started " + description + ".")
 
-        // Start next turn
-        this.#start_turn()
+        // Next creature
+        this.#next_creature()
     }
 
     static end_turn(creature=impersonated()) {
-        // Validation
         if (creature.id != this.current_creature) return
 
-        // Clear turn combat resources BUT reaction
+        // Clear remaining combat resources except reaction
         for (const name of ["Action", "Bonus Action", "Attack Action", "Movement"]) {
             creature.set_resource_value(name, 0)
         }
 
-        // Update creature initiative object
-        const init_creature = this.creatures[this.current_creature]
-        this.#creatures[this.current_creature] = {
-            initiative: Math.max(12 + init_creature.recovery + creature.initiative_mod, 12),
-            recovery: 0,
-            status: "None",
-            description: ""
+        // Update initiative info
+        const creature_init = this.creatures[this.current_creature]
+        this.creature = {
+            ...this.creature,
+            [creature.id]: {
+                initiative: Math.max(12 + creature_init.recovery + creature.initiative_mod, 12),
+                recovery: 0,
+                status: "None",
+                description: ""
+            }
         }
 
         // Logging
         public_log(creature.name + " ended their turn.")
-        
-        // Start next turn
-        this.#start_turn()
+
+        // Next creature
+        this.#next_creature()
     }
 }

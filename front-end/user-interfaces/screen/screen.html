@@ -215,6 +215,10 @@
         .text-shadow {
             text-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
         }
+
+        .box-shadow {
+            box-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
+        }
     
     
         /*===================================================================================================*/
@@ -333,7 +337,7 @@
                 const show_initiative = initiative >= 12 ? initiative - 12 : initiative
 
                 return element(
-                    {tag: "div", style: {position: "relative", height: "9.5vh"},
+                    {tag: "div", attributes: {class: "box-shadow"}, style: {position: "relative", height: "9.5vh"},
                         children: [
                             {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
                                 {tag: "img", 
