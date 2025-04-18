@@ -461,7 +461,7 @@
 			}
 
 			// Resources
-			function resourceDescription(resource) {
+			async function resourceDescription(resource) {
 				// Show description
 				modal({parent: document.getElementById("abilities-tab"), children: [
 					{tag: "div", style: {padding: "0 1vh"}, children: [
@@ -480,11 +480,40 @@
 							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
 						]}, */
 						// Description
-						resource.description
-							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: resource.description},
+						{tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+							text: (resource.description || await backend(`database.features.data["`+resource.name+`"].description`))
+						}
 					]}
 				]})
 			}
+
+			// Abilities
+			async function abilityDescription(ability) {
+				// Show description
+				modal({parent: document.getElementById("abilities-tab"), children: [
+					{tag: "div", style: {padding: "0 1vh"}, children: [
+						// Title
+						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: ability.name},
+							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: ability.origin + " Ability"},
+						]},
+						// Attributes
+						/* {tag: "div", style: {textAlign: "left"}, children: [
+							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
+							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
+							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
+							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
+							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
+							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
+						]}, */
+						// Description
+						{tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+							text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
+						}
+					]}
+				]})
+			}
+
 
 			//=====================================================================================================
 			// Update Page
@@ -572,7 +601,7 @@
 						let class_text = ""
 						for (const cls in character.basic.classes) {
 							class_text += class_text ? " / " : ""
-							class_text += capitalize(cls) + " " + character.basic.classes[cls].level
+							class_text += capitalize(cls) + (Object.keys(character.basic.classes).length > 1 ? " " + character.basic.classes[cls].level : "")
 						}
 						document.getElementById("class").textContent = class_text || "None"
 
@@ -655,9 +684,9 @@
 							const duration = timeUnit(character.conditions[name].duration)
 
 							// From database
-							const condition = database.conditions[name]
-							const description = condition.description || "Description unavailable"
-							const image = condition_images[condition.type] || ""
+							const condition = database.conditions[name] || {}
+							const description = condition?.description || "Description unavailable"
+							const image = condition_images[condition?.type] || ""
 
 							// Element
 							collapsible(
@@ -1168,6 +1197,7 @@
 				classes: {},
 				resources: {},
 				abilities: {},
+				hasInitiative: false,
 			}
 			async function updateAbilitiesTab() {
 				// Helpers
@@ -1184,12 +1214,28 @@
 
 					return highestClass;
 				}
+				function orderByRestoredOn(obj) {
+					const priority = {
+						"": -1, // for undefined or missing
+						"turn start": 0,
+						"short rest": 1,
+						"long rest": 2,
+					};
+
+					return Object.keys(obj).sort((a, b) => {
+						const a_restored = obj[a].restored_on || "";
+						const b_restored = obj[b].restored_on || "";
+
+						return priority[a_restored] - priority[b_restored];
+					});
+				}
 
 				// Character Attributes
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
 						classes: impersonated().classes || {},
-						resources: impersonated().resources || {}
+						resources: impersonated().resources || {},
+						hasInitiative: Initiative.turn_order.includes(impersonated().id)
 					}
 				)`))
 
@@ -1226,20 +1272,21 @@
 
 					// Create ability elements
 					for (const name in character.abilities) {
-						const action = character.abilities[name]
+						const ability = character.abilities[name]
+						const show_name = capitalize(name.replaceAll("_", " "))
 
 						// Add spacing between levels
-						const type = action.origin == "Common" ? "Common Abilities" : "Class Abilities"
+						const type = ability.origin == "Common" ? "Common Abilities" : "Class Abilities"
 						if (previous_type != type) {
-							abilities_container.appendChild({tag: "div", style: {margin: "1vh", marginTop: "1.5vh", padding: 0, fontWeight: "bold"}, text: type})
+							abilities_container.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: type})
 							previous_type = type
 						}
 
 						// Resources Element
 						const resources = []
 						let i = 0
-						for (const resource of action.resources) {
-							if (i < (action.resources.length) && i != 0) resources.push({tag: "span", text: ", "})
+						for (const resource of ability.resources) {
+							if (i < (ability.resources.length) && i != 0) resources.push({tag: "span", text: ", "})
 							resources.push({tag: "img", style: {position: "relative", bottom: "0.2vh", margin: "0 0.3vh"}, attributes: {src: database?.resources[resource]?.image || ""}})
 							resources.push({tag: "span", text: resource})
 							i++
@@ -1254,26 +1301,19 @@
 								},
 								events: {
 									mousedown: (event) => {
-										switch (event.button) {
-											case 0: // Left Click
-												break
-											case 2: { // Right Click
-												// Buttons
-												const buttons = {
-													"Description": () => {},
-													"Use": () => {backend(action.origin + `.` + name + `()`)}
-												}
-
-												// Run context menu
-												context_menu({event: event, buttons: buttons})
-												break
-											}
+										if (event.button != 2) return
+										const buttons = {
+											"Use": () => backend(ability.origin + `.` + name + `()`),
+											"Description": () => abilityDescription({...ability, name: show_name}),
 										}
+
+										// Run context menu
+										context_menu({event: event, buttons: buttons})			
 									}
 								},
 								children: [
 									{tag: "img", attributes: {src: ""}},
-									{tag: "span", text: capitalize(name.replaceAll("_", " "))},
+									{tag: "span", text: show_name},
 									{tag: "div", style: {position: "absolute", right: "0.5vh", padding: 0, margin: 0}, children: resources},
 								]
 							}
@@ -1284,15 +1324,18 @@
 
 				// Update Resources
 				async function updateResources() {
+					if (isEqualJSON(abilities_tab.resources, character.resources) && 
+						isEqualJSON(abilities_tab.hasInitiative, character.hasInitiative)) return
 					abilities_tab.resources = character.resources
+					abilities_tab.hasInitiative = character.hasInitiative
 
 					// Clear container
 					const resources_container = document.getElementById("abilities-tab-resources")
 					resources_container.clearChildren()
 
 					// Create elements
-					let combatActions = false
-					for (const name in character.resources) {
+					let previous_restored_on = undefined
+					for (const name of orderByRestoredOn(character.resources)) {
 						const resource = character.resources[name]
 						const resource_data = database.resources[name] || {}
 						const color = {color: resource_data.color || ""}
@@ -1300,33 +1343,37 @@
 						// Validation
 						if(name == "Attack Action" && resource.value <= 0) continue
 						if(name.includes("Level Spell Slot")) continue
+						if(resource.restored_on == "turn start" && !character.hasInitiative) continue
+
+						// Add spacing between resource types
+						const restored_on = resource?.restored_on || ""
+						const text = restored_on != "" ? "" + capitalizeAll(restored_on) : "Other"
+						if (previous_restored_on != restored_on) {
+							resources_container.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: text})
+							previous_restored_on = restored_on
+						}
 
 						// Add element
 						resources_container.appendChildren([
 							{tag: "div", 
 								attributes: {class: "collapsible-div"}, 
 								style: {
-									display: combatActions ? "none" : "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
 									opacity: resource.value > 0 ? 1 : 0.4
 								},
 								events: {
-									mousedown: (event) => {
-										switch (event.button) {
-											case 0: // Left Click
-												break
-											case 2: { // Right Click
-												// Buttons
-												const buttons = {}
-												
-												// Conditional Buttons
-												if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + name + `")`); updateResources()}
-												if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
+									mousedown: (event) => { 
+										if (event.button != 2) return
+										const buttons = {}
+										
+										// Use
+										if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + name + `")`); updateResources()}
+										
+										// Description
+										if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
 
-												// Run context menu
-												context_menu({event: event, buttons: buttons})
-												break
-											}
-										}
+										// Run context menu
+										context_menu({event: event, buttons: buttons})
 									}
 								},
 								children: [
@@ -1338,10 +1385,8 @@
 										{tag: "span", style: color, text: resource.max},
 									]}
 								]
-							},
-							name == "Movement" && {tag: "div", style: {height: "1vh"}}
+							}
 						])
-						if (name == "Movement") combatActions = false
 					}
 				}
 				updateResources()
@@ -1489,7 +1534,7 @@
 
 						// Add spacing between levels
 						if (previous_level != spell.level) {
-							abilities_container.appendChild({tag: "div", style: {margin: "1vh", marginTop: "1.5vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
+							abilities_container.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
 							previous_level = spell.level
 						}
 
