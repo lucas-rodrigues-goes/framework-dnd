@@ -14,8 +14,17 @@ try {
             const missing_resources = []
             for (const name of resources) {
                 const resource = creature?.resources[name]?.value || 0
+
+                // Ignore turn resources if not in initiative
+                const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name)
+                const has_initative = Initiative.turn_order.includes(creature.id)
+                if(turn_resource && !has_initative) continue
+
+                // Verify if can use action to create attack action
                 if (name == "Attack Action") {
                     const action_res = creature?.resources["Action"]?.value || 0
+
+                    // Store return values
                     if(resource < 1 && action_res < 1) {
                         return_value = false
                         missing_resources.push("Action")
@@ -23,6 +32,7 @@ try {
                     continue
                 }
 
+                // Store return values
                 if (resource < 1) {
                     return_value = false
                     missing_resources.push(name)
@@ -38,6 +48,11 @@ try {
 
             for (const name of resources) {
                 const resource = creature.resources[name]
+
+                // Ignore turn resources if not in initiative
+                const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name)
+                const has_initative = Initiative.turn_order.includes(creature.id)
+                if(turn_resource && !has_initative) continue
                 
                 // Consume action to create attack actions
                 if (name == "Attack Action" && resource.value == 0) {
