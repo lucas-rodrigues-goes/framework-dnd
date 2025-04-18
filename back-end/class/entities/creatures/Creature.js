@@ -249,7 +249,11 @@ try {
             ]`)
 
             // Update States
-            this.set_state("Dead", clampedHealth <= 0)
+            const isDead = clampedHealth <= 0
+            this.set_state("Dead", isDead)
+            if (isDead) MTScript.evalMacro(`[r:
+                setBarVisible("Health", `+(isDead ? 0 : 1)+`, "`+this.id+`")
+            ]`)
             
             this.save();
         }
@@ -387,8 +391,6 @@ try {
             const body_slot = this.equipment.body;
             let armor_type;
             let initiative_mod = 0;
-
-            console.log("here")
         
             // Updating armor_type based on currently equipped armor
             if (body_slot) {
