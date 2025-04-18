@@ -39,7 +39,7 @@
             filter: brightness(1.1);
         }
 
-        .hidden { display: none }
+        .hidden { display: none !important }
     
     
     
@@ -93,6 +93,7 @@
         button:hover {
             background-color: #444;
             border-color: #555; 
+            cursor: default;
         }
         button:active {
             background-color: #555;
@@ -274,11 +275,9 @@
             // Click function
             function goTo() {
                 let request = `
-                    var party_member = instance("`+id+`");
-                    party_member.go_to();
-                    party_member.select();
+                    instance("`+id+`").go_to();
+                    instance("`+id+`").select();
                 `
-                request += gm ? "party_member.impersonate();" : ""
                 
                 backend(request)
             }
@@ -346,13 +345,29 @@
                                     style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover", filter: initiative >= 12 && "saturate(0)"},
                                     attributes: {src: portrait, class: "clickable box-shadow"}, 
                                     events: {
-                                        click: () => {
-                                            const instance = `instance("`+id+`")`
-                                            backend(instance + `.go_to(); ` + instance + `.select()`)
+                                        click: () => backend(`try {
+                                            const creature = instance("`+id+`");
+                                            creature.go_to();
+                                            creature.select();
+                                        } catch {}`),
+                                        mousedown: (event) => { if (event.button != 2) return
+                                            const buttons = {}
 
-                                            if (isGM) backend(instance+`.impersonate()`)
-                                        }
-                                }},
+                                            // Impersonate
+                                            if (isGM) buttons["Impersonate"] = () => backend(`try {
+                                                const creature = instance("`+id+`");
+                                                creature.impersonate();
+                                                creature.go_to();
+                                            } catch {}`)
+                                            
+                                            // Restart Turn
+                                            if (isGM && isPlaying) buttons["Restart Turn"] = () => backend(`Initiative.next_creature()`)
+
+                                            // Run context menu
+                                            context_menu({event: event, buttons: buttons})
+										}
+									}
+                                },
                             ]},
                             {tag: "div", attributes: {class: "center-horizontal"}, 
                                 style: {
@@ -378,12 +393,24 @@
             })`))
             if (isEqualJSON(current_initiative, {round, creatures})) return
             current_initiative = {round, creatures}
-            if ("'+isGM()+'" == 1) backend(`instance(Initiative.current_creature).impersonate()`)
+            if ("'+isGM()+'" == 1) backend(`try{
+                const init_creature = instance(Initiative.current_creature)
+                if(!init_creature.player) {
+                    init_creature.impersonate();
+                    init_creature.go_to();
+                }
+            } catch {}`)
 
             // Clear elements
             const initative_creatures_div = document.getElementById("initiative-creatures")
             initative_creatures_div.clearChildren()
-            if (creatures.length < 1) return
+            if (creatures.length < 1) {
+                document.querySelector(`[tooltip="End turn"]`).classList.add("hidden")
+                document.querySelector(`[tooltip="Clear initiative"]`).classList.add("hidden")
+            } else {
+                document.querySelector(`[tooltip="End turn"]`).classList.remove("hidden")
+                document.querySelector(`[tooltip="Clear initiative"]`).classList.remove("hidden")
+            }
 
             // Create elements
             for (const creature of creatures) {
@@ -603,7 +630,55 @@
             element (
                 {tag: "div", parent: document.body, attributes: {class: "center-horizontal"}, children: [
                     {tag: "div", attributes: {id: "initiative-creatures"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
-                    {tag: "div", attributes: {id: "initiative-controls"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
+                    {tag: "div", 
+                        attributes: {id: "initiative-controls"}, 
+                        style: {marginTop: "-1vh", marginBottom: "3vh", display: '+isGM()+' == 1 ? "flex" : "none", gap: "0.1vh", justifyContent: "center"}, 
+                        children: [
+                            // Add creatures
+                            {tag: "button", 
+                                attributes: {class: "tooltip-bottom", tooltip: "Add Creatures to Initiative"},
+                                style: {borderRadius: "2vh", width: "2vh", height: "2vh"}, 
+                                events: {
+                                    click: () => backend(`Initiative.add_creatures()`)
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://5282add24bd7663d499861e313980245"}}
+                                ]
+                            },
+
+                            // End turn
+                            {tag: "button", 
+                                attributes: {class: "tooltip-bottom hidden", tooltip: "End turn"},
+                                style: {borderRadius: "2vh", width: "6vh", height: "2vh", display: "flex", justifyContent: "center", alignItems: "center"}, 
+                                events: {
+                                    click: () => backend(`Initiative.end_turn(instance(Initiative.current_creature))`)
+                                },
+                                children: [
+                                    {tag: "img", 
+                                        style: {
+                                            position: "relative",
+                                            height: "150%", 
+                                            width: "70%"
+                                        }, 
+                                        attributes: {
+                                            src: "asset://ca3a35626f1849b6872f2ca0704a1a1d"
+                                        }}
+                                ]
+                            },
+
+                            // Clear initiative
+                            {tag: "button",
+                                attributes: {class: "tooltip-bottom hidden", tooltip: "Clear initiative"},
+                                style: {borderRadius: "2vh", width: "2vh", height: "2vh"}, 
+                                events: {
+                                    click: () => backend(`Initiative.clear_initiative()`)
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://e984745ad793f4ca43bc3c5f14cb317d"}}
+                                ]
+                            }
+                        ]
+                    },
                     {tag: "div", attributes: {id: "current-target"}, style: {display: "none"}, children: [
                         {tag: "div", attributes: {class: "top center-horizontal"}, children: [
                             {tag: "img", attributes: {id: "current-target-portrait"}, style: {display: "none"}},
