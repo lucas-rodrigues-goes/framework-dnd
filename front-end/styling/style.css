@@ -612,16 +612,15 @@
     /* Tooltip */
     /*===================================================================================================*/
 
-    .tooltip {
+    .tooltip, .tooltip-bottom {
         position: relative; /* Create a positioning context for the tooltip */
         display: inline-block; /* Make it inline for better alignment */
     }
       
-    .tooltip::after {
+    .tooltip::after, .tooltip-bottom::after {
         content: attr(tooltip);
 
         position: absolute;
-        bottom: 120%;
         left: 50%;
         transform: translateX(-50%);
         height: fit-content;
@@ -632,7 +631,7 @@
         padding: 0.5vh 1vh;
         border: 0.1vh solid #444;
         border-radius: 0.5vh;
-        font-size: 1.6vh;
+        font-size: 10pt;
         
         white-space: nowrap;
 
@@ -642,11 +641,19 @@
         z-index: 10;
     }
 
+    .tooltip::after {
+        bottom: 120%;
+    }
+
+    .tooltip-bottom::after {
+        top: 120%;
+    }
+
     .tooltip-img::after {
         bottom: 125%;
     }
       
-    .tooltip:hover::after {
+    .tooltip:hover::after, .tooltip-bottom:hover::after {
         opacity: 1; /* Show the tooltip */
         visibility: visible; /* Make it visible */
     }
