@@ -76,8 +76,16 @@ try {
         // Methods
         //=====================================================================================================
 
+        // Refreshes and updates resources for a new round
         turn_start() {
-            // Update resource maxes
+            // Update max attacks per action
+            let attacks = 1
+            if (this.has_feature("Three Extra Attacks")) attacks = 4
+            if (this.has_feature("Two Extra Attacks")) attacks = 3
+            if (this.has_feature("Extra Attack")) attacks = 2
+            this.set_resource_max("Attack Action", attacks)
+
+            // Update max speed
             this.set_resource_max("Movement", this.speed) //--> Speed
 
             // Fill Resources
@@ -90,6 +98,7 @@ try {
             }
         }
 
+        // Refreshes resources that refill on short rest
         short_rest(hours = 1) {
             // Health
             this.health = (this.max_health / 4) * hours
@@ -104,6 +113,7 @@ try {
             }
         }
 
+        // Refreshes resources that refill on long rest
         long_rest() {
             // Fill Health
             this.health = this.max_health
@@ -121,11 +131,11 @@ try {
         }
 
         //=====================================================================================================
-        // Name
+        // Basic Getters / Setters
         //=====================================================================================================
 
+        // Name
         get name() { return this.#name }
-
         set name(name) {
             this.#name = name
 
@@ -133,14 +143,9 @@ try {
 
             log(this.#name + " updated their name.")
         }
-
-        
-        //=====================================================================================================
-        // Type
-        //=====================================================================================================
  
+        // Type
         get type() { return this.#type }
-
         set type(type) {
             this.#type = type
 
@@ -149,13 +154,8 @@ try {
             log(this.#name + " type set to " + type + ".")
         }
 
-
-        //=====================================================================================================
         // Race
-        //=====================================================================================================
-
         get race() { return this.#race }
-
         set race(race) {
             this.#race = race
 
@@ -169,8 +169,10 @@ try {
         // Ability Scores
         //=====================================================================================================
 
+        // Returns all ability scores
         get ability_scores() { return this.#ability_scores }
 
+        // Returns all ability score bonuses / modifiers
         get score_bonus() {
             let bonus = function (score_value) {
                 return Math.floor((score_value - 10) / 2);
@@ -186,8 +188,8 @@ try {
             }
         }
 
+        // Set a new value for an ability score
         set_ability_score(ability_score, value) {
-
             // Validating parameters
             if (isNaN(Number(value))) {return}
             if (!this.ability_scores[ability_score]) {return}
@@ -208,15 +210,31 @@ try {
         // Health
         //=====================================================================================================
 
+        // Get current health
         get health() { return this.#health }
         
+        // Get max health
         get max_health() {
             let calculated_max_health = this.#ability_scores.constitution
 
             return calculated_max_health
         }
 
+        // Change value of health, and also update states / bars
         set health(health) {
+            function crunchNumber(num, from = [0, 100], to = [0, 100]) {
+                // Define the input and output ranges
+                const inputMin = from[0];
+                const inputMax = from[1];
+                const outputMin = to[0];
+                const outputMax = to[1];
+                
+                // Calculate the proportion and map to new range
+                const proportion = (num - inputMin) / (inputMax - inputMin);
+                const crunched = outputMin + proportion * (outputMax - outputMin);
+                
+                return crunched;
+            }
 
             // Validating parameters
             if (isNaN(Number(health))) { return }
@@ -224,19 +242,27 @@ try {
 
             this.#health = clampedHealth;
             
+            // Update Bar
+            const crunchedHealth = crunchNumber( clampedHealth / this.max_health, [0, 1], [0.292, 0.708])
+            MTScript.evalMacro(`[r:
+                setBar("Health", `+crunchedHealth+`, "`+this.id+`")
+            ]`)
+
+            // Update States
+            this.set_state("Dead", clampedHealth <= 0)
+            
             this.save();
         }
 
+        // Calculates damage received based on its type and creature resistances
         receive_damage(value, type) {
-
             // Validating parameters
             if (value <= 0) {return}
             if (typeof type != "string") {return}
 
+            // Calculate damage based on resistance
             const resistance = this.resistances[type];
             let damage = 0;
-
-            // Calculate damage based on resistance
             switch (resistance.type) {
                 case "immunity":
                     damage = 0;
@@ -257,6 +283,7 @@ try {
             log(this.#name + " received " + damage + " " + type + " damage.");
         }
 
+        // Calculates healing received
         receive_healing(value) {
             this.health += value
 
@@ -268,6 +295,7 @@ try {
         // Resistances
         //=====================================================================================================
 
+        // Returns a dinamic object of current resistances
         get resistances() {
             
             // Features that add/change resistances
@@ -354,6 +382,7 @@ try {
         // Armor Class
         //=====================================================================================================
 
+        // Calculates Init mod based on current equipment
         get initiative_mod() {
             const body_slot = this.equipment.body;
             let armor_type;
@@ -398,6 +427,7 @@ try {
             return initiative_mod;
         }
 
+        // Calculates Armor Class based on current equipment
         get armor_class() {
             const body_slot = this.equipment.body;
             let armor_type;
@@ -830,12 +860,12 @@ try {
         // Conditions
         //=====================================================================================================
 
+        // Get all conditions stored
         get conditions() {
-            
-
             return this.#conditions
         }
 
+        // Set a new condition on the creature by its name and duration
         set_condition(condition, duration) {
             duration = Number(duration)
 
@@ -848,11 +878,39 @@ try {
                 delete this.#conditions[condition]
                 log(this.#name + " lost the condition " + condition + ".");
             }
+
             this.save()
         }
 
+        // Verifies if the creature has a condition
         has_condition(name) {
             return name in this.#conditions
+        }
+
+        // Updates states based on current conditions
+        update_states() {
+            const conditions_to_check = [
+                "Invisibility"
+            ]
+
+            for (const condition of conditions_to_check) {
+                const hasCondition = this.has_condition(condition)
+                switch (condition) {
+                    case "Invisibility": {
+                        this.invisible = hasCondition
+                        this.opacity = hasCondition ? 0.2 : 1
+                        continue
+                    }
+                    case "Hidden": {
+                        if (this.has_condition("Invisibility")) continue
+                        this.invisible = hasCondition
+                        this.opacity = hasCondition ? 0.5 : 1
+                        continue
+                    }
+                }
+
+                this.set_state(condition, hasCondition)
+            }
         }
 
 
@@ -1261,6 +1319,8 @@ try {
             this.#conditions = object.conditions || this.#conditions;
             this.#equipment = object.equipment || this.#equipment;
             this.#inventory = object.inventory || this.#inventory;
+
+            this.update_states()
         }
         
         save() {
@@ -1280,8 +1340,8 @@ try {
                 inventory: this.#inventory
             };
         
+            this.update_states()
             this.token.setName(this.#name);
-
             this.token.setProperty("object", JSON.stringify(object));
             this.token.setProperty("class", JSON.stringify(["Creature", "Entity"]));
 
