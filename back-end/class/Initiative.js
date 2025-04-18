@@ -93,7 +93,7 @@ var Initiative = class {
         }
 
         // If round hasnt started, starts it
-        if (!hasPlayer) this.#next_creature()
+        if (!hasPlayer) this.next_creature()
     }
 
     static remove_creature (id=getSelected()) {
@@ -123,9 +123,13 @@ var Initiative = class {
     }
 
     static get turn_order () {
-        return Object.keys(this.creatures).sort(
+        const return_value = Object.keys(this.creatures).sort(
             (a, b) => this.creatures[a].initiative - this.creatures[b].initiative
         );
+
+        moveLock(return_value.length < 1)
+
+        return return_value
     }
 
     static get current_creature () {
@@ -154,7 +158,7 @@ var Initiative = class {
     // Methods
     //=====================================================================================================
 
-    static #next_creature() {
+    static next_creature() {
         // Next playing creature
         const creature = instance(this.current_creature)
         const creature_init = this.creatures[this.current_creature]
@@ -201,7 +205,7 @@ var Initiative = class {
         public_log(creature.name + " has started " + description + ".")
 
         // Next creature
-        this.#next_creature()
+        this.next_creature()
     }
 
     static end_turn(creature=impersonated()) {
@@ -228,10 +232,12 @@ var Initiative = class {
         public_log(creature.name + " ended their turn.")
 
         // Next creature
-        this.#next_creature()
+        this.next_creature()
     }
 
     static set_recovery(value, creature=impersonated()) {
+        if (!this.turn_order.includes(creature.id)) return
+
         // Update initiative info
         const creature_init = this.creatures[creature.id]
         this.creatures = {
