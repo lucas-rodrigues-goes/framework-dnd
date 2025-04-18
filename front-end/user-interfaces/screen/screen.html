@@ -41,7 +41,9 @@
 
         .hidden { display: none !important }
     
-    
+        /* #combat-log {
+            --pointermap: block
+        } */
     
         /*===================================================================================================*/
         /* Button */
@@ -310,6 +312,40 @@
         //=====================================================================================================
         // Updates
         //=====================================================================================================
+
+        current_log = {
+            history: []
+        }
+        async function updateLog() {
+            // Data
+            const { history } = JSON.parse(await backend(`JSON.stringify({
+                history: console.history
+            })`))
+
+            // Verify need for update
+            if (isEqualJSON(current_log.history, history)) return
+            current_log.history = history
+
+            // Clear div
+            const div = document.getElementById("combat-log")
+            div.clearChildren()
+
+            // Create elements
+            const isGM = '+isGM()+' == 1
+            for (const item of history) {
+                const gmLog = item.visibility == "gm"
+                if (gmLog && !isGM) continue
+
+
+
+                div.appendChild(
+                    {tag: "p", 
+                        style: {color: gmLog && "#666", margin: "0.2vh"}, 
+                        text: item.message
+                    }
+                )
+            }
+        }
 
         current_initiative = {
             round: 0,
@@ -623,6 +659,46 @@
             // Top left
             element (
                 {tag: "div", parent: document.body, attributes: {class: "menu left"}, children: [
+                    container({title: "", id: "combat-log", scroll: true, options: {
+                        div: {
+                            style: {
+                                position: "relative",
+                                marginTop: "1.8vh",
+                                marginLeft: "-0.3vh",
+                                left: "2vh",
+                                height: "20vh",
+                                width: "30vh",
+                                backgroundColor: "rgba(38, 38, 38, 0.5)", 
+                                borderColor: "#444",
+                                borderRadius: "1vh",
+                                fontSize: "1.4vh",
+                            }
+                        },
+                        content: {
+                            style: {
+                                flex: "1", 
+                                overflowY: "auto", 
+                                display: "flex", 
+                                flexDirection: "column-reverse", 
+                                padding: "10px"
+                            }
+                        },
+                        title: {
+                            style: {
+                                display: "none"
+                            },
+                        }
+                    }}),
+                    {tag: "button", 
+                        attributes: {},
+                        style: {position: "absolute", top: 0, borderRadius: "2vh", width: "3.5vh", height: "3.5vh"}, 
+                        events: {
+                            click: () => document.getElementById("combat-log").parentNode.classList.toggle("hidden")
+                        },
+                        children: [
+                            {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://36292f4d1c468032b3090c6fce40751d"}}
+                        ]
+                    },
                 ]}
             )
     
@@ -704,18 +780,13 @@
         //=====================================================================================================
 
         function updatePage () {
-            // Run first time
-            updateInitiative()
-            updateCurrentCharacter()
-            updateCurrentTarget()
-            updateCurrentParty()
-
             // Set update intervals
             setInterval(()=> {
                 updateInitiative()
                 updateCurrentCharacter()
                 updateCurrentTarget()
                 updateCurrentParty()
+                updateLog()
             }, 100)
         }
 
