@@ -42,6 +42,17 @@ var Entity = class {
         MTScript.evalMacro(`[r:setSize("`+size+`", "`+this.id+`")]`)
     }
 
+    // Opacity
+    get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("`+this.id+`")]`)}
+    set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(`+value+`, "`+this.id+`")]`) }
+
+    // Invisible
+    get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("`+this.id+`")]`) == "true"}
+    set invisible(value) {
+        const bool = value ? 1 : 0
+        MTScript.evalMacro(`[r:setOwnerOnlyVisible(`+bool+`, "`+this.id+`")]`)
+    }
+
     // Is player
     get player() {return this.token.isPC()}
     set player(player) {
@@ -54,17 +65,36 @@ var Entity = class {
     // Functions
     //=====================================================================================================
 
+    // State management
+    set_state(state, value=true) {
+        const bool = value ? 1 : 0
+
+        MTScript.evalMacro(`[r: setState("`+state+`", `+bool+`,"`+this.id+`") ]`)
+        return value
+    }
+    get_state(state) {
+        return MTScript.evalMacro(`[r, if(getState("`+state+`","`+this.id+`")):"true";"false"]`) == "true"
+    }
+    toggle_state(state) {
+        MTScript.evalMacro(`[r: setState("`+state+`", !getState("`+state+`", "`+this.id+`"),"`+this.id+`") ]`)
+    }
+
+    // Center camera on token
     go_to() { MTScript.evalMacro(`[r:goTo("`+this.id+`")]`) }
    
+    // Select token
     select() { MTScript.evalMacro(`[r:selectTokens("`+this.id+`")]`) }
-    
+
+    // Impersonate token
     impersonate() { MTScript.evalMacro(`[r:impersonate("`+this.id+`")]`) }
     
+    // Get a percent of how visible the target is from 0 to 1
     target_visibility(target=selected()) {
         const visible_points = JSON.parse(MTScript.evalMacro(`[r:canSeeToken("`+target.id+`","`+this.id+`")]`))
         return visible_points.length / 5
     }
 
+    // Move entity in a direction by a number of cells
     move(direction, cells) {
         cells = Number(cells)
         if (isNaN(cells)) return
@@ -85,6 +115,7 @@ var Entity = class {
         }
     }
 
+    // Rotate to face another entity
     face_target(target=selected()) {
         const mode = "tokens"
         const tokenId1 = this.id
