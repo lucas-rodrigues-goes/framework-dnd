@@ -101,3 +101,10 @@ var allSelected = function () {
 
     return return_array
 }
+
+// Set player movement lock
+var moveLock = function (lock=true) {
+    const value = lock ? 1 : 0
+
+    MTScript.evalMacro(`[r:setMoveLock(`+value+`)]`)
+}
