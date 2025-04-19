@@ -422,7 +422,7 @@
 				drop_amount.value = slot.amount
 				drop_amount.dispatchEvent(new Event("input"))
 			}
-			
+
 			// Spells
 			function spellDescription(spell) {
 
@@ -514,6 +514,25 @@
 				]})
 			}
 
+			// Notes
+			async function addNote() {
+				modal({parent: document.getElementById("journal-tab"), options: {content: {style: {padding: "1vh"}}}, children: [
+					{tag: "div", attributes: {class: "input-container"}, style: {margin: 0}, children: [
+						input({id: "modal-note-title", placeholder: "Title", options: {div: {style: {marginTop: "1vh", width: "99%"}}}}),
+						textarea({id: "modal-note-text", placeholder: "Content", 
+							options: {
+								div: {style: {marginTop: "1vh"}},
+								placeholder: {style: {top: 0}},
+								input: {style: {borderStyle: "solid", borderRadius: "0.5vh", marginTop: "3vh", height: "10vh"}}
+							}
+						})
+						/* {tag: "textarea", 
+							attributes: {class: "input-container"},
+							style: {border: "1px solid #888", borderRadius: "0.5vh", height: "20vh"}
+						} */
+					]}
+				]})
+			}
 
 			//=====================================================================================================
 			// Update Page
@@ -1661,12 +1680,10 @@
 			function loadPage() {
 
 				// Loading main div, tabs, and context menu
-				create_tabs({content:["character","inventory","abilities", "spells"], parent: document.body})
+				create_tabs({content:["character","inventory","abilities", "spells", "journal"], parent: document.body})
 
-				// Hide containers
+				// Character
 				const container_options = {div: {attributes: {class: "hidden"}, style: {paddingBottom: "1vh"}}}
-
-				// Character tab
 				document.getElementById("character-tab").appendChildren([
 					{tag: "div", attributes: {id: "character-tab-left"}, children: [
 						container({id: "saving-throws", title: "Saving Throws"}),
@@ -1717,7 +1734,7 @@
 					]}
 				])
 
-				// Inventory tab
+				// Inventory
 				document.getElementById("inventory-tab").appendChildren([
 					{tag: "div", style: {width: "100%", position: "relative", height: "45vh"}, children: [
 						{tag: "div", style: {width: "30%", left: "1%", position: "absolute", marginBottom: "3.5vh"}, children: [
@@ -1772,7 +1789,7 @@
 					]}
 				])
 			
-				// Abilities tab
+				// Abilities
 				document.getElementById("abilities-tab").appendChildren([
 					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
 						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
@@ -1787,7 +1804,27 @@
 					]},
 				])
 
-				// Spells tab
+				// Journal
+				document.getElementById("journal-tab").appendChildren([
+					{tag: "div", style: {position: "absolute", left: "0%", width: "37%"}, children: [
+						container({title: "Notes", scroll: true, options: {
+								div: {style: {height: "80vh"}},
+								content: {style: {padding: "0 2vh", paddingLeft: "3vh", paddingRight: "2.5vh"}},
+							},
+							children: [
+								{tag: "div", attributes: {id: "journal-tab-notes-list"}},
+								{tag: "button", style: {position: "sticky", bottom: "1vh"}, events: {click: addNote}, text: "Add Note"},
+							]
+						})
+					]},
+					{tag: "div", style: {position: "absolute", right: "-4.5%", width: "75%"}, children: [
+						container({title: "Details", id: "journal-tab-note", scroll: true, options: {
+							div: {style: {height: "80vh"}},
+						}})
+					]},
+				])
+
+				// Spells
 				const buttonStyle = {boxShadow: "1px 1px 5px rgba(0,0,0,0.3)", fontSize: "110%", borderColor: "#777"}
 				const spellLevelButtons = []
 				for (let i = 0; i <= 9; i++) {
@@ -1859,7 +1896,6 @@
 					]},
 				])
 			}
-			
 
 			//=====================================================================================================
 			// Execution

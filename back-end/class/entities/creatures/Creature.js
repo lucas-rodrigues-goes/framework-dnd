@@ -70,6 +70,7 @@ try {
             "secondary off hand": null
         }
         #inventory = Array.from({ length: 25 }, () => null);
+        #notes = []
 
 
         //=====================================================================================================
@@ -1277,7 +1278,36 @@ try {
         
             return subtypeValid;
         }
-        
+
+        //=====================================================================================================
+        // Notes
+        //=====================================================================================================
+
+        // Returns notes ordered
+        get notes() {
+            return [...this.#notes].sort((a, b) => a.order - b.order);
+        }
+
+        // Adds a new note
+        add_note({text="", title="", order=100}) {
+            this.#notes.push({ text, title, order })
+        }
+
+        // Edits a note, if the note sent does not exist does nothing
+        edit_note(note, {text="", title="", order=100}) {
+            const index = this.#notes.indexOf(note)
+            if (index == -1) return
+
+            this.#notes[index] = { text, title, order }
+        }
+
+        // Removes a note, if it is a match in the existing notes
+        remove_note(note) {
+            const index = this.#notes.indexOf(note)
+            if (index == -1) return
+
+            this.#notes.splice(index, 1)
+        }
 
         //=====================================================================================================
         // Instance
@@ -1321,6 +1351,7 @@ try {
             this.#conditions = object.conditions || this.#conditions;
             this.#equipment = object.equipment || this.#equipment;
             this.#inventory = object.inventory || this.#inventory;
+            this.#notes = object.notes || this.#notes;
 
             this.update_states()
         }
@@ -1339,7 +1370,8 @@ try {
                 spells: this.#spells,
                 conditions: this.#conditions,
                 equipment: this.#equipment,
-                inventory: this.#inventory
+                inventory: this.#inventory,
+                notes: this.#notes,
             };
         
             this.update_states()
