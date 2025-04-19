@@ -192,7 +192,7 @@
             bottom: 0px;
             background-color: rgba(0,0,0,0.15);
             border-radius: 1vh;
-            border: 0.3vh solid #444;
+            border: 0.2vh solid #666;
         }
     
         #current-target .armor-class {
@@ -332,7 +332,7 @@
 
             // Create elements
             const isGM = '+isGM()+' == 1
-            for (const item of history) {
+            for (const item of history.reverse()) {
                 const gmLog = item.visibility == "gm"
                 if (gmLog && !isGM) continue
 
@@ -603,58 +603,6 @@
         //=====================================================================================================
     
         function loadPage() {
-            // Character menu
-            element(
-                {tag: "div", parent: document.body, attributes: {id: "character-menu", class: "menu bottom left hidden"}, children: [
-                    {tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
-                        {tag: "div", 
-                            attributes: {class: "circular-bar", id: "current-character-health"},
-                            style: {background: "rgba(0,0,0,0.15)"},
-                            children: [
-                                {tag: "img", 
-                                    attributes: {id: "current-character-portrait", src: ""},
-                                    events: {click: ()=>{backend(" impersonated().go_to() ; impersonated().select() ")}}
-                                },
-                            ]
-                        },
-                        {tag: "button", 
-                            text: "Character Sheet",
-                            events: {
-                                click: () => openClosePage("", "Character Sheet", "character_sheet.html")
-                            }
-                        },
-                    ]},
-                    {tag: "div", attributes: {id: "current-party"}},
-                    {tag: "div", attributes: {class: "button-background"}, children: [
-    
-                    ]}
-                ]}
-            )
-
-            // Character Creation
-            element(
-                {tag: "div", parent: document.body, attributes: {id: "create-character-menu", class: "menu bottom left hidden"}, style: {width: "18vh"}, children: [
-                    {tag: "button", text: "Character Creation", 
-                        events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
-                    },
-                ]}
-            )
-    
-            // GM Menu
-            const gm_display = gm ? "block" : "none"
-            element(
-                {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
-                    {tag: "button", text: "Reset Character", 
-                        events: {click: () => backend(`resetImpersonated()`)}
-                    },
-                    {tag: "button", text: "Give Item",
-                        events: {click: () => openClosePage("", "Give Item", "give_item.html")}
-                    },
-                    {tag: "button", text: "Database", 
-                        events: {click: () => openClosePage("", "Database", "database.html")}
-                    },
-                ]}
-            )
 
             // Top left
             element (
@@ -668,7 +616,7 @@
                                 left: "2vh",
                                 height: "20vh",
                                 width: "30vh",
-                                backgroundColor: "rgba(38, 38, 38, 0.5)", 
+                                backgroundColor: "rgba(38, 38, 38, 0.85)", 
                                 borderColor: "#444",
                                 borderRadius: "1vh",
                                 fontSize: "1.4vh",
@@ -701,8 +649,8 @@
                     },
                 ]}
             )
-    
-            // Top area
+
+            // Top Middle
             element (
                 {tag: "div", parent: document.body, attributes: {class: "center-horizontal"}, children: [
                     {tag: "div", attributes: {id: "initiative-creatures"}, style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}},
@@ -773,6 +721,58 @@
                     ]}
                 ]}
             )
+
+            // Bottom Left
+            element(
+                {tag: "div", parent: document.body, children: [
+                    {tag: "div", attributes: {id: "character-menu", class: "menu bottom left hidden"}, children: [
+                        {tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
+                            {tag: "div", 
+                                attributes: {class: "circular-bar", id: "current-character-health"},
+                                style: {background: "rgba(0,0,0,0.15)"},
+                                children: [
+                                    {tag: "img", 
+                                        attributes: {id: "current-character-portrait", src: ""},
+                                        events: {click: ()=>{backend(" impersonated().go_to() ; impersonated().select() ")}}
+                                    },
+                                ]
+                            },
+                            {tag: "button", 
+                                text: "Character Sheet",
+                                events: {
+                                    click: () => openClosePage("", "Character Sheet", "character_sheet.html")
+                                }
+                            },
+                        ]},
+                        {tag: "div", attributes: {id: "current-party"}},
+                        {tag: "div", attributes: {class: "button-background"}, children: [
+        
+                        ]}
+                    ]},
+                    {tag: "div", attributes: {id: "create-character-menu", class: "menu bottom left hidden"}, style: {width: "18vh"}, children: [
+                        {tag: "button", text: "Character Creation", 
+                            events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
+                        },
+                    ]}
+                ]}
+            )
+
+            // Bottom Right
+            const gm_display = gm ? "block" : "none"
+            element(
+                {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
+                    {tag: "button", text: "Reset Character", 
+                        events: {click: () => backend(`resetImpersonated()`)}
+                    },
+                    {tag: "button", text: "Give Item",
+                        events: {click: () => openClosePage("", "Give Item", "give_item.html")}
+                    },
+                    {tag: "button", text: "Database", 
+                        events: {click: () => openClosePage("", "Database", "database.html")}
+                    },
+                ]}
+            )
+    
         }
     
         //=====================================================================================================
