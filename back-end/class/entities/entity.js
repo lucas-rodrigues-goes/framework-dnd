@@ -46,6 +46,10 @@ var Entity = class {
     get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("`+this.id+`")]`)}
     set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(`+value+`, "`+this.id+`")]`) }
 
+    // Sight
+    get sight() {return MTScript.evalMacro(`[r:getSightType("`+this.id+`")]`)}
+    set sight(value) { MTScript.evalMacro(`[r:setSightType("`+value+`", "`+this.id+`")]`) }
+
     // Invisible
     get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("`+this.id+`")]`) == "true"}
     set invisible(value) {

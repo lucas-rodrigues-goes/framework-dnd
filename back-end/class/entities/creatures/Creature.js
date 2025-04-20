@@ -77,6 +77,31 @@ try {
         // Methods
         //=====================================================================================================
 
+        // Updates states based on current conditions
+        update_state() {
+            // Verify all conditions
+            for (const condition in database.conditions.data) {
+                const hasCondition = this.has_condition(condition)
+                switch (condition) {
+                    case "Invisible": {
+                        this.invisible = hasCondition
+                        this.opacity = hasCondition ? 0.2 : 1
+                        continue
+                    }
+                    case "Hidden": {
+                        if (this.has_condition("Invisible")) continue
+                        this.invisible = hasCondition
+                        this.opacity = hasCondition ? 0.5 : 1
+                        continue
+                    }
+                    case "Blinded": {
+                        const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
+                        this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
+                    }
+                }
+            }
+        }
+
         // Refreshes and updates resources for a new round
         turn_start() {
             // Update max attacks per action
@@ -85,6 +110,11 @@ try {
             if (this.has_feature("Two Extra Attacks")) attacks = 3
             if (this.has_feature("Extra Attack")) attacks = 2
             this.set_resource_max("Attack Action", attacks)
+
+            // Update actions
+            let actions = 1
+            if (this.has_condition("Haste") && !this.has_condition("Slow")) actions = 2
+            this.set_resource_max("Action", actions)
 
             // Update max speed
             this.set_resource_max("Movement", this.speed) //--> Speed
@@ -865,6 +895,7 @@ try {
 
         // Get all conditions stored
         get conditions() {
+            this.update_state()
             return this.#conditions
         }
 
@@ -876,12 +907,13 @@ try {
                 this.#conditions[condition] = {
                     duration: duration,
                 }
-                log(this.#name + " received " + condition + " for " + duration + " rounds.");
+                log(this.#name + " received the " + condition + " condition for " + duration + " rounds.");
             } else if (duration <= 0) {
                 delete this.#conditions[condition]
                 log(this.#name + " lost the condition " + condition + ".");
             }
 
+            this.update_state()
             this.save()
         }
 
@@ -889,33 +921,6 @@ try {
         has_condition(name) {
             return name in this.#conditions
         }
-
-        // Updates states based on current conditions
-        update_states() {
-            const conditions_to_check = [
-                "Invisibility"
-            ]
-
-            for (const condition of conditions_to_check) {
-                const hasCondition = this.has_condition(condition)
-                switch (condition) {
-                    case "Invisibility": {
-                        this.invisible = hasCondition
-                        this.opacity = hasCondition ? 0.2 : 1
-                        continue
-                    }
-                    case "Hidden": {
-                        if (this.has_condition("Invisibility")) continue
-                        this.invisible = hasCondition
-                        this.opacity = hasCondition ? 0.5 : 1
-                        continue
-                    }
-                }
-
-                this.set_state(condition, hasCondition)
-            }
-        }
-
 
         //=====================================================================================================
         // Inventory & Equipment
@@ -1352,8 +1357,6 @@ try {
             this.#equipment = object.equipment || this.#equipment;
             this.#inventory = object.inventory || this.#inventory;
             this.#notes = object.notes || this.#notes;
-
-            this.update_states()
         }
         
         save() {
@@ -1374,7 +1377,6 @@ try {
                 notes: this.#notes,
             };
         
-            this.update_states()
             this.token.setName(this.#name);
             this.token.setProperty("object", JSON.stringify(object));
             this.token.setProperty("class", JSON.stringify(["Creature", "Entity"]));

@@ -61,7 +61,6 @@
                 tab_names.push(active_tab)
             }
 
-
                                     
             // Updates features tab
             if (isTabActive("races-tab")) {updateRaces()}
@@ -271,10 +270,9 @@
             }
 
                         
-            // Updates features tab
+            // Updates conditions tab
             if (isTabActive("conditions-tab")) {updateConditions()}
             function updateConditions() {
-                
                 // Model for row component to be used in table
                 function custom_row ({
                     name, type, description, image=""
@@ -632,8 +630,8 @@
             
                         
             // Updates resources tab
-            if (isTabActive("resources-tab")) {updateConditions()}
-            function updateConditions() {
+            if (isTabActive("resources-tab")) {updateResources()}
+            function updateResources() {
                 
                 // Model for row component to be used in table
                 function custom_row ({
