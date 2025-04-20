@@ -107,8 +107,8 @@ try {
             // Update max attacks per action
             let attacks = 1
             if (this.has_feature("Three Extra Attacks")) attacks = 4
-            if (this.has_feature("Two Extra Attacks")) attacks = 3
-            if (this.has_feature("Extra Attack")) attacks = 2
+            else if (this.has_feature("Two Extra Attacks")) attacks = 3
+            else if (this.has_feature("Extra Attack")) attacks = 2
             this.set_resource_max("Attack Action", attacks)
 
             // Update actions
@@ -901,7 +901,7 @@ try {
 
         // Set a new condition on the creature by its name and duration
         set_condition(condition, duration) {
-            duration = Number(duration)
+            duration = duration ? Number(duration) : database.conditions.data[condition].duration || 0
 
             if (duration >= 1) {
                 this.#conditions[condition] = {

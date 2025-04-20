@@ -244,7 +244,7 @@ var Initiative = class {
             ...this.creatures,
             [creature.id]: {
                 ...creature_init,
-                recovery: value,
+                recovery: Math.max(creature_init.recovery, (value || 0)),
             }
         }
     }

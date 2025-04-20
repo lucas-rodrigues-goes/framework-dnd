@@ -7,40 +7,62 @@ try {
         // Helpers
         //=====================================================================================================
 
+        static check_action_requirements(action_key, require_target = true) {
+            const creature = impersonated();
+            const action_details = this.actions_list()[action_key];
+            
+            if (!action_details) return { valid: false };
+        
+            if (!this.has_resources_available(action_details.resources)) {
+                return { valid: false };
+            }
+        
+            if (require_target && !selected()) {
+                public_log(`${creature.name} needs to select a target for this action.`);
+                return { valid: false };
+            }
+        
+            return { valid: true, creature, action_details };
+        }
+
         static has_resources_available(resources) {
             const creature = impersonated();
-
-            let return_value = true
-            const missing_resources = []
+        
+            let return_value = true;
+            const missing_resources = [];
+        
             for (const name of resources) {
-                const resource = creature?.resources[name]?.value || 0
-
+                const resource = creature?.resources[name]?.value || 0;
+        
                 // Ignore turn resources if not in initiative
-                const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name)
-                const has_initative = Initiative.turn_order.includes(creature.id)
-                if(turn_resource && !has_initative) continue
-
-                // Verify if can use action to create attack action
-                if (name == "Attack Action") {
-                    const action_res = creature?.resources["Action"]?.value || 0
-
-                    // Store return values
-                    if(resource < 1 && action_res < 1) {
-                        return_value = false
-                        missing_resources.push("Action")
+                const is_turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+                const has_initiative = Initiative.turn_order.includes(creature.id);
+                if (is_turn_resource && !has_initiative) continue;
+        
+                // Special case: Attack Action can be substituted by Action
+                if (name === "Attack Action") {
+                    const action_res = creature?.resources["Action"]?.value || 0;
+        
+                    if (resource < 1 && action_res < 1) {
+                        return_value = false;
+                        missing_resources.push("Attack Action"); // <-- Use the original name here
                     }
-                    continue
+        
+                    continue;
                 }
-
-                // Store return values
+        
+                // General case
                 if (resource < 1) {
-                    return_value = false
-                    missing_resources.push(name)
+                    return_value = false;
+                    missing_resources.push(name);
                 }
             }
-
-            if(!return_value) public_log(creature.name +" has insuficient resources for this ability (" + missing_resources.join(", ") + ").")
-            return return_value
+        
+            if (!return_value) {
+                public_log(`${creature.name} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
+            }
+        
+            return return_value;
         }
 
         static use_resources(resources) {
@@ -288,15 +310,9 @@ try {
         }
 
         static attack() {
-            const creature = impersonated();
-
             // Requirements
-            const function_name = "attack"
-            const action_details = this.actions_list()[function_name];
-            if (!action_details) return
-            if (!selected() || !this.has_resources_available(action_details.resources)) {
-                return;
-            }
+            const { valid, creature, action_details } = this.check_action_requirements("attack");
+            if (!valid) return;
 
             // Weapon
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
@@ -326,15 +342,9 @@ try {
         }
 
         static opportunity_attack() {
-            const creature = impersonated();
-
             // Requirements
-            const function_name = "opportunity_attack"
-            const action_details = this.actions_list()[function_name];
-            if (!action_details) return
-            if (!selected() || !this.has_resources_available(action_details.resources)) {
-                return;
-            }
+            const { valid, creature, action_details } = this.check_action_requirements("opportunity_attack");
+            if (!valid) return;
 
             // Weapon
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
@@ -363,15 +373,9 @@ try {
         }
 
         static off_hand_attack() {
-            const creature = impersonated();
-            
             // Requirements
-            const function_name = "off_hand_attack"
-            const action_details = this.actions_list()[function_name];
-            if (!action_details) return
-            if (!selected() || !this.has_resources_available(action_details.resources)) {
-                return;
-            }
+            const { valid, creature, action_details } = this.check_action_requirements("off_hand_attack");
+            if (!valid) return;
 
             // Weapon
             const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
@@ -412,15 +416,9 @@ try {
         }
 
         static dash() {
-            const creature = impersonated()
-
             // Requirements
-            const function_name = "dash"
-            const action_details = this.actions_list()[function_name];
-            if (!action_details) return
-            if (!selected() || !this.has_resources_available(action_details.resources)) {
-                return;
-            }
+            const { valid, creature, action_details } = this.check_action_requirements("dash", false);
+            if (!valid) return;
 
             // New movement
             const current_movement = creature.resources["Movement"]

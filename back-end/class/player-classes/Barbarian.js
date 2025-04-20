@@ -140,7 +140,19 @@ try {
         }
 
         static rage() {
-            return
+            // Requirements
+            const { valid, creature, action_details } = this.check_action_requirements("rage", false);
+            if (!valid) return;
+
+            // Receive condition
+            impersonated().set_condition("Rage")
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
+
+            // Logging
+            public_log(creature.name + " is enraged!")
         }
 
         //=====================================================================================================
