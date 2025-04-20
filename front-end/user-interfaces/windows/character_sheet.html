@@ -705,7 +705,7 @@
 							// From database
 							const condition = database.conditions[name] || {}
 							const description = condition?.description || "Description unavailable"
-							const image = condition_images[condition?.type] || ""
+							const image = condition?.image || condition_images[condition?.type] || ""
 
 							// Element
 							collapsible(
