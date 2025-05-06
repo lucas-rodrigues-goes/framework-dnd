@@ -207,54 +207,6 @@ try {
             return message;
         }
 
-        static attack_range ({range = [5], attacker = impersonated(),  target = selected()}) {
-            // Helper
-            function calculateDistance(x1, y1, x2, y2) {
-                const dx = x2 - x1; // Difference in X-coordinates
-                const dy = y2 - y1; // Difference in Y-coordinates
-                const distance = Math.round(Math.sqrt(dx * dx + dy * dy))
-                //log("Distance: " + distance)
-                return distance;
-            }
-        
-            const distance = calculateDistance(attacker.x, attacker.y, target.x, target.y) * 5
-        
-            if (range.length > 1) {
-                if (distance > range[1]) return "Unsufficient"
-                else if (distance > range[0]) return "Extended"
-                else return "Normal"
-            } else {
-                if (distance > range[0]) return "Unsufficient"
-                else return "Normal"
-            }
-        }
-        
-        static attack_damage_roll ({
-            damage_array = [{die_size: 1, die_ammount: 1, damage_type: "Bludgeoning"}],
-            damage_bonus = 0,
-            die_multiplier = 1,
-        }) {
-            // Calculate Damage
-            const calculated_damage = []
-            for (let i = 0; i < damage_array.length; i++) {
-                const damage = damage_array[i]
-                
-                // If first element, apply damage bonus
-                let total_damage = i == 0 ? damage_bonus : 0 
-                
-                // Make dice rolls
-                const die_ammount = damage.die_ammount * die_multiplier
-                for (let j = 0; j < die_ammount; j++) {
-                    total_damage += Math.ceil(Math.random() * damage.die_size)
-                }
-        
-                // Store damage
-                calculated_damage[damage.damage_type] = total_damage
-            }
-        
-            return calculated_damage
-        }
-
         //=====================================================================================================
         // Actions
         //=====================================================================================================
@@ -264,12 +216,6 @@ try {
             const origin = "Common"
             const actions = {
                 attack: {
-                    resources: ["Attack Action"],
-                    description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
-                    recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
-                    origin: origin
-                },
-                weapon_attack: {
                     resources: ["Attack Action"],
                     description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
                     recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
@@ -361,104 +307,6 @@ try {
             
 
             return actions
-        }
-        
-        static weapon_attack ({
-            weapon = {
-                name: "fists",
-                damage: [{die_size: 1, die_ammount: 1, damage_type: "Bludgeoning"}],
-                properties: [],
-                range: [5],
-            },
-            hit_bonus = 0, // External bonuses (not ability modifier / proficiency)
-            damage_bonus = 0, // External bonuses (not ability modifier / proficiency)
-            damage_array_bonus = [], // Damage dice to append to the attack
-            off_hand = false,
-            attacker = impersonated(),
-            targets = allSelected(),
-            max_targets = 1,
-        }) {
-            // Validate Target Amount
-            if (targets.length > max_targets) {
-                public_log(attacker.name + " has selected way too many targets for this attack.")
-                return
-            }
-        
-            // Validate Range
-            for (const target of targets) {
-                if (attack_range({range: weapon.range, attacker: attacker, target: target}) == "Unsufficient") {
-                    public_log(attacker.name + " does not have sufficient range to attack " + target.name + ".")
-                    return
-                }
-            }
-        
-            // Character Modifiers
-            const str_mod = attacker.score_bonus["strength"]
-            const dex_mod = attacker.score_bonus["dexterity"]
-        
-            // Weapon Modifiers
-            const dexWeapon = weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition")
-        
-            // Damage Modifier
-            const total_damage_array = [...weapon.damage, ...damage_array_bonus]
-            const str_damage_bonus = str_mod
-            const dex_damage_bonus = Math.min(3, str_mod)
-            let damage_modifier = (dexWeapon ? Math.max(str_damage_bonus, dex_damage_bonus) : str_damage_bonus) + damage_bonus
-            if (off_hand) damage_modifier = damage_bonus
-        
-            // Hit Modifier
-            const str_hit_bonus = Math.min(3, str_mod)
-            const dex_hit_bonus = dex_mod
-            const hit_modifier = (dexWeapon ? Math.max(str_hit_bonus, dex_hit_bonus) : str_hit_bonus) + hit_bonus
-            const roll = Math.ceil(Math.random() * 20)
-        
-            // Hit Roll
-            let total_roll = 0
-            if (roll == 20) total_roll = 100
-            else if (roll == 1) total_roll = -100
-            else total_roll = roll + hit_modifier
-        
-            // Damage Roll
-            const damage_roll = attack_damage_roll({damage_array: total_damage_array, damage_bonus: damage_modifier, die_multiplier: total_roll == 100 ? 2 : 1})
-        
-            // Apply All
-            for (let i = 0; i < targets.length; i++) {
-                const target = targets[i]
-                const multi_target = targets.length > 1 ? 3 : 0
-                const attack_hit_roll = i > 0 ? total_roll - (multi_target * 2) : total_roll - multi_target
-                i++
-        
-                // Message building
-                let message = attacker.name + " attacks " + target.name + " with their " + weapon.name + " and "
-                if (total_roll == 100) message += "critically hits dealing "
-                else if (attack_hit_roll == -100) message += "critically misses."
-                else if (attack_hit_roll > target.armor_class) message += "hits (" + attack_hit_roll + ") dealing "
-                else if (attack_hit_roll == target.armor_class) message += "grazes (" + attack_hit_roll + ") dealing "
-                else message += "misses (" + attack_hit_roll + ")."
-                
-                // Apply damage
-                const multiplier = attack_hit_roll == target.armor_class ? 0.5 : 1
-                const damage_dealt = []
-                if (attack_hit_roll >= target.armor_class) {
-                    for (const type of damage_roll) {
-                        // Store current HP
-                        const before_hp = target.health
-        
-                        // Apply damage
-                        const value = Math.ceil(damage_roll[type] * multiplier)
-                        target.receive_damage(value, type)
-        
-                        // Store damage dealt
-                        const damage_dealt = target.health - before_hp
-                        damage_dealt.push(damage_dealt + " " + type)
-                    }
-        
-                    // Finish message
-                    message += damage_dealt.join(", ") + " damage."
-                }
-        
-                public_log(message)
-            }
         }
 
         static attack() {
