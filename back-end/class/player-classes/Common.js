@@ -3,9 +3,9 @@ try {
 
     var Common = class {
 
-        //=====================================================================================================
-        // Helpers
-        //=====================================================================================================
+        //---------------------------------------------------------------------------------------------------
+        // Resource Helpers
+        //---------------------------------------------------------------------------------------------------
 
         static check_action_requirements(action_key, require_target = true) {
             const creature = impersonated();
@@ -94,16 +94,11 @@ try {
             }
         }
 
-        static validate_range(weapon) {
-            // Helper
-            function calculateDistance(x1, y1, x2, y2) {
-                const dx = x2 - x1; // Difference in X-coordinates
-                const dy = y2 - y1; // Difference in Y-coordinates
-                const distance = Math.round(Math.sqrt(dx * dx + dy * dy))
-                //log("Distance: " + distance)
-                return distance;
-            }
+        //---------------------------------------------------------------------------------------------------
+        // Attack Helpers
+        //---------------------------------------------------------------------------------------------------
 
+        static validate_weapon_range(weapon) {
             // Conditions
             const usesAmmo = weapon?.properties?.includes("Ammunition") || false;
             const isThrown = weapon?.properties?.includes("Thrown") || false
@@ -113,7 +108,7 @@ try {
             // Parameters
             const creature = impersonated()
             const target = selected()
-            const distance = calculateDistance(creature.x, creature.y, target.x, target.y) * 5
+            const distance = calculate_distance(creature, target) * 5
 
             if (usesAmmo || isThrown) {
                 if (distance > range[1]) return "Unsufficient"
@@ -162,9 +157,12 @@ try {
             return calculated_damage;
         }
 
-        static roll_attack(hit_bonus, target) {
-            const roll = Math.ceil(Math.random() * 20);
-            const target_visibility = impersonated().target_visibility();
+        static roll_attack(hit_bonus, target, ranged_weapon = false, extended_range = false) {
+            const roll_type = ranged_weapon 
+                ? ["ranged", "weapon", "attack", ...(extended_range ? ["extended"] : [])]
+                : ["melee", "weapon", "attack"];
+            const roll_to_hit = roll_check(roll_type, impersonated())
+            const target_visibility = impersonated().target_visibility()
 
             // Face target
             impersonated().face_target()
@@ -177,14 +175,14 @@ try {
 
             // Roll Result
             let roll_result;
-            if (roll === 20) roll_result = "lands a critical hit";
-            else if (roll === 1) roll_result = "critically misses";
-            else if (roll + hit_bonus >= target_ac) roll_result = "hits";
+            if (roll_to_hit === 20) roll_result = "lands a critical hit";
+            else if (roll_to_hit === 1) roll_result = "critically misses";
+            else if (roll_to_hit + hit_bonus >= target_ac) roll_result = "hits";
             else roll_result = "misses";
 
             return {
                 result: roll_result,
-                roll_text: roll_result.includes("critical") ? "Nat " + roll : roll + hit_bonus,
+                roll_text: roll_result.includes("critical") ? "Nat " + roll_to_hit : roll_to_hit + hit_bonus,
             };
         }
 
@@ -207,9 +205,9 @@ try {
             return message;
         }
 
-        //=====================================================================================================
-        // Actions
-        //=====================================================================================================
+        //---------------------------------------------------------------------------------------------------
+        // Actions List
+        //---------------------------------------------------------------------------------------------------
 
         static actions_list() {
             const creature = impersonated();
@@ -309,6 +307,10 @@ try {
             return actions
         }
 
+        //---------------------------------------------------------------------------------------------------
+        // Attack Actions
+        //---------------------------------------------------------------------------------------------------
+
         static attack() {
             // Requirements
             const { valid, creature, action_details } = this.check_action_requirements("attack");
@@ -316,16 +318,23 @@ try {
 
             // Weapon
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
-            const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
-            const means = weapon ? "their " + weapon?.name : "their fists"
 
             // Validate Range
-            const range_validation = this.validate_range(weapon)
+            const range_validation = this.validate_weapon_range(weapon)
             if (range_validation == "Unsufficient") {
                 public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
                 return
             }
+
+            // Hit
+            const hit_bonus = this.calculate_hit_bonus(weapon);
+            const { result, roll_text } = this.roll_attack(
+                hit_bonus,
+                selected(),
+                weapon?.properties?.includes("Ammunition"),
+                range_validation == "Extended"
+            );
+            const means = weapon ? "their " + weapon?.name : "their fists"
 
             // Damage
             let damage_data = null;
@@ -353,7 +362,7 @@ try {
             const means = weapon ? "their " + weapon?.name : "their fists"
 
             // Validate Range
-            const range_validation = this.validate_range(weapon)
+            const range_validation = this.validate_weapon_range(weapon)
             if (range_validation == "Unsufficient") {
                 public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
             }
@@ -379,15 +388,22 @@ try {
 
             // Weapon
             const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
-            const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
-            const means = weapon ? "their " + weapon?.name : "their fists"
 
             // Validate Range
-            const range_validation = this.validate_range(weapon)
+            const range_validation = this.validate_weapon_range(weapon)
             if (range_validation == "Unsufficient") {
                 public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
             }
+
+            // Hit
+            const hit_bonus = this.calculate_hit_bonus(weapon);
+            const { result, roll_text } = this.roll_attack(
+                hit_bonus,
+                selected(),
+                weapon?.properties?.includes("Ammunition"),
+                range_validation == "Extended"
+            );
+            const means = weapon ? "their " + weapon?.name : "their fists"
 
             // Damage
             let damage_data = null;
@@ -415,6 +431,10 @@ try {
             return;
         }
 
+        //---------------------------------------------------------------------------------------------------
+        // Other Actions
+        //---------------------------------------------------------------------------------------------------
+
         static dash() {
             // Requirements
             const { valid, creature, action_details } = this.check_action_requirements("dash", false);
@@ -435,30 +455,74 @@ try {
         }
 
         static disengage() {
-            return;
+            // Requirements
+            const { valid, creature, action_details } = this.check_action_requirements("disengage", false);
+            if (!valid) return;
+
+            // Condition
+            creature.set_condition("Disengage", 1)
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
+
+            // Logging
+            public_log(creature.name + " disengages, gaining immunity to opportunity attacks.")
         }
 
         static dodge() {
-            return;
+            // Requirements
+            const { valid, creature, action_details } = this.check_action_requirements("dodge", false);
+            if (!valid) return;
+
+            // Condition
+            creature.set_condition("Dodge", 1)
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
+
+            // Logging
+            public_log(creature.name + " focuses on dodging, making it easier for them to avoid attacks.")
         }
 
         static help() {
-            return;
+            // Requirements
+            const { valid, creature, action_details } = this.check_action_requirements("help", false);
+            const target = selected();
+            if (!valid || !target) return;
+
+            // Range Validation
+            const distance = calculate_distance(creature, target)
+            if (distance > 1) {
+                public_log(`${creature.name} tried to help someone, but they are not in range.`)
+                return
+            }
+
+            // Condition
+            target.set_condition("Helped", 1)
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
+
+            // Logging
+            public_log(`${creature.name} is helping ${target.name} on their next roll.`)
         }
 
         static hide() {
-            return;
+            return
         }
         
         static ready() {
-            return;
+            return
         }
 
         static search() {
-            return;
+            return
         }
 
-        //=====================================================================================================
+        //---------------------------------------------------------------------------------------------------
     }
 
 } catch (e) {

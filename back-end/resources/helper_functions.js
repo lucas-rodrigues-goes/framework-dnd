@@ -108,3 +108,67 @@ var moveLock = function (lock=true) {
 
     MTScript.evalMacro(`[r:setMoveLock(`+value+`)]`)
 }
+
+// Calculate distance between entities
+var calculate_distance = function (source, target) {
+    const delta_x = target.x - source.x; // Difference in X-coordinates
+    const delta_y = target.y - source.y; // Difference in Y-coordinates
+    const distance = Math.round(Math.sqrt(delta_x * delta_x + delta_y * delta_y))
+    return distance;
+}
+
+// Dice Rolling
+var roll = (sides) => Math.ceil(Math.random() * sides)
+var roll_damage = function (amount, sides, type) {
+    let total = 0
+    for (let i; i<amount; i++) {
+        switch (type) {
+            // Lowest
+            case "Lowest":
+                total += Math.min(roll(sides), roll(sides))
+                break
+
+            // Highest
+            case "Highest":
+                total += Math.max(roll(sides), roll(sides))
+                break
+
+            // Regular Roll
+            default: 
+                total += roll(sides)
+                break
+        }
+    }
+}
+var roll_check = function (type, creature = impersonated()) {
+    let advantage_weight = 0
+    let roll
+
+    // Validation
+    if (!creature) return
+
+    // Helper for condition checking
+    function typeMatches(items_to_check) {
+        return items_to_check.every(item => type.includes(item));
+    }
+
+    
+    { // Advantage Conditions
+
+        // Attacking from extended range
+        if (typeMatches(["extended", "ranged"])) advantage_weight -= 1
+
+    }
+
+    // Calculate roll based on advantage
+    if (advantage_weight > 0) roll = Math.max(roll(20), roll(20))
+    else if (advantage_weight < 0) roll = Math.min(roll(20), roll(20))
+    else if (advantage_weight == 0) roll = roll(20)
+
+    // Apply Exhaustion
+    const exhaustion_level = 0
+    if (roll != 20) roll -= exhaustion_level
+
+    // Result
+    return Math.max(roll, 1)
+}
