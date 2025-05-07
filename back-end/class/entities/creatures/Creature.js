@@ -174,6 +174,13 @@ try {
 
             log(this.#name + " updated their name.")
         }
+
+        // Name Color
+        get name_color () {
+            const color = this.player ? "#48BAFF" : "#C82E42"
+
+            return `<span style="color: ${color}">${this.name}</span>`
+        }
  
         // Type
         get type() { return this.#type }
@@ -921,6 +928,25 @@ try {
         // Verifies if the creature has a condition
         has_condition(name) {
             return name in this.#conditions
+        }
+
+        has_conditions(list, match = "all") {
+            switch(match) {
+                // Any match
+                case "any": {
+                    for (const feature of list) {
+                        if (this.has_condition(feature)) return true
+                    }
+                }
+
+                // All match
+                case "all": {
+                    for (const feature of list) {
+                        if (!this.has_condition(feature)) return false
+                    }
+                    return true
+                }
+            }
         }
 
         //=====================================================================================================

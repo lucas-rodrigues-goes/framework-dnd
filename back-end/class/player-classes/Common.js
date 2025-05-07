@@ -18,7 +18,7 @@ try {
             }
         
             if (require_target && !selected()) {
-                public_log(`${creature.name} needs to select a target for this action.`);
+                public_log(`${creature.name_color} needs to select a target for this action.`);
                 return { valid: false };
             }
         
@@ -59,7 +59,7 @@ try {
             }
         
             if (!return_value) {
-                public_log(`${creature.name} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
+                public_log(`${creature.name_color} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
             }
         
             return return_value;
@@ -107,7 +107,7 @@ try {
             if (range_validation.outOfRange) {
                 return {
                     success: false,
-                    message: `${creature.name} tried to attack ${target.name} using their ${weapon?.name || "fists"} but they are out of range.`
+                    message: `${creature.name_color} tried to attack ${target.name_color} using their ${weapon?.name || "fists"} but they are out of range.`
                 }
             }
             advantage_weight += range_validation.advantage_weight
@@ -128,7 +128,7 @@ try {
                 weapon: weapon,
                 hit_result: hit_result,
                 damage_result: damage_result,
-                message: `${creature.name} attacks ${target.name} with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll})${damage_result}`
+                message: `${creature.name_color} attacks ${target.name_color} with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
             }
         }
 
@@ -207,10 +207,14 @@ try {
             creature.face_target()
             const target_visibility = creature.target_visibility()
 
-            // Roll d20
-            const roll_to_hit = roll_20(advantage_weight, creature)
+            // Advantage Modifiers
+            advantage_weight += this.calculate_weapon_attack_advantage_modifiers(creature, target)
 
-            // Target AC
+            // Roll d20
+            const roll_result = roll_20(advantage_weight, creature)
+            const roll_to_hit = roll_result.result
+
+            // Target AC + Cover
             let cover = 0; {
                 // Three quarters cover
                 if (target_visibility <= 0.25) cover = 5
@@ -221,7 +225,11 @@ try {
             const target_ac = target.armor_class + cover
 
             // Output
-            const output = { success: false, message: "", roll: roll_to_hit }; {
+            let advantage = "None"; {
+                if (advantage_weight > 0) advantage = "Advantage"
+                else if (advantage_weight < 0) advantage = "Disadvantage"
+            }
+            const output = { success: false, message: "", roll: roll_result, advantage: advantage}; {
                 // Critical Hit
                 if (roll_to_hit === 20) {
                     output.success = true
@@ -237,11 +245,19 @@ try {
                 else if (roll_to_hit + hit_bonus >= target_ac) {
                     output.success = true
                     output.message = "hits"
+
+                    // Add hit bonus to text
+                    output.roll.text += ` + ${hit_bonus}`
+                    output.roll.text_color += ` + ${hit_bonus}`
                 }
 
                 // Miss
                 else {
                     output.message = "misses"
+
+                    // Add hit bonus to text
+                    output.roll.text += ` + ${hit_bonus}`
+                    output.roll.text_color += ` + ${hit_bonus}`
                 }
             }
             return output
@@ -256,6 +272,19 @@ try {
             const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
 
             return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
+        }
+
+        static calculate_weapon_attack_advantage_modifiers(creature, target) {
+            let output = 0; {
+                // Unseen Attacker
+                if (creature.has_conditions(["Hidden", "Invisible"], "any")) output += 1
+
+                // Reckless Attack
+                if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
+            }
+
+            // Output
+            return output
         }
 
         //---------------------------------------------------------------------------------------------------
@@ -468,7 +497,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(creature.name + " dashes, gaining extra movement for this round.")
+            public_log(creature.name_color + " dashes, gaining extra movement for this round.")
         }
 
         static disengage() {
@@ -484,7 +513,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(creature.name + " disengages, gaining immunity to opportunity attacks.")
+            public_log(creature.name_color + " disengages, gaining immunity to opportunity attacks.")
         }
 
         static dodge() {
@@ -500,7 +529,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(creature.name + " focuses on dodging, making it easier for them to avoid attacks.")
+            public_log(creature.name_color + " focuses on dodging, making it easier for them to avoid attacks.")
         }
 
         static help() {
@@ -512,7 +541,7 @@ try {
             // Range Validation
             const distance = calculate_distance(creature, target)
             if (distance > 1) {
-                public_log(`${creature.name} tried to help someone, but they are not in range.`)
+                public_log(`${creature.name_color} tried to help someone, but they are not in range.`)
                 return
             }
 
@@ -524,7 +553,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(`${creature.name} is helping ${target.name} on their next roll.`)
+            public_log(`${creature.name_color} is helping ${target.name_color} on their next roll.`)
         }
 
         static hide() {

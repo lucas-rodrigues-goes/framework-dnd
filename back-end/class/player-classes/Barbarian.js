@@ -152,7 +152,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(creature.name + " is enraged!")
+            public_log(`${creature.name_color} is enraged!`)
         }
 
         //---------------------------------------------------------------------------------------------------

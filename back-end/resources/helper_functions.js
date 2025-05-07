@@ -146,17 +146,50 @@ var roll_dice = function (amount, sides, type) {
     return total
 }
 var roll_20 = function (advantage_weight = 0) {
-    let output
+    const rolls = [roll(20), roll(20)]
+    let advantage ; {
+        if (advantage_weight > 0) advantage = "Advantage"
+        else if (advantage_weight < 0) advantage = "Disadvantage"
+        else advantage = "None"
+    }
 
-    // Calculate roll based on advantage
-    if (advantage_weight > 0) output = Math.max(roll(20), roll(20))
-    else if (advantage_weight < 0) output = Math.min(roll(20), roll(20))
-    else output = roll(20)
+    // Calculation
+    const DEFAULT_COLOR = "#777"
+    let result, color; {
+        switch (advantage) {
+            case "Advantage": 
+                color = "#7ED321"
+                result = Math.max(rolls[0], rolls[1])
+                break
+            case "Disadvantage":
+                color = "#C82E42"
+                result = Math.min(rolls[0], rolls[1])
+                break
+            default:
+                color = "#F5A623"
+                result = rolls[0]
+                break
+        }
+    }
 
-    // Apply Exhaustion
-    const exhaustion_level = 0
-    if (output != 20) output -= exhaustion_level
+    // Text
+    let text = "", text_color = ""; {
+        if (advantage == "None") {
+            text += `${result}`
+            text_color += `<span style="color: ${color}">${result}</span>`
+        }
+        else {
+            text += `${rolls[0]}|${rolls[1]}`
+            text_color += `<span style="color: ${rolls[0] == result ? color : DEFAULT_COLOR}">${rolls[0]}</span>|`
+            text_color += `<span style="color: ${rolls[1] == result ? color : DEFAULT_COLOR}">${rolls[1]}</span>`
+        }
+    }
 
     // Result
-    return Math.max(output, 1)
+    return {
+        result: result,
+        text: text,
+        text_color: text_color,
+        dice: rolls,
+    }
 }

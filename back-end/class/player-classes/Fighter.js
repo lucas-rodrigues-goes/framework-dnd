@@ -148,23 +148,41 @@ try {
         }
 
         static second_wind() {
+            const action_name = "second_wind"
+
             // Requirements
-            const { valid, creature, action_details } = this.check_action_requirements("second_wind", false);
+            const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
             if (!valid) return;
 
             // Receive Healing
-            const healing = 
+            const healing = roll(10) + (creature.classes.Fighter?.level || 1)
+            creature.receive_healing(healing)
 
             // Consume resources
             this.use_resources(action_details.resources)
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(`${creature.name} has utilized second wind, regaining ${undefined} hit points`)
+            public_log(`${creature.name_color} has utilized second wind, regaining ${healing} hit points`)
         }
 
         static action_surge() {
-            return
+            const action_name = "action_surge"
+
+            // Requirements
+            const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
+            if (!valid) return;
+
+            // Gain extra action
+            creature.set_resource_max("Action", creature.resources["Action"].max + 1)
+            creature.set_resource_value("Action", creature.resources["Action"].value + 1)
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
+
+            // Logging
+            public_log(`${creature.name_color} has utilized action surge, gaining an extra action.`)
         }
 
         //---------------------------------------------------------------------------------------------------
