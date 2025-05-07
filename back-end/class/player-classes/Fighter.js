@@ -153,7 +153,7 @@ try {
             if (!valid) return;
 
             // Receive Healing
-            const healing =
+            const healing = 
 
             // Consume resources
             this.use_resources(action_details.resources)

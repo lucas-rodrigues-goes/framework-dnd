@@ -98,111 +98,164 @@ try {
         // Attack Helpers
         //---------------------------------------------------------------------------------------------------
 
-        static validate_weapon_range(weapon) {
-            // Conditions
-            const usesAmmo = weapon?.properties?.includes("Ammunition") || false;
+        static make_attack(slot, creature, target) {
+            const weapon = database.items.data[creature.equipment[slot]?.name]
+            let advantage_weight = 0
+
+            // Range Validation
+            const range_validation = this.validate_weapon_attack_range(weapon, creature, target)
+            if (range_validation.outOfRange) {
+                return {
+                    success: false,
+                    message: `${creature.name} tried to attack ${target.name} using their ${weapon?.name || "fists"} but they are out of range.`
+                }
+            }
+            advantage_weight += range_validation.advantage_weight
+
+            // Calculate Hit
+            const hit_bonus = this.calculate_weapon_attack_hit_bonus(weapon, creature)
+            const hit_result = this.calculate_weapon_attack_hit_result(hit_bonus, creature, target, advantage_weight)
+
+            // Deal damage
+            const damage_result = (hit_result.success 
+                ? ` dealing ${this.calculate_weapon_attack_damage(weapon, creature, target, hit_result.message, slot)} damage.`
+                : `.`
+            )
+
+            // Output
+            return {
+                success: true,
+                weapon: weapon,
+                hit_result: hit_result,
+                damage_result: damage_result,
+                message: `${creature.name} attacks ${target.name} with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll})${damage_result}`
+            }
+        }
+
+        static calculate_weapon_attack_damage(weapon, creature, target, hit_result, slot) {
+            // Weapon Properties
+            const isFinesse = weapon?.properties?.includes("Finesse") || false;
+            const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+            const isOffHand = slot.includes("off hand")
+            const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
+
+            // Creature Bonuses
+            const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
+            const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+            const damage_bonus = isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))
+            const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
+
+            // Output
+            const output = []
+            for (const damage of damage_list) {
+                // Calculate Damage
+                const die_amount = damage.die_ammount * crit_multiplier
+                const damage_to_deal = roll_dice(die_amount, damage.die_size) + damage_bonus
+
+                // Deal Damage
+                const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
+                output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+            }
+            return output.join(", ")
+        }
+
+        static validate_weapon_attack_range(weapon, creature, target) {
+            const usesAmmo = weapon?.properties?.includes("Ammunition") || false
             const isThrown = weapon?.properties?.includes("Thrown") || false
             const isReach = weapon?.properties?.includes("Reach") || false
             const range = weapon?.range || (isReach ? [10] : [5])
 
-            // Parameters
-            const creature = impersonated()
-            const target = selected()
+            // Calculated Conditions
             const distance = calculate_distance(creature, target) * 5
+            const meleeRange = distance <= 5 || (distance <= 10 && isReach)
 
-            if (usesAmmo || isThrown) {
-                if (distance > range[1]) return "Unsufficient"
-                else if (distance > range[0]) return "Extended"
-                else return "Normal"
-            } else {
-                if (distance > range[0]) return "Unsufficient"
-                else return "Normal"
+            // Output
+            const output = { advantage_weight: 0, outOfRange: false, throwWeapon: false, requiresAmmo: false }
+            {
+                // Ranged Weapon
+                if (usesAmmo) {
+                    const outOfRange = distance > range[1]
+                    const extendedRange = distance > range[0]
+
+                    // Output
+                    if (outOfRange) output.outOfRange = true
+                    else if (extendedRange || meleeRange) output.advantage_weight -= 1
+                    output.requiresAmmo = true
+                }
+                // Throwing Weapon
+                else if (isThrown) { 
+                    const outOfRange = distance > range[1]
+                    const extendedRange = distance > range[0]
+
+                    // Output
+                    if (outOfRange) output.outOfRange = true
+                    else if (extendedRange) output.throwWeapon = true
+                }
+                // Melee Weapon
+                else {
+                    const outOfRange = distance > range[0]
+
+                    // Output
+                    if (outOfRange) output.outOfRange = true
+                }
             }
+
+            return output
         }
 
-        static calculate_hit_bonus(weapon) {
-            // Validations
-            const creature = impersonated();
+        static calculate_weapon_attack_hit_result(hit_bonus, creature, target, advantage_weight = 0) {
+            creature.face_target()
+            const target_visibility = creature.target_visibility()
+
+            // Roll d20
+            const roll_to_hit = roll_20(advantage_weight, creature)
+
+            // Target AC
+            let cover = 0; {
+                // Three quarters cover
+                if (target_visibility <= 0.25) cover = 5
+
+                // Half cover
+                else if (target_visibility <= 0.5) cover = 2
+            }
+            const target_ac = target.armor_class + cover
+
+            // Output
+            const output = { success: false, message: "", roll: roll_to_hit }; {
+                // Critical Hit
+                if (roll_to_hit === 20) {
+                    output.success = true
+                    output.message = "lands a critical hit"
+                }
+
+                // Critical Miss
+                else if (roll_to_hit === 1) {
+                    output.message = "critically misses"
+                }
+
+                // Hit
+                else if (roll_to_hit + hit_bonus >= target_ac) {
+                    output.success = true
+                    output.message = "hits"
+                }
+
+                // Miss
+                else {
+                    output.message = "misses"
+                }
+            }
+            return output
+        }
+
+        static calculate_weapon_attack_hit_bonus(weapon, creature) {
             const isFinesse = weapon?.properties?.includes("Finesse") || false;
             const isAmmo = weapon?.properties?.includes("Ammunition") || false;
-
 
             // Applicable bonuses
             const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
             const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
 
             return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
-        }
-
-        static calculate_damage(weapon, is_critical, off_hand=false) {
-            const creature = impersonated();
-            const isFinesse = weapon?.properties?.includes("Finesse") || false;
-            const isAmmo = weapon?.properties?.includes("Ammunition") || false;
-            const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
-
-            const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-            const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
-            const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3));
-            const crit_multiplier = is_critical ? 2 : 1;
-
-            const calculated_damage = {};
-            for (const damage of damage_list) {
-                let total_damage = off_hand ? 0 : damage_bonus;
-                for (let i = 0; i < damage.die_ammount * crit_multiplier; i++) {
-                    total_damage += Math.ceil(Math.random() * damage.die_size);
-                }
-                calculated_damage[damage.damage_type] = total_damage;
-            }
-
-            return calculated_damage;
-        }
-
-        static roll_attack(hit_bonus, target, ranged_weapon = false, extended_range = false) {
-            const roll_type = ranged_weapon 
-                ? ["ranged", "weapon", "attack", ...(extended_range ? ["extended"] : [])]
-                : ["melee", "weapon", "attack"];
-            const roll_to_hit = roll_check(roll_type, impersonated())
-            const target_visibility = impersonated().target_visibility()
-
-            // Face target
-            impersonated().face_target()
-            
-            // Target AC
-            let cover = 0
-            if (target_visibility <= 0.25) cover = 5 // Three quarters cover
-            else if (target_visibility <= 0.5) cover = 2 // Half cover
-            const target_ac = target.armor_class + cover
-
-            // Roll Result
-            let roll_result;
-            if (roll_to_hit === 20) roll_result = "lands a critical hit";
-            else if (roll_to_hit === 1) roll_result = "critically misses";
-            else if (roll_to_hit + hit_bonus >= target_ac) roll_result = "hits";
-            else roll_result = "misses";
-
-            return {
-                result: roll_result,
-                roll_text: roll_result.includes("critical") ? "Nat " + roll_to_hit : roll_to_hit + hit_bonus,
-            };
-        }
-
-        static build_attack_message(target, roll_result, roll_text, damage_data, means) {
-            const attacker = impersonated();
-            let message = attacker.name + " attacks " + target.name + " with " + means + " and " + roll_result + " (" + roll_text + ")";
-
-            if (damage_data) {
-                message += " dealing ";
-                const damage_parts = [];
-                for (const type in damage_data) {
-                    target.receive_damage(damage_data[type], type);
-                    damage_parts.push(damage_data[type] + " " + type.toLowerCase());
-                }
-                message += damage_parts.join(", ") + " damage.";
-            } else {
-                message += ".";
-            }
-
-            return message;
         }
 
         //---------------------------------------------------------------------------------------------------
@@ -312,65 +365,43 @@ try {
         //---------------------------------------------------------------------------------------------------
 
         static attack() {
+            const action_name = "attack"
+            const slot = "primary main hand"
+            const target = selected()
+
             // Requirements
-            const { valid, creature, action_details } = this.check_action_requirements("attack");
-            if (!valid) return;
+            const { valid, creature, action_details } = this.check_action_requirements(action_name);
+            if (!valid || !target) return;
 
-            // Weapon
-            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
-
-            // Validate Range
-            const range_validation = this.validate_weapon_range(weapon)
-            if (range_validation == "Unsufficient") {
-                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
+            // Make attack
+            const attack_result = this.make_attack(slot, creature, target)
+            if (!attack_result.success) {
+                public_log(attack_result.message)
                 return
             }
 
-            // Hit
-            const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(
-                hit_bonus,
-                selected(),
-                weapon?.properties?.includes("Ammunition"),
-                range_validation == "Extended"
-            );
-            const means = weapon ? "their " + weapon?.name : "their fists"
-
-            // Damage
-            let damage_data = null;
-            if (result === "lands a critical hit" || result === "hits") {
-                damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
-            }
-
             // Consume resources
             this.use_resources(action_details.resources)
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
+            public_log(attack_result.message)
         }
 
         static opportunity_attack() {
+            const action_name = "opportunity_attack"
+            const slot = "primary main hand"
+            const target = selected()
+
             // Requirements
-            const { valid, creature, action_details } = this.check_action_requirements("opportunity_attack");
-            if (!valid) return;
+            const { valid, creature, action_details } = this.check_action_requirements(action_name);
+            if (!valid || !target) return;
 
-            // Weapon
-            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
-            const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(hit_bonus, selected());
-            const means = weapon ? "their " + weapon?.name : "their fists"
-
-            // Validate Range
-            const range_validation = this.validate_weapon_range(weapon)
-            if (range_validation == "Unsufficient") {
-                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
-            }
-
-            // Damage
-            let damage_data = null;
-            if (result === "lands a critical hit" || result === "hits") {
-                damage_data = this.calculate_damage(weapon, result === "lands a critical hit");
+            // Make attack
+            const attack_result = this.make_attack(slot, creature, target)
+            if (!attack_result.success) {
+                public_log(attack_result.message)
+                return
             }
 
             // Consume resources
@@ -378,37 +409,23 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
+            public_log(attack_result.message)
         }
 
         static off_hand_attack() {
+            const action_name = "off_hand_attack"
+            const slot = "primary off hand"
+            const target = selected()
+
             // Requirements
-            const { valid, creature, action_details } = this.check_action_requirements("off_hand_attack");
-            if (!valid) return;
+            const { valid, creature, action_details } = this.check_action_requirements(action_name);
+            if (!valid || !target) return;
 
-            // Weapon
-            const weapon = database.items.data[creature.equipment["primary off hand"]?.name];
-
-            // Validate Range
-            const range_validation = this.validate_weapon_range(weapon)
-            if (range_validation == "Unsufficient") {
-                public_log(creature.name + " tried to attack " + selected().name + " using " + means + " but they are out of range.")
-            }
-
-            // Hit
-            const hit_bonus = this.calculate_hit_bonus(weapon);
-            const { result, roll_text } = this.roll_attack(
-                hit_bonus,
-                selected(),
-                weapon?.properties?.includes("Ammunition"),
-                range_validation == "Extended"
-            );
-            const means = weapon ? "their " + weapon?.name : "their fists"
-
-            // Damage
-            let damage_data = null;
-            if (result === "lands a critical hit" || result === "hits") {
-                damage_data = this.calculate_damage(weapon, result === "lands a critical hit", true);
+            // Make attack
+            const attack_result = this.make_attack(slot, creature, target)
+            if (!attack_result.success) {
+                public_log(attack_result.message)
+                return
             }
 
             // Consume resources
@@ -416,7 +433,7 @@ try {
             Initiative.set_recovery(action_details.recovery, creature)
 
             // Logging
-            public_log(this.build_attack_message(selected(), result, roll_text, damage_data, means));
+            public_log(attack_result.message)
         }
 
         static grapple() {

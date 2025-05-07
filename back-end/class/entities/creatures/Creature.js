@@ -316,6 +316,7 @@ try {
             this.health -= damage;
 
             log(this.#name + " received " + damage + " " + type + " damage.");
+            return damage;
         }
 
         // Calculates healing received
