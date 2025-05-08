@@ -2,9 +2,9 @@
 
 var Creature = class extends Entity {
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Default Parameters
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     #name = ""
     #type = ""
@@ -71,10 +71,18 @@ var Creature = class extends Entity {
     #inventory = Array.from({ length: 25 }, () => null);
     #notes = []
 
+    //-----------------------------------------------------------------------------------------------------
+    // Events
+    //-----------------------------------------------------------------------------------------------------
 
-    //=====================================================================================================
+    onMove() {
+        this.passive_search()
+        this.maintain_stealth(false)
+    }
+
+    //-----------------------------------------------------------------------------------------------------
     // Methods
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Updates states based on current conditions
     update_state() {
@@ -101,65 +109,12 @@ var Creature = class extends Entity {
         }
     }
 
-    // Update stealth based on passive perception of nearby creatures
-    update_stealth(moving_creature) {
-        // Stop execution if is not in stealth
-        if (!this.has_condition("Hidden")) return
-
-        // Stealth Roll
-        const armor = database.items.data[this.equipment.body?.name]
-        const advantage_weight = armor ? (armor.properties.includes("Stealth Disadvantage") ? -1 : 0) : 0
-        const die_roll = roll_20(advantage_weight)
-        const stealth_roll = die_roll.result + this.skills.Stealth
-        
-        // Get all map tokens
-        const map_tokens = moving_creature ? [moving_creature] : MapTool.tokens.getMapTokens()
-        
-        // Loop through all tokens
-        let roll_was_required
-        for (const token of map_tokens) {
-            const creature = instance(token.getId())
-
-            // Validations
-            if (!creature) continue // Not instanced
-            if (!creature.race) continue // Not creature
-            if (creature.player == this.player) continue // Both are PCs or NPCs
-            if (calculate_distance(this, creature) > 6) continue // Too far
-            if (creature.target_visibility(this) < 0.4) continue // Can't see
-
-            // If too close to enemy
-            if (calculate_distance(this, creature) <= 1) {
-                this.remove_condition("Hidden")
-                const text = `${this.name_color} attempted to stay hidden but was noticed by ${creature.name_color} since they are too close.`
-                console.log(text, "all")
-                return
-            }
-
-            // Passive Perception VS Stealth Roll
-            const creature_passive_perception = creature.skills.Perception + 8
-            if (stealth_roll < creature_passive_perception) {
-                this.remove_condition("Hidden")
-                const text = `${this.name_color} attempted to stay hidden (${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}) but was noticed by ${creature.name_color}.`
-                console.log(text, "all")
-                return
-            }
-            
-            roll_was_required = true
-        }
-
-        // If there were valid creatures to reveal character, and they kept hidden anyway
-        if (roll_was_required) {
-            const text = `${this.name_color} attempted to stay hidden (${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}) and succeeded.`
-            console.log(text, this.player ? "all" : "gm")
-        } else {
-            const text = `${this.name_color} remains hidden.`
-            console.log(text, this.player ? "all" : "gm")
-        }
-    }
-
-
     // Refreshes and updates resources for a new round
     turn_start() {
+        // Update Stealth
+        this.maintain_stealth(true)
+        this.passive_search()
+        
         // Update max attacks per action
         let attacks = 1
         if (this.has_feature("Three Extra Attacks")) attacks = 4
@@ -217,9 +172,141 @@ var Creature = class extends Entity {
         }
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
+    // Stealth and Perception
+    //-----------------------------------------------------------------------------------------------------
+
+    static #can_reveal_stealth (revealing_creature, hidden_creature) {
+        try {
+            // Not instanced
+            if (!revealing_creature || !hidden_creature) return false
+
+            // Not Creature
+            if (!revealing_creature || !hidden_creature) return false
+
+            // Both are PCs or NPCs
+            if (revealing_creature.player == hidden_creature.player) return false
+
+            // Creature is not hidden
+            if (!hidden_creature.has_condition("Hidden")) return false
+
+            // Too far
+            if (calculate_distance(revealing_creature, hidden_creature) > 6) return false
+
+            // No visibility
+            if (revealing_creature.target_visibility(hidden_creature) < 0.4) return false
+        }
+        catch {
+            return false
+        }
+
+        return true
+    }
+    
+    // Update stealth based on passive perception of nearby creatures
+    maintain_stealth (new_roll=false) {
+        // Stop execution if is not in stealth
+        if (!this.has_condition("Hidden")) return
+
+        // Stealth Roll
+        let { stealth_roll, roll_text } = this.conditions["Hidden"]
+        if (new_roll || stealth_roll === undefined || roll_text === undefined) {
+            const armor = database.items.data[this.equipment.body?.name]
+            const advantage_weight = armor ? (armor.properties.includes("Stealth Disadvantage") ? -1 : 0) : 0
+            const die_roll = roll_20(advantage_weight)
+
+            // New roll and text
+            stealth_roll = die_roll.result + this.skills.Stealth
+            roll_text = `${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}`
+
+            // Update on character conditions
+            this.conditions["Hidden"] = {...this.conditions["Hidden"],
+                stealth_roll: stealth_roll,
+                roll_text: roll_text
+            }
+            this.save()
+        }
+
+        // All map tokens
+        const creatures = MapTool.tokens.getMapTokens()
+        
+        // Loop through all tokens
+        let roll_was_required
+        const hidden_creature = this
+        for (const token of creatures) {
+            const revealing_creature = instance(token.getId())
+            if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
+
+            // If too close to enemy
+            if (calculate_distance(revealing_creature, hidden_creature) <= 1) {
+                hidden_creature.remove_condition("Hidden")
+                const text = `${hidden_creature.name_color} attempted to stay hidden but was noticed by ${revealing_creature.name_color} since they are too close.`
+                console.log(text, "all")
+                return false
+            }
+
+            // Passive Perception VS Stealth Roll
+            const passive_perception = revealing_creature.skills.Perception + 8
+            if (stealth_roll < passive_perception) {
+                hidden_creature.remove_condition("Hidden")
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color}.`
+                console.log(text, "all")
+                return false
+            }
+            
+            roll_was_required = true
+        }
+
+        // If there were valid creatures to reveal character, and they kept hidden anyway
+        if (roll_was_required) {
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded.`
+            console.log(text, this.player ? "all" : "gm")
+            return true
+        } else {
+            const text = `${hidden_creature.name_color} has rolled stealth (${roll_text}) and is hidden.`
+            console.log(text, this.player ? "all" : "gm")
+            return true
+        }
+    }
+
+    // Reveals hidden creatures based on passive perception
+    passive_search() {
+        const passive_perception = this.skills.Perception + 8
+
+        // Get all map tokens
+        const creatures = MapTool.tokens.getMapTokens()
+
+        // Loop
+        const revealing_creature = this
+        for (const token of creatures) {
+            const hidden_creature = instance(token.getId())
+            if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
+            
+            // If too close to enemy
+            if (calculate_distance(revealing_creature, hidden_creature) <= 1) {
+                hidden_creature.remove_condition("Hidden")
+                const text = `${hidden_creature.name_color} attempted to stay hidden but was noticed by ${revealing_creature.name_color} since they are too close.`
+                console.log(text, "all")
+                continue
+            }
+
+            // Passive Perception VS Stealth Roll
+            const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
+            if (stealth_roll < passive_perception) {
+                hidden_creature.remove_condition("Hidden")
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color}.`
+                console.log(text, "all")
+                continue
+            }
+
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded.`
+            console.log(text, hidden_creature.player ? "all" : "gm")
+        }
+    }
+
+    //-----------------------------------------------------------------------------------------------------
     // Basic Getters / Setters
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Name
     get name() { return this.#name }
@@ -259,9 +346,9 @@ var Creature = class extends Entity {
     }
     
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Ability Scores
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Returns all ability scores
     get ability_scores() { return this.#ability_scores }
@@ -300,9 +387,9 @@ var Creature = class extends Entity {
     }
 
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Health
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Get current health
     get health() { return this.#health }
@@ -390,9 +477,9 @@ var Creature = class extends Entity {
     }
 
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Resistances
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Returns a dinamic object of current resistances
     get resistances() {
@@ -477,9 +564,9 @@ var Creature = class extends Entity {
         return resistances;
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Armor Class
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Calculates Init mod based on current equipment
     get initiative_mod() {
@@ -581,9 +668,9 @@ var Creature = class extends Entity {
     }
 
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Speed
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get speed() {
         let baseSpeed = this.#speed.walk;
@@ -619,9 +706,9 @@ var Creature = class extends Entity {
     }
     
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Resources
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get resources() {return this.#resources}
 
@@ -659,9 +746,9 @@ var Creature = class extends Entity {
         this.save()
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Features
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get features() {return this.#features}
 
@@ -684,9 +771,9 @@ var Creature = class extends Entity {
     }
 
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Proficiencies
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get proficiencies () {return this.#proficiencies}
 
@@ -721,9 +808,9 @@ var Creature = class extends Entity {
         return -1
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Spells
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get spells() { return this.#spells }
 
@@ -887,9 +974,9 @@ var Creature = class extends Entity {
         this.save()
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Saving Throws
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get saving_throws() {
         let saving_throws = this.score_bonus
@@ -909,9 +996,9 @@ var Creature = class extends Entity {
     }
     
     
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Skills
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get skills() {
         let skills = {
@@ -953,9 +1040,9 @@ var Creature = class extends Entity {
     }
 
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Conditions
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Get all conditions stored
     get conditions() {
@@ -972,7 +1059,14 @@ var Creature = class extends Entity {
                 duration: duration,
             }
             log(this.#name + " received the " + condition + " condition for " + duration + " rounds.");
-        } else if (duration <= 0) {
+        }
+        else if (duration == -1) {
+            this.#conditions["Hidden"] = {
+                duration: -1
+            }
+            log(this.#name + " received the " + condition + " condition.");
+        }
+        else if (duration <= 0) {
             delete this.#conditions[condition]
             log(this.#name + " lost the condition " + condition + ".");
         }
@@ -1009,9 +1103,9 @@ var Creature = class extends Entity {
         }
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Inventory & Equipment
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     get carry_weight () {
         const strength_score = Number(this.ability_scores.strength)
@@ -1371,9 +1465,9 @@ var Creature = class extends Entity {
         return subtypeValid;
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Notes
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     // Returns notes ordered
     get notes() {
@@ -1401,9 +1495,9 @@ var Creature = class extends Entity {
         this.#notes.splice(index, 1)
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // Instance
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     constructor(id, reset, inherit) { // Now explicitly takes (id, reset)
         super(id)
@@ -1423,9 +1517,9 @@ var Creature = class extends Entity {
         }
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
     // MapTool sync
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 
     load() {
         const object = JSON.parse(this.token.getProperty("object"));
@@ -1471,5 +1565,5 @@ var Creature = class extends Entity {
         return object;
     }
 
-    //=====================================================================================================
+    //-----------------------------------------------------------------------------------------------------
 }

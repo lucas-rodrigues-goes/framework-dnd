@@ -540,7 +540,7 @@ var Common = class {
 
     static help() {
         // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements("help", false);
+        const { valid, creature, action_details } = this.check_action_requirements("help", true);
         const target = selected();
         if (!valid || !target) return;
 
@@ -563,7 +563,22 @@ var Common = class {
     }
 
     static hide() {
-        return
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("hide", false);
+        if(creature.has_condition("Hidden")) { // Free unhide
+            creature.remove_condition("Hidden")
+            public_log(`${creature.name_color} has stopped hiding.`)
+            return
+        }
+        if (!valid) return
+
+        // Condition
+        creature.set_condition("Hidden", -1)
+        creature.maintain_stealth(true)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
     
     static ready() {
