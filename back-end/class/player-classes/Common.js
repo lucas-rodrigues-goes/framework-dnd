@@ -207,7 +207,7 @@ var Common = class {
         const target_visibility = creature.target_visibility()
 
         // Advantage Modifiers
-        advantage_weight += this.calculate_weapon_attack_advantage_modifiers(creature, target)
+        advantage_weight += this.calculate_weapon_attack_roll_advantage_modifiers(creature, target)
 
         // Roll d20
         const roll_result = roll_20(advantage_weight, creature)
@@ -273,8 +273,15 @@ var Common = class {
         return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
     }
 
-    static calculate_weapon_attack_advantage_modifiers(creature, target) {
+    static calculate_weapon_attack_roll_advantage_modifiers(creature, target) {
         let output = 0; {
+
+            // Helped
+            if (creature.has_condition("Helped")) {
+                creature.remove_condition("Helped")
+                output += 1
+            }
+
             // Unseen Attacker
             if (creature.has_conditions(["Hidden", "Invisible"], "any")) output += 1
 

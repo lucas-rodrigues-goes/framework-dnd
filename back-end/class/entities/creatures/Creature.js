@@ -102,8 +102,59 @@ var Creature = class extends Entity {
     }
 
     // Update stealth based on passive perception of nearby creatures
-    update_stealth() {
-        return
+    update_stealth(moving_creature) {
+        // Stop execution if is not in stealth
+        if (!this.has_condition("Hidden")) return
+
+        // Stealth Roll
+        const armor = database.items.data[this.equipment.body?.name]
+        const advantage_weight = armor ? (armor.properties.includes("Stealth Disadvantage") ? -1 : 0) : 0
+        const die_roll = roll_20(advantage_weight)
+        const stealth_roll = die_roll.result + this.skills.Stealth
+        
+        // Get all map tokens
+        const map_tokens = moving_creature ? [moving_creature] : MapTool.tokens.getMapTokens()
+        
+        // Loop through all tokens
+        let roll_was_required
+        for (const token of map_tokens) {
+            const creature = instance(token.getId())
+
+            // Validations
+            if (!creature) continue // Not instanced
+            if (!creature.race) continue // Not creature
+            if (creature.player == this.player) continue // Both are PCs or NPCs
+            if (calculate_distance(this, creature) > 6) continue // Too far
+            if (creature.target_visibility(this) < 0.4) continue // Can't see
+
+            // If too close to enemy
+            if (calculate_distance(this, creature) <= 1) {
+                this.remove_condition("Hidden")
+                const text = `${this.name_color} attempted to stay hidden but was noticed by ${creature.name_color} since they are too close.`
+                console.log(text, "all")
+                return
+            }
+
+            // Passive Perception VS Stealth Roll
+            const creature_passive_perception = creature.skills.Perception + 8
+            if (stealth_roll < creature_passive_perception) {
+                this.remove_condition("Hidden")
+                const text = `${this.name_color} attempted to stay hidden (${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}) but was noticed by ${creature.name_color}.`
+                console.log(text, "all")
+                return
+            }
+            
+            roll_was_required = true
+        }
+
+        // If there were valid creatures to reveal character, and they kept hidden anyway
+        if (roll_was_required) {
+            const text = `${this.name_color} attempted to stay hidden (${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}) and succeeded.`
+            console.log(text, this.player ? "all" : "gm")
+        } else {
+            const text = `${this.name_color} remains hidden.`
+            console.log(text, this.player ? "all" : "gm")
+        }
     }
 
 
@@ -914,7 +965,7 @@ var Creature = class extends Entity {
 
     // Set a new condition on the creature by its name and duration
     set_condition(condition, duration) {
-        duration = duration ? Number(duration) : database.conditions.data[condition].duration || 0
+        duration = duration !== undefined ? Number(duration) : database.conditions.data[condition].duration || 0
 
         if (duration >= 1) {
             this.#conditions[condition] = {
@@ -928,6 +979,10 @@ var Creature = class extends Entity {
 
         this.update_state()
         this.save()
+    }
+
+    remove_condition(condition) {
+        if(this.has_condition(condition)) this.set_condition(condition, 0)
     }
 
     // Verifies if the creature has a condition
