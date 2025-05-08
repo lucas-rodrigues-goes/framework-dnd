@@ -1272,7 +1272,6 @@
 
 				// Cancel execution if there is no update to character
 				if (isEqualJSON(abilities_tab, character)) return
-				else abilities_tab.classes = character.classes
 
 				// Database
 				const database = JSON.parse(await backend(`JSON.stringify({
@@ -1283,8 +1282,6 @@
 				// Update Abilities
 				let previous_type = undefined
 				async function updateAbilities() {
-					abilities_tab.abilities = character.abilities
-
 					// Clear container
 					const abilities_container = document.getElementById("abilities-tab-abilities")
 					abilities_container.clearChildren()
@@ -1345,8 +1342,6 @@
 				async function updateResources() {
 					if (isEqualJSON(abilities_tab.resources, character.resources) && 
 						isEqualJSON(abilities_tab.hasInitiative, character.hasInitiative)) return
-					abilities_tab.resources = character.resources
-					abilities_tab.hasInitiative = character.hasInitiative
 
 					// Clear container
 					const resources_container = document.getElementById("abilities-tab-resources")
@@ -1409,6 +1404,9 @@
 					}
 				}
 				updateResources()
+
+				// Cashing
+				abilities_tab = character
 			}
 
 			let spells_tab = {
