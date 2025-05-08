@@ -1,3 +1,5 @@
+
+
 var console = class {
 
     //=====================================================================================================
@@ -26,42 +28,63 @@ var console = class {
     // Methods
     //=====================================================================================================
 
-    static #current_time() {
+    static #time_hours_minutes() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         return `[${hours}:${minutes}]`;
     }
 
+    static #time_hours_minutes_seconds() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `[${hours}:${minutes}:${seconds}]`;
+    }
+
     // Creates the log, visibility = "gm" || "all"
     static log(text, visibility = "gm") {
-        const message = `${this.#current_time()} ${text}`;
-
-        // Storage
+        const message = `${this.#time_hours_minutes()} ${text}`;
         const history = this.history;
-        history.push({ message: message, visibility: visibility });
-        this.history = history
 
         // MapTool chat
-        if (visibility === "gm") {
-            MapTool.chat.broadcastToGM(`<span style="color: #666">${message}</span>`);
-        } else if (visibility === "all") {
-            MapTool.chat.broadcast(message);
+        switch(visibility) {
+            // Debug
+            case "debug": {
+                MapTool.chat.broadcastToGM(`<span style="color:rgb(197, 70, 70)">${this.#time_hours_minutes_seconds()} ${text}</span>`)
+                break
+            }
+            // GM
+            case "gm": {
+                MapTool.chat.broadcastToGM(`<span style="color: #666">${message}</span>`)
+                history.push({ message: message, visibility: visibility });
+                break
+            }
+            // All
+            case "all": {
+                MapTool.chat.broadcast(message);
+                history.push({ message: message, visibility: visibility });
+                break
+            }
         }
+
+        // Update History
+        this.history = history
     }
 
     static clear() {
         this.history = []
     }
 
-};
+}
 
 console.clear()
 
+// Backwards compatibility
 var log = function(string) {
     console.log(string);
 };
-
 var public_log = function(string) {
     console.log(string, "all");
 };

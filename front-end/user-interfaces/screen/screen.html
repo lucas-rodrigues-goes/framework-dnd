@@ -522,13 +522,13 @@
     
             // Target
             const target = JSON.parse(await backend(`JSON.stringify({
-                name: selected().name,
-                type: selected().race || selected().type || selected().token.getProperty("class") || "Entity",
-                portrait: selected().portrait,
-                player: selected().player,
-                armor_class: selected().armor_class,
-                health: selected().health,
-                max_health: selected().max_health,
+                name: selected()?.name,
+                type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
+                portrait: selected()?.portrait,
+                player: selected()?.player,
+                armor_class: selected()?.armor_class,
+                health: selected()?.health,
+                max_health: selected()?.max_health,
             })`))
     
             // Verify if there is need for update

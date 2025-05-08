@@ -1,58 +1,52 @@
-"use strict";
-try {
 
-    var Resource = class {
 
-        //=====================================================================================================
-        // Resource parameters
-        //=====================================================================================================
+var Resource = class {
 
-        #name
-        #image
-        #color
-        #description
-        
-        //=====================================================================================================
-        // Getter methods
-        //=====================================================================================================
+    //=====================================================================================================
+    // Resource parameters
+    //=====================================================================================================
 
-        get name() { return this.#name; }
-        get image() { return this.#image; }
-        get color() { return this.#color; }
-        get description() { return this.#description }
+    #name
+    #image
+    #color
+    #description
+    
+    //=====================================================================================================
+    // Getter methods
+    //=====================================================================================================
 
-        //=====================================================================================================
-        // Instance management
-        //=====================================================================================================
+    get name() { return this.#name; }
+    get image() { return this.#image; }
+    get color() { return this.#color; }
+    get description() { return this.#description }
 
-        constructor({
-            name = "", // String
-            image = "", // String
-            color = "", // String
-            description = "" // String
-        }) {
+    //=====================================================================================================
+    // Instance management
+    //=====================================================================================================
 
-            // Instance
-            this.#name = name
-            this.#image = image
-            this.#color = color
-            this.#description = description
+    constructor({
+        name = "", // String
+        image = "", // String
+        color = "", // String
+        description = "" // String
+    }) {
 
-        }
+        // Instance
+        this.#name = name
+        this.#image = image
+        this.#color = color
+        this.#description = description
 
-        object() {
-            return {
-                name: this.#name,
-                image: this.#image,
-                color: this.#color,
-                description: this.#description
-            };
-        }
-
-        //=====================================================================================================
     }
 
+    object() {
+        return {
+            name: this.#name,
+            image: this.#image,
+            color: this.#color,
+            description: this.#description
+        };
+    }
 
-} catch (e) {
-    MapTool.chat.broadcast("" + e + "\n" + e.stack);
+    //=====================================================================================================
 }

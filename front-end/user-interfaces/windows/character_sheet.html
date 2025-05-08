@@ -1522,7 +1522,10 @@
 					
 					// Get main class
 					const main_class = chosen_class
-					const spellcasting = JSON.parse(await backend(main_class + `?.spellcasting || {}`))
+					const spellcasting = JSON.parse(await backend(`
+						const None = undefined;
+						`+main_class + `?.spellcasting {}
+					`))
 
 					// Clear container
 					const abilities_container = document.getElementById("spells-tab-spells")
