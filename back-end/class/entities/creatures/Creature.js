@@ -283,16 +283,11 @@ var Creature = class extends Entity {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
             
             // If too close to enemy
-            if (calculate_distance(revealing_creature, hidden_creature) <= 1) {
-                hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden but was noticed by ${revealing_creature.name_color} since they are too close.`
-                console.log(text, "all")
-                continue
-            }
+            const distance_modifier = calculate_distance(revealing_creature, hidden_creature) <= 1 ? 5 : 0
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
-            if (stealth_roll < passive_perception) {
+            if (stealth_roll + distance_modifier < passive_perception) {
                 hidden_creature.remove_condition("Hidden")
                 const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color}.`
                 console.log(text, "all")
