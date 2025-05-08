@@ -566,7 +566,7 @@
             const {party, impersonated_ID, isPlayer} = JSON.parse(await backend(`JSON.stringify({
                 party: party_info(),
                 impersonated_ID: getImpersonated(),
-                isPlayer: impersonated().player
+                isPlayer: impersonated()?.player
             })`))
             
             // Verify if there is need for update
