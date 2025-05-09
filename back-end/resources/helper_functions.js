@@ -59,7 +59,11 @@ var instance = function (id) {
 
 // Returns currently selected character as an instance
 var selected = function () {
-    const selected_id = getSelected()
+    const selected_tokens = getSelected()
+
+    // Validate
+    if (selected_tokens.length != 1) return
+    const selected_id = selected_tokens[0]
 
     // If token_id exists returns an instance of that token
     if (selected_id) {
@@ -139,9 +143,7 @@ var getImpersonated = function () {
 var getSelected = function () {
     const return_array = MTScript.evalMacro(`[r:getSelected()]`).split(",")
 
-    if (return_array.length > 1) return return_array
-    else if (return_array.length == 1) return return_array[0]
-    else return undefined
+    return return_array
 }
 
 // Returns currently selected characters portrait
