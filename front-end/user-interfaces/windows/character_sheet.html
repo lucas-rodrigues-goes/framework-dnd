@@ -1434,7 +1434,7 @@
 				)`))
 
 				// Cancel execution if there is no update to character
-				if (isEqualJSON(spells_tab, character)) return
+				//if (isEqualJSON(spells_tab, character)) return
 
 				// Database
 				const { database, spells_list } = JSON.parse(await backend(`JSON.stringify({
@@ -1513,19 +1513,19 @@
 				// Update Spells
 				async function updateSpells() {
 					spells_tab.spells = character.spells
-
+					
 					// Active spells filter
 					const showAll = document.getElementById("spells-tab-spells-memorized-only").getAttribute("value") == "false"
 					const levelFilter = document.getElementById("spells-tab-spells-level").getAttribute("value")
-					spells_tab.filters.showAll = showAll
-					spells_tab.filters.levelFilter = levelFilter
+					if (isEqualJSON(
+						{spells: spells_tab.spells, filters: spells_tab.filters},
+						{spells: character.spells, filters: {showAll, levelFilter, chosen_class}}
+					)) return
+					spells_tab.filters = {...spells_tab.filters, showAll, levelFilter, chosen_class}
 					
 					// Get main class
-					const main_class = chosen_class
-					const spellcasting = JSON.parse(await backend(`
-						const None = undefined;
-						`+main_class + `?.spellcasting {}
-					`))
+					const class_spells = character.spells[chosen_class] || {known: []}
+					const spellcasting = character.spellcasting
 
 					// Clear container
 					const abilities_container = document.getElementById("spells-tab-spells")
@@ -1534,7 +1534,7 @@
 
 					// Create spell elements
 					let previous_level = undefined
-					for (const name of spells_list.filter(spell => character.spells[main_class].known.includes(spell))) {
+					for (const name of spells_list.filter(spell => class_spells.known.includes(spell))) {
 						const spell = database.spells[name]
 						const spell_image = spell_school_images[spell.school]
 						
@@ -1545,7 +1545,7 @@
 						if (spell.cast_time == -2) action_type = "Reaction"
 
 						// Conditions
-						const spellIsMemorized = character.spells[main_class]?.memorized?.includes(spell.name) || false
+						const spellIsMemorized = character.spells[chosen_class]?.memorized?.includes(spell.name) || false
 						const spellIsCantrip = spell.level == "cantrip"
 
 						// Validation

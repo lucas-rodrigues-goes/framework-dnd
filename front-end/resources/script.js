@@ -92,7 +92,7 @@ function animateAccordion() {
 async function backend(body) {
     return fetch("macro:console@lib:back", {
         method: "POST",
-        body
+        body: body,
     })
     .then(response => response.text())
     .catch(() => ""); // Return an empty string if fetch fails
