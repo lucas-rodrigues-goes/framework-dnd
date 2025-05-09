@@ -4,22 +4,57 @@
 //---------------------------------------------------------------------------------------------------
 
 // Instances a token by its ID
+const instances = {}
 var instance = function (id) {
     try {
-        const token = MapTool?.tokens?.getTokenByID(id);
-        const token_classes = token.getProperty("class");
-        try {
-            const player_class = eval(JSON.parse(token_classes)[0])
-            return new player_class(id)
-        } catch {
-            const player_class = eval(token_classes)
-            return new player_class(id)
+        const maptool_token = MapTool?.tokens?.getTokenByID(id);
+        const token = {
+            instance: undefined,
+            object: maptool_token.getProperty("object"),
+            classes: maptool_token.getProperty("class")
         }
+
+        // Cached instance present
+        if (instances[id] != undefined) {
+            const cache_token = instances[id]
+            token.instance = cache_token.instance
+            
+            if (JSON.stringify(token) == JSON.stringify(cache_token)) {
+                //console.log(`Successfully loaded token ${token.instance.name}`, "debug")
+            }
+            else {
+                token.instance.load()
+                console.log(`Successfully updated token ${token.instance.name}`, "debug")
+            }
+        }
+
+        // No caching
+        else {
+            // Attempt to instance using class array
+            try {
+                const player_class = eval(JSON.parse(token.classes)[0])
+                token.instance = new player_class(id)
+            }
+
+            // Attempt to instance by string
+            catch {
+                const player_class = eval(token.classes)
+                token.instance = new player_class(id)
+            }
+
+            console.log(`Successfully instanced token ${token.instance.name}`, "debug")
+        }
+
+        // Store
+        instances[id] = token
+
+        // Output
+        return token.instance
     }
     catch {
+        console.log("Attempt to instance token failed", "debug")
         return undefined
     }
-    
 }
 
 // Returns currently selected character as an instance
