@@ -127,7 +127,7 @@ var Common = class {
             weapon: weapon,
             hit_result: hit_result,
             damage_result: damage_result,
-            message: `${creature.name_color} attacks ${target.name_color} with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
+            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
         }
     }
 
@@ -213,15 +213,17 @@ var Common = class {
         const roll_result = roll_20(advantage_weight, creature)
         const roll_to_hit = roll_result.result
 
-        // Target AC + Cover
+        // Cover
         let cover = 0; {
             // Three quarters cover
             if (target_visibility <= 0.25) cover = 5
 
             // Half cover
             else if (target_visibility <= 0.5) cover = 2
+
+            if (calculate_distance(creature, target) <= 1) cover = 0
         }
-        const target_ac = target.armor_class + cover
+        hit_bonus -= cover
 
         // Output
         let advantage = "None"; {
@@ -241,7 +243,7 @@ var Common = class {
             }
 
             // Hit
-            else if (roll_to_hit + hit_bonus >= target_ac) {
+            else if (roll_to_hit + hit_bonus >= target.armor_class) {
                 output.success = true
                 output.message = "hits"
 
@@ -283,7 +285,11 @@ var Common = class {
             }
 
             // Unseen Attacker
-            if (creature.has_conditions(["Hidden", "Invisible"], "any")) output += 1
+            if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
+                creature.maintain_stealth(true)
+                target.passive_search()
+                output += 1
+            }
 
             // Reckless Attack
             if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
@@ -580,12 +586,21 @@ var Common = class {
         this.use_resources(action_details.resources)
         Initiative.set_recovery(action_details.recovery, creature)
     }
-    
-    static ready() {
-        return
-    }
 
     static search() {
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("search", false);
+        if (!valid) return
+
+        // Condition
+        creature.active_search()
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+    
+    static ready() {
         return
     }
 

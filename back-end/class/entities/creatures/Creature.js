@@ -104,6 +104,11 @@ var Creature = class extends Entity {
                 case "Blinded": {
                     const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
                     this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
+                    break
+                }
+                case "Rage": {
+                    this.set_state("Rage", hasCondition)
+                    break
                 }
             }
         }
@@ -111,6 +116,9 @@ var Creature = class extends Entity {
 
     // Refreshes and updates resources for a new round
     turn_start() {
+        // Reduce duration of conditions
+        this.reduce_all_conditions_duration(1)
+
         // Update Stealth
         this.maintain_stealth(true)
         this.passive_search()
@@ -176,13 +184,15 @@ var Creature = class extends Entity {
     // Stealth and Perception
     //-----------------------------------------------------------------------------------------------------
 
+    get passive_perception () {
+        return this.skills.Perception + 10
+    }
+
     static #can_reveal_stealth (revealing_creature, hidden_creature) {
         try {
             // Not instanced
-            if (!revealing_creature || !hidden_creature) return false
-
-            // Not Creature
-            if (!revealing_creature || !hidden_creature) return false
+            if (!revealing_creature || !hidden_creature) return false;
+            if (!(revealing_creature instanceof Creature) || !(hidden_creature instanceof Creature)) return false;
 
             // Both are PCs or NPCs
             if (revealing_creature.player == hidden_creature.player) return false
@@ -192,9 +202,6 @@ var Creature = class extends Entity {
 
             // Too far
             if (calculate_distance(revealing_creature, hidden_creature) > 6) return false
-
-            // No visibility
-            if (revealing_creature.target_visibility(hidden_creature) < 0.4) return false
         }
         catch {
             return false
@@ -210,7 +217,8 @@ var Creature = class extends Entity {
 
         // Stealth Roll
         let { stealth_roll, roll_text } = this.conditions["Hidden"]
-        if (new_roll || stealth_roll === undefined || roll_text === undefined) {
+        const entering_stealth = stealth_roll === undefined || roll_text === undefined
+        if (new_roll || entering_stealth) {
             const armor = database.items.data[this.equipment.body?.name]
             const advantage_weight = armor ? (armor.properties.includes("Stealth Disadvantage") ? -1 : 0) : 0
             const die_roll = roll_20(advantage_weight)
@@ -231,35 +239,33 @@ var Creature = class extends Entity {
         const creatures = MapTool.tokens.getMapTokens()
         
         // Loop through all tokens
-        let roll_was_required
+        let roll_was_required, highest_passive_perception = 0
         const hidden_creature = this
         for (const token of creatures) {
             const revealing_creature = instance(token.getId())
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
-            // If too close to enemy
-            if (calculate_distance(revealing_creature, hidden_creature) <= 1) {
-                hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden but was noticed by ${revealing_creature.name_color} since they are too close.`
-                console.log(text, "all")
-                return false
+            // Stealth modifiers
+            let stealth_modifier = 0; {
+                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= entering_stealth ? 10 : 5
             }
 
             // Passive Perception VS Stealth Roll
-            const passive_perception = revealing_creature.skills.Perception + 8
-            if (stealth_roll < passive_perception) {
+            const passive_perception = revealing_creature.passive_perception
+            if (stealth_roll + stealth_modifier < passive_perception) {
                 hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color}.`
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception - stealth_modifier}).`
                 console.log(text, "all")
                 return false
             }
             
             roll_was_required = true
+            highest_passive_perception = Math.max(highest_passive_perception, passive_perception - stealth_modifier)
         }
 
         // If there were valid creatures to reveal character, and they kept hidden anyway
         if (roll_was_required) {
-            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded.`
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${highest_passive_perception}).`
             console.log(text, this.player ? "all" : "gm")
             return true
         } else {
@@ -271,7 +277,7 @@ var Creature = class extends Entity {
 
     // Reveals hidden creatures based on passive perception
     passive_search() {
-        const passive_perception = this.skills.Perception + 8
+        const passive_perception = this.passive_perception
 
         // Get all map tokens
         const creatures = MapTool.tokens.getMapTokens()
@@ -281,20 +287,55 @@ var Creature = class extends Entity {
         for (const token of creatures) {
             const hidden_creature = instance(token.getId())
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
-            
-            // If too close to enemy
-            const distance_modifier = calculate_distance(revealing_creature, hidden_creature) <= 1 ? 5 : 0
+
+            // Stealth modifiers
+            let stealth_modifier = 0; {
+                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= 10
+            }
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
-            if (stealth_roll + distance_modifier < passive_perception) {
+            if (stealth_roll + stealth_modifier < passive_perception) {
                 hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color}.`
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception - stealth_modifier}).`
                 console.log(text, "all")
                 continue
             }
 
-            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded.`
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${passive_perception - stealth_modifier}).`
+            console.log(text, hidden_creature.player ? "all" : "gm")
+        }
+    }
+
+    // Reveals hidden creatures based on a roll
+    active_search() {
+        const die_roll = roll_20()
+        const perception_roll = Math.max(die_roll.result + this.skills.Perception, this.passive_perception)
+
+        // Get all map tokens
+        const creatures = MapTool.tokens.getMapTokens()
+
+        // Loop
+        const revealing_creature = this
+        for (const token of creatures) {
+            const hidden_creature = instance(token.getId())
+            if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
+
+            // Stealth modifiers
+            let stealth_modifier = 0; {
+                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= 10
+            }
+
+            // Passive Perception VS Stealth Roll
+            const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
+            if (stealth_roll + stealth_modifier < perception_roll) {
+                hidden_creature.remove_condition("Hidden")
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${perception_roll - stealth_modifier}).`
+                console.log(text, "all")
+                continue
+            }
+
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${perception_roll - stealth_modifier}).`
             console.log(text, hidden_creature.player ? "all" : "gm")
         }
     }
@@ -471,88 +512,91 @@ var Creature = class extends Entity {
         log(this.#name + " received " + value + " points of healing.");
     }
 
-
     //-----------------------------------------------------------------------------------------------------
     // Resistances
     //-----------------------------------------------------------------------------------------------------
 
     // Returns a dinamic object of current resistances
     get resistances() {
-        
-        // Features that add/change resistances
-        const feature_modifiers = {
-            "Dwarven Resilience": [{ damage: "Poison", reduction: 10 }]
-        };
-
-        // Conditions that add/change resistances
-        const condition_modifiers = {
-            "Rage": [
-                { damage: "Slashing", reduction: 5 },
-                { damage: "Bludgeoning", reduction: 5 },
-                { damage: "Piercing", reduction: 5 }
-            ]
-        };
-
-        // Default resistance values
-        let resistances = {
-            "Normal": {type:"default", reduction:0},
-            "Nonsilver": {type:"default", reduction:0},
-            "Slashing": {type:"default", reduction:0},
-            "Piercing": {type:"default", reduction:0},
-            "Bludgeoning": {type:"default", reduction:0},
-            "Fire": {type:"default", reduction:0},
-            "Cold": {type:"default", reduction:0},
-            "Lightning": {type:"default", reduction:0},
-            "Thunder": {type:"default", reduction:0},
-            "Acid": {type:"default", reduction:0},
-            "Poison": {type:"default", reduction:0},
-            "Psychic": {type:"default", reduction:0},
-            "Radiant": {type:"default", reduction:0},
-            "Necrotic": {type:"default", reduction:0},
-            "Force": {type:"default", reduction:0},
-        };
-
-        // Type Priority
-        const type_priority = {
-            heals: 4,
-            immunity: 3,
-            weakness: 2,
-            default: 1
-        }
-
-        // Apply Feature Modifiers
-        for (const [feature, modifiers] of Object.entries(feature_modifiers)) {
-            if (this.has_feature(feature)) {
-                modifiers.forEach(modifier => {
-                    const damage = modifier.damage
-                    const new_reduction = modifier.reduction || 0
-                    const new_type = modifier.type || "default"
-            
-                    if (type_priority[new_type] > type_priority[resistances[damage].type]) {
-                        resistances[damage].type = new_type;
-                    }
-                    if (new_reduction > resistances[damage].reduction) {
-                        resistances[damage].reduction = new_reduction;
-                    }
-                });
+        // Modifiers
+        const resistance_modifiers = {
+            features: {
+                "Dwarven Resilience": [
+                    { damage: "Poison", reduction: 10 }
+                ]
+            },
+            conditions: {
+                "Rage": [
+                    { damage: "Slashing", reduction: 3 },
+                    { damage: "Bludgeoning", reduction: 3 },
+                    { damage: "Piercing", reduction: 3 }
+                ]
             }
         }
-    
-        // Apply Condition Modifiers
-        for (const [condition, modifiers] of Object.entries(condition_modifiers)) {
-            if (this.has_condition(condition)) {
-                modifiers.forEach(modifier => {
-                    const damage = modifier.damage
-                    const new_reduction = modifier.reduction || 0
-                    const new_type = modifier.type || "default"
-            
-                    if (type_priority[new_type] > type_priority[resistances[damage].type]) {
-                        resistances[damage].type = new_type;
-                    }
-                    if (new_reduction > resistances[damage].reduction) {
-                        resistances[damage].reduction = new_reduction;
-                    }
-                });
+
+        /* Calculate Resistances */ 
+        let resistances; {
+            // Default Values
+            resistances = {
+                "Normal": {type:"default", reduction:0},
+                "Nonsilver": {type:"default", reduction:0},
+                "Slashing": {type:"default", reduction:0},
+                "Piercing": {type:"default", reduction:0},
+                "Bludgeoning": {type:"default", reduction:0},
+                "Fire": {type:"default", reduction:0},
+                "Cold": {type:"default", reduction:0},
+                "Lightning": {type:"default", reduction:0},
+                "Thunder": {type:"default", reduction:0},
+                "Acid": {type:"default", reduction:0},
+                "Poison": {type:"default", reduction:0},
+                "Psychic": {type:"default", reduction:0},
+                "Radiant": {type:"default", reduction:0},
+                "Necrotic": {type:"default", reduction:0},
+                "Force": {type:"default", reduction:0},
+            }
+
+            // Type Priority
+            const type_priority = {
+                heals: 4,
+                immunity: 3,
+                weakness: 2,
+                default: 1
+            }
+
+            // Apply Feature Modifiers
+            for (const [feature, modifiers] of Object.entries(resistance_modifiers.features)) {
+                if (this.has_feature(feature)) {
+                    modifiers.forEach(modifier => {
+                        const damage = modifier.damage
+                        const new_reduction = modifier.reduction || 0
+                        const new_type = modifier.type || "default"
+                
+                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
+                            resistances[damage].type = new_type;
+                        }
+                        if (new_reduction > resistances[damage].reduction) {
+                            resistances[damage].reduction = new_reduction;
+                        }
+                    });
+                }
+            }
+        
+            // Apply Condition Modifiers
+            for (const [condition, modifiers] of Object.entries(resistance_modifiers.conditions)) {
+                if (this.has_condition(condition)) {
+                    modifiers.forEach(modifier => {
+                        const damage = modifier.damage
+                        const new_reduction = modifier.reduction || 0
+                        const new_type = modifier.type || "default"
+                
+                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
+                            resistances[damage].type = new_type;
+                        }
+                        if (new_reduction > resistances[damage].reduction) {
+                            resistances[damage].reduction = new_reduction;
+                        }
+                    });
+                }
             }
         }
         
@@ -668,36 +712,47 @@ var Creature = class extends Entity {
     //-----------------------------------------------------------------------------------------------------
 
     get speed() {
-        let baseSpeed = this.#speed.walk;
-    
-        // Feature-based modifiers
-        const feature_modifiers = {
-            "Barbaric Movement": { type: "add", value: 10 },
-            "Monk Movement": { type: "add", value: 10 },
-            "Roving":  { type:"add", value: 5 },
-            "Fleet of Foot":  { type:"add", value: 5 },
-            "Bulky":  { type:"add", value: -5 },
-        };
-        for (const [feature, modifier] of Object.entries(feature_modifiers)) {
-            if (this.has_feature(feature)) {
-                if (modifier.type === "add") { baseSpeed += modifier.value; } 
-                else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+        // Modifiers
+        const speed_modifiers = {
+            features: {
+                "Barbaric Movement": { type: "add", value: 10 },
+                "Monk Movement": { type: "add", value: 10 },
+                "Roving":  { type:"add", value: 5 },
+                "Fleet of Foot":  { type:"add", value: 5 },
+                "Bulky":  { type:"add", value: -5 },
+            },
+            conditions: {
+                "Haste": { type: "multiply", value: 2 },
+                "Slow": { type: "multiply", value: 0.5 },
             }
         }
 
-        // Condition-based modifiers
-        const condition_modifiers = {
-            "Haste": { type: "multiply", value: 2 },
-            "Slow": { type: "multiply", value: 0.5 },
-        };
-        for (const [condition, modifier] of Object.entries(condition_modifiers)) {
-            if (this.has_condition(condition)) {
-                if (modifier.type === "add") { baseSpeed += modifier.value; } 
-                else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+        // Calculate Speed
+        let baseSpeed; {
+            // Default Value
+            baseSpeed = this.#speed.walk
+
+            // Feature-based modifiers
+            for (const [feature, modifier] of Object.entries(speed_modifiers.features)) {
+                if (this.has_feature(feature)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
             }
+
+            // Condition-based modifiers
+            for (const [condition, modifier] of Object.entries(speed_modifiers.conditions)) {
+                if (this.has_condition(condition)) {
+                    if (modifier.type === "add") { baseSpeed += modifier.value; } 
+                    else if (modifier.type === "multiply") { baseSpeed *= modifier.value; }
+                }
+            }
+
+            // Rounding
+            Math.floor(baseSpeed)
         }
     
-        return Math.floor(baseSpeed);
+        return baseSpeed
     }
     
 
@@ -1072,6 +1127,17 @@ var Creature = class extends Entity {
 
     remove_condition(condition) {
         if(this.has_condition(condition)) this.set_condition(condition, 0)
+    }
+
+    reduce_all_conditions_duration(amount = 1) {
+        for (const name in this.conditions) {
+            const condition = this.conditions[name]
+
+            if (condition.duration != -1) {
+                const new_duration = Math.max(condition.duration - amount, 0)
+                this.set_condition(name, new_duration)
+            }
+        }
     }
 
     // Verifies if the creature has a condition

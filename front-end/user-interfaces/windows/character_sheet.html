@@ -700,7 +700,11 @@
 						// Append Conditions
 						for (const name in character.conditions) {
 							// From character
-							const duration = timeUnit(character.conditions[name].duration)
+							const duration = (
+								character.conditions[name].duration != -1 
+								? timeUnit(character.conditions[name].duration) 
+								: ""
+							)
 
 							// From database
 							const condition = database.conditions[name] || {}
@@ -1512,8 +1516,6 @@
 
 				// Update Spells
 				async function updateSpells() {
-					spells_tab.spells = character.spells
-					
 					// Active spells filter
 					const showAll = document.getElementById("spells-tab-spells-memorized-only").getAttribute("value") == "false"
 					const levelFilter = document.getElementById("spells-tab-spells-level").getAttribute("value")
@@ -1522,6 +1524,7 @@
 						{spells: character.spells, filters: {showAll, levelFilter, chosen_class}}
 					)) return
 					spells_tab.filters = {...spells_tab.filters, showAll, levelFilter, chosen_class}
+					spells_tab.spells = character.spells
 					
 					// Get main class
 					const class_spells = character.spells[chosen_class] || {known: []}
@@ -1580,7 +1583,7 @@
 												// Conditional buttons
 												if (spellcasting.memorization) {
 													if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
-														const result = await backend(`impersonated().memorize_spell("` + main_class + `", "` + spell.name + `")`)
+														const result = await backend(`impersonated().memorize_spell("` + chosen_class + `", "` + spell.name + `")`)
 														
 														// Show warning if no memorization occurred
 														if (!result) warning(
@@ -1590,7 +1593,7 @@
 														updateSpellsTab()
 													}
 													if(spellIsMemorized) buttons["Forget"] =  () => {
-														backend(`impersonated().forget_spell("` + main_class + `", "` + spell.name + `")`)
+														backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
 														updateSpellsTab()
 													}
 												}

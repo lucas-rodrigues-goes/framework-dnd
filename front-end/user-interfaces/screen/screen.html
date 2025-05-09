@@ -175,12 +175,12 @@
             justify-content: center;
         }
     
-        #current-target img {
+        #current-target-portrait {
             position: absolute;
             height: 4vh;
             left: -5vh;
             border-radius: 50%;
-            border: 0.1vh solid #444;
+            border: 0.3vh solid #333;
             bottom: 1vh;
         }
     
@@ -192,7 +192,7 @@
             bottom: 0px;
             background-color: rgba(0,0,0,0.15);
             border-radius: 1vh;
-            border: 0.2vh solid #666;
+            border: 0.3vh solid #333;
         }
     
         #current-target .armor-class {
@@ -202,25 +202,32 @@
             color:#ddd;
             text-align: center;
             font-weight: bold;
-            font-size: 110%;
+            font-size: 120%;
     
             background-color: #444;
-            border: 0.3vh solid #555;
+            border: 0.3vh solid #292929;
             border-radius: 50%;
             border-top-right-radius: 0;
             border-top-left-radius: 0;
     
+            height: 2.5vh;
             padding: 0.5vh;
-            width:2vh;
+            width: 2vh;
             left: 1vh;
         }
     
         .text-shadow {
-            text-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
+            text-shadow: 0.3vh 0.3vh 0.2vh rgba(12, 12, 12, 1), 
+                -0.2vh -0.2vh 0.2vh rgba(12, 12, 12, 1);
         }
 
         .box-shadow {
             box-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
+        }
+
+        .tooltip-condition::after {
+            padding: 0.5vh;
+            font-size: 75%;
         }
     
     
@@ -340,7 +347,7 @@
 
                 div.appendChild(
                     {tag: "p", 
-                        style: {color: gmLog && "#666", margin: "0.2vh"}, 
+                        style: {color: gmLog && "#666", margin: "0.2vh", fontSize: "90%"}, 
                         textHTML: item.message
                     }
                 )
@@ -521,14 +528,18 @@
             }
     
             // Target
-            const target = JSON.parse(await backend(`JSON.stringify({
-                name: selected()?.name,
-                type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
-                portrait: selected()?.portrait,
-                player: selected()?.player,
-                armor_class: selected()?.armor_class,
-                health: selected()?.health,
-                max_health: selected()?.max_health,
+            const { target, database_conditions } = JSON.parse(await backend(`JSON.stringify({
+                target: {
+                    name: selected()?.name,
+                    type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
+                    portrait: selected()?.portrait,
+                    player: selected()?.player,
+                    armor_class: selected()?.armor_class,
+                    health: selected()?.health,
+                    max_health: selected()?.max_health,
+                    conditions: selected()?.conditions,
+                },
+                database_conditions: database.conditions.data
             })`))
     
             // Verify if there is need for update
@@ -553,6 +564,46 @@
                 const target_HUD_armor_class = getId("current-target-armor-class")
                 target_HUD_armor_class.textContent = target.armor_class
                 target_HUD_armor_class.style.display = target.armor_class ? "" : "none"
+
+                // Update conditions
+                const target_HUD_conditions = getId("current-target-conditions")
+                target_HUD_conditions.clearChildren()
+                for (const name in target.conditions) {
+                    
+                    const condition = target.conditions[name]
+                    const image = database_conditions[name].image || ""
+
+                    target_HUD_conditions.appendChild(
+                        {tag: "div", 
+                            style: {position: "relative", height: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
+                            attributes: {
+                                class: "tooltip tooltip-bottom tooltip-condition",
+                                tooltip: name + (condition.duration != -1 ? " (" + timeUnit(condition.duration).toLowerCase() + ")" : "")
+                            },
+                            children: [
+                                {tag: "img", 
+                                    attributes: {src: image},
+                                    style: {
+                                        height: "100%"
+                                    }
+                                },
+                                {tag: "div", 
+                                    attributes: {
+                                        class: "text-shadow"
+                                    },
+                                    style: {
+                                        position: "absolute", 
+                                        display: (condition.duration != -1 && condition.duration < 999 ? "" : "none"),
+                                        right: "0.1vh",
+                                        bottom: "-0.9vh",
+                                        fontSize: "80%"
+                                    }, 
+                                    text: condition.duration
+                                }
+                            ]
+                        }
+                    )
+                }
             }
     
             // Unhide after updating values
@@ -715,8 +766,9 @@
                         {tag: "div", attributes: {class: "center-horizontal"}, children: [
                             {tag: "div", attributes: {id: "current-target-health"}},
                             {tag: "div", style: {display: "flex", gap: "1vh"}, children: [
-                                {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}}
-                            ]}
+                                {tag: "div", attributes: {id: "current-target-armor-class", class: "armor-class"}, style: {display: "none"}},
+                                {tag: "div", style: {display: "flex", position: "relative", gap: "0.5vh", width: "100%", left: "1vh"}, attributes: {id: "current-target-conditions"}}
+                            ]},
                         ]}
                     ]}
                 ]}
