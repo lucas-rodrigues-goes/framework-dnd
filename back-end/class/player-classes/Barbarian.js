@@ -135,6 +135,13 @@ var Barbarian = class extends Common {
             origin: origin,
         }
 
+        // Reckless Attack
+        if (character.has_feature("Reckless Attack")) actions["reckless_attack"] = {
+            resources: [],
+            description: database.features.data["Reckless Attack"].description,
+            origin: origin,
+        }
+
         return actions
     }
 
@@ -144,7 +151,7 @@ var Barbarian = class extends Common {
         if (!valid) return;
 
         // Receive condition
-        impersonated().set_condition("Rage")
+        creature.set_condition("Rage")
 
         // Consume resources
         this.use_resources(action_details.resources)
@@ -152,6 +159,22 @@ var Barbarian = class extends Common {
 
         // Logging
         public_log(`${creature.name_color} is enraged!`)
+    }
+
+    static reckless_attack() {
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("reckless_attack", false);
+        if (!valid) return;
+
+        // Receive condition
+        creature.set_condition("Reckless Attack", 1)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        public_log(`${creature.name_color} throws aside all concern for defense and attacks recklessly!`)
     }
 
     //---------------------------------------------------------------------------------------------------

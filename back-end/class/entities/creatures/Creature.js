@@ -671,8 +671,9 @@ var Creature = class extends Entity {
         }
     
         // Base armor class values for calc
-        const dexterity_modifier = Number(this.score_bonus.dexterity) || 0;
-        const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0;
+        const dexterity_modifier = this.score_bonus.dexterity
+        const constitution_modifier = this.score_bonus.constitution
+        const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0
     
         // Calculate armor class based on armor type
         switch (armor_type) {
@@ -687,7 +688,18 @@ var Creature = class extends Entity {
                 armor_class = item_armor_class + dexterity_modifier;
                 break;
             default:
-                armor_class = 10 + dexterity_modifier; // Default to unarmored behavior
+                armor_class = 10 + dexterity_modifier; 
+                
+                // Barbarian Toughness
+                if (this.has_feature("Barbarian Toughness")) {
+                    armor_class = Math.max(armor_class, 10 + dexterity_modifier + constitution_modifier)
+                }
+
+                // Mage Armor
+                if (this.has_condition("Mage Armor")) {
+                    armor_class = Math.max(armor_class, 13 + dexterity_modifier)
+                }
+
                 break;
         }
 

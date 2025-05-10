@@ -188,8 +188,11 @@ var Common = class {
 
         // Creature Bonuses
         const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
-        const damage_bonus = isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))
+        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
+        const damage_modifiers = this.calculate_weapon_attack_damage_modifiers(creature, target)
+
+        // Damage
+        const damage_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))) + damage_modifiers
         const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
 
         // Output
@@ -344,6 +347,21 @@ var Common = class {
         }
 
         // Output
+        return output
+    }
+
+    static calculate_weapon_attack_damage_modifiers(creature, target) {
+        let output = 0; {
+
+            // Rage
+            if (creature.has_condition("Rage")) {
+                output += 2
+                const barbarian_level = creature.classes?.Barbarian?.level || 0
+                if (barbarian_level >= 9) output += 1
+                if (barbarian_level >= 16) output += 1
+            }
+
+        }
         return output
     }
 

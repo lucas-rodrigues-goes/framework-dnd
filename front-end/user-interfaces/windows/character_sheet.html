@@ -924,6 +924,7 @@
 							"initiative_mod": impersonated().initiative_mod,
 							"carry_weight": impersonated().carry_weight,
 							"score_bonus": impersonated().score_bonus,
+							"damage_modifiers": Common.calculate_weapon_attack_damage_modifiers(impersonated())
 						},
 						equipment: impersonated().equipment,
 						inventory: impersonated().inventory
@@ -955,7 +956,7 @@
 						// Damage Modifier
 						const str_bonus = character.basic.score_bonus["strength"]
 						const dex_bonus = isFinesse || isAmmo ? character.basic.score_bonus["dexterity"] : 0
-						const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3))
+						const damage_bonus = Math.max(str_bonus, Math.min(dex_bonus, 3)) + character.basic.damage_modifiers
 						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
 
 						// Add up weapon damages
@@ -981,7 +982,7 @@
 						// Damage Modifier
 						const str_bonus = character.basic.score_bonus["strength"]
 						const dex_bonus = isFinesse || isAmmo ? character.basic.score_bonus["dexterity"] : 0
-						const damage_bonus = 0
+						const damage_bonus = 0 + character.basic.damage_modifiers
 						const hit_bonus = Math.max(Math.min(str_bonus, 3), dex_bonus) + 2
 
 						// Add up weapon damages
