@@ -372,6 +372,7 @@ var Common = class {
     static actions_list() {
         const creature = impersonated();
         const origin = "Common"
+
         const actions = {
             attack: {
                 resources: ["Attack Action"],
@@ -379,90 +380,155 @@ var Common = class {
                 recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
                 origin: origin
             },
+            off_hand_attack: undefined,
+            opportunity_attack: undefined,
             grapple: {
                 resources: ["Attack Action"],
                 description: "Attempt to grapple the enemy, impeding their movement.",
                 recovery: 4,
+                image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
                 origin: origin
             },
             push: {
                 resources: ["Attack Action"],
                 description: "Attempt to push the enemy 5ft.",
                 recovery: 4,
+                image: "asset://3c2d43aac056025447140691ea97647d",
                 origin: origin
             },
             knock_prone: {
                 resources: ["Attack Action"],
                 description: "Attempt to knock down the enemy.",
                 recovery: 4,
+                image: "asset://74e398f61ad927dc3855f4ec649c86f9",
                 origin: origin
             },
             dash: {
                 resources: ["Action"],
                 description: "Gain additional movement equal to your speed.",
                 recovery: 1,
+                image: "asset://70343940fea7217d05b65ddf243b1004",
                 origin: origin
             },
             disengage: {
                 resources: ["Action"],
                 description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
                 recovery: 1,
+                image: "asset://31ded0026d18d1dffa98ae83c02154e2",
                 origin: origin
             },
             dodge: {
                 resources: ["Action"],
                 description: "Focus on avoiding attacks. Attack rolls against you have disadvantage.",
                 recovery: 1,
+                image: "asset://d8f7756c4828ffea746144ca2f2643b2",
                 origin: origin
             },
             help: {
                 resources: ["Action"],
                 description: "Aid another creature in attacking or avoiding attacks.",
                 recovery: 4,
+                image: "asset://3968417b9587fa72407aea0b473fcb9a",
                 origin: origin
             },
             hide: {
                 resources: ["Action"],
                 description: "Attempt to hide from enemies using Stealth.",
                 recovery: 1,
+                image: "asset://14959f9d383aad57803f897bc0e0f6c2",
                 origin: origin
             },
             ready: {
                 resources: ["Action"],
                 description: "Prepare to take an action later in response to a trigger.",
                 recovery: 0,
+                image: "asset://93420b4771de042d1c336f1c9c0a96ba",
                 origin: origin
             },
             search: {
                 resources: ["Action"],
                 description: "Devote your attention to finding something using Perception or Investigation.",
                 recovery: 1,
+                image: "asset://4429fcc699ba0b55fd3373841aebaf00",
                 origin: origin
             },
         }
 
+        // Attack
+        {
+            // Validations
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
+            const hasWeapon = weapon ? true : false
+            const isWeaponRanged = hasWeapon ? weapon.properties.includes("Ammunition") : false
+            const isWeaponMelee = hasWeapon && !isWeaponRanged
+
+            // Image
+            let image = ""; {
+                if (!hasWeapon) image = "asset://15d2e36a9ee7d30bdeca4d0b62572db5"
+                else if (isWeaponRanged) image = "asset://3eac5c3acef297725dbd3b0095ab9c94"
+                else if (isWeaponMelee) image = "asset://3c434b2998bc504339382ce6b11bb90b"
+            }
+
+            // Add Image
+            actions["attack"].image = image
+        }
+        
+
         // Off Hand Attack
-        const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
-        const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
-        if (hasOffHandWeapon) {
-            actions["off_hand_attack"] = {
-                resources: ["Bonus Action"],
-                description: "Use your off hand weapon to deliver a blow to the enemy.",
-                origin: origin
+        {
+            // Validations
+            const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
+            const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
+            const isOffHandWeaponRanged = hasOffHandWeapon ? off_hand_weapon.properties.includes("Ammunition") : false
+            const isOffHandWeaponMelee = hasOffHandWeapon && !isOffHandWeaponRanged
+
+            // Image
+            let image = ""; {
+                if (!hasOffHandWeapon) image = "asset://1d595c7a3a9f4d9dc169556dcaaff1de"
+                else if (isOffHandWeaponRanged) image = "asset://9796a1abd6f8333e3582dcfc0af36632"
+                else if (isOffHandWeaponMelee) image = "asset://a641145f8429182fb6fd43f39eddd72a"
+            }
+
+            // Adding Action
+            if (hasOffHandWeapon) {
+                actions["off_hand_attack"] = {
+                    resources: ["Bonus Action"],
+                    description: "Use your off hand weapon to deliver a blow to the enemy.",
+                    image: image,
+                    origin: origin
+                }
             }
         }
 
         // Opportunity Attack
-        const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
-        const isWeaponRanged = weapon ? weapon.properties.includes("Ammunition") : false
-        if (!isWeaponRanged) {
-            actions["opportunity_attack"] = {
-                resources: ["Reaction"],
-                description: "You can make an opportunity attack when a hostile creature that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking creature. The attack occurs right before the creature leaves your reach.",
-                origin: origin
+        {
+            // Validations
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
+            const hasWeapon = weapon ? true : false
+            const isWeaponRanged = hasWeapon ? weapon.properties.includes("Ammunition") : false
+            const isWeaponMelee = hasWeapon && !isWeaponRanged
+
+            // Image
+            let image = ""; {
+                if (!hasWeapon) image = "asset://3adce848e00dae81db4189b6d12614ed"
+                else if (isWeaponRanged) image = "asset://ea66850f4615b91472e44413ccb48a2b"
+                else if (isWeaponMelee) image = "asset://ccdbfa20d147bb42add0079e9f239f2f"
+            }
+
+            // Add Action
+            if (
+                !isWeaponRanged && 
+                Initiative.turn_order.includes(creature.id) && 
+                Initiative.turn_order[0] != creature.id
+            ) {
+                actions["opportunity_attack"] = {
+                    resources: ["Reaction"],
+                    description: "You can make an opportunity attack when a hostile creature that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking creature. The attack occurs right before the creature leaves your reach.",
+                    image: image,
+                    origin: origin
+                }
             }
         }
-        
 
         return actions
     }

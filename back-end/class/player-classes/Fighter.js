@@ -133,6 +133,7 @@ var Fighter = class extends Common {
         if (character.has_feature("Second Wind")) actions["second_wind"] = {
             resources: ["Bonus Action", "Second Wind"],
             description: database.features.data["Second Wind"].description,
+            image: database.resources.data["Second Wind"].image,
             origin: origin,
         }
 
@@ -140,6 +141,7 @@ var Fighter = class extends Common {
         if (character.has_feature("Action Surge")) actions["action_surge"] = {
             resources: ["Action Surge"],
             description: database.features.data["Action Surge"].description,
+            image: database.resources.data["Action Surge"].image,
             origin: origin,
         }
 

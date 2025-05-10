@@ -21,6 +21,8 @@
             font-size: 1.7vh;
             color: #ddd;
         }
+
+        img {filter: none}
     
         .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
     
@@ -229,6 +231,17 @@
             padding: 0.5vh;
             font-size: 75%;
         }
+
+        .ability-button {
+            background-color: #1c1c1c;
+            --pointermap: block
+        }
+        .ability-button:hover {
+            background-color: #333;
+        }
+        .ability-button:active {
+            background-color: #444;
+        }
     
     
         /*===================================================================================================*/
@@ -239,6 +252,36 @@
         //=====================================================================================================
         // Helper functions
         //=====================================================================================================
+
+        function getMainClass(classObj) {
+            let highestLevel = -Infinity;
+            let highestClass = null;
+
+            for (const [className, class_info] of Object.entries(classObj)) {
+                if (class_info.level > highestLevel) {
+                    highestLevel = class_info.level;
+                    highestClass = className;
+                }
+            }
+
+            return highestClass;
+        }
+
+        function orderByRestoredOn(obj) {
+            const priority = {
+                "": -1, // for undefined or missing
+                "turn start": 0,
+                "short rest": 1,
+                "long rest": 2,
+            };
+
+            return Object.keys(obj).sort((a, b) => {
+                const a_restored = obj[a].restored_on || "";
+                const b_restored = obj[b].restored_on || "";
+
+                return priority[a_restored] - priority[b_restored];
+            });
+        }
     
         function isEqualJSON(a, b) {
             return JSON.stringify(a) === JSON.stringify(b)
@@ -466,6 +509,7 @@
         let current_character = {}
         async function updateCurrentCharacter() {
     
+            // Validation
             const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
                 isImpersonated: getImpersonated() != "",
                 isInstanced: impersonated() != undefined
@@ -513,6 +557,108 @@
             character_menu.classList.remove("hidden")
         }
     
+        let current_abilities = {}
+        async function updateAbilities() {
+            const abilities_menu_div = document.getElementById("abilities-menu")
+            const abilities_div = document.getElementById("abilities")
+
+            // Validation
+            const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
+                isImpersonated: getImpersonated() != "",
+                isInstanced: impersonated() != undefined
+            })`))
+
+            // Div Visibility
+            if (!isImpersonated || !isInstanced) {
+                abilities_menu_div.classList.add("hidden")
+                return
+            }
+
+            // Character Attributes
+            const character = JSON.parse(await backend(`JSON.stringify(
+                {
+                    classes: impersonated().classes || {},
+                    resources: impersonated().resources || {},
+                    hasInitiative: Initiative.turn_order.includes(impersonated().id)
+                }
+            )`))
+
+            // Character Classes Request
+            let classes_actions_list = ""
+            for (const item of Object.keys(character.classes)) {
+                classes_actions_list += "..." + item + ".actions_list(),"
+            }
+
+            // Character Classes
+            character["abilities"] = JSON.parse(await backend(`JSON.stringify({
+                ...Common.actions_list(),
+                `+classes_actions_list+`
+            })`))
+
+            // Cancel execution if there is no update to character
+            if (isEqualJSON(current_abilities, character)) return
+
+            // Database
+            const database = JSON.parse(await backend(`JSON.stringify({
+                spells: database.spells.data,
+                resources: database.resources.data,
+            })`))
+
+            // Update Abilities
+            let current_origin = undefined
+            let current_div = undefined
+            async function updateAbilities() {
+                abilities_div.clearChildren()
+
+                for (const key in character.abilities) {
+                    const ability = character.abilities[key]
+                    const name = ability.name || capitalize(key.replace(/_/g, " "))
+                    
+                    // Create new div for origin
+                    const origin = ability.origin == "Common" ? "Common" : "Class" 
+                    if (current_origin != origin) {
+                        // Append current div
+                        if (current_div) {
+                            abilities_div.appendChild(current_div)
+                            abilities_div.appendChild({tag: "div", style: {width: "0.4vh", height: "4vh", borderRadius: "1vh", padding: 0, margin: 0, backgroundColor: "#888"}})
+                        }
+
+                        // Create new div
+                        current_origin = origin
+                        current_div = element({tag: "div", 
+                            style: {
+                                display: "grid",
+                                gridTemplateRows: "auto", // auto auto
+                                gridAutoFlow: "column",
+                                gap: "0.2vh",
+                                margin: 0,
+                                padding: 0,
+                            }
+                        })
+                    }
+                
+                    // Create element
+                    current_div.appendChild(
+                        {tag: "div",
+                            attributes: {class: "ability-button tooltip", tooltip: name},
+                            style: {borderRadius: "0.5vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}, 
+                            events: {click: () => backend( ability.origin + "." + key + "()" )},
+                            children: [
+                                {tag: "img", attributes: {src: ability.image}, style: {height: "3vh", width: "3vh"}},
+                            ]
+                        }
+                    )
+                }
+                abilities_div.appendChild(current_div)
+            }
+            updateAbilities()
+
+            current_abilities = character
+            abilities_menu_div.classList.remove("hidden")
+        }
+
+        /*  */
+
         let current_target = {}
         async function updateCurrentTarget() {
     
@@ -809,6 +955,42 @@
                 ]}
             )
 
+            // Bottom Middle
+            element(
+                {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, children: [
+                    container({title: "", id: "abilities", options: {
+                        div: {
+                            style: {
+                                position: "relative",
+                                backgroundColor: "rgba(42, 42, 42, 0.95)",
+                                borderColor: "#666",
+                                borderWidth: "0.2vh",
+                                borderRadius: "0.5vh",
+                                width: "fit-content",
+                                fontSize: "1.4vh",
+                                marginBottom: 0,
+                                padding: 0,
+                                margin: 0
+                            }
+                        },
+                        content: {
+                            style: {
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: "1vh",
+                                margin: 0,
+                                width: "fit-content"
+                            }
+                        },
+                        title: {
+                            style: {
+                                display: "none"
+                            },
+                        }
+                    }})
+                ]}
+            )
+
             // Bottom Right
             const gm_display = gm ? "block" : "none"
             element(
@@ -834,6 +1016,7 @@
         function updatePage () {
             // Set update intervals
             setInterval(()=> {
+                updateAbilities()
                 updateInitiative()
                 updateCurrentCharacter()
                 updateCurrentTarget()

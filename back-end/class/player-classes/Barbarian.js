@@ -132,6 +132,7 @@ var Barbarian = class extends Common {
         if (character.has_feature("Rage")) actions["rage"] = {
             resources: ["Bonus Action", "Rage"],
             description: database.features.data["Rage"].description,
+            image: database.conditions.data["Rage"].image,
             origin: origin,
         }
 
@@ -139,6 +140,7 @@ var Barbarian = class extends Common {
         if (character.has_feature("Reckless Attack")) actions["reckless_attack"] = {
             resources: [],
             description: database.features.data["Reckless Attack"].description,
+            image: database.conditions.data["Reckless Attack"]?.image || "",
             origin: origin,
         }
 
