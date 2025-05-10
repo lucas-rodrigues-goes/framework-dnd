@@ -380,8 +380,8 @@ var Common = class {
                 recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
                 origin: origin
             },
-            off_hand_attack: undefined,
             opportunity_attack: undefined,
+            off_hand_attack: undefined,
             grapple: {
                 resources: ["Attack Action"],
                 description: "Attempt to grapple the enemy, impeding their movement.",
