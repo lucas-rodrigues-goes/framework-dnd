@@ -4,6 +4,35 @@
 // Helper functions
 //=====================================================================================================
 
+function rgb(r, g, b) {
+    // Normalize RGB values to 0-1 range
+    var rn = r / 255;
+    var gn = g / 255;
+    var bn = b / 255;
+
+    // Calculate hue rotation
+    var hueRotate = Math.round(
+        Math.atan2(Math.sqrt(3) * (gn - bn), 
+        2 * rn - gn - bn
+    ) * (180 / Math.PI))
+
+    // Calculate brightness adjustment (0-200%)
+    var brightness = Math.round(
+        (rn + gn + bn) / 3 * 100 + 50
+    );
+
+    // Calculate saturation (50-150% range)
+    var max = Math.max(rn, gn, bn);
+    var min = Math.min(rn, gn, bn);
+    var saturation = max === 0 ? 0 : Math.round(
+        (max - min) / max * 100 + 50
+    );
+
+    return "brightness(" + brightness + "%) " +
+        "saturate(" + saturation + "%) " +
+        "hue-rotate(" + hueRotate + "deg)";
+}
+
 function hash(string) {
     
     let hash = 0;
