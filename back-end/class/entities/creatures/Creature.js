@@ -209,6 +209,14 @@ var Creature = class extends Entity {
 
         return true
     }
+
+    static #calculate_perception_modifier (revealing_creature, hidden_creature, entering_stealth=false) {
+        let perception_modifier = 0; {
+            if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) perception_modifier += entering_stealth ? 10 : 5
+            if (MTScript.evalMacro(`[r:getMapVision()]`) == "Day") perception_modifier += 5
+        }
+        return perception_modifier
+    }
     
     // Update stealth based on passive perception of nearby creatures
     maintain_stealth (new_roll=false) {
@@ -245,22 +253,20 @@ var Creature = class extends Entity {
             const revealing_creature = instance(token.getId())
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
-            // Stealth modifiers
-            let stealth_modifier = 0; {
-                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= entering_stealth ? 10 : 5
-            }
+            // Perception modifiers
+            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature, entering_stealth)
 
             // Passive Perception VS Stealth Roll
             const passive_perception = revealing_creature.passive_perception
-            if (stealth_roll + stealth_modifier < passive_perception) {
+            if (stealth_roll < passive_perception + perception_modifier) {
                 hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception - stealth_modifier}).`
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception + perception_modifier}).`
                 console.log(text, "all")
                 return false
             }
             
             roll_was_required = true
-            highest_passive_perception = Math.max(highest_passive_perception, passive_perception - stealth_modifier)
+            highest_passive_perception = Math.max(highest_passive_perception, passive_perception + perception_modifier)
         }
 
         // If there were valid creatures to reveal character, and they kept hidden anyway
@@ -288,21 +294,19 @@ var Creature = class extends Entity {
             const hidden_creature = instance(token.getId())
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
-            // Stealth modifiers
-            let stealth_modifier = 0; {
-                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= 10
-            }
+            // Perception modifiers
+            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature)
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
-            if (stealth_roll + stealth_modifier < passive_perception) {
+            if (stealth_roll < passive_perception + perception_modifier) {
                 hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception - stealth_modifier}).`
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${passive_perception + perception_modifier}).`
                 console.log(text, "all")
                 continue
             }
 
-            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${passive_perception - stealth_modifier}).`
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${passive_perception + perception_modifier}).`
             console.log(text, hidden_creature.player ? "all" : "gm")
         }
     }
@@ -321,21 +325,19 @@ var Creature = class extends Entity {
             const hidden_creature = instance(token.getId())
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
-            // Stealth modifiers
-            let stealth_modifier = 0; {
-                if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) stealth_modifier -= 10
-            }
+            // Perception modifiers
+            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature)
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
-            if (stealth_roll + stealth_modifier < perception_roll) {
+            if (stealth_roll < perception_roll + perception_modifier) {
                 hidden_creature.remove_condition("Hidden")
-                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${perception_roll - stealth_modifier}).`
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) but was noticed by ${revealing_creature.name_color} (DC ${perception_roll + perception_modifier}).`
                 console.log(text, "all")
                 continue
             }
 
-            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${perception_roll - stealth_modifier}).`
+            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${perception_roll + perception_modifier}).`
             console.log(text, hidden_creature.player ? "all" : "gm")
         }
     }

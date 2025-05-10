@@ -26,70 +26,118 @@ var Common = class {
 
     static has_resources_available(resources) {
         const creature = impersonated();
-    
+        
         let return_value = true;
         const missing_resources = [];
-    
+        
         for (const name of resources) {
             const resource = creature?.resources[name]?.value || 0;
-    
+
             // Ignore turn resources if not in initiative
             const is_turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
             const has_initiative = Initiative.turn_order.includes(creature.id);
             if (is_turn_resource && !has_initiative) continue;
-    
-            // Special case: Attack Action can be substituted by Action
-            if (name === "Attack Action") {
-                const action_res = creature?.resources["Action"]?.value || 0;
-    
-                if (resource < 1 && action_res < 1) {
-                    return_value = false;
-                    missing_resources.push("Attack Action"); // <-- Use the original name here
+            
+            // Check if we can use Ready Action substitution
+            const can_use_reaction = creature.has_condition("Ready Action") && 
+                                (name === "Action" || name === "Attack Action");
+            
+            switch (name) {
+                case "Attack Action": {
+                    const action_res = creature?.resources["Action"]?.value || 0;
+                    const reaction_res = creature?.resources["Reaction"]?.value || 0;
+                    
+                    if (resource < 1) {
+                        if (can_use_reaction && reaction_res >= 1) {
+                            // Can use Reaction instead of Action
+                            continue;
+                        }
+                        if (action_res >= 1) {
+                            // Can use Action
+                            continue;
+                        }
+                        return_value = false;
+                        missing_resources.push("Attack Action");
+                    }
+                    break;
                 }
-    
-                continue;
-            }
-    
-            // General case
-            if (resource < 1) {
-                return_value = false;
-                missing_resources.push(name);
+                
+                case "Action": {
+                    if (can_use_reaction) {
+                        const reaction_res = creature?.resources["Reaction"]?.value || 0;
+                        if (resource < 1 && reaction_res < 1) {
+                            return_value = false;
+                            missing_resources.push("Action");
+                        }
+                    } else if (resource < 1) {
+                        return_value = false;
+                        missing_resources.push("Action");
+                    }
+                    break;
+                }
+                
+                default: {
+                    if (resource < 1) {
+                        return_value = false;
+                        missing_resources.push(name);
+                    }
+                }
             }
         }
-    
+        
         if (!return_value) {
             public_log(`${creature.name_color} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
         }
-    
+        
         return return_value;
     }
 
     static use_resources(resources) {
-        const creature = impersonated()
+        const creature = impersonated();
 
         for (const name of resources) {
-            const resource = creature.resources[name]
+            const resource = creature.resources[name];
 
             // Ignore turn resources if not in initiative
-            const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name)
-            const has_initative = Initiative.turn_order.includes(creature.id)
-            if(turn_resource && !has_initative) continue
+            const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+            const has_initiative = Initiative.turn_order.includes(creature.id);
+            if (turn_resource && !has_initiative) continue;
             
-            // Consume action to create attack actions
-            if (name == "Attack Action" && resource.value == 0) {
+            // Check if we can use Ready Action substitution
+            const can_use_reaction = creature.has_condition("Ready Action") && 
+                                (name === "Action" || name === "Attack Action");
 
-                // Reduce action
-                const action_resource = creature.resources["Action"]
-                creature.set_resource_value("Action", action_resource.value - 1)
-
+            // Handle Attack Action with possible Action/Reaction substitution
+            if (name === "Attack Action" && resource.value < 1) {
+                if (can_use_reaction && creature.resources["Reaction"].value >= 1) {
+                    // Use Reaction instead of Action
+                    creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
+                    creature.remove_condition("Ready Action")
+                } else if (creature.resources["Action"].value >= 1) {
+                    // Use Action normally
+                    creature.set_resource_value("Action", creature.resources["Action"].value - 1);
+                } else {
+                    log("An error occurred when calculating resources for Attack Action");
+                    continue;
+                }
                 // Recharge attack action
-                creature.set_resource_value("Attack Action", resource.max)
-                resource.value = creature.resources[name].value
+                creature.set_resource_value("Attack Action", resource.max - 1);
+                continue;
             }
 
-            // Consume resource
-            if (resource.value < 1) log("An error occurred when calculating resources, that led an empty resource ("+name+") to be spent")
-            creature.set_resource_value(name, resource.value - 1)
+            // Handle Action with Ready Action substitution
+            if (name === "Action" && resource.value < 1 && can_use_reaction) {
+                creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
+                creature.remove_condition("Ready Action")
+                creature.set_resource_value("Action", resource.max);
+            }
+
+            // Default consumption
+            if (resource.value < 1) {
+                log(`An error occurred when calculating resources, that led an empty resource (${name}) to be spent`);
+                continue;
+            }
+            creature.set_resource_value(name, resource.value - 1);
         }
     }
 
@@ -601,7 +649,19 @@ var Common = class {
     }
     
     static ready() {
-        return
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("ready", false);
+        if (!valid) return
+
+        // Condition
+        creature.set_condition("Ready Action", 1)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(`${creature.name_color} is readying an action.`, "all")
     }
 
     //---------------------------------------------------------------------------------------------------

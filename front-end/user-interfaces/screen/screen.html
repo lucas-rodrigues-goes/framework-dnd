@@ -338,7 +338,7 @@
             div.clearChildren()
 
             // Create elements
-            const isGM = '+isGM()+' == 1
+            const isGM = false //'+isGM()+' == 1
             for (const item of history.reverse()) {
                 const gmLog = item.visibility == "gm"
                 if (gmLog && !isGM) continue
@@ -347,7 +347,7 @@
 
                 div.appendChild(
                     {tag: "p", 
-                        style: {color: gmLog && "#666", margin: "0.2vh", fontSize: "90%"}, 
+                        style: {color: gmLog && "#666", margin: "0.3vh", fontSize: "90%"}, 
                         textHTML: item.message
                     }
                 )
