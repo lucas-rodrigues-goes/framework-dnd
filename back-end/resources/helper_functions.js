@@ -6,8 +6,8 @@
 // Instances a token by its ID
 const instances = {}
 var instance = function (id) {
-    const maptool_token = MapTool?.tokens?.getTokenByID(id);
     try {
+        const maptool_token = MapTool?.tokens?.getTokenByID(id);
         const token = {
             instance: undefined,
             object: maptool_token.getProperty("object"),
@@ -55,8 +55,15 @@ var instance = function (id) {
         return token.instance
     }
     catch {
-        console.log(`Attempt to instance ${maptool_token.getName()} failed.`, "debug")
-        return undefined
+        try {
+            const maptool_token = MapTool?.tokens?.getTokenByID(id);
+            console.log(`Attempt to instance ${maptool_token.getName()} failed.`, "debug")
+            return undefined
+        }
+        catch {
+            console.log(`Attempt to instance invalid ID.`, "debug")
+            return undefined
+        }
     }
 }
 

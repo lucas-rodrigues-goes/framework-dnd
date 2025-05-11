@@ -195,12 +195,6 @@
 
 				return String(number)
 			}
-			function capitalizeAll(str) {
-				return str
-					.split(" ")
-					.map(word => word.charAt(0).toUpperCase() + word.slice(1))
-					.join(" ");
-			}
 			function subtitle({text}) {
 				return {tag: "p", text, style: {opacity: "0.8", fontWeight: "bold", fontSize: "110%", marginBottom:"-1.5vh"}}
 			}

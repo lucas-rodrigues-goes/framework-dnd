@@ -54,6 +54,13 @@ function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+function capitalizeAll(str) {
+    return str
+        .split(" ")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
 function timeUnit(time) {
     const units = [
         { threshold: 14400, unit: "Day" },

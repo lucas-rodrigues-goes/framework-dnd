@@ -328,7 +328,6 @@ var Common = class {
 
     static calculate_weapon_attack_roll_advantage_modifiers(creature, target) {
         let output = 0; {
-
             // Helped
             if (creature.has_condition("Helped")) {
                 creature.remove_condition("Helped")
@@ -344,6 +343,9 @@ var Common = class {
 
             // Reckless Attack
             if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
+
+            // Dodge
+            if (target.has_condition("Dodge")) output -= 1 
         }
 
         // Output

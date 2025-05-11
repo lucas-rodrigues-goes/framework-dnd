@@ -123,10 +123,18 @@ var Initiative = class {
     }
 
     static get turn_order () {
+
+        // Verify Invalid IDs
+        for (const id of Object.keys(this.creatures)) {
+            if (instance(id) == undefined) this.remove_creature(id)
+        }
+
+        // Sort by initiative
         const return_value = Object.keys(this.creatures).sort(
             (a, b) => this.creatures[a].initiative - this.creatures[b].initiative
-        );
+        )
 
+        // Set move lock
         moveLock(return_value.length < 1)
 
         return return_value

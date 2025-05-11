@@ -249,9 +249,9 @@
         </style>
         <script>
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Helper functions
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
 
         function getMainClass(classObj) {
             let highestLevel = -Infinity;
@@ -319,9 +319,9 @@
             return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
         }
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Components
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
     
         function partyCharacter({portrait, health, max_health, id}) {
             // Click function
@@ -359,9 +359,9 @@
         }
         
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Updates
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
 
         current_log = {
             history: []
@@ -558,10 +558,7 @@
         }
     
         let current_abilities = {}
-        async function updateAbilities() {
-            const abilities_menu_div = document.getElementById("abilities-menu")
-            const abilities_div = document.getElementById("abilities")
-
+        async function updateAbilitiesBar() {
             // Validation
             const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
                 isImpersonated: getImpersonated() != "",
@@ -569,6 +566,7 @@
             })`))
 
             // Div Visibility
+            const abilities_menu_div = document.getElementById("abilities-menu")
             if (!isImpersonated || !isInstanced) {
                 abilities_menu_div.classList.add("hidden")
                 return
@@ -605,9 +603,9 @@
             })`))
 
             // Update Abilities
-            let current_origin = undefined
-            let current_div = undefined
+            let current_origin = undefined, current_div = undefined, count = 0
             async function updateAbilities() {
+                const abilities_div = document.getElementById("abilities")
                 abilities_div.clearChildren()
 
                 for (const key in character.abilities) {
@@ -619,8 +617,15 @@
                     if (current_origin != origin) {
                         // Append current div
                         if (current_div) {
+                            while ((count % 1) != 0) {
+                                current_div.appendChild({tag: "div", 
+                                    attributes: {class: "ability-button"},
+                                    style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
+                                })
+                                count += 1
+                            }
                             abilities_div.appendChild(current_div)
-                            abilities_div.appendChild({tag: "div", style: {width: "0.4vh", height: "4vh", borderRadius: "1vh", padding: 0, margin: 0, backgroundColor: "#888"}})
+                            abilities_div.appendChild({tag: "div", style: {width: "0.4vh", margin: 0}})
                         }
 
                         // Create new div
@@ -638,10 +643,11 @@
                     }
                 
                     // Create element
+                    count += 1
                     current_div.appendChild(
                         {tag: "div",
                             attributes: {class: "ability-button tooltip", tooltip: name},
-                            style: {borderRadius: "0.5vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}, 
+                            style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
                             events: {click: () => backend( ability.origin + "." + key + "()" )},
                             children: [
                                 {tag: "img", attributes: {src: ability.image}, style: {height: "3vh", width: "3vh"}},
@@ -649,15 +655,76 @@
                         }
                     )
                 }
+                while ((count % 1) != 0) {
+                    current_div.appendChild({tag: "div", 
+                        attributes: {class: "ability-button"},
+                        style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
+                    })
+                    count += 1
+                }
                 abilities_div.appendChild(current_div)
             }
             updateAbilities()
 
+            // Update Resources
+            async function updateResources() {
+                if (isEqualJSON(current_abilities.resources, character.resources)) return
+
+                const resources_div = document.getElementById("resources")
+                resources_div.clearChildren()
+
+                let previous_restored_on = undefined
+                for (const name of orderByRestoredOn(character.resources)) {
+                    const resource = character.resources[name]
+                    const resource_data = database.resources[name] || {}
+                    const color = {color: resource_data.color || ""}
+
+                    // Validation
+                    if(name == "Attack Action" && resource.value <= 0) continue
+                    if(name.includes("Level Spell Slot")) continue
+                    if(resource.restored_on == "turn start" && !character.hasInitiative) continue
+                    if(resource.restored_on == "turn start" && resource.value <= 0) continue
+
+                    // Add spacing between resource types
+                    const restored_on = resource?.restored_on || ""
+                    const text = restored_on != "" ? "" + capitalizeAll(restored_on) : "Other"
+                    if (previous_restored_on != restored_on) {
+                        if (previous_restored_on != undefined) resources_div.appendChild({tag: "div", style: {width: "1vh"}})
+                        previous_restored_on = restored_on
+                    }
+
+                    // Add element
+                    resources_div.appendChildren([
+                        {tag: "div",
+                            attributes: {
+                                class: "tooltip",
+                                tooltip: name
+                            },
+                            style: {
+                                display: "flex", justifyContent: "center", alignItems: "flex-end",
+                                backgroundColor: "#222", border: "0.2vh solid #666", height: "fit-content", width: "fit-content", position: "relative", borderRadius: "0.5vh"
+                            },
+                            children: [
+                                /* {tag: "img",
+                                    attributes: {src: resource_data.image, class: "center-horizontal"},
+                                    style: {position: "absolute", top: "0.2vh", height: "1.5vh", width: "1.5vh"}
+                                }, */
+                                {tag: "span", style: {padding: "0 0.5vh",position: "relative", textAlign: "center", fontWeight: "bold", fontSize: "90%"}, children: [
+                                    {tag: "img", attributes: {src: resource_data.image}, style: {position: "relative", bottom: "-0.2vh", height: "1em"}},
+                                    {tag: "span", style: {marginLeft: "0.3vh"}, text: resource.value + (name == "Movement" ? "ft" : "")},
+                                    /* {tag: "span", text: " / ", style: {fontWeight: "normal"}},
+                                    {tag: "span", style: color, text: resource.max}, */
+                                ]}
+                            ]
+                        }
+                    ])
+                }
+            } 
+            updateResources()
+
             current_abilities = character
             abilities_menu_div.classList.remove("hidden")
         }
-
-        /*  */
 
         let current_target = {}
         async function updateCurrentTarget() {
@@ -795,9 +862,9 @@
             }
         }
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Create HTML
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
     
         function loadPage() {
 
@@ -957,7 +1024,19 @@
 
             // Bottom Middle
             element(
-                {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, children: [
+                {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, style: {paddingTop: "0"}, children: [
+                    {tag: "div", 
+                        attributes: {class: "center-horizontal", id: "resources"}, 
+                        style: {
+                            position: "absolute", 
+                            bottom: "100%",
+                            height: "fit-content", width: "fit-content",
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "0.5vh",
+                            padding: "0.5vh",
+                        }
+                    },
                     container({title: "", id: "abilities", options: {
                         div: {
                             style: {
@@ -970,7 +1049,8 @@
                                 fontSize: "1.4vh",
                                 marginBottom: 0,
                                 padding: 0,
-                                margin: 0
+                                margin: 0,
+                                zIndex: 10,
                             }
                         },
                         content: {
@@ -1009,14 +1089,14 @@
     
         }
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Execution
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
 
         function updatePage () {
             // Set update intervals
             setInterval(()=> {
-                updateAbilities()
+                updateAbilitiesBar()
                 updateInitiative()
                 updateCurrentCharacter()
                 updateCurrentTarget()
@@ -1030,7 +1110,7 @@
             updatePage()
         }
     
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
     
         </script>
         ']
