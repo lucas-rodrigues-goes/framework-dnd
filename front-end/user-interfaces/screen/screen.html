@@ -610,14 +610,14 @@
 
                 for (const key in character.abilities) {
                     const ability = character.abilities[key]
-                    const name = ability.name || capitalize(key.replace(/_/g, " "))
+                    const name = ability.name || capitalizeAll(key.replace(/_/g, " "))
                     
                     // Create new div for origin
                     const origin = ability.origin == "Common" ? "Common" : "Class" 
                     if (current_origin != origin) {
                         // Append current div
                         if (current_div) {
-                            while ((count % 1) != 0) {
+                            while ((count % 2) != 0) {
                                 current_div.appendChild({tag: "div", 
                                     attributes: {class: "ability-button"},
                                     style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
@@ -633,7 +633,7 @@
                         current_div = element({tag: "div", 
                             style: {
                                 display: "grid",
-                                gridTemplateRows: "auto", // auto auto
+                                gridTemplateRows: "auto auto", // auto auto
                                 gridAutoFlow: "column",
                                 gap: "0.2vh",
                                 margin: 0,
@@ -655,7 +655,7 @@
                         }
                     )
                 }
-                while ((count % 1) != 0) {
+                while ((count % 2) != 0) {
                     current_div.appendChild({tag: "div", 
                         attributes: {class: "ability-button"},
                         style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
