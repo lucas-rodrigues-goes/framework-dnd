@@ -107,6 +107,7 @@ var impersonated = function () {
 
 // Resets currently impersonated token
 var resetImpersonated = function () {
+    delete instances[impersonated().id]
     MTScript.evalMacro(`[r:resetProperty("object", getImpersonated())]`)
     MTScript.evalMacro(`[r:resetProperty("class", getImpersonated())]`)
 }

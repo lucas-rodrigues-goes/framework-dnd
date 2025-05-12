@@ -6,6 +6,7 @@
     
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
     
@@ -585,16 +586,19 @@
                 }
             )`))
 
-            // Character Classes Request
-            let classes_actions_list = ""
-            for (const item of Object.keys(character.classes)) {
-                classes_actions_list += "..." + item + ".actions_list(),"
-            }
-
             // Character Classes
+            let classes_actions_list = ""
+            for (const item of Object.keys(character.classes)) classes_actions_list += "..." + item + ".actions_list(),"
             character["abilities"] = JSON.parse(await backend(`JSON.stringify({
                 ...Common.actions_list(),
                 `+classes_actions_list+`
+            })`))
+
+            // Classes Spellcasting
+            let classes_spellcasting = ""
+            for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+            character["spellcasting"] = JSON.parse(await backend(`JSON.stringify({
+                `+classes_spellcasting+`
             })`))
 
             // Cancel execution if there is no update to character
@@ -609,6 +613,12 @@
             // Update Abilities
             let current_origin = undefined, current_div = undefined
             async function updateAbilities() {
+                // VERIFY THIS HERE
+                if (
+                    isEqualJSON(current_abilities.abilities, character.abilities) &&
+                    isEqualJSON(current_abilities.spells && character.spells)
+                ) return
+
                 const abilities_div = document.getElementById("abilities")
                 abilities_div.clearChildren()
 
@@ -625,18 +635,69 @@
                         }
                     })
                 }
-                function ability_slot ({name, origin, function_name, image}) {
+                function ability_slot ({name = "", origin, player_class = "", function_name = "", image = ""}) {
+                    const code = (origin == "Spells"
+                        ? "Spells.cast_spell(database.spells.data[`"+name+"`], `"+player_class+"`)"
+                        : origin + "." + function_name + "()"
+                    )
+
                     return element(
                         {tag: "div",
                             attributes: {class: "ability-button tooltip", tooltip: name},
                             style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
-                            events: {click: () => backend( origin + "." + function_name + "()" )},
+                            events: {click: () => backend(code)},
                             children: [
                                 {tag: "img", attributes: {src: image}, style: {height: "3vh", width: "3vh"}},
                             ]
                         }
                     )
                 }
+                function append_current_div () {
+                    while((current_div.children.length % 2) != 0) {
+                        current_div.appendChild(
+                            {tag: "div",
+                                attributes: {class: "ability-button"},
+                                style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
+                            }
+                        )
+                    }
+                    abilities_div.appendChildren([current_div, {tag: "div"}])
+                }
+
+                // Spells Listing
+                const valid_spells = []
+                for (const player_class in character.spells) {
+                    let spell_list = []
+
+                    // If class memorizes spells
+                    if (character.spellcasting[player_class].memorization) {
+                        // Memorized Spells
+                        spell_list = [...character.spells[player_class].memorized]
+
+                        // Cantrips
+                        for (const spell of character.spells[player_class].known) {
+                            const spell_data = database.spells[spell]
+                            if (!spell_data) continue
+                            if (database.spells[spell].level == "cantrip") spell_list.push(spell)
+                        }
+                    }
+                    // If no memorization
+                    else {
+                        spell_list = character.spells[player_class].known || []
+                    }
+
+                    // Output
+                    const output_list = []
+                    for (const spell of spell_list) output_list.push({name: spell, class: player_class})
+                    valid_spells.push(...output_list)
+                }
+                const ordered_spells = valid_spells.sort((a, b) => {
+                    let a_level = database.spells[a.name]?.level[0] || "c"
+                    let b_level = database.spells[b.name]?.level[0] || "c"
+                    let a_priority = a_level == "c" ? 0 : Number(a_level)
+                    let b_priority = b_level == "c" ? 0 : Number(b_level)
+                    return a_priority - b_priority
+                })
 
                 // Abilities
                 for (const key in character.abilities) {
@@ -647,7 +708,7 @@
                     const origin = ability.origin == "Common" ? "Common" : "Class" 
                     if (current_origin != origin) {
                         // Append current div
-                        if (current_div) abilities_div.appendChildren([current_div, {tag: "div"}])
+                        if (current_div) append_current_div()
 
                         // Create new div
                         current_origin = origin
@@ -659,10 +720,33 @@
                         ability_slot({name: name, origin: ability.origin, function_name: key, image: ability.image})
                     )
                 }
-                abilities_div.appendChild(current_div)
-
+ 
                 // Spells
-                if (Object.keys(character.spells).length == 0) return
+                current_level = undefined
+                for (const object of ordered_spells) {
+                    const name = object.name
+                    const player_class = object.class
+                    const spell = database.spells[name]
+                    if (!spell) continue
+
+                    // Create new div per spell slot level
+                    if (current_level != spell.level) {
+                        // Append current div
+                        if (current_div) append_current_div()
+
+                        // Create new div
+                        current_level = spell.level
+                        current_div = ability_area()
+                    }
+
+                    // Create Element
+                    current_div.appendChild(
+                        ability_slot({name: name, origin: "Spells", player_class: player_class, image: spell.image || spell_school_images[spell.school]})
+                    )
+                }
+
+                // Push remaining Div
+                append_current_div()
             }
             updateAbilities()
 
