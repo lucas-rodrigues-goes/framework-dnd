@@ -3,371 +3,6 @@
 var Common = class {
 
     //---------------------------------------------------------------------------------------------------
-    // Resource Helpers
-    //---------------------------------------------------------------------------------------------------
-
-    static check_action_requirements(action_key, require_target = true) {
-        const creature = impersonated();
-        const action_details = this.actions_list()[action_key];
-        
-        if (!action_details) return { valid: false };
-    
-        if (!this.has_resources_available(action_details.resources)) {
-            return { valid: false };
-        }
-    
-        if (require_target && !selected()) {
-            public_log(`${creature.name_color} needs to select a target for this action.`);
-            return { valid: false };
-        }
-    
-        return { valid: true, creature, action_details };
-    }
-
-    static has_resources_available(resources) {
-        const creature = impersonated();
-        
-        let return_value = true;
-        const missing_resources = [];
-        
-        for (const name of resources) {
-            const resource = creature?.resources[name]?.value || 0;
-
-            // Ignore turn resources if not in initiative
-            const is_turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
-            const has_initiative = Initiative.turn_order.includes(creature.id);
-            if (is_turn_resource && !has_initiative) continue;
-            
-            // Check if we can use Ready Action substitution
-            const can_use_reaction = creature.has_condition("Ready Action") && 
-                                (name === "Action" || name === "Attack Action");
-            
-            switch (name) {
-                case "Attack Action": {
-                    const action_res = creature?.resources["Action"]?.value || 0;
-                    const reaction_res = creature?.resources["Reaction"]?.value || 0;
-                    
-                    if (resource < 1) {
-                        if (can_use_reaction && reaction_res >= 1) {
-                            // Can use Reaction instead of Action
-                            continue;
-                        }
-                        if (action_res >= 1) {
-                            // Can use Action
-                            continue;
-                        }
-                        return_value = false;
-                        missing_resources.push("Attack Action");
-                    }
-                    break;
-                }
-                
-                case "Action": {
-                    if (can_use_reaction) {
-                        const reaction_res = creature?.resources["Reaction"]?.value || 0;
-                        if (resource < 1 && reaction_res < 1) {
-                            return_value = false;
-                            missing_resources.push("Action");
-                        }
-                    } else if (resource < 1) {
-                        return_value = false;
-                        missing_resources.push("Action");
-                    }
-                    break;
-                }
-                
-                default: {
-                    if (resource < 1) {
-                        return_value = false;
-                        missing_resources.push(name);
-                    }
-                }
-            }
-        }
-        
-        if (!return_value) {
-            public_log(`${creature.name_color} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
-        }
-        
-        return return_value;
-    }
-
-    static use_resources(resources) {
-        const creature = impersonated();
-
-        for (const name of resources) {
-            const resource = creature.resources[name];
-
-            // Ignore turn resources if not in initiative
-            const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
-            const has_initiative = Initiative.turn_order.includes(creature.id);
-            if (turn_resource && !has_initiative) continue;
-            
-            // Check if we can use Ready Action substitution
-            const can_use_reaction = creature.has_condition("Ready Action") && 
-                                (name === "Action" || name === "Attack Action");
-
-            // Handle Attack Action with possible Action/Reaction substitution
-            if (name === "Attack Action" && resource.value < 1) {
-                if (can_use_reaction && creature.resources["Reaction"].value >= 1) {
-                    // Use Reaction instead of Action
-                    creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
-                    creature.remove_condition("Ready Action")
-                } else if (creature.resources["Action"].value >= 1) {
-                    // Use Action normally
-                    creature.set_resource_value("Action", creature.resources["Action"].value - 1);
-                } else {
-                    log("An error occurred when calculating resources for Attack Action");
-                    continue;
-                }
-                // Recharge attack action
-                creature.set_resource_value("Attack Action", resource.max - 1);
-                continue;
-            }
-
-            // Handle Action with Ready Action substitution
-            if (name === "Action" && resource.value < 1 && can_use_reaction) {
-                creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
-                creature.remove_condition("Ready Action")
-                creature.set_resource_value("Action", resource.max);
-            }
-
-            // Default consumption
-            if (resource.value < 1) {
-                log(`An error occurred when calculating resources, that led an empty resource (${name}) to be spent`);
-                continue;
-            }
-            creature.set_resource_value(name, resource.value - 1);
-        }
-    }
-
-    //---------------------------------------------------------------------------------------------------
-    // Attack Helpers
-    //---------------------------------------------------------------------------------------------------
-
-    static make_attack(slot, creature, target) {
-        const weapon = database.items.data[creature.equipment[slot]?.name]
-        let advantage_weight = 0
-
-        // Range Validation
-        const range_validation = this.validate_weapon_attack_range(weapon, creature, target)
-        if (range_validation.outOfRange) {
-            return {
-                success: false,
-                message: `${creature.name_color} tried to attack ${target.name_color} using their ${weapon?.name || "fists"} but they are out of range.`
-            }
-        }
-        advantage_weight += range_validation.advantage_weight
-
-        // Calculate Hit
-        const hit_bonus = this.calculate_weapon_attack_hit_bonus(weapon, creature)
-        const hit_result = this.calculate_weapon_attack_hit_result(hit_bonus, creature, target, advantage_weight)
-
-        // Deal damage
-        const damage_result = (hit_result.success 
-            ? ` dealing ${this.calculate_weapon_attack_damage(weapon, creature, target, hit_result.message, slot)} damage.`
-            : `.`
-        )
-
-        // Output
-        return {
-            success: true,
-            weapon: weapon,
-            hit_result: hit_result,
-            damage_result: damage_result,
-            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
-        }
-    }
-
-    static calculate_weapon_attack_damage(weapon, creature, target, hit_result, slot) {
-        // Weapon Properties
-        const isFinesse = weapon?.properties?.includes("Finesse") || false;
-        const isAmmo = weapon?.properties?.includes("Ammunition") || false;
-        const isOffHand = slot.includes("off hand")
-        const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
-
-        // Creature Bonuses
-        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
-        const damage_modifiers = this.calculate_weapon_attack_damage_modifiers(creature, target)
-
-        // Damage
-        const damage_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))) + damage_modifiers
-        const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
-
-        // Output
-        const output = []
-        for (const damage of damage_list) {
-            // Calculate Damage
-            const die_amount = damage.die_ammount * crit_multiplier
-            const damage_to_deal = roll_dice(die_amount, damage.die_size) + damage_bonus
-
-            // Deal Damage
-            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
-            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
-        }
-        return output.join(", ")
-    }
-
-    static validate_weapon_attack_range(weapon, creature, target) {
-        const usesAmmo = weapon?.properties?.includes("Ammunition") || false
-        const isThrown = weapon?.properties?.includes("Thrown") || false
-        const isReach = weapon?.properties?.includes("Reach") || false
-        const range = weapon?.range || (isReach ? [10] : [5])
-
-        // Calculated Conditions
-        const distance = calculate_distance(creature, target) * 5
-        const meleeRange = distance <= 5 || (distance <= 10 && isReach)
-
-        // Output
-        const output = { advantage_weight: 0, outOfRange: false, throwWeapon: false, requiresAmmo: false }
-        {
-            // Ranged Weapon
-            if (usesAmmo) {
-                const outOfRange = distance > range[1]
-                const extendedRange = distance > range[0]
-
-                // Output
-                if (outOfRange) output.outOfRange = true
-                else if (extendedRange || meleeRange) output.advantage_weight -= 1
-                output.requiresAmmo = true
-            }
-            // Throwing Weapon
-            else if (isThrown) { 
-                const outOfRange = distance > range[1]
-                const extendedRange = distance > range[0]
-
-                // Output
-                if (outOfRange) output.outOfRange = true
-                else if (extendedRange) output.throwWeapon = true
-            }
-            // Melee Weapon
-            else {
-                const outOfRange = distance > range[0]
-
-                // Output
-                if (outOfRange) output.outOfRange = true
-            }
-        }
-
-        return output
-    }
-
-    static calculate_weapon_attack_hit_result(hit_bonus, creature, target, advantage_weight = 0) {
-        creature.face_target()
-        const target_visibility = creature.target_visibility()
-
-        // Advantage Modifiers
-        advantage_weight += this.calculate_weapon_attack_roll_advantage_modifiers(creature, target)
-
-        // Roll d20
-        const roll_result = roll_20(advantage_weight, creature)
-        const roll_to_hit = roll_result.result
-
-        // Cover
-        let cover = 0; {
-            // Three quarters cover
-            if (target_visibility <= 0.25) cover = 5
-
-            // Half cover
-            else if (target_visibility <= 0.5) cover = 2
-
-            if (calculate_distance(creature, target) <= 1) cover = 0
-        }
-        hit_bonus -= cover
-
-        // Output
-        let advantage = "None"; {
-            if (advantage_weight > 0) advantage = "Advantage"
-            else if (advantage_weight < 0) advantage = "Disadvantage"
-        }
-        const output = { success: false, message: "", roll: roll_result, advantage: advantage}; {
-            // Critical Hit
-            if (roll_to_hit === 20) {
-                output.success = true
-                output.message = "lands a critical hit"
-            }
-
-            // Critical Miss
-            else if (roll_to_hit === 1) {
-                output.message = "critically misses"
-            }
-
-            // Hit
-            else if (roll_to_hit + hit_bonus >= target.armor_class) {
-                output.success = true
-                output.message = "hits"
-
-                // Add hit bonus to text
-                output.roll.text += ` + ${hit_bonus}`
-                output.roll.text_color += ` + ${hit_bonus}`
-            }
-
-            // Miss
-            else {
-                output.message = "misses"
-
-                // Add hit bonus to text
-                output.roll.text += ` + ${hit_bonus}`
-                output.roll.text_color += ` + ${hit_bonus}`
-            }
-        }
-        return output
-    }
-
-    static calculate_weapon_attack_hit_bonus(weapon, creature) {
-        const isFinesse = weapon?.properties?.includes("Finesse") || false;
-        const isAmmo = weapon?.properties?.includes("Ammunition") || false;
-
-        // Applicable bonuses
-        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
-
-        return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
-    }
-
-    static calculate_weapon_attack_roll_advantage_modifiers(creature, target) {
-        let output = 0; {
-            // Helped
-            if (creature.has_condition("Helped")) {
-                creature.remove_condition("Helped")
-                output += 1
-            }
-
-            // Unseen Attacker
-            if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
-                creature.maintain_stealth(true)
-                target.passive_search()
-                output += 1
-            }
-
-            // Reckless Attack
-            if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
-
-            // Dodge
-            if (target.has_condition("Dodge")) output -= 1 
-        }
-
-        // Output
-        return output
-    }
-
-    static calculate_weapon_attack_damage_modifiers(creature, target) {
-        let output = 0; {
-
-            // Rage
-            if (creature.has_condition("Rage")) {
-                output += 2
-                const barbarian_level = creature.classes?.Barbarian?.level || 0
-                if (barbarian_level >= 9) output += 1
-                if (barbarian_level >= 16) output += 1
-            }
-
-        }
-        return output
-    }
-
-    //---------------------------------------------------------------------------------------------------
     // Actions List
     //---------------------------------------------------------------------------------------------------
 
@@ -533,6 +168,373 @@ var Common = class {
         }
 
         return actions
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Resource Helpers
+    //---------------------------------------------------------------------------------------------------
+
+    static check_action_requirements(action_key, require_target = true) {
+        const creature = impersonated();
+        const action_details = this.actions_list()[action_key];
+        
+        if (!action_details) return { valid: false };
+    
+        if (!this.has_resources_available(action_details.resources)) {
+            return { valid: false };
+        }
+    
+        if (require_target && !selected()) {
+            public_log(`${creature.name_color} needs to select a target for this action.`);
+            return { valid: false };
+        }
+    
+        return { valid: true, creature, action_details };
+    }
+
+    static has_resources_available(resources) {
+        const creature = impersonated();
+        
+        let return_value = true;
+        const missing_resources = [];
+        
+        for (const name of resources) {
+            const resource = creature?.resources[name]?.value || 0;
+
+            // Ignore turn resources if not in initiative
+            const is_turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+            const has_initiative = Initiative.turn_order.includes(creature.id);
+            if (is_turn_resource && !has_initiative) continue;
+            
+            // Check if we can use Ready Action substitution
+            const can_use_reaction = creature.has_condition("Ready Action") && 
+                                (name === "Action" || name === "Attack Action");
+            
+            switch (name) {
+                case "Attack Action": {
+                    const action_res = creature?.resources["Action"]?.value || 0;
+                    const reaction_res = creature?.resources["Reaction"]?.value || 0;
+                    
+                    if (resource < 1) {
+                        if (can_use_reaction && reaction_res >= 1) {
+                            // Can use Reaction instead of Action
+                            continue;
+                        }
+                        if (action_res >= 1) {
+                            // Can use Action
+                            continue;
+                        }
+                        return_value = false;
+                        missing_resources.push("Attack Action");
+                    }
+                    break;
+                }
+                
+                case "Action": {
+                    if (can_use_reaction) {
+                        const reaction_res = creature?.resources["Reaction"]?.value || 0;
+                        if (resource < 1 && reaction_res < 1) {
+                            return_value = false;
+                            missing_resources.push("Action");
+                        }
+                    } else if (resource < 1) {
+                        return_value = false;
+                        missing_resources.push("Action");
+                    }
+                    break;
+                }
+                
+                default: {
+                    if (resource < 1) {
+                        return_value = false;
+                        missing_resources.push(name);
+                    }
+                }
+            }
+        }
+        
+        if (!return_value) {
+            public_log(`${creature.name_color} has insufficient resources for this ability (${missing_resources.join(", ")}).`);
+        }
+        
+        return return_value;
+    }
+
+    static use_resources(resources) {
+        const creature = impersonated();
+
+        for (const name of resources) {
+            const resource = creature.resources[name];
+
+            // Ignore turn resources if not in initiative
+            const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+            const has_initiative = Initiative.turn_order.includes(creature.id);
+            if (turn_resource && !has_initiative) continue;
+            
+            // Check if we can use Ready Action substitution
+            const can_use_reaction = creature.has_condition("Ready Action") && 
+                                (name === "Action" || name === "Attack Action");
+
+            // Handle Attack Action with possible Action/Reaction substitution
+            if (name === "Attack Action" && resource.value < 1) {
+                if (can_use_reaction && creature.resources["Reaction"].value >= 1) {
+                    // Use Reaction instead of Action
+                    creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
+                    creature.remove_condition("Ready Action")
+                } else if (creature.resources["Action"].value >= 1) {
+                    // Use Action normally
+                    creature.set_resource_value("Action", creature.resources["Action"].value - 1);
+                } else {
+                    log("An error occurred when calculating resources for Attack Action");
+                    continue;
+                }
+                // Recharge attack action
+                creature.set_resource_value("Attack Action", resource.max - 1);
+                continue;
+            }
+
+            // Handle Action with Ready Action substitution
+            if (name === "Action" && resource.value < 1 && can_use_reaction) {
+                creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
+                creature.remove_condition("Ready Action")
+                creature.set_resource_value("Action", resource.max);
+            }
+
+            // Default consumption
+            if (resource.value < 1) {
+                log(`An error occurred when calculating resources, that led an empty resource (${name}) to be spent`);
+                continue;
+            }
+            creature.set_resource_value(name, resource.value - 1);
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Attack Helpers
+    //---------------------------------------------------------------------------------------------------
+
+    static make_attack(slot, creature, target) {
+        const weapon = database.items.data[creature.equipment[slot]?.name]
+        let advantage_weight = 0
+
+        // Range Validation
+        const range_validation = this.validate_weapon_attack_range(weapon, creature, target)
+        if (range_validation.outOfRange) {
+            return {
+                success: false,
+                message: `${creature.name_color} tried to attack ${target.name_color} using their ${weapon?.name || "fists"} but they are out of range.`
+            }
+        }
+        advantage_weight += range_validation.advantage_weight
+
+        // Calculate Hit
+        const hit_bonus = this.weapon_attack_hit_bonus(weapon, creature)
+        const hit_result = this.attack_hit_result(hit_bonus, creature, target, advantage_weight)
+
+        // Deal damage
+        const damage_result = (hit_result.success 
+            ? ` dealing ${this.weapon_attack_damage(weapon, creature, target, hit_result.message, slot)} damage.`
+            : `.`
+        )
+
+        // Output
+        return {
+            success: true,
+            weapon: weapon,
+            hit_result: hit_result,
+            damage_result: damage_result,
+            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
+        }
+    }
+
+    static weapon_attack_damage(weapon, creature, target, hit_result, slot) {
+        // Weapon Properties
+        const isFinesse = weapon?.properties?.includes("Finesse") || false;
+        const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+        const isOffHand = slot.includes("off hand")
+        const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
+
+        // Creature Bonuses
+        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
+        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
+        const damage_modifiers = this.weapon_attack_damage_modifiers(creature, target)
+
+        // Damage
+        const damage_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))) + damage_modifiers
+        const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
+
+        // Output
+        const output = []
+        let count = 0
+        for (const damage of damage_list) {
+            // Calculate Damage
+            const die_amount = damage.die_ammount * crit_multiplier
+            const damage_to_deal = roll_dice(die_amount, damage.die_size) + (count == 0 ? damage_bonus : 0)
+            count ++
+
+            // Deal Damage
+            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
+            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+        }
+        return output.join(", ")
+    }
+
+    static validate_weapon_attack_range(weapon, creature, target) {
+        const usesAmmo = weapon?.properties?.includes("Ammunition") || false
+        const isThrown = weapon?.properties?.includes("Thrown") || false
+        const isReach = weapon?.properties?.includes("Reach") || false
+        const range = weapon?.range || (isReach ? [10] : [5])
+
+        // Calculated Conditions
+        const distance = calculate_distance(creature, target) * 5
+        const meleeRange = distance <= 5 || (distance <= 10 && isReach)
+
+        // Output
+        const output = { advantage_weight: 0, outOfRange: false, throwWeapon: false, requiresAmmo: false }
+        {
+            // Ranged Weapon
+            if (usesAmmo) {
+                const outOfRange = distance > range[1]
+                const extendedRange = distance > range[0]
+
+                // Output
+                if (outOfRange) output.outOfRange = true
+                else if (extendedRange || meleeRange) output.advantage_weight -= 1
+                output.requiresAmmo = true
+            }
+            // Throwing Weapon
+            else if (isThrown) { 
+                const outOfRange = distance > range[1]
+                const extendedRange = distance > range[0]
+
+                // Output
+                if (outOfRange) output.outOfRange = true
+                else if (extendedRange) output.throwWeapon = true
+            }
+            // Melee Weapon
+            else {
+                const outOfRange = distance > range[0]
+
+                // Output
+                if (outOfRange) output.outOfRange = true
+            }
+        }
+
+        return output
+    }
+
+    static attack_hit_result(hit_bonus, creature, target, advantage_weight = 0) {
+        creature.face_target()
+        const target_visibility = creature.target_visibility()
+
+        // Advantage Modifiers
+        advantage_weight += this.attack_roll_advantage_modifiers(creature, target)
+
+        // Roll d20
+        const roll_result = roll_20(advantage_weight, creature)
+        const roll_to_hit = roll_result.result
+
+        // Cover
+        let cover = 0; {
+            // Three quarters cover
+            if (target_visibility <= 0.25) cover = 5
+
+            // Half cover
+            else if (target_visibility <= 0.5) cover = 2
+
+            if (calculate_distance(creature, target) <= 1) cover = 0
+        }
+        hit_bonus -= cover
+
+        // Output
+        let advantage = "None"; {
+            if (advantage_weight > 0) advantage = "Advantage"
+            else if (advantage_weight < 0) advantage = "Disadvantage"
+        }
+        const output = { success: false, message: "", roll: roll_result, advantage: advantage}; {
+            // Critical Hit
+            if (roll_to_hit === 20) {
+                output.success = true
+                output.message = "lands a critical hit"
+            }
+
+            // Critical Miss
+            else if (roll_to_hit === 1) {
+                output.message = "critically misses"
+            }
+
+            // Hit
+            else if (roll_to_hit + hit_bonus >= target.armor_class) {
+                output.success = true
+                output.message = "hits"
+
+                // Add hit bonus to text
+                output.roll.text += ` + ${hit_bonus}`
+                output.roll.text_color += ` + ${hit_bonus}`
+            }
+
+            // Miss
+            else {
+                output.message = "misses"
+
+                // Add hit bonus to text
+                output.roll.text += ` + ${hit_bonus}`
+                output.roll.text_color += ` + ${hit_bonus}`
+            }
+        }
+        return output
+    }
+
+    static weapon_attack_hit_bonus(weapon, creature) {
+        const isFinesse = weapon?.properties?.includes("Finesse") || false;
+        const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+
+        // Applicable bonuses
+        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
+        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+
+        return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
+    }
+
+    static attack_roll_advantage_modifiers(creature, target) {
+        let output = 0; {
+            // Helped
+            if (creature.has_condition("Helped")) {
+                creature.remove_condition("Helped")
+                output += 1
+            }
+
+            // Unseen Attacker
+            if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
+                creature.maintain_stealth(true)
+                target.passive_search()
+                output += 1
+            }
+
+            // Reckless Attack
+            if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
+
+            // Dodge
+            if (target.has_condition("Dodge")) output -= 1 
+        }
+
+        // Output
+        return output
+    }
+
+    static weapon_attack_damage_modifiers(creature, target) {
+        let output = 0; {
+
+            // Rage
+            if (creature.has_condition("Rage")) {
+                output += 2
+                const barbarian_level = creature.classes?.Barbarian?.level || 0
+                if (barbarian_level >= 9) output += 1
+                if (barbarian_level >= 16) output += 1
+            }
+
+        }
+        return output
     }
 
     //---------------------------------------------------------------------------------------------------
