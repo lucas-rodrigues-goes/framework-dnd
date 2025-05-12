@@ -1241,10 +1241,13 @@
 					};
 
 					return Object.keys(obj).sort((a, b) => {
-						const a_restored = obj[a].restored_on || "";
-						const b_restored = obj[b].restored_on || "";
+						let a_priority = priority[obj[a].restored_on || ""]
+						let b_priority = priority[obj[b].restored_on || ""]
 
-						return priority[a_restored] - priority[b_restored];
+						if(a.includes("Spell Slot")) a_priority = 3
+						if(b.includes("Spell Slot")) b_priority = 3
+
+						return a_priority - b_priority;
 					});
 				}
 
@@ -1288,7 +1291,7 @@
 					// Create ability elements
 					for (const name in character.abilities) {
 						const ability = character.abilities[name]
-						const show_name = capitalize(name.replaceAll("_", " "))
+						const show_name = ability.name || capitalizeAll(name.replaceAll("_", " "))
 
 						// Add spacing between levels
 						const type = ability.origin == "Common" ? "Common Abilities" : "Class Abilities"
@@ -1613,6 +1616,7 @@
 
 				// Update Spell Slots
 				async function updateSpellSlots() {
+					if (isEqualJSON(spells_tab.resources, character.resources)) return
 					spells_tab.resources = character.resources
 
 					// Clear container

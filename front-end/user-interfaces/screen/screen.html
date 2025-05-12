@@ -276,10 +276,13 @@
             };
 
             return Object.keys(obj).sort((a, b) => {
-                const a_restored = obj[a].restored_on || "";
-                const b_restored = obj[b].restored_on || "";
+                let a_priority = priority[obj[a].restored_on || ""]
+                let b_priority = priority[obj[b].restored_on || ""]
 
-                return priority[a_restored] - priority[b_restored];
+                if(a.includes("Spell Slot")) a_priority = 3
+                if(b.includes("Spell Slot")) b_priority = 3
+
+                return a_priority - b_priority;
             });
         }
     
@@ -577,6 +580,7 @@
                 {
                     classes: impersonated().classes || {},
                     resources: impersonated().resources || {},
+                    spells: impersonated().spells || {},
                     hasInitiative: Initiative.turn_order.includes(impersonated().id)
                 }
             )`))
@@ -603,11 +607,38 @@
             })`))
 
             // Update Abilities
-            let current_origin = undefined, current_div = undefined, count = 0
+            let current_origin = undefined, current_div = undefined
             async function updateAbilities() {
                 const abilities_div = document.getElementById("abilities")
                 abilities_div.clearChildren()
 
+                // Helper Components
+                function ability_area () {
+                    return element({tag: "div", 
+                        style: {
+                            display: "grid",
+                            gridTemplateRows: "auto auto", // auto auto
+                            gridAutoFlow: "column",
+                            gap: "0.2vh",
+                            margin: 0,
+                            padding: 0,
+                        }
+                    })
+                }
+                function ability_slot ({name, origin, function_name, image}) {
+                    return element(
+                        {tag: "div",
+                            attributes: {class: "ability-button tooltip", tooltip: name},
+                            style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
+                            events: {click: () => backend( origin + "." + function_name + "()" )},
+                            children: [
+                                {tag: "img", attributes: {src: image}, style: {height: "3vh", width: "3vh"}},
+                            ]
+                        }
+                    )
+                }
+
+                // Abilities
                 for (const key in character.abilities) {
                     const ability = character.abilities[key]
                     const name = ability.name || capitalizeAll(key.replace(/_/g, " "))
@@ -616,53 +647,22 @@
                     const origin = ability.origin == "Common" ? "Common" : "Class" 
                     if (current_origin != origin) {
                         // Append current div
-                        if (current_div) {
-                            while ((count % 2) != 0) {
-                                current_div.appendChild({tag: "div", 
-                                    attributes: {class: "ability-button"},
-                                    style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
-                                })
-                                count += 1
-                            }
-                            abilities_div.appendChild(current_div)
-                            abilities_div.appendChild({tag: "div", style: {width: "0.4vh", margin: 0}})
-                        }
+                        if (current_div) abilities_div.appendChildren([current_div, {tag: "div"}])
 
                         // Create new div
                         current_origin = origin
-                        current_div = element({tag: "div", 
-                            style: {
-                                display: "grid",
-                                gridTemplateRows: "auto auto", // auto auto
-                                gridAutoFlow: "column",
-                                gap: "0.2vh",
-                                margin: 0,
-                                padding: 0,
-                            }
-                        })
+                        current_div = ability_area()
                     }
                 
                     // Create element
-                    count += 1
                     current_div.appendChild(
-                        {tag: "div",
-                            attributes: {class: "ability-button tooltip", tooltip: name},
-                            style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
-                            events: {click: () => backend( ability.origin + "." + key + "()" )},
-                            children: [
-                                {tag: "img", attributes: {src: ability.image}, style: {height: "3vh", width: "3vh"}},
-                            ]
-                        }
+                        ability_slot({name: name, origin: ability.origin, function_name: key, image: ability.image})
                     )
                 }
-                while ((count % 2) != 0) {
-                    current_div.appendChild({tag: "div", 
-                        attributes: {class: "ability-button"},
-                        style: {borderRadius: "0.5vh", height: "3vh", width: "3vh", padding: "0.5vh", margin: 0, border: "0.2vh solid #444"}
-                    })
-                    count += 1
-                }
                 abilities_div.appendChild(current_div)
+
+                // Spells
+                if (Object.keys(character.spells).length == 0) return
             }
             updateAbilities()
 
@@ -681,13 +681,11 @@
 
                     // Validation
                     if(name == "Attack Action" && resource.value <= 0) continue
-                    if(name.includes("Level Spell Slot")) continue
                     if(resource.restored_on == "turn start" && !character.hasInitiative) continue
                     if(resource.restored_on == "turn start" && resource.value <= 0) continue
 
                     // Add spacing between resource types
                     const restored_on = resource?.restored_on || ""
-                    const text = restored_on != "" ? "" + capitalizeAll(restored_on) : "Other"
                     if (previous_restored_on != restored_on) {
                         if (previous_restored_on != undefined) resources_div.appendChild({tag: "div", style: {width: "1vh"}})
                         previous_restored_on = restored_on
@@ -705,15 +703,9 @@
                                 backgroundColor: "#222", border: "0.2vh solid #666", height: "fit-content", width: "fit-content", position: "relative", borderRadius: "0.5vh"
                             },
                             children: [
-                                /* {tag: "img",
-                                    attributes: {src: resource_data.image, class: "center-horizontal"},
-                                    style: {position: "absolute", top: "0.2vh", height: "1.5vh", width: "1.5vh"}
-                                }, */
-                                {tag: "span", style: {padding: "0 0.5vh",position: "relative", textAlign: "center", fontWeight: "bold", fontSize: "90%"}, children: [
-                                    {tag: "img", attributes: {src: resource_data.image}, style: {position: "relative", bottom: "-0.2vh", height: "1em"}},
-                                    {tag: "span", style: {marginLeft: "0.3vh"}, text: resource.value + (name == "Movement" ? "ft" : "")},
-                                    /* {tag: "span", text: " / ", style: {fontWeight: "normal"}},
-                                    {tag: "span", style: color, text: resource.max}, */
+                                {tag: "span", style: {padding: "0 0.5vh",position: "relative", textAlign: "center", fontWeight: "700", fontSize: "100%", whiteSpace: "nowrap"}, children: [
+                                    {tag: "img", attributes: {src: resource_data.image}, style: {position: "relative", bottom: "-0.3vh", height: "1em"}},
+                                    {tag: "span", style: {marginLeft: "0.5vh"}, text: resource.value + (name == "Movement" ? "ft" : "")}
                                 ]}
                             ]
                         }
