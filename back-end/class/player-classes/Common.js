@@ -352,8 +352,10 @@ var Common = class {
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
         const isOffHand = slot.includes("off hand")
-        const damage_list = weapon?.damage || [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}];
-        if (weapon?.damage) damage_list.push(...this.weapon_attack_damage_bonuses(creature))
+        const damage_list = (weapon?.damage 
+            ? [...weapon.damage, ...this.weapon_attack_damage_bonuses(creature)] 
+            : [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}]
+        )
 
         // Creature Bonuses
         const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
