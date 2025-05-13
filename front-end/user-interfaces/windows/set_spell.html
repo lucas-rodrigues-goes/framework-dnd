@@ -60,7 +60,6 @@
 
         function submit () {
             request = `database.set_spell(`+JSON.stringify(spell)+`)`
-            console.log(request)
             backend(request)
         }
 
@@ -134,7 +133,7 @@
                     container({title: "Casting", children: [
                         // Cast Time
                         input({placeholder: "Cast Time", id: "cast_time", options: {input: {
-                            events: {input: function () {spell.cast_time = this.value}}
+                            events: {input: function () {spell.cast_time = Number(this.value)}}
                         }}}),
 
                         // Range
