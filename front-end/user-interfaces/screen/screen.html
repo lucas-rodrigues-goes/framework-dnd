@@ -652,7 +652,7 @@
                         }
                     )
                 }
-                function append_current_div (spacer = true) {
+                function append_current_div () {
                     while((current_div.children.length % 2) != 0) {
                         current_div.appendChild(
                             {tag: "div",
@@ -661,7 +661,7 @@
                             }
                         )
                     }
-                    abilities_div.appendChildren([current_div, spacer ? {tag: "div"} : null])
+                    abilities_div.appendChild(current_div)
                 }
 
                 // Spells Listing

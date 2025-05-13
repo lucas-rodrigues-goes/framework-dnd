@@ -706,7 +706,7 @@
                 // Model for row component to be used in table
                 function custom_row ({
                     name, level, school,
-                    cast_time, range, target,
+                    cast_time, range,
                     components, duration, classes,
                     description, description_higher_levels, image = ""
                 }) {
@@ -742,7 +742,6 @@
                         div({style:"line-height: 1.5;text-align:left;padding-top:1vh;", content:(`
                             <b>Classes</b>: `+classes_string+`
                             <br><b>Components</b>: `+components_string+`
-                            <br><b>Target</b>: `+target+`
                             <br><b>Range</b>: `+range+`
                             <br><b>Casting Time</b>: `+cast_time+`
                             <br><b>Duration</b>: `+duration+`

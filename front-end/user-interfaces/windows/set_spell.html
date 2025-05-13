@@ -9,237 +9,175 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
 
     [r:'
     <script>
 
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
+        // Return Object
+        //-----------------------------------------------------------------------------------------------------
 
-        function updateRange() {
-            let range = getId("range")
-            let range_distance = getId("range-distance-container")
-
-            range_distance.setAttribute("style","display:none")
-
-            if (range.value == "distance") {
-                    range_distance.setAttribute("style","")
-                } else {
-                    range_distance.setAttribute("style","display:none")
-                }
-
-            range.addEventListener("input",()=>{
-                if (range.value == "distance") {
-                    range_distance.setAttribute("style","")
-                } else {
-                    range_distance.setAttribute("style","display:none")
-                }
-            })
+        // Spell object with default values
+        let spell = {
+            name: "",
+            level: "1st",
+            school: "",
+            classes: [],
+            cast_time: 0,
+            range: 0,
+            components: [],
+            duration: 0,
+            description: "",
+            description_higher_levels: "",
+            image: "",
         }
 
-        function updateFields() {
+        // Attempt to update spell object with given ID
+        const updateSpell = async () => {
+            const response = JSON.parse(await backend(`database.spells.data["`+id+`"]`))
+            if (response) {
+                spell = response
 
-            if(id == "") {return}
+                for (const key in spell) {
+                    let value = spell[key]
+                    if (["school", "level"].includes(key)) value = capitalize(value)
+                    if (["classes", "components"].includes(key)) value = capitalizeAll(value.join(", "))
 
-            toBackend("database.spells.data", (response) => {
-                response = JSON.parse(response)
-                
-                getId("name").value = capitalize(response[id].name)
-                getId("level").value = response[id].level
-                getId("school").value = response[id].school
+                    const element = document.getElementById(key)
+                    if (element != undefined) {
+                        element.value = value
+                        element.dispatchEvent(new Event("input"))
+                        element.dispatchEvent(new Event("change"))
+                    }
+                }
+            }
+        }
 
-                getId("cast-time").value = response[id].cast_time
-                getId("target").value = response[id].target
+        //-----------------------------------------------------------------------------------------------------
+        // Submit
+        //-----------------------------------------------------------------------------------------------------
 
-                getId("description").value = response[id].description; 
-                getId("description-higher-levels").value = response[id].description_higher_levels;
+        function submit () {
+            request = `database.set_spell(`+JSON.stringify(spell)+`)`
+            console.log(request)
+            backend(request)
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Load HTML
+        //-----------------------------------------------------------------------------------------------------
+
+        async function loadPage() {
+            // Spell Level
+            const spell_levels = []
+            for (const item of ["Cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"]) {
+                spell_levels.push({tag: "option", text: item})
+            }
+
+            // Magic Schools
+            const magic_schools = []
+            for (const item of ["Abjuration","Conjuration","Divination","Enchantment","Evocation","Illusion","Necromancy","Transmutation"]) {
+                magic_schools.push({tag: "option", text: item})
+            }
             
+            element({tag: "div", parent: document.body, attributes: {class: "outer"}, children: [
 
-                getId("duration").value = response[id].duration
-                getId("duration-unit").value = "rounds"
+                // Left Side
+                {tag: "div", style: {position: "absolute", left: 0, width: "50%"}, children: [
+                    // Basic
+                    container({ title: "Basic", children: [
+                        // Name
+                        input({placeholder: "Name", id: "name", options: {input: {
+                            events: {input: function () {spell.name = this.value}}
+                        }}}),
 
-                getId("bard").setAttribute("data-checked", response[id].classes.includes("Bard"))
-                getId("cleric").setAttribute("data-checked", response[id].classes.includes("Cleric"))
-                getId("druid").setAttribute("data-checked", response[id].classes.includes("Druid"))
-                getId("sorcerer").setAttribute("data-checked", response[id].classes.includes("Sorcerer"))
-                getId("warlock").setAttribute("data-checked", response[id].classes.includes("Warlock"))
-                getId("wizard").setAttribute("data-checked", response[id].classes.includes("Wizard"))
+                        // Spell Level
+                        select({placeholder: "Level", id: "level", children: spell_levels, options: {input: {
+                            events: {input: function () {spell.level = this.value.toLowerCase()}}}},
+                        }),
 
-                getId("vocal").setAttribute("data-checked", response[id].components.includes("vocal"))
-                getId("somatic").setAttribute("data-checked", response[id].components.includes("somatic"))
-                getId("material").setAttribute("data-checked", response[id].components.includes("material"))
-                getId("concentration").setAttribute("data-checked", response[id].components.includes("concentration"))
+                        // Magic Schools
+                        select({placeholder: "School", id: "school", children: magic_schools, options: {input: {
+                            events: {input: function () {spell.school = this.value.toLowerCase()}}}},
+                        }),
 
-                getId("range").value = response[id].range
-                if (Number(response[id].range)) {
-                    getId("range").value = "distance"
-                    updateRange()
-                    getId("range-distance").value = response[id].range
-                }
+                        // Description
+                        textarea({placeholder: "Description", id: "description", options: {input: {
+                            events: {input: function () {spell.description = this.value}}
+                        }}}),
 
-                updateInputFields()
-            })
+                        // Description
+                        textarea({placeholder: "Higher Levels", id: "description_higher_levels", options: {input: {
+                            events: {input: function () {spell.description_higher_levels = this.value}}
+                        }}}),
+
+                        // Image
+                        input({placeholder: "Image", id: "image", options: {input: {
+                            events: {input: function () {spell.image = this.value}}
+                        }}}),
+                        {tag: "button", text: "Get image from selected token", events: {
+                            click: async () => {
+                                const image_elem = document.getElementById("image")
+                                const newImage = await backend("getSelectedImage()")
+                                image_elem.value = newImage
+                                spell.image = newImage
+                                console.log(spell)
+                            }
+                        }}
+                    ]})
+                ]},
+
+                // Right Side
+                {tag: "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                    // Casting
+                    container({title: "Casting", children: [
+                        // Cast Time
+                        input({placeholder: "Cast Time", id: "cast_time", options: {input: {
+                            events: {input: function () {spell.cast_time = this.value}}
+                        }}}),
+
+                        // Range
+                        input({placeholder: "Range", id: "range", options: {input: {
+                            events: {input: function () {spell.range = this.value}}
+                        }}}),
+
+                        // Duration (Rounds)
+                        input({placeholder: "Duration (Rounds)", id: "duration", options: {input: {
+                            events: {input: function () {spell.duration = this.value}}
+                        }}}),
+                    ]}),
+
+                    // Requirements
+                    container({title: "Requirements", children: [
+                        // Classes
+                        input({placeholder: "Classes", id: "classes", options: {input: {
+                            events: {input: function () {spell.classes = this.value.split(", ")}}
+                        }}}),
+
+                        // Components
+                        input({placeholder: "Components", id: "components", options: {input: {
+                            events: {input: function () {spell.components = this.value.toLowerCase().split(", ")}}
+                        }}}),
+                    ]}),
+                ]},
+            
+                // Submit
+                {tag: "button", attributes: {class: "center-horizontal"}, style: {position: "absolute", bottom: "1vh", fontSize: "120%"}, text: "Save", events: {click: submit}}
+            ]})
+
         }
 
-        function submit() {
-
-            // Duration
-            const duration_rounds = getId("duration").value
-            const duration_unit = getId("duration-unit").value
-            let duration = 0
-            switch (duration_unit) {
-                case "days":
-                    duration = duration_rounds * 14400; break
-                case "hours":
-                    duration = duration_rounds * 600; break
-                case "minutes":
-                    duration = duration_rounds * 10; break
-                default:
-                    duration = duration_rounds
-            }
-
-            // Range
-            let range = getId("range") == "distance" ? getId("range-distance").value : getId("range").value;
-
-            // Classes
-            let classes = []
-            for (const value of ["bard", "druid", "cleric", "sorcerer", "warlock", "wizard"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {classes.push(capitalize(value))}
-            }
-            classes = JSON.stringify(classes)
-
-            // Components
-            let components = []
-            for (const value of ["vocal", "somatic", "material", "concentration"]) {
-                if(getId(value).getAttribute("data-checked") == "true") {components.push(value)}
-            }
-            components = JSON.stringify(components)
-
-            const request = (
-            "database.set_spell({" +
-                "name: `" + getId(`name`).value + "`," +
-                "level: `" + getId(`level`).value + "`," +
-                "school: `" + getId(`school`).value + "`," +
-                "cast_time: `" + getId(`cast-time`).value + "`," +
-                "target: `" + getId(`target`).value+"`," +
-                "description: `" + getId(`description`).value + "`," +
-                "description_higher_levels: `" + getId(`description-higher-levels`).value+"`," +
-                "duration: `" + duration+"`," +
-                "range: `" + range+"`," +
-                "classes: " + classes+"," +
-                "components: " + components+"," +
-            "})"
-            )
-
-            toBackend(request)
-            closePage("Spell")
-        }
-
-
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
         // Execution
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
 
-        function loadPage () {
-
-            // Creates main div
-            document.body.innerHTML = div({classes:"outer", id:"content"})
-
-            // Fills main div with content
-            getId("content").innerHTML += (
-
-                // Div positioned to the left of the page
-                div({style:"position:absolute; left:0; width:60%", content:(
-                    container({title:"Basic", content:(
-                        input({
-                            id:"name", 
-                            placeholder:"Spell Name"
-                        }) +
-                        select({
-                            id:"level", 
-                            placeholder:"Spell Level",
-                            content:["cantrip", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th"],
-                            required:true
-                        }) +
-                        select({
-                            id:"school",
-                            placeholder:"Magic School",
-                            content:[
-                                "abjuration","conjuration","divination","enchantment",
-                                "evocation","illusion","necromancy","transmutation"
-                            ],
-                            required: true
-                        }) +
-                        textarea({id:"description", placeholder:"Description", style:"max-height:40vh"}) +
-                        textarea({id:"description-higher-levels", placeholder:"Higher Levels", style:"max-height:10vh"})
-                    )})
-                )}) +
-
-                // Div positioned to the right of the page
-                div({id:"right-area", style:"position:absolute; right:0; width:40%", content:(
-                    container({title:"Casting", content:(
-                        input({id:"cast-time", placeholder:"Cast time"}) +
-                        select({
-                            id:"range", 
-                            placeholder:"Range type",
-                            content:["self", "touch", "sight", "unlimited", "special", "distance"],
-                            required:true
-                        }) +
-                        input({id:"range-distance", placeholder:"Distance in Feet"}) +
-                        input({id:"target", placeholder:"Target"}) +
-
-                        input({id:"duration", placeholder:"Duration", style:"width:65%"}) + 
-                        select({
-                            id:"duration-unit", 
-                            placeholder:"Unit",
-                            style:"width:33%",
-                            content:["rounds", "minutes", "hours", "days"]
-                        })
-                    )}) +
-                    container({title:"Components", content:(
-                        grid({columns: 2, content:(
-                            checkbox({title:"Vocal", id:"vocal"}) +
-                            checkbox({title:"Somatic", id:"somatic"}) +
-                            checkbox({title:"Material", id:"material"}) +
-                            checkbox({title:"Concentration", id:"concentration"})
-                        )})
-                    )}) +
-                    container({title:"Classes", content:(
-                        grid({columns: 3, content:(
-                            checkbox({title:"Bard", id:"bard"}) +
-                            checkbox({title:"Druid", id:"druid"}) +
-                            checkbox({title:"Cleric", id:"cleric"}) +
-                            checkbox({title:"Sorcerer", id:"sorcerer"}) +
-                            checkbox({title:"Paladin", id:"paladin"}) +
-                            checkbox({title:"Ranger", id:"ranger"}) +
-                            checkbox({title:"Warlock", id:"warlock"}) +
-                            checkbox({title:"Wizard", id:"wizard"})
-                        )})
-                    )})
-                )}) +
-                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
-                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
-            )
-
-            // Event listeners
-            getId("close").addEventListener("click", () => { closePage("Spell") })
-            getId("submit").addEventListener("click", () => { submit() })
-
-            updateRange()
-            loadSelect()
-            loadCheckboxes()
-        }
-
-        function onWindowLoad() {
+        window.onload = async () => {
             loadPage()
-            updateFields()
+            updateSpell()
         }
 
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        //=====================================================================================================
+        //-----------------------------------------------------------------------------------------------------
 
     </script>
     ']

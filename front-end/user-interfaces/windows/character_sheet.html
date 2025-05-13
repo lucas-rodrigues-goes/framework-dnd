@@ -1537,7 +1537,7 @@
 					let previous_level = undefined
 					for (const name of spells_list.filter(spell => class_spells.known.includes(spell))) {
 						const spell = database.spells[name]
-						const spell_image = spell_school_images[spell.school]
+						const spell_image = spell.image || spell_school_images[spell.school]
 						
 						// Action type
 						let action_type

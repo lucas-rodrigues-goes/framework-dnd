@@ -45,7 +45,7 @@ const spell_school_images = {
     evocation: "asset://79f5407b61a5d7cf13137910bb0cf3fc",
     illusion: "asset://d0a8db9574e38703b490746c17d91560",
     necromancy: "asset://4e7caf122839630f94575156850cf067",
-    transmutation: "asset://536f6fd178afa1dc3d79789af1112104",
+    transmutation: "asset://bb8e712538a800e8ba88319b47bb8bde",
 };
 
 const equipment_images = {
