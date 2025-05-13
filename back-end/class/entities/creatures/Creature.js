@@ -90,26 +90,41 @@ var Creature = class extends Entity {
         for (const condition in database.conditions.data) {
             const hasCondition = this.has_condition(condition)
             switch (condition) {
+                // Invisible
                 case "Invisible": {
                     this.invisible = hasCondition
                     this.opacity = hasCondition ? 0.2 : 1
                     continue
                 }
+
+                // Hidden
                 case "Hidden": {
                     if (this.has_condition("Invisible")) continue
                     this.invisible = hasCondition
                     this.opacity = hasCondition ? 0.5 : 1
                     continue
                 }
+
+                // Blinded
                 case "Blinded": {
                     const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
                     this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
                     break
                 }
+
+                // Rage
                 case "Rage": {
                     this.set_state("Rage", hasCondition)
                     break
                 }
+
+                // Light
+                case "Light": {
+                    this.set_light("Light", hasCondition)
+                    break
+                }
+
+                default: break
             }
         }
     }
@@ -738,6 +753,7 @@ var Creature = class extends Entity {
             conditions: {
                 "Haste": { type: "multiply", value: 2 },
                 "Slow": { type: "multiply", value: 0.5 },
+                "Ray of Frost": {type: "multiply", value: 0.5},
             }
         }
 
@@ -1114,18 +1130,22 @@ var Creature = class extends Entity {
         return this.#conditions
     }
 
+    get_condition(condition) { return this.conditions[condition] }
+
     // Set a new condition on the creature by its name and duration
-    set_condition(condition, duration) {
+    set_condition(condition, duration, object = {}) {
         duration = duration !== undefined ? Number(duration) : database.conditions.data[condition].duration || 0
 
         if (duration >= 1) {
             this.#conditions[condition] = {
+                ...object,
                 duration: duration,
             }
             log(this.#name + " received the " + condition + " condition for " + duration + " rounds.");
         }
         else if (duration == -1) {
             this.#conditions["Hidden"] = {
+                ...object,
                 duration: -1
             }
             log(this.#name + " received the " + condition + " condition.");
@@ -1145,11 +1165,11 @@ var Creature = class extends Entity {
 
     reduce_all_conditions_duration(amount = 1) {
         for (const name in this.conditions) {
-            const condition = this.conditions[name]
+            const condition = this.get_condition(name)
 
             if (condition.duration != -1) {
                 const new_duration = Math.max(condition.duration - amount, 0)
-                this.set_condition(name, new_duration)
+                this.set_condition(name, new_duration, condition)
             }
         }
     }

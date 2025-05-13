@@ -193,6 +193,10 @@ function input({ id = "", placeholder = "", parent, options = {} }) {
     )
 }
 
+function textarea_auto_height() {
+    this.style.height = ""
+    this.style.height = (this.scrollHeight + 5) + "px"
+}
 function textarea({ id = "", placeholder = "", parent, options = {} }) {
     
     // Destructure the options
@@ -200,12 +204,6 @@ function textarea({ id = "", placeholder = "", parent, options = {} }) {
     const { attributes: div_attributes = {} } = div_options;
     const { attributes: input_attributes = {}, events: input_events } = input_options;
     const { attributes: placeholder_attributes = {} } = placeholder_options;
-    
-    // Auto height
-    function autoHeight () {
-        this.style.height = ""
-        this.style.height = this.scrollHeight + "px"
-    }
 
     // Element
     return element(
@@ -225,8 +223,9 @@ function textarea({ id = "", placeholder = "", parent, options = {} }) {
                         type: "text",
                         rows: 1
                     },
-                    events: {...input_events,
-                        input: autoHeight
+                    events: {
+                        input: textarea_auto_height,
+                        ...input_events
                     }
                 },
                 {...placeholder_options,
@@ -235,7 +234,7 @@ function textarea({ id = "", placeholder = "", parent, options = {} }) {
                     attributes: {
                         ...placeholder_attributes,
                         id: id + "-placeholder",
-                        for:id
+                        for: id
                     }
                 }
             ]

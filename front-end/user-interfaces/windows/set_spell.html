@@ -104,12 +104,12 @@
 
                         // Description
                         textarea({placeholder: "Description", id: "description", options: {input: {
-                            events: {input: function () {spell.description = this.value}}
+                            events: {input: function () {spell.description = this.value; this.style.height = ""; this.style.height = (this.scrollHeight + 5) + "px"}}
                         }}}),
 
                         // Description
                         textarea({placeholder: "Higher Levels", id: "description_higher_levels", options: {input: {
-                            events: {input: function () {spell.description_higher_levels = this.value}}
+                            events: {input: function () {spell.description_higher_levels = this.value; this.style.height = ""; this.style.height = (this.scrollHeight + 5) + "px"}}
                         }}}),
 
                         // Image

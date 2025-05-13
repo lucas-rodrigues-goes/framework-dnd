@@ -34,7 +34,6 @@ var Spells = class {
 
         // Cantrips
         if (level == "cantrip") {
-            
             // Call Spell
             const spellcast_result = spell_function({...spell, creature: creature, spellcasting_modifier: spellcasting_modifier})
 
@@ -130,8 +129,21 @@ var Spells = class {
         return output.join(", ")
     }
 
+    static remove_previous(creature, name) {
+        const current = creature.get_condition(`Maintaining: ${name}`)
+        if (current) {
+            const previous_target = instance(current.target)
+
+            // Remove conditions
+            creature.remove_condition(`Maintaining: ${name}`)
+            if (previous_target) previous_target.remove_condition(name)
+
+            return previous_target
+        }
+    }
+
     //---------------------------------------------------------------------------------------------------
-    // Spells
+    // Cantrips
     //---------------------------------------------------------------------------------------------------
 
     static fire_bolt(spell) {
@@ -143,12 +155,98 @@ var Spells = class {
     }
 
     static ray_of_frost(spell) {
-        /* return Spells.make_spell_attack({
+        const target = selected()
+
+        // Spell Attack
+        const attack_return = Spells.make_spell_attack({
             ...spell,
-            target: selected(),
+            target: target,
             damage_dice: [{die_amount: 1, die_size: 4, damage_type: "Cold"}],
-        }) */
+        })
+
+        // Ray of Frost condition
+        if(attack_return.hit_result.message.includes("hit")) {
+            target.set_condition("Ray of Frost", spell.duration || 2)
+        }
+
+        return attack_return
     }
+
+    static light(spell) {
+        const [creature, target] = [impersonated(), selected()]
+        const { name, range } = spell
+
+        // Remove previous light
+        if (!target) {const previous_target = Spells.remove_previous(creature, name); return {
+            success: false, 
+            message: (previous_target
+                ? `${creature.name_color} ended ${name} on ${previous_target.name_color}.`
+                : `${creature.name_color} needs to choose a target for this spell.`
+            )
+        }}
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Add new light
+        Spells.remove_previous(creature, name)
+        target.set_condition(name, spell.duration)
+        creature.set_condition(`Maintaining: ${name}`, spell.duration, {
+            target: target.id
+        })
+
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} on ${target.name_color}.`
+        }
+    }
+
+    static imbue_weapon(spell) {
+        const [creature, target] = [impersonated(), selected()]
+        const { name, range, spellcasting_modifier } = spell
+
+        // Remove Previous
+        if (!target) {const previous_target = Spells.remove_previous(creature, name); return {
+            success: false, 
+            message: (previous_target
+                ? `${creature.name_color} ended ${name} on ${previous_target.name_color}.`
+                : `${creature.name_color} needs to choose a target for this spell.`
+            )
+        }}
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Add new imbue weapon
+        Spells.remove_previous(creature, name)
+        const damage_type = ["Fire", "Lightning", "Cold"][roll(3)-1]
+        target.set_condition(name, spell.duration, {
+            damage_bonus: spellcasting_modifier,
+            damage_type: damage_type
+        })
+        creature.set_condition(`Maintaining: ${name}`, spell.duration, {
+            target: target.id
+        })
+
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} on ${target.name_color} granting them bonus ${damage_type} damage on their weapon attacks.`
+        }
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // 1st Level Spells
+    //---------------------------------------------------------------------------------------------------
+
+
 
     //---------------------------------------------------------------------------------------------------
 }

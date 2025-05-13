@@ -561,7 +561,7 @@
             character_menu.classList.remove("hidden")
         }
     
-        let current_abilities = {}
+        let current_abilities = {}, current_abilities_db = {}
         async function updateAbilitiesBar() {
             // Validation
             const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
@@ -573,6 +573,7 @@
             const abilities_menu_div = document.getElementById("abilities-menu")
             if (!isImpersonated || !isInstanced) {
                 abilities_menu_div.classList.add("hidden")
+                current_abilities = {}, current_abilities_db = {}
                 return
             }
 
@@ -601,19 +602,19 @@
                 `+classes_spellcasting+`
             })`))
 
-            // Cancel execution if there is no update to character
-            if (isEqualJSON(current_abilities, character)) return
-
             // Database
             const database = JSON.parse(await backend(`JSON.stringify({
                 spells: database.spells.data,
                 resources: database.resources.data,
             })`))
 
+            // Cancel execution if there is no update to character
+            if (isEqualJSON(current_abilities, character) && isEqualJSON(current_abilities_db, database)) return
+            current_abilities_db = database
+
             // Update Abilities
             let current_origin = undefined, current_div = undefined
             async function updateAbilities() {
-                // VERIFY THIS HERE
                 if (
                     isEqualJSON(current_abilities.abilities, character.abilities) &&
                     isEqualJSON(current_abilities.spells && character.spells)

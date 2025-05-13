@@ -76,11 +76,15 @@ var Entity = class {
         MTScript.evalMacro(`[r: setState("`+state+`", `+bool+`,"`+this.id+`") ]`)
         return value
     }
-    get_state(state) {
-        return MTScript.evalMacro(`[r, if(getState("`+state+`","`+this.id+`")):"true";"false"]`) == "true"
-    }
-    toggle_state(state) {
-        MTScript.evalMacro(`[r: setState("`+state+`", !getState("`+state+`", "`+this.id+`"),"`+this.id+`") ]`)
+    get_state(state) { return MTScript.evalMacro(`[r, if(getState("`+state+`","`+this.id+`")):"true";"false"]`) == "true" }
+    toggle_state(state) { MTScript.evalMacro(`[r: setState("`+state+`", !getState("`+state+`", "`+this.id+`"),"`+this.id+`") ]`) }
+
+    // Light management
+    set_light(light, value=true) {
+        const bool = value ? 1 : 0
+
+        MTScript.evalMacro(`[r: setLight("D20","`+light+`", `+bool+`,"`+this.id+`") ]`)
+        return value
     }
 
     // Center camera on token

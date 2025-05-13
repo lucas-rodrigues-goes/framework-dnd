@@ -352,15 +352,16 @@ var Common = class {
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
         const isOffHand = slot.includes("off hand")
-        const damage_list = weapon?.damage || [{die_ammount: 1, die_size: 1, damage_type: "Bludgeoning"}];
+        const damage_list = weapon?.damage || [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}];
+        if (weapon?.damage) damage_list.push(...this.weapon_attack_damage_bonuses(creature))
 
         // Creature Bonuses
         const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
         const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
+        const damage_attribute_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3)))
         const damage_modifiers = this.weapon_attack_damage_modifiers(creature, target)
 
         // Damage
-        const damage_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3))) + damage_modifiers
         const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
 
         // Output
@@ -368,15 +369,29 @@ var Common = class {
         let count = 0
         for (const damage of damage_list) {
             // Calculate Damage
-            const die_amount = damage.die_ammount * crit_multiplier
-            const damage_to_deal = roll_dice(die_amount, damage.die_size) + (count == 0 ? damage_bonus : 0)
+            const die_size = damage.die_size || 0
+            const die_amount = (damage.die_amount || damage.die_ammount || 0) * crit_multiplier
+            const damage_bonus = damage.damage_bonus || 0
+            const applied_once_damage_modifiers = (count == 0 ? damage_attribute_bonus + damage_modifiers : 0)
+
+            const damage_to_deal = roll_dice(die_amount, die_size) + applied_once_damage_modifiers + damage_bonus
             count ++
 
             // Deal Damage
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
         }
-        return output.join(", ")
+        function replaceLastCommaWithAnd(str) {
+            const lastIndex = str.lastIndexOf(",");
+            if (lastIndex === -1) return str; // no comma found
+
+            return (
+                str.slice(0, lastIndex) +
+                " and" +
+                str.slice(lastIndex + 1)
+            );
+        }
+        return replaceLastCommaWithAnd(output.join(", "))
     }
 
     static validate_weapon_attack_range(weapon, creature, target) {
@@ -531,6 +546,19 @@ var Common = class {
                 const barbarian_level = creature.classes?.Barbarian?.level || 0
                 if (barbarian_level >= 9) output += 1
                 if (barbarian_level >= 16) output += 1
+            }
+
+        }
+        return output
+    }
+
+    static weapon_attack_damage_bonuses(creature, target) {
+        const output = []; {
+
+            // Imbue Weapon
+            if (creature.has_condition("Imbue Weapon")) {
+                const condition = creature.get_condition("Imbue Weapon")
+                output.push({die_amount: 0, die_size: 0, damage_type: condition.damage_type, damage_bonus: condition.damage_bonus})
             }
 
         }
