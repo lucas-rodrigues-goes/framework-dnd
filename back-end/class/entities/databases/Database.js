@@ -1,14 +1,13 @@
 
 
 var Database = class extends Entity {
+    
 
     //=====================================================================================================
     // Race management
     //=====================================================================================================
 
-    #races = {
-        "data":{},
-    }
+    #races = { data: {} }
 
     reset_races() {
         this.#races = {
@@ -60,9 +59,9 @@ var Database = class extends Entity {
         return object_names;
     }
 
-    set_race(data) {
+    set_race(argument) {
         const database = this.#races
-        const object = new Race({...data})
+        const object = data.race.create(argument)
 
         // Verify if already exists
         if(object.name in database.data) {this.remove_race(object.name)}
@@ -168,9 +167,9 @@ var Database = class extends Entity {
         return object_names;
     }
 
-    set_proficiency(data) {
+    set_proficiency(argument) {
         const database = this.#proficiencies
-        const object = new Proficiency({...data})
+        const object = data.proficiency.create(argument)
 
         // Verify if already exists
         if(object.name in database.data) {this.remove_proficiency(object.name)}
@@ -265,9 +264,9 @@ var Database = class extends Entity {
         return object_names;
     }
 
-    set_resource(data) {
+    set_resource(argument) {
         const database = this.#resources
-        const object = new Resource(data)
+        const object = data.resource.create(argument)
 
         // Verify if already exists
         if(object.name in database.data) {this.remove_resource(object.name)}            
@@ -371,9 +370,9 @@ var Database = class extends Entity {
         return object_names;
     }          
 
-    set_damage_type(data) {
+    set_damage_type(argument) {
         const database = this.#damage_types
-        const object = new DamageType({...data})
+        const object = data.damage_type.create(argument)
 
         // Verify if already exists
         if(object.name in database.data) {this.remove_damage_type(object.name)}
@@ -592,9 +591,9 @@ var Database = class extends Entity {
         return object_names;
     }
     
-    set_feature(data) {
+    set_feature(argument) {
         const database = this.#features
-        const object = new Feature({...data})
+        const object = data.feature.create(argument)
 
         // Verify if already exists
         if(object.name in database.data) {this.remove_feature(object.name)}
@@ -808,9 +807,9 @@ var Database = class extends Entity {
         return object_names;
     }        
 
-    set_spell(data) {
+    set_spell(argument) {
         const database = this.#spells;
-        const object = new Spell({...data});
+        const object = data.spell.create(argument)
     
         // Verify if already exists
         if (object.name in database.data) {
@@ -953,9 +952,9 @@ var Database = class extends Entity {
     }
     
 
-    set_condition(data) {
+    set_condition(argument) {
         const database = this.#conditions;
-        const object = new Condition({...data});
+        const object = data.condition.create(argument);
     
         // Verify if the condition already exists
         if (object.name in database.data) { this.remove_condition(object.name); }
@@ -1098,9 +1097,9 @@ var Database = class extends Entity {
     }
     
 
-    set_item(data) {
-        const database = this.#items;
-        const object = new Item({...data});
+    set_item(argument) {
+        const database = this.#items
+        const object = data.item.create(argument)
     
         // Verify if the item already exists
         if (object.name in database.data) {
