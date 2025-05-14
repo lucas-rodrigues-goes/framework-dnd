@@ -160,7 +160,10 @@
                 ]},
             
                 // Submit
-                {tag: "button", attributes: {class: "center-horizontal"}, style: {position: "absolute", bottom: "1vh", fontSize: "120%"}, text: "Save", events: {click: submit}}
+                {tag: "div", attributes: {class: "center-horizontal"}, style: {position: "absolute", bottom: "1vh", display: "flex"}, children: [
+                    {tag: "button", style: {fontSize: "120%"}, text: "Save", events: {click: submit}},
+                    {tag: "button", style: {fontSize: "120%"}, text: "Submit", events: {click: () => {submit(); closePage("Spell")}}}
+                ]}
             ]})
 
         }

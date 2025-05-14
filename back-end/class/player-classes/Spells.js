@@ -33,7 +33,7 @@ var Spells = class {
         if(!Common.has_resources_available(resources)) return
 
         // Cantrips
-        if (level == "cantrip") {
+        if (level == "cantrip" || !Initiative.turn_order.includes(creature.id)) {
             // Call Spell
             const spellcast_result = spell_function({...spell, creature: creature, spellcasting_modifier: spellcasting_modifier})
 
@@ -246,7 +246,31 @@ var Spells = class {
     // 1st Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static mage_armor (spell) {
+        const [creature, target] = [impersonated(), selected()]
+        const { name, range, spellcasting_modifier } = spell
 
+        // Target self if no target
+        if (!target) target = creature
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Set condition
+        target.set_condition(name, spell.duration)
+
+        return {
+            success: true,
+            message: (creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color} boosting their unarmored AC to 13.`
+                : `${creature.name_color} cast ${name} boosting their unarmored AC to 13.`
+            )
+        }
+    }
 
     //---------------------------------------------------------------------------------------------------
 }

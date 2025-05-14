@@ -419,36 +419,39 @@
 
 			// Spells
 			function spellDescription(spell) {
+				// Cast Time
+				let cast_time = ""; {
+					if (spell.cast_time >= 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
+					else if (spell.cast_time == -1) cast_time = "Bonus Action"
+					else if (spell.cast_time == -2) cast_time = "Reaction"
+				}
 
-				let cast_time = ""
-				if (spell.cast_time >= 0) cast_time = spell.cast_time / 2 + " Seconds"
-				else if (spell.cast_time == -1) cast_time = "Bonus Action"
-				else if (spell.cast_time == -2) cast_time = "Reaction"
+				// Attributes
+				const attributes = []; {
+					if (spell.classes) attributes.push(title_value_simple({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
+					if (spell.components) attributes.push(title_value_simple({title: "Components", value: capitalize(spell?.components.join(", "))}))
+					if (spell.range) attributes.push(title_value_simple({title: "Range", value: spell.range + " ft"}))
+					if (spell.cast_time) attributes.push(title_value_simple({title: "Casting Time", value: capitalize(cast_time)}))
+					if (spell.duration) attributes.push(title_value_simple({title: "Duration", value: timeUnit(spell.duration)}))
+				}
 
 				// Show description
 				modal({parent: document.getElementById("spells-tab"), children: [
 					{tag: "div", style: {padding: "0 1vh"}, children: [
 						// Title
 						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell.name},
-							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell.school) + " Spell"},
+							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell?.name},
+							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell?.school) + " Spell"},
 						]},
 						// Attributes
-						{tag: "div", style: {textAlign: "left"}, children: [
-							spell.classes && title_value_simple({title: "Classes", value: capitalize(spell.classes.join(", "))}),
-							spell.components && title_value_simple({title: "Components", value: capitalize(spell.components.join(", "))}),
-							spell.target && title_value_simple({title: "Target", value: capitalize(spell.target)}),
-							spell.range && title_value_simple({title: "Range", value: capitalize(spell.range)}),
-							spell.cast_time && title_value_simple({title: "Casting Time", value: capitalize(cast_time)}),
-							spell.duration && title_value_simple({title: "Duration", value: capitalize(spell.duration)}),
-						]},
+						{tag: "div", style: {textAlign: "left"}, children: attributes},
 						// Description
 						spell.description 
-							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell.description},
+							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell?.description || ""},
 						spell.description_higher_levels 
 							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
 								{tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
-								{tag: "span", text: spell.description_higher_levels}
+								{tag: "span", text: spell.description_higher_levels || ""}
 							]},
 					]}
 				]})
