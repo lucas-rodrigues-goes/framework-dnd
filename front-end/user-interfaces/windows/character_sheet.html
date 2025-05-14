@@ -6,6 +6,7 @@
 		[r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
 		[r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
 		[r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+		[r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
 		[r:'
 	
 		<style>
@@ -136,7 +137,6 @@
 		</style>
 	
 		<script>
-
 			//=====================================================================================================
 			// Helper functions
 			//=====================================================================================================
@@ -157,12 +157,6 @@
 				children: [
 					{tag: "span", style: {filter: "brightness(0.8)", fontWeight: "300"}, text: title},
 					{tag: "span", style: {position: "absolute", fontWeight: "bold", right: "0.5vh"}, text: value}
-				]}
-			}
-			function title_value_simple({title, value}) {
-				return {tag: "p", style: {margin: "0.3vh", padding: "0"}, children: [
-					{tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-					{tag: "span", style: {color: "#aaa"}, text: value},
 				]}
 			}
 			function updateEXPBar(percent) {
@@ -292,10 +286,12 @@
 
 				// Define context-menu buttons
 				const buttons = {
-					"Description": () => {itemDescription(slot)},
-					"Unequip": () => {itemUnequip(position)},
+					"Description": async () => {modal({parent: document.getElementById("inventory-tab"), children: [
+						await data_description.item({slot: slot})
+					]})},
+					"Unequip": () => backend(`impersonated().split_item("`+position+`")`),
 					"Split": () => {itemSplit(slot, position)},
-					"Send to Target": () => {backend(`impersonated().send_item("`+position+`")`)},
+					"Send to Target": () => backend(`impersonated().send_item("`+position+`")`),
 					"Drop": () => {itemDrop(slot, position)},
 				}
 
@@ -305,63 +301,6 @@
 				
 				context_menu({event: event, buttons: buttons})
 			};
-			async function itemDescription(slot) {
-				// Item from database
-				const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
-
-				// Name
-				const name = slot.amount == 1
-					? item.name
-					: slot.amount + " " + item.name + "s"
-
-				// Subtitle
-				const type = item.subtype || item.type
-				const rarity = item.rarity == "common"
-					? ""
-					: item.rarity + " "
-				const subtitle = capitalizeAll(rarity + type)
-
-				// Weight
-				const weight = Math.round(item.weight * slot.amount * 100) / 100 + "lb"
-
-				// Damage
-				let damage = ""
-				for (let i = 0 ; i < item.damage.length ; i++) {
-					const current = item.damage[i]
-					damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
-					damage += i != item.damage.length - 1 ? ", " : "" // -> adds comma if it is not the last element
-				}
-
-				// Other Arrays
-				const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
-				const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
-
-				modal({parent: document.getElementById("inventory-tab"), children: [
-					{tag: "div", style: {padding: "0 1vh"}, children: [
-						{tag: "div", 
-							style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative", margin: "auto", marginBottom: "2vh", width: "fit-content"}, 
-							children: [
-								{tag: "span", style: {fontWeight: "bold", fontSize: "110%"}, text: name},
-								{tag: "br"},
-								{tag: "span", style: {color: "#aaa"}, text: subtitle},
-								{tag: "img", attributes: {src: item.image}, style: {position: "absolute", left: "-5.5vh", top: 0, height: "4vh"}}
-							]
-						},
-						{tag: "div", style: {textAlign: "left"}, children: [
-							damage ? title_value_simple({title: "Damage", value: damage}) : null,
-							item.recovery ? title_value_simple({title: "Recovery Speed", value: String(item.recovery)}) : null,
-							item.base_armor_class ? title_value_simple({title: "Armor Class", value: item.base_armor_class}) : null,
-							weight ? title_value_simple({title: "Weight", value: weight}) : null,
-							properties ? title_value_simple({title: "Properties", value: properties}) : null,
-							conditions ? title_value_simple({title: "Conditions", value: conditions}) : null,
-						]},
-						item.description ? {tag: "pre", style: {color: "#aaa", textAlign: "left"}, text: item.description} : null
-					]}
-				]})
-			}
-			async function itemUnequip(position) {
-				backend(`impersonated().split_item("`+position+`")`)
-			}
 			async function itemSplit(slot, position) {
 				// Item from database
 				const item = JSON.parse(await backend(`database.get_item("` + slot.name + `")`)) || {}
@@ -387,7 +326,7 @@
 				split_amount.value = Math.floor(slot.amount / 2)
 				split_amount.dispatchEvent(new Event("input"))
 			}
-			async function itemDrop(slot, position) {
+			function itemDrop(slot, position) {
 				// If single item in slot automatically drops
 				if (slot.amount == 1) {
 					backend(`impersonated().drop_item("`+position+`")`)
@@ -415,100 +354,6 @@
 				const drop_amount = document.getElementById("modal-drop-amount")
 				drop_amount.value = slot.amount
 				drop_amount.dispatchEvent(new Event("input"))
-			}
-
-			// Spells
-			function spellDescription(spell) {
-				// Cast Time
-				let cast_time = ""; {
-					if (spell.cast_time >= 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
-					else if (spell.cast_time == -1) cast_time = "Bonus Action"
-					else if (spell.cast_time == -2) cast_time = "Reaction"
-				}
-
-				// Attributes
-				const attributes = []; {
-					if (spell.classes) attributes.push(title_value_simple({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
-					if (spell.components) attributes.push(title_value_simple({title: "Components", value: capitalize(spell?.components.join(", "))}))
-					if (spell.range) attributes.push(title_value_simple({title: "Range", value: spell.range + " ft"}))
-					if (spell.cast_time) attributes.push(title_value_simple({title: "Casting Time", value: capitalize(cast_time)}))
-					if (spell.duration) attributes.push(title_value_simple({title: "Duration", value: timeUnit(spell.duration)}))
-				}
-
-				// Show description
-				modal({parent: document.getElementById("spells-tab"), children: [
-					{tag: "div", style: {padding: "0 1vh"}, children: [
-						// Title
-						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell?.name},
-							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell?.school) + " Spell"},
-						]},
-						// Attributes
-						{tag: "div", style: {textAlign: "left"}, children: attributes},
-						// Description
-						spell.description 
-							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell?.description || ""},
-						spell.description_higher_levels 
-							&& {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
-								{tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
-								{tag: "span", text: spell.description_higher_levels || ""}
-							]},
-					]}
-				]})
-			}
-
-			// Resources
-			async function resourceDescription(resource) {
-				// Show description
-				modal({parent: document.getElementById("abilities-tab"), children: [
-					{tag: "div", style: {padding: "0 1vh"}, children: [
-						// Title
-						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: resource.name},
-							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: "Resource"},
-						]},
-						// Attributes
-						/* {tag: "div", style: {textAlign: "left"}, children: [
-							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
-							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
-							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
-							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
-							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
-							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
-						]}, */
-						// Description
-						{tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-							text: (resource.description || await backend(`database.features.data["`+resource.name+`"].description`))
-						}
-					]}
-				]})
-			}
-
-			// Abilities
-			async function abilityDescription(ability) {
-				// Show description
-				modal({parent: document.getElementById("abilities-tab"), children: [
-					{tag: "div", style: {padding: "0 1vh"}, children: [
-						// Title
-						{tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-							{tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: ability.name},
-							{tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: ability.origin + " Ability"},
-						]},
-						// Attributes
-						/* {tag: "div", style: {textAlign: "left"}, children: [
-							spell.classes && title_value({title: "Classes", value: capitalize(spell.classes.join(", "))}),
-							spell.components && title_value({title: "Components", value: capitalize(spell.components.join(", "))}),
-							spell.target && title_value({title: "Target", value: capitalize(spell.target)}),
-							spell.range && title_value({title: "Range", value: capitalize(spell.range)}),
-							spell.cast_time && title_value({title: "Casting Time", value: capitalize(spell.cast_time)}),
-							spell.duration && title_value({title: "Duration", value: capitalize(spell.duration)}),
-						]}, */
-						// Description
-						{tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-							text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
-						}
-					]}
-				]})
 			}
 
 			// Notes
@@ -1325,7 +1170,9 @@
 										if (event.button != 2) return
 										const buttons = {
 											"Use": () => backend(ability.origin + `.` + name + `()`),
-											"Description": () => abilityDescription({...ability, name: show_name}),
+											"Description": async () => modal({parent: document.getElementById("abilities-tab"), children: [
+												await data_description.ability({ability: {...ability, name: show_name}})
+											]}),
 										}
 
 										// Run context menu
@@ -1407,7 +1254,9 @@
 										}
 										
 										// Description
-										if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
+										if(!isEqualJSON(resource_data, {})) buttons["Description"] = async () => modal({parent: document.getElementById("abilities-tab"), children: [
+											await data_description.resource({resource: resource_data})
+										]})
 
 										// Run context menu
 										context_menu({event: event, buttons: buttons})
@@ -1596,7 +1445,9 @@
 											case 2: { // Right Click
 												// Buttons
 												const buttons = {
-													"Description": () => spellDescription(spell),
+													"Description": () => modal({parent: document.getElementById("spells-tab"), children: [
+														data_description.spell({spell: spell})
+													]}),
 												}
 
 												// Conditional buttons
