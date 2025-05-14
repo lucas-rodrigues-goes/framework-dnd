@@ -1381,9 +1381,27 @@
 									mousedown: (event) => { 
 										if (event.button != 2) return
 										const buttons = {}
+										const isGM = '+isGM()+' == 1
+										const key = name
 										
-										// Use
-										if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + name + `")`); updateResources()}
+										// Context Buttons
+										if(isGM) buttons["Restore All"] = async () => {
+											await backend(`impersonated().set_resource_value("`+ key +`", `+ resource.max +`)`); updateResources()
+										}
+										if(isGM && name != "Movement") buttons["Increase"] = async () => {
+											await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 1) +`)`); updateResources()
+										}
+										if(resource.value > 0  && name != "Movement") buttons["Reduce"] = async () => {
+											await backend(`impersonated().use_resource("`+key+`")`); updateResources()
+										}
+
+										// For Movement Resource
+										if(isGM && name == "Movement") buttons["Increase 5ft"] = async () => {
+											await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 5) +`)`); updateResources()
+										}
+										if(resource.value > 0  && name == "Movement") buttons["Reduce 5ft"] = async () => {
+											await backend(`impersonated().set_resource_value("`+key+`", `+ (resource.value - 5) +`)`); updateResources()
+										}
 										
 										// Description
 										if(!isEqualJSON(resource_data, {})) buttons["Description"] = () => resourceDescription(resource_data)
@@ -1632,6 +1650,7 @@
 						// Validation
 						if(!key.includes("Level Spell Slot")) continue
 						const name = key.replace("Spell Slot", "")
+						const level = key[0]
 
 						// Add element
 						slot_container.appendChild(
@@ -1649,9 +1668,21 @@
 											case 2: { // Right Click
 												// Buttons
 												const buttons = {}
+												const isGM = '+isGM()+' == 1
 												
 												// Conditional Buttons
-												if(resource.value > 0 && name != "Movement") buttons["Use"] = async () => {await backend(`impersonated().use_resource("` + key + `")`); updateSpellSlots()}
+												if(isGM) buttons["Restore All"] = async () => {
+													await backend(`impersonated().set_resource_value("`+ key +`", `+ resource.max +`)`); updateSpellSlots()
+												}
+												if(isGM) buttons["Increase"] = async () => {
+													await backend(`impersonated().set_resource_value("`+ key +`", `+ resource.value + 1 +`)`); updateSpellSlots()
+												}
+												if(resource.value > 0) buttons["Reduce"] = async () => {
+													await backend(`impersonated().use_resource("`+key+`")`); updateSpellSlots()
+												}
+												if((character.classes["Wizard"]?.level || 0) >= 1) buttons["Arcane Recovery ("+level+" charge"+(level != 1 ? "s" : "")+")"] = async () => {
+													await backend(`Wizard.arcane_recovery(`+level+`)`); updateSpellSlots
+												}
 
 												// Run context menu
 												context_menu({event: event, buttons: buttons})
