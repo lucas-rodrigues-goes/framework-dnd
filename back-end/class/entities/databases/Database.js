@@ -68,7 +68,7 @@ var Database = class extends Entity {
         
 
         // Data
-        database.data[object.name] = object.object()
+        database.data[object.name] = object
 
 
         this.save()
@@ -181,7 +181,7 @@ var Database = class extends Entity {
         database.type[object.type].push(object.name)
 
         // Data
-        database.data[object.name] = object.object()
+        database.data[object.name] = object
 
         this.save()
     }
@@ -272,7 +272,7 @@ var Database = class extends Entity {
         if(object.name in database.data) {this.remove_resource(object.name)}            
 
         // Data
-        database.data[object.name] = object.object()
+        database.data[object.name] = object
 
         this.save()
     }
@@ -384,7 +384,7 @@ var Database = class extends Entity {
         database.type[object.type].push(object.name)
 
         // Data
-        database.data[object.name] = object.object()
+        database.data[object.name] = object
 
 
         this.save()
@@ -625,7 +625,7 @@ var Database = class extends Entity {
         
 
         // Data
-        database.data[object.name] = object.object()
+        database.data[object.name] = object
 
 
         this.save()
@@ -837,7 +837,7 @@ var Database = class extends Entity {
         });
     
         // Data
-        database.data[object.name] = object.object();
+        database.data[object.name] = object;
     
         this.save();
     }
@@ -966,7 +966,7 @@ var Database = class extends Entity {
         database.type[object.type].push(object.name);
     
         // Data
-        database.data[object.name] = object.object();
+        database.data[object.name] = object;
     
         this.save();
     }
@@ -1113,7 +1113,7 @@ var Database = class extends Entity {
         database.type[object.type].push(object.name);
     
         // Data
-        database.data[object.name] = object.object();
+        database.data[object.name] = object;
     
         this.save();
     }
