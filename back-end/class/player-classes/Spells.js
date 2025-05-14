@@ -54,6 +54,13 @@ var Spells = class {
     //---------------------------------------------------------------------------------------------------
 
     static make_spell_attack({name, creature, target, spellcasting_modifier, range, damage_dice, advantage_weight = 0}={}) {
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+        
         // Validate Range
         const range_validation = Spells.validate_spell_range(creature, target, range)
         if (range_validation.outOfRange) {
@@ -165,8 +172,8 @@ var Spells = class {
         })
 
         // Ray of Frost condition
-        if(attack_return.hit_result.message.includes("hit")) {
-            target.set_condition("Ray of Frost", spell.duration || 2)
+        if(attack_return?.hit_result?.message?.includes("hit")) {
+            target.set_condition("Ray of Frost", spell.duration)
         }
 
         return attack_return
@@ -184,6 +191,13 @@ var Spells = class {
                 : `${creature.name_color} needs to choose a target for this spell.`
             )
         }}
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
 
         // Validate Range
         const range_validation = Spells.validate_spell_range(creature, target, range)
@@ -217,6 +231,13 @@ var Spells = class {
                 : `${creature.name_color} needs to choose a target for this spell.`
             )
         }}
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
 
         // Validate Range
         const range_validation = Spells.validate_spell_range(creature, target, range)
@@ -252,6 +273,13 @@ var Spells = class {
 
         // Target self if no target
         if (!target) target = creature
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
 
         // Validate Range
         const range_validation = Spells.validate_spell_range(creature, target, range)
