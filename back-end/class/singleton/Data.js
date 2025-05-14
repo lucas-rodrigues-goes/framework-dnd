@@ -82,6 +82,7 @@ var data = class {
             type="", 
             subtype="", 
             description="",
+            image="",
             weight=1,
             rarity="common",
             price=0,
@@ -118,7 +119,7 @@ var data = class {
             }
 
             // Object
-            let object = { name, type, description, weight, rarity, price, stackable, max_stack, properties, cls }; {
+            let object = { name, type, description, image, weight, rarity, price, stackable, max_stack, properties, cls }; {
                 // Type
                 switch (type) {
                     // Equipment

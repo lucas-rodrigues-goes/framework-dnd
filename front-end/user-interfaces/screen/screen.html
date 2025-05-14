@@ -861,6 +861,7 @@
                 for (const name in target.conditions) {
                     
                     const condition = target.conditions[name]
+                    if (!database_conditions[name]) continue
                     const image = database_conditions[name].image || ""
 
                     target_HUD_conditions.appendChild(

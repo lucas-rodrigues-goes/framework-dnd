@@ -177,15 +177,22 @@ var Common = class {
     static check_action_requirements(action_key, require_target = true) {
         const creature = impersonated();
         const action_details = this.actions_list()[action_key];
-        
         if (!action_details) return { valid: false };
     
+        // Validate Resources
         if (!this.has_resources_available(action_details.resources)) {
             return { valid: false };
         }
     
+        // Validate Target
         if (require_target && !selected()) {
             public_log(`${creature.name_color} needs to select a target for this action.`);
+            return { valid: false };
+        }
+
+        // Validate Range
+        if (require_target && creature.target_visibility() == 0) {
+            public_log(`${creature.name_color} needs to see their target.`);
             return { valid: false };
         }
     

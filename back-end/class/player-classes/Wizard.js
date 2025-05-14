@@ -112,6 +112,18 @@ var Wizard = class extends Common {
 
                 break
             }
+            case 4: {
+                // Choose 1 new cantrip
+                choices.spells.push({amount: 1, player_class: "Wizard", level: 0})
+
+                break
+            }
+            case 10: {
+                // Choose 1 new cantrip
+                choices.spells.push({amount: 1, player_class: "Wizard", level: 0})
+
+                break
+            }
         }
 
         // On every new level learn 2 spells
