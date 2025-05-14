@@ -128,46 +128,12 @@ var Wizard = class extends Common {
         const character = impersonated();
         const origin = "Wizard"
         const actions = {}
-
         const wizardLevel = character?.classes?.Wizard?.level || 0
-        const hasInitiative = Initiative.turn_order.includes(character.id)
-
-        // Arcane Recovery
-        if (character.has_feature("Arcane Recovery")) {
-            const arcane_recovery = {
-                name: "Arcane Recovery",
-                resources: ["Arcane Recovery"],
-                description: database.features.data["Arcane Recovery"].description,
-                image: database.resources.data["Arcane Recovery"].image,
-                origin: origin,
-            }
-
-            // I
-            if (wizardLevel >= 1 && !hasInitiative) actions["arcane_recovery_1"] = {
-                ...arcane_recovery,
-                name: "Arcane Recovery I",
-                image: database.resources.data["1st Level Spell Slot"].image
-            }
-
-            // II
-            if (wizardLevel >= 3 && !hasInitiative) actions["arcane_recovery_2"] = {
-                ...arcane_recovery,
-                name: "Arcane Recovery II",
-                image: database.resources.data["2nd Level Spell Slot"].image
-            }
-
-            // III
-            if (wizardLevel >= 5 && !hasInitiative) actions["arcane_recovery_3"] = {
-                ...arcane_recovery,
-                name: "Arcane Recovery III",
-                image: database.resources.data["3rd Level Spell Slot"].image
-            }
-        }
 
         return actions
     }
 
-    static #arcane_recovery(level) {
+    static arcane_recovery(level) {
         const creature = impersonated()
         const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
 
@@ -189,9 +155,6 @@ var Wizard = class extends Common {
         // Logging
         public_log(`${creature.name} used ${level} Arcane Recovery charges to regain a ${spell_slot}.`)
     }
-    static arcane_recovery_1 = () => this.#arcane_recovery(1)
-    static arcane_recovery_2 = () => this.#arcane_recovery(2)
-    static arcane_recovery_3 = () => this.#arcane_recovery(3)
 
     //---------------------------------------------------------------------------------------------------
 

@@ -59,8 +59,7 @@
         //-----------------------------------------------------------------------------------------------------
 
         function submit () {
-            request = `database.set_spell(`+JSON.stringify(spell)+`)`
-            backend(request)
+            backend(`database.set_spell(`+JSON.stringify(spell)+`)`)
         }
 
         //-----------------------------------------------------------------------------------------------------
@@ -121,7 +120,6 @@
                                 const newImage = await backend("getSelectedImage()")
                                 image_elem.value = newImage
                                 spell.image = newImage
-                                console.log(spell)
                             }
                         }}
                     ]})
@@ -138,12 +136,12 @@
 
                         // Range
                         input({placeholder: "Range", id: "range", options: {input: {
-                            events: {input: function () {spell.range = this.value}}
+                            events: {input: function () {spell.range = Number(this.value)}}
                         }}}),
 
                         // Duration (Rounds)
                         input({placeholder: "Duration (Rounds)", id: "duration", options: {input: {
-                            events: {input: function () {spell.duration = this.value}}
+                            events: {input: function () {spell.duration = Number(this.value)}}
                         }}}),
                     ]}),
 

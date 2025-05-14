@@ -865,7 +865,7 @@
 
                     target_HUD_conditions.appendChild(
                         {tag: "div", 
-                            style: {position: "relative", height: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
+                            style: {position: "relative", height: "2.8vh", width: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
                             attributes: {
                                 class: "tooltip tooltip-bottom tooltip-condition",
                                 tooltip: name + (condition.duration != -1 ? " (" + timeUnit(condition.duration).toLowerCase() + ")" : "")
@@ -874,7 +874,9 @@
                                 {tag: "img", 
                                     attributes: {src: image},
                                     style: {
-                                        height: "100%"
+                                        position: "absolute",
+                                        left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+                                        height: "2.6vh",
                                     }
                                 },
                                 {tag: "div", 
@@ -882,10 +884,10 @@
                                         class: "text-shadow"
                                     },
                                     style: {
-                                        position: "absolute", 
+                                        position: "absolute",
                                         display: (condition.duration != -1 && condition.duration < 999 ? "" : "none"),
-                                        right: "0.1vh",
-                                        bottom: "-0.9vh",
+                                        bottom: "-1.5vh",
+                                        right: "-0.3vh",
                                         fontSize: "80%"
                                     }, 
                                     text: condition.duration
