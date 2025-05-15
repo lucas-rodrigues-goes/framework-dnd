@@ -6,6 +6,30 @@ var Spells = class {
     // Cast Spell
     //---------------------------------------------------------------------------------------------------
 
+    static finish_casting () {
+        const creature = impersonated()
+        if (!creature.has_condition("Spellcasting")) return
+
+        // Get spell data
+        const condition = creature.get_condition("Spellcasting")
+        const { spell } = condition
+
+        // Spell Function
+        const spell_function_name = spell.name.replace(/ /g, "_").toLowerCase()
+        const spell_function = Spells[spell_function_name]
+        console.log(spell_function)
+
+        // Call Spell
+        const spellcast_result = spell_function(spell)
+
+        // Spell Result
+        console.log(spellcast_result.message, "all")
+        if (!spellcast_result.success) return
+
+        // Remove Spellcasting Condition
+        creature.remove_condition("Spellcasting")
+    }
+
     static cast_spell(spell, player_class) {
         spell.cast_time = Number(spell.cast_time)
         spell.range = Number(spell.range)
@@ -32,10 +56,10 @@ var Spells = class {
         }
         if(!Common.has_resources_available(resources)) return
 
-        // Cantrips
-        if (level == "cantrip" || !Initiative.turn_order.includes(creature.id)) {
+        // Instant Casting
+        if (level == "cantrip" || !Initiative.turn_order.includes(creature.id) || cast_time <= 0) {
             // Call Spell
-            const spellcast_result = spell_function({...spell, creature: creature, spellcasting_modifier: spellcasting_modifier})
+            const spellcast_result = spell_function({...spell, spellcasting_modifier: spellcasting_modifier})
 
             // Spell Result
             console.log(spellcast_result.message, "all")
@@ -43,6 +67,13 @@ var Spells = class {
             
             // Set Recovery
             if (cast_time >= 0) Initiative.set_recovery(cast_time, creature)
+        }
+        else {
+            // Set spellcasting condition
+            creature.set_condition("Spellcasting", 1, {spell: {...spell, spellcasting_modifier: spellcasting_modifier}})
+
+            // Suspend Turn
+            Initiative.suspend_turn(cast_time, "Spellcasting", creature)
         }
 
         // Consume Resources

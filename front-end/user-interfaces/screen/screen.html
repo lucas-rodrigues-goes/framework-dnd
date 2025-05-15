@@ -45,9 +45,9 @@
 
         .hidden { display: none !important }
     
-        /* #combat-log {
+        .block {
             --pointermap: block
-        } */
+        }
     
         /*===================================================================================================*/
         /* Button */
@@ -668,7 +668,7 @@
                             attributes: {class: "ability-button"},
                             style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
                             events: {
-                                click: () => backend(code),
+                                click: () => {backend(code); console.log(code)},
                                 mouseover: () => show_description({object, type, player_class}),
                                 mouseout: clear_description
                             },
@@ -795,7 +795,7 @@
                     // Validation
                     if(name == "Attack Action" && resource.value <= 0) continue
                     if(resource.restored_on == "turn start" && !character.hasInitiative) continue
-                    if(resource.restored_on == "turn start" && resource.value <= 0) continue
+                    //if(resource.restored_on == "turn start" && resource.value <= 0) continue
 
                     // Add spacing between resource types
                     const restored_on = resource?.restored_on || ""
@@ -812,13 +812,13 @@
                                 tooltip: name
                             },
                             style: {
-                                display: "flex", justifyContent: "center", alignItems: "flex-end",
-                                backgroundColor: "#222", border: "0.2vh solid #666", height: "fit-content", width: "fit-content", position: "relative", borderRadius: "0.5vh"
+                                display: "flex", justifyContent: "center", alignItems: "flex-end", backgroundColor: resource.value ? "#222" : "rgba(28,28,28,0.65)", 
+                                border: "0.2vh solid #666", height: "fit-content", width: "2.7vh", position: "relative", height: "5.2vh", padding: "0 0.3vh", borderRadius: "0.5vh"
                             },
                             children: [
-                                {tag: "span", style: {padding: "0 0.5vh",position: "relative", textAlign: "center", fontWeight: "700", fontSize: "100%", whiteSpace: "nowrap"}, children: [
-                                    {tag: "img", attributes: {src: resource_data.image}, style: {position: "relative", bottom: "-0.3vh", height: "1em"}},
-                                    {tag: "span", style: {marginLeft: "0.5vh"}, text: resource.value + (name == "Movement" ? "ft" : "")}
+                                {tag: "span", style: {padding: "0 0.5vh", textAlign: "center", fontWeight: "700", fontSize: "100%", whiteSpace: "nowrap"}, children: [
+                                    {tag: "img", attributes: {src: resource_data.image, class: "center-horizontal"}, style: {position: "absolute", top: "0.2vh", height: "2.5vh", opacity: resource.value ? 1 : 0.5}},
+                                    {tag: "span", style: {/*marginLeft: "0.5vh"*/}, text: resource.value}
                                 ]}
                             ]
                         }
@@ -988,7 +988,7 @@
                                 left: "2vh",
                                 height: "20vh",
                                 width: "30vh",
-                                backgroundColor: "rgba(38, 38, 38, 0.85)", 
+                                backgroundColor: "rgba(26, 26, 26, 0.90)", 
                                 borderColor: "#444",
                                 borderRadius: "1vh",
                                 fontSize: "1.4vh",
@@ -1151,7 +1151,7 @@
                             attributes: {class: "center-horizontal hidden"},
                             style: {
                                 position: "absolute", 
-                                bottom: "150%",
+                                bottom: "170%",
                                 height: "fit-content", width: "fit-content", maxWidth: "80%",
                                 display: "flex",
                                 justifyContent: "center",
@@ -1159,7 +1159,7 @@
                                 borderWidth: "0.2vh",
                                 gap: "0.5vh",
                                 padding: "0.5vh",
-                                background: "rgba(30, 30, 30, 0.85)"
+                                background: "rgba(26, 26, 26, 0.90)"
                             }
                         }
                     }}),

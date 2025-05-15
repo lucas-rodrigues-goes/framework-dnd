@@ -11,6 +11,7 @@ var Common = class {
         const origin = "Common"
 
         const actions = {
+            finish_casting: undefined,
             attack: {
                 resources: ["Attack Action"],
                 description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
@@ -89,6 +90,23 @@ var Common = class {
                 image: "asset://4429fcc699ba0b55fd3373841aebaf00",
                 origin: origin
             },
+        }
+
+        // Finish Casting
+        {
+            if (creature.has_condition("Spellcasting") && Initiative.current_creature == creature.id) {
+                const condition = creature.get_condition("Spellcasting")
+                const { spell } = condition
+
+                actions.finish_casting = {
+                    name: "Finish Casting: " + spell.name,
+                    resources: [],
+                    recovery: 0,
+                    image: spell.image,
+                    origin: "Spells",
+                    description: `Use this button to finish casting prepared spell.`
+                }
+            }
         }
 
         // Attack

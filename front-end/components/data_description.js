@@ -25,7 +25,13 @@ let data_description; {
             const attributes = []; {
                 if (spell.classes) attributes.push(title_value({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
                 if (spell.components) attributes.push(title_value({title: "Components", value: capitalize(spell?.components.join(", "))}))
-                if (spell.range) attributes.push(title_value({title: "Range", value: spell.range + " ft"}))
+                if (spell.range) {
+                    let range = spell.range + " ft"; {
+                        if (spell.range == 5) range = "Touch"
+                        else if (spell.range == 0) range = "Self"
+                    }
+                    attributes.push(title_value({title: "Range", value: range}))
+                }
                 if (spell.cast_time) attributes.push(title_value({title: "Casting Time", value: capitalize(cast_time)}))
                 if (spell.duration) attributes.push(title_value({title: "Duration", value: timeUnit(spell.duration)}))
             }

@@ -1144,7 +1144,7 @@ var Creature = class extends Entity {
             log(this.#name + " received the " + condition + " condition for " + duration + " rounds.");
         }
         else if (duration == -1) {
-            this.#conditions["Hidden"] = {
+            this.#conditions[condition] = {
                 ...object,
                 duration: -1
             }
