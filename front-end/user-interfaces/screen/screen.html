@@ -381,7 +381,7 @@
             div.clearChildren()
 
             // Create elements
-            const isGM = false //'+isGM()+' == 1
+            const isGM = '+isGM()+' == 1
             for (const item of history.reverse()) {
                 const gmLog = item.visibility == "gm"
                 if (gmLog && !isGM) continue
@@ -668,7 +668,7 @@
                             attributes: {class: "ability-button"},
                             style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
                             events: {
-                                click: () => {backend(code); console.log(code)},
+                                click: () => {backend(code)},
                                 mouseover: () => show_description({object, type, player_class}),
                                 mouseout: clear_description
                             },
@@ -698,7 +698,7 @@
                     // If class memorizes spells
                     if (character.spellcasting[player_class].memorization) {
                         // Memorized Spells
-                        spell_list = [...character.spells[player_class].memorized]
+                        spell_list = [...(character.spells[player_class].memorized || [])]
 
                         // Cantrips
                         for (const spell of character.spells[player_class].known) {
@@ -756,7 +756,7 @@
                     if (!spell) continue
 
                     // Image
-                    spell.image = spell.image || spell_school_images[spell.school]
+                    const spell_image = spell.image || spell_school_images[spell.school]
 
                     // Create new div per spell slot level
                     if (current_level != spell.level) {
@@ -770,7 +770,7 @@
 
                     // Create Element
                     current_div.appendChild(
-                        ability_slot({object: spell, type: "Spell", player_class: player_class})
+                        ability_slot({object: {...spell, image: spell_image}, type: "Spell", player_class: player_class})
                     )
                 }
 
@@ -986,8 +986,8 @@
                                 marginTop: "1.8vh",
                                 marginLeft: "-0.3vh",
                                 left: "2vh",
-                                height: "20vh",
-                                width: "30vh",
+                                height: "30vh",
+                                width: "40vh",
                                 backgroundColor: "rgba(26, 26, 26, 0.90)", 
                                 borderColor: "#444",
                                 borderRadius: "1vh",

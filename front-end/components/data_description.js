@@ -14,6 +14,12 @@ let data_description; {
 
     data_description = {
         spell: ({spell, style=DEFAULT_STYLE}) => {
+            // Subtitle
+            let title; {
+                if (spell.level == "cantrip") title = capitalize(spell?.school) + " Cantrip"
+                else title = spell.level + " Level " + capitalize(spell?.school) + " Spell"
+            }
+
             // Cast Time
             let cast_time = ""; {
                 if (spell.cast_time >= 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
@@ -42,7 +48,7 @@ let data_description; {
                     // Title
                     {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                         {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell?.name},
-                        {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(spell?.school) + " Spell"},
+                        {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: title},
                     ]},
                     // Attributes
                     {tag: "div", style: {textAlign: "left"}, children: attributes},

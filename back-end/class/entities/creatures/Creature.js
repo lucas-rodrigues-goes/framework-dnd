@@ -957,7 +957,7 @@ var Creature = class extends Entity {
         // Adding spell to known list
         this.#spells[player_class].known.push(spell_name)
 
-        log(this.name + " has learned the " + spell_name + " spell.")
+        console.log(this.name + " has learned the " + spell_name + " spell.", "debug")
         this.save()
     }
 
@@ -1001,7 +1001,7 @@ var Creature = class extends Entity {
         // Adding spell to memorized list
         this.#spells[player_class].memorized.push(spell_name)
 
-        log(this.name + "has memorized the " + spell_name + " spell.")
+        console.log(this.name + "has memorized the " + spell_name + " spell.", "debug")
         this.save()
         return true
     }
@@ -1023,7 +1023,7 @@ var Creature = class extends Entity {
         // Adding spell to always prepared list
         this.#spells[player_class].always_prepared.push(spell_name)
 
-        log(this.name + "has the " + spell_name + " spell always prepared.")
+        console.log(this.name + "has the " + spell_name + " spell always prepared.", "debug")
         this.save()
     }
 
@@ -1031,6 +1031,11 @@ var Creature = class extends Entity {
         // Validates if spell exists, and if has it memorized
         if (!database.get_spell(spell_name)) { return }
         if (!this.#spells[player_class]) { return }
+        
+        // Remove non existant spells from memorized list
+        this.#spells[player_class].memorized = this.#spells[player_class].memorized.filter(
+            spell => Object.keys(database.spells.data).includes(spell)
+        )
 
         // Remove spell from memorized list
         if (this.#spells[player_class].memorized) {
@@ -1050,7 +1055,7 @@ var Creature = class extends Entity {
             }
         }
 
-        log(this.name + "has unmemorized the " + spell_name + " spell.")
+        console.log(this.name + "has unmemorized the " + spell_name + " spell.", "debug")
         this.save()
     }
 
@@ -1141,18 +1146,18 @@ var Creature = class extends Entity {
                 ...object,
                 duration: duration,
             }
-            log(this.#name + " received the " + condition + " condition for " + duration + " rounds.");
+            console.log(this.#name + " received the " + condition + " condition for " + duration + " rounds.", "gm");
         }
         else if (duration == -1) {
             this.#conditions[condition] = {
                 ...object,
                 duration: -1
             }
-            log(this.#name + " received the " + condition + " condition.");
+            console.log(this.#name + " received the " + condition + " condition.", "gm");
         }
         else if (duration <= 0) {
             delete this.#conditions[condition]
-            log(this.#name + " lost the condition " + condition + ".");
+            console.log(this.#name + " lost the condition " + condition + ".", "gm");
         }
 
         this.update_state()
@@ -1289,7 +1294,7 @@ var Creature = class extends Entity {
         }
 
         if (amount > 0) {
-            log(amount + " items were not added because the inventory is full.");
+            console.log(amount + " items were not added because the inventory is full.", "gm");
         }
 
         this.save();
@@ -1319,7 +1324,7 @@ var Creature = class extends Entity {
         const item = database.get_item(slot.name);
     
         if (!slot.name) {
-            log("No item to drop at the specified index.");
+            console.log("No item to drop at the specified index.", "gm");
             return;
         }
     
@@ -1387,14 +1392,14 @@ var Creature = class extends Entity {
     
         // Early exit for invalid moves
         if (!from_slot.name) {
-            log("No item to move at the source index.");
+            console.log("No item to move at the source index.", "debug");
             return;
         }
     
         // Validate indices are within bounds
         if ((from_container === "inventory" && from_index >= this.#inventory.length) ||
             (to_container === "inventory" && to_index >= this.#inventory.length)) {
-            log("Invalid slot index");
+            console.log("Invalid slot index", "debug");
             return;
         }
     
@@ -1513,7 +1518,7 @@ var Creature = class extends Entity {
         
         // Early return for invalid items
         if (!item_data?.type) {
-            log("Invalid item data for: " + item_name);
+            console.log("Invalid item data for: " + item_name, "debug");
             return false;
         }
     
@@ -1537,7 +1542,7 @@ var Creature = class extends Entity {
     
         // Validate slot exists in rules
         if (!EQUIPMENT_SLOT_RULES.hasOwnProperty(slot)) {
-            log("Invalid equipment slot: " + slot);
+            console.log("Invalid equipment slot: " + slot, "debug");
             return false;
         }
     
@@ -1603,7 +1608,7 @@ var Creature = class extends Entity {
         const needsReset = noObject || reset
         if (needsReset) {
             this.#name = this.token.getName();
-            log(this.#name + " was reset.");
+            console.log(this.#name + " was reset.", "debug");
 
             // Saves if not inheriting, else sends save as return
             if (!inherit) {this.save()}

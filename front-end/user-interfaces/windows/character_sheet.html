@@ -1523,6 +1523,13 @@
 												// Buttons
 												const buttons = {}
 												const isGM = '+isGM()+' == 1
+												const cost = {
+													1: 2,
+													2: 3,
+													3: 5,
+													4: 6,
+													5: 7
+												}[level]
 												
 												// Conditional Buttons
 												if(isGM) buttons["Restore All"] = async () => {
@@ -1534,7 +1541,7 @@
 												if(resource.value > 0) buttons["Reduce"] = async () => {
 													await backend(`impersonated().use_resource("`+key+`")`); updateSpellSlots()
 												}
-												if((character.classes["Wizard"]?.level || 0) >= 1) buttons["Arcane Recovery ("+level+" charge"+(level != 1 ? "s" : "")+")"] = async () => {
+												if((character.classes["Wizard"]?.level || 0) >= 1) buttons["Arcane Recovery ("+cost+" charges)"] = async () => {
 													await backend(`Wizard.arcane_recovery(`+level+`)`); updateSpellSlots
 												}
 
