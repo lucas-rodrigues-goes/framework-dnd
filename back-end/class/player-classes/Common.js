@@ -90,6 +90,7 @@ var Common = class {
                 image: "asset://4429fcc699ba0b55fd3373841aebaf00",
                 origin: origin
             },
+            switch_weapon: undefined
         }
 
         // Finish Casting
@@ -185,6 +186,22 @@ var Common = class {
             }
         }
 
+        // Switch Weapon
+        {
+            const hasInitiative = Initiative.turn_order.includes(creature.id)
+            const canUse = hasInitiative ? Initiative.current_creature == creature.id : true
+            if (canUse && (creature.equipment["secondary main hand"] != null || creature.equipment["secondary off hand"] != null)) {
+                actions.switch_weapon = {
+                    name: "Switch Weapon",
+                    resources: [],
+                    recovery: 0,
+                    image: "asset://4df58740b798e04911f0356e8931b486",
+                    origin: origin,
+                    description: `Switch primary and secondary weapon slots.`
+                }
+            }
+        }
+
         return actions
     }
 
@@ -232,8 +249,8 @@ var Common = class {
             if (is_turn_resource && !has_initiative) continue;
             
             // Check if we can use Ready Action substitution
-            const can_use_reaction = creature.has_condition("Ready Action") && 
-                                (name === "Action" || name === "Attack Action");
+            const isNotSpell = !JSON.stringify(resources).includes("Spell Slot")
+            const can_use_reaction = creature.has_condition("Ready Action") && (name === "Action" || name === "Attack Action") && isNotSpell
             
             switch (name) {
                 case "Attack Action": {
@@ -805,6 +822,18 @@ var Common = class {
 
         // Logging
         console.log(`${creature.name_color} is readying an action.`, "all")
+    }
+
+    static switch_weapon() {
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("ready", false);
+        if (!valid) return
+
+        // Switch Weapons
+        creature.switch_weapon_sets()
+
+        // Logging
+        console.log(`${creature.name_color} switched weapon sets.`, "all")
     }
 
     //---------------------------------------------------------------------------------------------------

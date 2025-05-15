@@ -39,10 +39,8 @@ var Wizard = class extends Common {
         const current_level = humanoid.classes.Wizard.level
 
         // Update Arcane Recovery
-        if (current_level == 1) humanoid.set_new_resource("Arcane Recovery", 1, "long rest") //--> Creates resource
-        if ((current_level % 2) == 1 && current_level != 1) { //--> Increases resource by 1 on levels specified
-            humanoid.set_resource_max("Arcane Recovery", humanoid.resources["Arcane Recovery"].max + 1)
-        }
+        if (current_level == 1) humanoid.set_new_resource("Arcane Recovery", 2, "long rest") //--> Creates resource
+        else humanoid.set_resource_max("Arcane Recovery", current_level + 1)
 
         // Learn Spells
         for (const spell of choices.spells) {
@@ -148,9 +146,16 @@ var Wizard = class extends Common {
     static arcane_recovery(level) {
         const creature = impersonated()
         const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
+        const cost = {
+            1: 2,
+            2: 3,
+            3: 5,
+            4: 6,
+            5: 7
+        }[level]
 
         // Validation
-        if (arcane_recovery_charges < level) {
+        if (arcane_recovery_charges < cost) {
             public_log(`${creature.name_color} has insufficient Arcane Recovery charges for this spell level.`)
             return
         }
@@ -162,10 +167,10 @@ var Wizard = class extends Common {
         creature.set_resource_value(spell_slot, creature.resources[spell_slot].value + 1)
 
         // Consume Arcane Recovery Charges
-        creature.set_resource_value("Arcane Recovery", arcane_recovery_charges - level)
+        creature.set_resource_value("Arcane Recovery", arcane_recovery_charges - cost)
 
         // Logging
-        public_log(`${creature.name} used ${level} Arcane Recovery charges to regain a ${spell_slot}.`)
+        public_log(`${creature.name} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`)
     }
 
     //---------------------------------------------------------------------------------------------------
