@@ -145,7 +145,7 @@ function container({ id = "", title = "", parent, scroll = false, children, opti
                     text: title,
                     attributes: {...title_attributes,
                         id: id + "-title",
-                        class: "container-title " + (title_attributes.class || ""),
+                        class: "container-title " + (title_attributes.class + " " || "") + (title ? "" : "hidden "),
                     }
                 },
             ],

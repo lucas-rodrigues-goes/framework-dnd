@@ -10,7 +10,7 @@ let data_description; {
         )
     }
     
-    const DEFAULT_STYLE = {padding: "0 1vh", fontSize: "1.8vh"}
+    const DEFAULT_STYLE = {padding: "0 1vh", fontSize: "1.8vh", textAlign: "center"}
 
     data_description = {
         spell: ({spell, style=DEFAULT_STYLE}) => {
@@ -132,7 +132,7 @@ let data_description; {
                     {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: ability.origin + " Ability"},
                 ]},
                 // Description
-                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
                     text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
                 }
             ]})

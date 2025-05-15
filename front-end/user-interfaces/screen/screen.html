@@ -9,6 +9,7 @@
         [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
         [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
     
         [r:'
         <style>
@@ -267,7 +268,6 @@
 
             return highestClass;
         }
-
         function orderByRestoredOn(obj) {
             const priority = {
                 "": -1, // for undefined or missing
@@ -286,11 +286,9 @@
                 return a_priority - b_priority;
             });
         }
-    
         function isEqualJSON(a, b) {
             return JSON.stringify(a) === JSON.stringify(b)
         }
-    
         function getColor(value) {
     
             // Ensure value is within the range 0 to 100
@@ -350,7 +348,6 @@
                 ]}
             )
         }
-    
         function screenButton ({tooltip, src, click}) {
             return (
                 {tag: "span", attributes: {class: "tooltip-img", tooltip}, children: [
@@ -362,7 +359,6 @@
             )
         }
         
-    
         //-----------------------------------------------------------------------------------------------------
         // Updates
         //-----------------------------------------------------------------------------------------------------
@@ -622,6 +618,8 @@
 
                 const abilities_div = document.getElementById("abilities")
                 abilities_div.clearChildren()
+                const description_div = document.getElementById("ability-description-div")
+                clear_description()
 
                 // Helper Components
                 function ability_area () {
@@ -636,17 +634,44 @@
                         }
                     })
                 }
-                function ability_slot ({name = "", origin, player_class = "", function_name = "", image = ""}) {
-                    const code = (origin == "Spells"
-                        ? "Spells.cast_spell(database.spells.data[`"+name+"`], `"+player_class+"`)"
-                        : origin + "." + function_name + "()"
-                    )
+                async function show_description({object, type, player_class}) {
+                    clear_description();
+
+                    // Description Function
+                    const descriptionFunc = data_description[type.toLowerCase()]
+
+                    // Generate the description element
+                    const descriptionElement = await descriptionFunc({ 
+                        spell: object, 
+                        ability: object,
+                        style: {padding: "0 1vh", fontSize: "70%", textAlign: "center"}
+                    });
+
+                    // Append to the DOM
+                    description_div.appendChild(descriptionElement);
+                    description_div.classList.remove("hidden");
+                }
+                function clear_description () {
+                    description_div.classList.add("hidden")
+                    description_div.clearChildren()
+                }
+                function ability_slot ({object = {}, type = "Ability", player_class = "", function_name = ""}) {
+                    const { name = "", image = "", origin = "" } = object
+
+                    let code; {
+                        if (type == "Spell") code = "Spells.cast_spell(database.spells.data[`"+name+"`], `"+player_class+"`)"
+                        else if (type == "Ability") code = origin + "." + function_name + "()"
+                    }
 
                     return element(
                         {tag: "div",
-                            attributes: {class: "ability-button tooltip", tooltip: name},
+                            attributes: {class: "ability-button"},
                             style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
-                            events: {click: () => backend(code)},
+                            events: {
+                                click: () => backend(code),
+                                mouseover: () => show_description({object, type, player_class}),
+                                mouseout: clear_description
+                            },
                             children: [
                                 {tag: "img", attributes: {src: image}, style: {height: "3vh", width: "3vh"}},
                             ]
@@ -718,7 +743,7 @@
                 
                     // Create element
                     current_div.appendChild(
-                        ability_slot({name: name, origin: ability.origin, function_name: key, image: ability.image})
+                        ability_slot({object: {...ability, name: name}, type: "Ability", function_name: key})
                     )
                 }
  
@@ -729,6 +754,9 @@
                     const player_class = object.class
                     const spell = database.spells[name]
                     if (!spell) continue
+
+                    // Image
+                    spell.image = spell.image || spell_school_images[spell.school]
 
                     // Create new div per spell slot level
                     if (current_level != spell.level) {
@@ -742,7 +770,7 @@
 
                     // Create Element
                     current_div.appendChild(
-                        ability_slot({name: name, origin: "Spells", player_class: player_class, image: spell.image || spell_school_images[spell.school]})
+                        ability_slot({object: spell, type: "Spell", player_class: player_class})
                     )
                 }
 
@@ -1105,6 +1133,36 @@
             // Bottom Middle
             element(
                 {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, style: {paddingTop: "0"}, children: [
+                    /* {tag: "div", 
+                        attributes: {class: "center-horizontal", id: "ability-description"}, 
+                        style: {
+                            position: "absolute", 
+                            bottom: "150%",
+                            height: "fit-content", width: "fit-content",
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: "0.5vh",
+                            padding: "0.5vh",
+                            border: "1px solid red"
+                        }
+                    }, */
+                    container({id: "ability-description", options: {
+                        div: {
+                            attributes: {class: "center-horizontal hidden"},
+                            style: {
+                                position: "absolute", 
+                                bottom: "150%",
+                                height: "fit-content", width: "fit-content", maxWidth: "80%",
+                                display: "flex",
+                                justifyContent: "center",
+                                borderColor: "#666",
+                                borderWidth: "0.2vh",
+                                gap: "0.5vh",
+                                padding: "0.5vh",
+                                background: "rgba(30, 30, 30, 0.85)"
+                            }
+                        }
+                    }}),
                     {tag: "div", 
                         attributes: {class: "center-horizontal", id: "resources"}, 
                         style: {
@@ -1141,11 +1199,6 @@
                                 margin: 0,
                                 width: "fit-content"
                             }
-                        },
-                        title: {
-                            style: {
-                                display: "none"
-                            },
                         }
                     }})
                 ]}
