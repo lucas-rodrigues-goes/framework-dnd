@@ -13,7 +13,7 @@ var instance = function (id) {
             object: maptool_token.getProperty("object"),
             classes: maptool_token.getProperty("class")
         }
-        
+
         // Validation
         if (token.classes == null) return undefined
 
@@ -26,7 +26,16 @@ var instance = function (id) {
                 //console.log(`Successfully loaded token ${token.instance.name}`, "debug")
             }
             else {
-                token.instance.load()
+                // Attempt to instance using class array
+                try {
+                    const player_class = eval(JSON.parse(token.classes)[0])
+                    token.instance = new player_class(id)
+                }
+                // Attempt to instance by string
+                catch {
+                    const player_class = eval(token.classes)
+                    token.instance = new player_class(id)
+                }
                 console.log(`Successfully updated token ${token.instance.name}`, "debug")
             }
         }
@@ -38,7 +47,6 @@ var instance = function (id) {
                 const player_class = eval(JSON.parse(token.classes)[0])
                 token.instance = new player_class(id)
             }
-
             // Attempt to instance by string
             catch {
                 const player_class = eval(token.classes)

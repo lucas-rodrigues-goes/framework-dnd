@@ -777,13 +777,16 @@ var Common = class {
     }
 
     static hide() {
-        // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements("hide", false);
-        if(creature.has_condition("Hidden")) { // Free unhide
+        // Free unhide
+        const creature = impersonated()
+        if(creature.has_condition("Hidden")) {
             creature.remove_condition("Hidden")
             public_log(`${creature.name_color} has stopped hiding.`)
             return
         }
+
+        // Requirements
+        const { valid, action_details } = this.check_action_requirements("hide", false);
         if (!valid) return
 
         // Condition
