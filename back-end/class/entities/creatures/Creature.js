@@ -216,19 +216,31 @@ var Creature = class extends Entity {
             if (!hidden_creature.has_condition("Hidden")) return false
 
             // Too far
-            if (calculate_distance(revealing_creature, hidden_creature) > 6) return false
+            const canSee = revealing_creature.target_visibility(hidden_creature) != 0
+            const distance = calculate_distance(revealing_creature, hidden_creature) * 5
+            if (distance > 60) return false
+            else if (!canSee && distance > 15) return false
         }
-        catch {
-            return false
-        }
-
+        catch { return false }
         return true
     }
 
     static #calculate_perception_modifier (revealing_creature, hidden_creature, entering_stealth=false) {
         let perception_modifier = 0; {
-            if (calculate_distance(revealing_creature, hidden_creature) <= 1 ) perception_modifier += entering_stealth ? 10 : 5
+            // Distance Modifiers
+            const distance = calculate_distance(revealing_creature, hidden_creature) * 5
+            if (distance > 30) perception_modifier -= 5
+            else if (distance < 15) perception_modifier += 5
+            if (entering_stealth && distance <= 5) perception_modifier += 5
+
+            // Vision Modifiers
+            const vision = revealing_creature.target_visibility(hidden_creature)
+            if (vision == 0) perception_modifier -= 5
+            else if (vision <= 0.5) perception_modifier -= 2
+
+            // Daylight Modifier
             if (MTScript.evalMacro(`[r:getMapVision()]`) == "Day") perception_modifier += 5
+            console.log(`perception modifier: ${perception_modifier}`)
         }
         return perception_modifier
     }
@@ -310,7 +322,7 @@ var Creature = class extends Entity {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
             // Perception modifiers
-            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature)
+            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature, true)
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
@@ -341,7 +353,7 @@ var Creature = class extends Entity {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
             // Perception modifiers
-            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature)
+            const perception_modifier = Creature.#calculate_perception_modifier(revealing_creature, hidden_creature, true)
 
             // Passive Perception VS Stealth Roll
             const {stealth_roll=0, roll_text=""} = hidden_creature.conditions["Hidden"]
