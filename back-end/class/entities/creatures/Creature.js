@@ -240,7 +240,6 @@ var Creature = class extends Entity {
 
             // Daylight Modifier
             if (MTScript.evalMacro(`[r:getMapVision()]`) == "Day") perception_modifier += 5
-            console.log(`perception modifier: ${perception_modifier}`)
         }
         return perception_modifier
     }
@@ -252,7 +251,7 @@ var Creature = class extends Entity {
 
         // Stealth Roll
         let { stealth_roll, roll_text } = this.conditions["Hidden"]
-        const entering_stealth = stealth_roll === undefined || roll_text === undefined
+        const entering_stealth = stealth_roll === undefined || roll_text === undefined || new_roll
         if (new_roll || entering_stealth) {
             const armor = database.items.data[this.equipment.body?.name]
             const advantage_weight = armor ? (armor.properties.includes("Stealth Disadvantage") ? -1 : 0) : 0
