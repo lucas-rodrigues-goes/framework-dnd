@@ -10,7 +10,7 @@ let data_description; {
         )
     }
     
-    const DEFAULT_STYLE = {padding: "0 1vh", fontSize: "1.8vh", textAlign: "center"}
+    const DEFAULT_STYLE = {padding: "0.5vh 1.5vh", fontSize: "105%", textAlign: "center"}
 
     data_description = {
         spell: ({spell, style=DEFAULT_STYLE}) => {
@@ -146,6 +146,47 @@ let data_description; {
                 // Description
                 {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
                     text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
+                }
+            ]})
+        },
+
+        feature: ({feature, style=DEFAULT_STYLE}) => {
+            // Subtitle
+            const show_type = capitalize(feature.subtype || feature.type)
+            const subtitle = (feature.level && feature.level != 0
+                ? "Level " + feature.level + " " + show_type + " Feature"
+                : show_type + " Feature"
+            )
+
+            return element({tag: "div", style: style, children: [
+                // Title
+                {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: feature.name},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: subtitle},
+                ]},
+                // Description
+                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
+                    text: feature.description
+                }
+            ]})
+        },
+
+        proficiency: ({proficiency, level = 3, style=DEFAULT_STYLE}) => {
+            // title
+            const title = (proficiency.type != "language"
+                ? proficiency.name + " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
+                : proficiency.name
+            )
+
+            return element({tag: "div", style: style, children: [
+                // Title
+                {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: title},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(proficiency.type) + " Proficiency"},
+                ]},
+                // Description
+                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
+                    text: proficiency.description[level]
                 }
             ]})
         },

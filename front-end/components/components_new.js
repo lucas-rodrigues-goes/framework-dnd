@@ -375,7 +375,7 @@ function collapsible({parent, button_children = [], children = [], options = {}}
                     attributes: {...button_attributes,
                         class: "collapsible-div " + (button_attributes.class || "")
                     }, 
-                    events: {...button_events, click},
+                    events: {...button_events, click: (children.length > 0 ? click : () => {})},
                     children: button_children
                 },
                 {...content_options,

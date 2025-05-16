@@ -398,14 +398,14 @@
 							ability_scores: impersonated().ability_scores,
 						},
 						info: {
-							"Type": impersonated().type,
 							"Race": impersonated().race,
+							"Size": impersonated().size,
+							"Type": impersonated().type,
 							" ":" ",
-							"  ":"",
 							"Health": impersonated().health + " / " + impersonated().max_health,
 							"Armor Class": impersonated().armor_class,
-							"Initiative": 0,
-							"Passive Perception": 10,
+							"Initiative Penalty": impersonated().initiative_mod,
+							"Passive Perception": impersonated().passive_perception,
 							"Walking Speed": impersonated().speed + "ft",
 						},
 						skills: impersonated().skills,
@@ -588,6 +588,22 @@
 					if (!isEqualJSON(character_tab.features, character.features)) {
 						character_tab.features = character.features
 
+						// Mousedown
+						function show_context(event, feature) {
+							// Only runs on right click
+							if (event.button != 2) return
+
+							// Buttons
+							const buttons = {
+								"Description": async () => modal({parent: document.getElementById("character-tab"), children: [
+									await data_description.feature({feature: feature})
+								]}),
+							}
+
+							// Run context menu
+							context_menu({event: event, buttons: buttons})
+						}
+
 						// Clear container
 						const features = document.getElementById("character-features")
 						features.clearChildren()
@@ -604,16 +620,17 @@
 							collapsible(
 								{parent: features,
 									options: {
-										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
+											mousedown: () => modal({parent: document.getElementById("character-tab"), children: [
+												data_description.feature({feature: feature})
+											]})
+										}},
 										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
 									},
 									button_children: [
 										{tag: "img", attributes: {src: image}},
 										{tag: "span", text: name}
 									],
-									children: [
-										{tag: "pre", style: {fontSize: "90%"}, text: description}
-									]
 								}
 							)
 						}
@@ -650,36 +667,29 @@
 
 							// From database
 							const proficiency = database.proficiencies[name]
-							if (!proficiency) { continue }
+							if (!proficiency) continue
 							
 							const type = proficiency.type || "None"
+							if (["skill"].includes(type)) continue
 							const description = proficiency.description.slice(0, level + 1) || ""
 							const image = proficiency_images[type] || ""
 							const level_title = " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
-
-							// Skip certain types
-							if (["skill"].includes(type)) {continue}
-
-							// Create description
-							const children = []
-							for (const text of description) {
-								children.push(
-									{tag: "pre", style: {fontSize: "90%"}, text}
-								)
-							}
 
 							// Element
 							collapsible(
 								{parent: proficiencies,
 									options: {
-										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}},
+										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
+											mousedown: () => modal({parent: document.getElementById("character-tab"), children: [
+												data_description.proficiency({proficiency: proficiency, level: level})
+											]})
+										}},
 										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
 									},
 									button_children: [
 										{tag: "img", attributes: {src: image}},
 										{tag: "span", text: name + (type == "language" ? "" : level_title)}
 									],
-									children
 								}
 							)
 
