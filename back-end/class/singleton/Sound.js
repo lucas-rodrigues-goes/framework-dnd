@@ -28,7 +28,7 @@ var Sound = class {
     // Methods
     //-----------------------------------------------------------------------------------------------------
 
-    static play (name, volume = 0.1, loop = false, stream = false) {
+    static play (name, {volume = 0.1, loop = false, stream = false} = {}) {
         try {
             MTScript.evalMacro(`
                 [h,macro("playLocal${ stream ? "Stream" : "Clip" }All@lib:JUH.media"): json.append("",

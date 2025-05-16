@@ -554,7 +554,7 @@ var Common = class {
         }
 
         // Sound
-        let sound = ""; if (!output.message.includes("hit")) {
+        if (!output.message.includes("hit")) {
             const body_slot = target.equipment.body;
             const off_hand_slot = target.equipment["primary off hand"]
             const unarmored_armor_class = 10 + target.score_bonus.dexterity
@@ -584,11 +584,10 @@ var Common = class {
             }
 
             const roll = roll_to_hit + hit_bonus
-            if (roll < unarmored_armor_class ) sound = ""
-            else if (roll < unarmored_armor_class + shield_bonus) sound = "shield"
-            else if (roll < unarmored_armor_class + shield_bonus + armor_bonus) sound = "armor"
+            if (roll < unarmored_armor_class) {}
+            else if (roll < unarmored_armor_class + armor_bonus) Sound.play("armor")
+            else if (roll < unarmored_armor_class + shield_bonus + armor_bonus) Sound.play("shield")
         }
-        if (sound) Sound.play(sound)
 
         return output
     }

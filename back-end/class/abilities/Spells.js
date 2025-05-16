@@ -231,7 +231,7 @@ var Spells = class {
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
 
             // Sound
-            Sound.play(damage.damage_type.toLowerCase())
+            if (damage_dealt > 0) Sound.play("bludgeoning")
         }
         return output.join(", ")
     }
@@ -289,6 +289,7 @@ var Spells = class {
     //---------------------------------------------------------------------------------------------------
 
     static fire_bolt(spell) {
+        Sound.play("fire")
         return Spells.make_spell_attack({
             ...spell,
             target: selected(),
@@ -300,6 +301,7 @@ var Spells = class {
         const target = selected()
 
         // Spell Attack
+        Sound.play("cold")
         const attack_return = Spells.make_spell_attack({
             ...spell,
             target: target,
@@ -399,6 +401,7 @@ var Spells = class {
     }
 
     static sacred_flame(spell) {
+        Sound.play("radiant")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -435,7 +438,6 @@ var Spells = class {
 
         // Set condition
         target.set_condition(name, spell.duration)
-
         return {
             success: true,
             message: (creature.id != target.id
@@ -457,6 +459,7 @@ var Spells = class {
         }
         
         // Output
+        Sound.play("fire")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -482,6 +485,7 @@ var Spells = class {
         }
         
         // Output
+        Sound.play("thunder")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -507,6 +511,7 @@ var Spells = class {
         }
         
         // Output
+        Sound.play("fire")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -536,6 +541,7 @@ var Spells = class {
         }
         
         // Output
+        Sound.play("cold")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
