@@ -21,6 +21,9 @@ var Spells = class {
         // Call Spell
         const spellcast_result = spell_function(spell)
 
+        // Sound
+        Sound.play("spell")
+
         // Spell Result
         if (spellcast_result.message) console.log(spellcast_result.message, "all")
         if (!spellcast_result.success) return
@@ -56,7 +59,7 @@ var Spells = class {
         if(!Common.has_resources_available(resources)) return
 
         // Instant Casting
-        if (level == "cantrip" || !Initiative.turn_order.includes(creature.id) || cast_time <= 0) {
+        if (!Initiative.turn_order.includes(creature.id) || cast_time <= 0) {
             // Call Spell
             const spellcast_result = spell_function({...spell, spellcasting_modifier: spellcasting_modifier})
 
@@ -65,7 +68,8 @@ var Spells = class {
             if (!spellcast_result.success) return
             
             // Set Recovery
-            if (cast_time >= 0) Initiative.set_recovery(cast_time, creature)
+            const recovery = cast_time == 0 ? 1 : 0
+            if (cast_time >= 0) Initiative.set_recovery(recovery, creature)
         }
         else {
             // Set spellcasting condition
@@ -74,6 +78,9 @@ var Spells = class {
             // Suspend Turn
             Initiative.suspend_turn(cast_time, "Spellcasting", creature)
         }
+
+        // Sound
+        Sound.play("spell")
 
         // Consume Resources
         Common.use_resources(resources)
@@ -222,6 +229,9 @@ var Spells = class {
             // Deal Damage
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+
+            // Sound
+            Sound.play(damage.damage_type.toLowerCase())
         }
         return output.join(", ")
     }

@@ -43,8 +43,8 @@ var console = class {
         return `[${hours}:${minutes}:${seconds}]`;
     }
 
-    // Creates the log, visibility = "gm" || "all"
-    static log(text, visibility = "gm") {
+    // Creates the log, visibility = "debug" || "gm" || "all"
+    static log(text, visibility = "debug") {
         const message = `${this.#time_hours_minutes()} ${text}`;
         const history = this.history;
 

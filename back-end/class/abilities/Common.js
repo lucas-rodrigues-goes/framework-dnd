@@ -369,6 +369,14 @@ var Common = class {
         }
         advantage_weight += range_validation.advantage_weight
 
+        // Release Sound
+        let release_sound = "swing"; {
+            if (!weapon) {}
+            else if( weapon.name.toLowerCase().includes("crossbow") ) release_sound = "crossbow"
+            else if ( weapon.name.toLowerCase().includes("bow") ) release_sound = "bow"
+        }
+        Sound.play(release_sound, 0.1)
+
         // Calculate Hit
         const hit_bonus = this.weapon_attack_hit_bonus(weapon, creature)
         const hit_result = this.attack_hit_result(hit_bonus, creature, target, advantage_weight)
@@ -424,6 +432,9 @@ var Common = class {
             // Deal Damage
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+
+            // Sound
+            if (damage_dealt > 0) Sound.play(damage.damage_type.toLowerCase())
         }
         function replaceLastCommaWithAnd(str) {
             const lastIndex = str.lastIndexOf(",");
@@ -541,6 +552,44 @@ var Common = class {
                 output.roll.text_color += ` + ${hit_bonus}`
             }
         }
+
+        // Sound
+        let sound = ""; if (!output.message.includes("hit")) {
+            const body_slot = target.equipment.body;
+            const off_hand_slot = target.equipment["primary off hand"]
+            const unarmored_armor_class = 10 + target.score_bonus.dexterity
+
+            // Armor bonus
+            let armor_bonus = 0; {
+                if (body_slot) {
+                    const item = database.get_item(body_slot.name)
+                    if (item) {
+                        let is_metal = false
+                        for (const element of ["plate", "splint", "chain", "scale", "ring"]) { if (item.name.toLowerCase().includes(element)) is_metal = true }
+                        if (is_metal) {
+                            armor_bonus = Math.max((item.base_armor_class || 0) - unarmored_armor_class, 0)
+                        }
+                    }
+                }
+            }
+
+            // Shield bonus
+            let shield_bonus = 0; {
+                if (off_hand_slot) {
+                    const item = database.get_item(off_hand_slot.name)
+                    if (item?.subtype == "shield") {
+                        shield_bonus = item.bonus_armor_class || 0
+                    }
+                }
+            }
+
+            const roll = roll_to_hit + hit_bonus
+            if (roll < unarmored_armor_class ) sound = ""
+            else if (roll < unarmored_armor_class + shield_bonus) sound = "shield"
+            else if (roll < unarmored_armor_class + shield_bonus + armor_bonus) sound = "armor"
+        }
+        if (sound) Sound.play(sound)
+
         return output
     }
 

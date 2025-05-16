@@ -28,23 +28,27 @@ var Sound = class {
     // Methods
     //-----------------------------------------------------------------------------------------------------
 
-    static play (name, volume = 0.1, loop = false) {
-        MTScript.evalMacro(`
-            [h,macro("playLocalStreamAll@lib:JUH.media"): json.append("",
-                "audio:${name}",
-                ${loop ? -1 : 1},
-                ${volume}
-            )]
-        `)
+    static play (name, volume = 0.1, loop = false, stream = false) {
+        try {
+            MTScript.evalMacro(`
+                [h,macro("playLocal${ stream ? "Stream" : "Clip" }All@lib:JUH.media"): json.append("",
+                    "audio:${name}",
+                    ${loop ? -1 : 1},
+                    ${volume}
+                )]
+            `)
+        } catch {}
     }
 
     static stop (name) {
-        MTScript.evalMacro(`
-            [h,macro("playLocalStreamAll@lib:JUH.media"): json.append("",
-                "audio:${name}",
-                0
-            )]
-        `)
+        try {
+            MTScript.evalMacro(`
+                [h,macro("playLocalStreamAll@lib:JUH.media"): json.append("",
+                    "audio:${name}",
+                    0
+                )]
+            `)
+        } catch {}
     }
 
 }

@@ -516,9 +516,11 @@ var Creature = class extends Entity {
                 break;
         }
 
+        // Reduce HP
         this.health -= damage;
 
-        log(this.#name + " received " + damage + " " + type + " damage.");
+        // Log
+        console.log(this.#name + " received " + damage + " " + type + " damage.", "debug");
         return damage;
     }
 
