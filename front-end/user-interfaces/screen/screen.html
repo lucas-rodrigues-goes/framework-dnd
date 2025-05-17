@@ -622,11 +622,12 @@
                 clear_description()
 
                 // Helper Components
+                let templateRows
                 function ability_area () {
                     return element({tag: "div", 
                         style: {
                             display: "grid",
-                            gridTemplateRows: "auto auto", // auto auto
+                            gridTemplateRows: templateRows,
                             gridAutoFlow: "column",
                             gap: "0.2vh",
                             margin: 0,
@@ -724,6 +725,14 @@
                     let b_priority = b_level == "c" ? 0 : Number(b_level)
                     return a_priority - b_priority
                 })
+
+                // Row count
+                templateRows = "auto "; {
+                    const abilities_count = ordered_spells.length + Object.keys(character.abilities).length
+                    if (abilities_count >= 16) templateRows += "auto "
+                    if (abilities_count >= 32) templateRows += "auto " 
+                    if (abilities_count >= 48) templateRows += "auto " 
+                }
 
                 // Abilities
                 for (const key in character.abilities) {
@@ -1003,11 +1012,6 @@
                                 padding: "10px"
                             }
                         },
-                        title: {
-                            style: {
-                                display: "none"
-                            },
-                        }
                     }}),
                     {tag: "button", 
                         attributes: {},
@@ -1132,47 +1136,41 @@
 
             // Bottom Middle
             element(
-                {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, style: {paddingTop: "0"}, children: [
-                    /* {tag: "div", 
-                        attributes: {class: "center-horizontal", id: "ability-description"}, 
-                        style: {
-                            position: "absolute", 
-                            bottom: "150%",
-                            height: "fit-content", width: "fit-content",
-                            display: "flex",
-                            justifyContent: "center",
-                            gap: "0.5vh",
-                            padding: "0.5vh",
-                            border: "1px solid red"
-                        }
-                    }, */
+                {tag: "div", parent: document.body, attributes: {id: "abilities-menu", class: "menu bottom center-horizontal hidden"}, style: {
+                    paddingTop: "0", flexDirection: "column", display: "flex", justifyContent: "center", gap: 0
+                }, children: [
                     container({id: "ability-description", options: {
                         div: {
-                            attributes: {class: "center-horizontal hidden"},
                             style: {
-                                position: "absolute", 
+                                position: "relative", 
                                 bottom: "170%",
-                                height: "fit-content", width: "fit-content", maxWidth: "80%",
+                                right: "50%",
+                                transform: "translate(50%)",
+                                height: "fit-content", width: "50vh", maxWidth: undefined,
                                 display: "flex",
                                 justifyContent: "center",
                                 borderColor: "#666",
                                 borderWidth: "0.2vh",
                                 gap: "0.5vh",
                                 padding: "0.5vh",
+                                margin: 0,
+                                marginBottom: "1vh",
                                 background: "rgba(26, 26, 26, 0.90)"
                             }
                         }
                     }}),
                     {tag: "div", 
-                        attributes: {class: "center-horizontal", id: "resources"}, 
+                        attributes: {id: "resources"}, 
                         style: {
-                            position: "absolute", 
-                            bottom: "100%",
+                            position: "relative",
+                            right: "50%",
+                            transform: "translate(50%)",
                             height: "fit-content", width: "fit-content",
                             display: "flex",
                             justifyContent: "center",
                             gap: "0.5vh",
                             padding: "0.5vh",
+                            margin: 0
                         }
                     },
                     container({title: "", id: "abilities", options: {
