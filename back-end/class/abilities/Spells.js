@@ -229,9 +229,6 @@ var Spells = class {
             // Deal Damage
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
-
-            // Sound
-            if (damage_dealt > 0) Sound.play("bludgeoning")
         }
         return output.join(", ")
     }
