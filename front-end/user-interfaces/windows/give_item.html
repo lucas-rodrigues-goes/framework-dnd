@@ -1,6 +1,6 @@
 [h:id = arg(0)]
 
-[dialog5("Give Item", "width=400; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Give Item", "width=400; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
     <script>
         const id = "{id}" || ""
@@ -12,79 +12,112 @@
     [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
 
     [r:'
+    <style>
+        .collapsible-div:active {
+            background-color: #444;
+        }
+    </style>
     <script>
 
+        const filters = {}
+        let searchString = null
+
         //=====================================================================================================
-        // Helper functions
+        // Update HTML
         //=====================================================================================================
 
-        function submit() {
-            const item = getId("item").value
-            const amount = getId("amount").value || 1
-            const request = `selected().receive_item("` + item + `", ` + amount + `)`
+        async function updatePage() {
+            // Database
+            const database = JSON.parse(await backend(`database.items.data`))
 
-            backend(request)
+            // Items
+            const items = JSON.parse(await backend(
+                searchString
+                ? `database.get_items_list(`+JSON.stringify(filters)+`, null, "`+searchString+`")`
+                : `database.get_items_list(`+JSON.stringify(filters)+`)`
+            ))
+
+            // Create items
+            const items_div = document.getElementById("items")
+            items_div.clearChildren()
+            for (const name of items) {
+                const item = database[name]
+
+                // Click
+                const click = () => backend(`
+                    for (const creature of allSelected()) creature.receive_item("`+item.name+`")
+                `)
+
+                // Element
+                collapsible(
+                    {parent: items_div,
+                        options: {
+                            button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {click}},
+                            content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
+                        },
+                        button_children: [
+                            {tag: "img", attributes: {src: item.image}},
+                            {tag: "span", text: item.name, style: {width: "30%"}},
+                            {tag: "span", text: capitalize(item.type), style: {width: "30%"}},
+                            {tag: "span", text: item.weight + "lb", style: {width: "20%"}},
+                            {tag: "span", text: item.price + "gp", style: {width: "15%", textAlign: "right"}},
+                        ]
+                    }
+                )
+            }
         }
 
         //=====================================================================================================
         // Execution
         //=====================================================================================================
 
-        async function updateItemOptions () {
-            // Item options
-            const type = document.getElementById("type").value
-
-            const items = JSON.parse(await backend(`database.get_items_list({type: "`+type+`"})`))
-            const item_options = []
-            for (const item of items) {
-                item_options.push({tag: "option", text: item})
-            }
-
-            const item_selector = document.getElementById("item")
-            item_selector.clearChildren()
-            item_selector.appendChildren([
-                {tag: "option", text: " "},
-                ...item_options
-            ])
-        }
-
         async function loadPage () {
-
-            // Type options
-            const item_types = JSON.parse(await backend(`Object.keys(database.items.type)`))
+            // Item types
             const type_options = []
-            for (const type of item_types) {
-                if (type == "undefined") continue;
-                type_options.push({tag: "option", attributes: {value: type}, text: capitalize(type)})
+            for (const name of JSON.parse(await backend(`Object.keys(database.items.type)`))) {
+                if (name == "undefined") continue
+                type_options.push(
+                    {tag: "option", text: capitalize(name), attributes: {value: name}}
+                )
             }
 
-            // Item options
-            const items = JSON.parse(await backend(`database.get_items_list()`))
-            const item_options = []
-            for (const item of items) {
-                item_options.push({tag: "option", text: item})
-            }
-
-            // Create HTML
-            element({tag: "div", parent: document.body, attributes: {class:"outer", id:"content"}, children: [
-                    container({title:"Info", children: [
-                        select({id: "type", placeholder:"Type", children: type_options, options: {input: {events: {input: updateItemOptions}}}}),
-                        select({id: "item", placeholder:"Item", children: item_options}),
-                        input({id: "amount", placeholder:"Amount to add"})
-                    ]}),
-                    {tag: "button", text:"Close", attributes: {class:"bottom left page-turner"}, events: {click: () => closePage("Give Item")}},
-                    {tag: "button", text:"Send", attributes: {class:"bottom right page-turner"}, events: {click: submit}}
+            // Body
+            element({tag: "div", attributes: {class: "outer"}, parent: document.body, children: [
+                {tag: "div", style: {display: "flex", padding: "1vh", gap: "0.2vh"}, children: [
+                    input({placeholder: "Search", options: {
+                        div: {style: {width: "70%"}},
+                        input: {
+                            events: {input: function () {
+                                searchString = this.value;
+                                updatePage()
+                            }}
+                        }
+                    }}),
+                    select({placeholder: "Type", 
+                        options: {
+                            div: {style: {width: "29%"}},
+                            input: {
+                                events: {change: function () {
+                                    if (this.value) {
+                                        this.classList.add("filled")
+                                    } else {
+                                        this.classList.remove("filled")
+                                    }
+                                    filters.type = this.value
+                                    updatePage()
+                                }}
+                            }
+                        },
+                        children: type_options
+                    }),
+                ]},
+                {tag: "div", attributes: {id: "items"}}
             ]})
-            
-            // Set default value
-            document.getElementById("item").value = id || ""
-            document.getElementById("item").dispatchEvent(new Event("change"))
-            getId("amount").value = 1
         }
 
         window.onload = function () {
             loadPage()
-            updateItemOptions()
+            updatePage()
         }
 
         //=====================================================================================================

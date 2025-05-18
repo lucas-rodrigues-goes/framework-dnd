@@ -275,8 +275,9 @@ function select({ id = "", placeholder = "", parent, children = [], options = {}
                         id,
                         required: true,
                     },
-                    events: {...input_events,
-                        change: updatePlaceholders
+                    events: {
+                        change: updatePlaceholders,
+                        ...input_events
                     },
                     children: [
                         {tag: "option", attributes: {value: ""}, text: " "},
@@ -375,7 +376,7 @@ function collapsible({parent, button_children = [], children = [], options = {}}
                     attributes: {...button_attributes,
                         class: "collapsible-div " + (button_attributes.class || "")
                     }, 
-                    events: {...button_events, click: (children.length > 0 ? click : () => {})},
+                    events: {click: (children.length > 0 ? click : () => {}), ...button_events},
                     children: button_children
                 },
                 {...content_options,
