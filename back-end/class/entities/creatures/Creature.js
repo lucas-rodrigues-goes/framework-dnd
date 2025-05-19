@@ -90,11 +90,11 @@ var Creature = class extends Entity {
         for (const condition in database.conditions.data) {
             const hasCondition = this.has_condition(condition)
             switch (condition) {
-                // Invisible
-                case "Invisible": {
-                    this.invisible = hasCondition
-                    this.opacity = hasCondition ? 0.2 : 1
-                    continue
+                // Blinded
+                case "Blinded": {
+                    const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
+                    this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
+                    break
                 }
 
                 // Hidden
@@ -105,27 +105,24 @@ var Creature = class extends Entity {
                     continue
                 }
 
-                // Blinded
-                case "Blinded": {
-                    const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
-                    this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
-                    break
+                // Invisible
+                case "Invisible": {
+                    this.invisible = hasCondition
+                    this.opacity = hasCondition ? 0.2 : 1
+                    continue
                 }
 
-                // Rage
-                case "Rage": {
-                    this.set_state("Rage", hasCondition)
-                    break
-                }
-
-                // Light
-                case "Light": {
-                    this.set_light("Light", hasCondition)
-                    break
-                }
-
+                // Default
                 default: break
             }
+
+            // State effects
+            const conditions_with_state = ["Blur", "Rage", "Shield"]
+            if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
+
+            // Light effects
+            const conditions_with_light = ["Light"]
+            if (conditions_with_light.includes(condition)) this.set_light(condition, hasCondition)
         }
     }
 
@@ -548,86 +545,82 @@ var Creature = class extends Entity {
 
     // Returns a dinamic object of current resistances
     get resistances() {
-        // Modifiers
-        const resistance_modifiers = {
-            features: {
-                "Dwarven Resilience": [
-                    { damage: "Poison", reduction: 10 }
-                ]
-            },
-            conditions: {
-                "Rage": [
-                    { damage: "Slashing", reduction: 3 },
-                    { damage: "Bludgeoning", reduction: 3 },
-                    { damage: "Piercing", reduction: 3 }
-                ]
+        let resistances = {
+            "Normal": {type: "resistance", reduction: 0},
+            "Nonsilver": {type: "resistance", reduction: 0},
+            "Slashing": {type: "resistance", reduction: 0},
+            "Piercing": {type: "resistance", reduction: 0},
+            "Bludgeoning": {type: "resistance", reduction: 0},
+            "Fire": {type: "resistance", reduction: 0},
+            "Cold": {type: "resistance", reduction: 0},
+            "Lightning": {type: "resistance", reduction: 0},
+            "Thunder": {type: "resistance", reduction: 0},
+            "Acid": {type: "resistance", reduction: 0},
+            "Poison": {type: "resistance", reduction: 0},
+            "Psychic": {type: "resistance", reduction: 0},
+            "Radiant": {type: "resistance", reduction: 0},
+            "Necrotic": {type: "resistance", reduction: 0},
+            "Force": {type: "resistance", reduction: 0},
+        };
+
+        // Type Priority
+        const priority = {
+            heals: 4,
+            immunity: 3,
+            weakness: 2,
+            resistance: 1
+        };
+
+        // Helper function to apply resistances
+        const applyResistancesOfObject = (object) => {
+            for (const damage_type in object) {
+                const resistance = object[damage_type];
+                
+                // Skip if damage type not in our base resistances
+                if (!resistances[damage_type]) continue;
+
+                // If priority of new type greater or equal current type
+                resistance.type = resistance.type || "resistance";
+                const samePriority = priority[resistance.type] == priority[resistances[damage_type].type];
+
+                // If both are of level resistance keep one with highest resistance
+                if (samePriority && resistance.type == "resistance") {
+                    if (resistance.reduction > resistances[damage_type].reduction) {
+                        resistances[damage_type] = resistance;
+                    }
+                }
+                // If new resistance priority is higher
+                else if (priority[resistance.type] > priority[resistances[damage_type].type]) {
+                    resistances[damage_type] = resistance;
+                }
+            }
+        };
+
+        // Apply resistances from conditions
+        for (const name in this.conditions) {
+            const condition = this.conditions[name];
+            if (condition.resistances) {
+                applyResistancesOfObject(condition.resistances);
             }
         }
 
-        /* Calculate Resistances */ 
-        let resistances; {
-            // Default Values
-            resistances = {
-                "Normal": {type:"default", reduction:0},
-                "Nonsilver": {type:"default", reduction:0},
-                "Slashing": {type:"default", reduction:0},
-                "Piercing": {type:"default", reduction:0},
-                "Bludgeoning": {type:"default", reduction:0},
-                "Fire": {type:"default", reduction:0},
-                "Cold": {type:"default", reduction:0},
-                "Lightning": {type:"default", reduction:0},
-                "Thunder": {type:"default", reduction:0},
-                "Acid": {type:"default", reduction:0},
-                "Poison": {type:"default", reduction:0},
-                "Psychic": {type:"default", reduction:0},
-                "Radiant": {type:"default", reduction:0},
-                "Necrotic": {type:"default", reduction:0},
-                "Force": {type:"default", reduction:0},
-            }
-
-            // Type Priority
-            const type_priority = {
-                heals: 4,
-                immunity: 3,
-                weakness: 2,
-                default: 1
-            }
-
-            // Apply Feature Modifiers
-            for (const [feature, modifiers] of Object.entries(resistance_modifiers.features)) {
-                if (this.has_feature(feature)) {
-                    modifiers.forEach(modifier => {
-                        const damage = modifier.damage
-                        const new_reduction = modifier.reduction || 0
-                        const new_type = modifier.type || "default"
-                
-                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
-                            resistances[damage].type = new_type;
-                        }
-                        if (new_reduction > resistances[damage].reduction) {
-                            resistances[damage].reduction = new_reduction;
-                        }
-                    });
+        // Apply resistances from equipment
+        for (const slot in this.equipment) {
+            const itemData = this.equipment[slot];
+            if (itemData) {
+                const item = database.items.data[itemData.name];
+                if (item && item.resistances) {
+                    applyResistancesOfObject(item.resistances);
                 }
             }
-        
-            // Apply Condition Modifiers
-            for (const [condition, modifiers] of Object.entries(resistance_modifiers.conditions)) {
-                if (this.has_condition(condition)) {
-                    modifiers.forEach(modifier => {
-                        const damage = modifier.damage
-                        const new_reduction = modifier.reduction || 0
-                        const new_type = modifier.type || "default"
-                
-                        if (type_priority[new_type] > type_priority[resistances[damage].type]) {
-                            resistances[damage].type = new_type;
-                        }
-                        if (new_reduction > resistances[damage].reduction) {
-                            resistances[damage].reduction = new_reduction;
-                        }
-                    });
-                }
-            }
+        }
+
+        // Others
+        {
+            // Dwarven Resilience
+            if (this.has_feature("Dwarven Resilience")) applyResistancesOfObject({
+                Poison: {type: "resistance", reduction: 10}
+            })
         }
         
         return resistances;
@@ -683,69 +676,80 @@ var Creature = class extends Entity {
     // Calculates Armor Class based on current equipment
     get armor_class() {
         const body_slot = this.equipment.body;
-        let armor_type;
-        let armor_class;
-    
-        // Updating armor_type based on currently equipped armor
-        if (body_slot) {
-            const item = database.get_item(body_slot.name);
-            if (item) {
-                // Match armor weight by its properties
-                const type = ["Heavy", "Medium", "Light"].find(prop => 
-                    item.properties?.includes(prop)
-                );
-                armor_type = type || armor_type;
-            }
-        }
-    
-        // Base armor class values for calc
-        const dexterity_modifier = this.score_bonus.dexterity
-        const constitution_modifier = this.score_bonus.constitution
-        const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0
-    
-        // Calculate armor class based on armor type
-        switch (armor_type) {
-            case "Heavy":
-                armor_class = item_armor_class;
-                break;
-            case "Medium":
-                const clamped_dex_bonus = Math.max(-2, Math.min(dexterity_modifier, 2));
-                armor_class = item_armor_class + clamped_dex_bonus;
-                break;
-            case "Light":
-                armor_class = item_armor_class + dexterity_modifier;
-                break;
-            default:
-                armor_class = 10 + dexterity_modifier; 
-                
-                // Barbarian Toughness
-                if (this.has_feature("Barbarian Toughness")) {
-                    armor_class = Math.max(armor_class, 10 + dexterity_modifier + constitution_modifier)
-                }
 
-                // Mage Armor
-                if (this.has_condition("Mage Armor")) {
-                    armor_class = Math.max(armor_class, 13 + dexterity_modifier)
-                }
-
-                break;
-        }
-
-        // Calculate armor class bonus
-        const equipment = this.#equipment;
-        let equipment_bonus = 0;
-        for (const slot in equipment) {
-            const itemData = equipment[slot];
-            if (itemData && !slot.includes("secondary")) {
-                const item = database.items.data[itemData.name]; // Access the item name first
+        // Calculate Armor Type
+        let armor_type = "None"; {
+            if (body_slot) {
+                const item = database.get_item(body_slot.name);
                 if (item) {
-                    const bonus_ac = item.bonus_armor_class || 0;
-                    equipment_bonus += Number(bonus_ac);
+                    // Match armor weight by its properties
+                    const type = ["Heavy", "Medium", "Light"].find(prop => 
+                        item.properties?.includes(prop)
+                    );
+                    armor_type = type || armor_type;
                 }
             }
         }
     
-        return armor_class + equipment_bonus;
+        // Base Armor Class
+        let armor_class = 10; {
+            // Base armor class values for calc
+            const dexterity_modifier = this.score_bonus.dexterity
+            const constitution_modifier = this.score_bonus.constitution
+            const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0
+
+            switch (armor_type) {
+                case "Heavy":
+                    armor_class = item_armor_class;
+                    break;
+                case "Medium":
+                    const clamped_dex_bonus = Math.max(-2, Math.min(dexterity_modifier, 2));
+                    armor_class = item_armor_class + clamped_dex_bonus;
+                    break;
+                case "Light":
+                    armor_class = item_armor_class + dexterity_modifier;
+                    break;
+                default:
+                    armor_class = 10 + dexterity_modifier; 
+                    
+                    // Barbarian Toughness
+                    if (this.has_feature("Barbarian Toughness")) {
+                        armor_class = Math.max(armor_class, 10 + dexterity_modifier + constitution_modifier)
+                    }
+
+                    // Mage Armor
+                    if (this.has_condition("Mage Armor")) {
+                        armor_class = Math.max(armor_class, 13 + dexterity_modifier)
+                    }
+
+                    break;
+            }
+        }
+
+        // Equipment Bonus
+        let equipment_bonus = 0; {
+            const equipment = this.#equipment;
+            for (const slot in equipment) {
+                const itemData = equipment[slot];
+                if (itemData && !slot.includes("secondary")) {
+                    const item = database.items.data[itemData.name]; // Access the item name first
+                    if (item) {
+                        const bonus_ac = item.bonus_armor_class || 0;
+                        equipment_bonus += Number(bonus_ac);
+                    }
+                }
+            }
+        }
+
+        // Condition Bonus
+        let condition_bonus = 0; {
+            for (const name in this.conditions) {
+                const condition = this.conditions[name]
+                if (condition.bonus_armor_class) condition_bonus += condition.bonus_armor_class
+            }
+        }
+    
+        return armor_class + equipment_bonus + condition_bonus;
     }
 
 

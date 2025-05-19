@@ -722,7 +722,7 @@
 							const {type, reduction} = character.resistances[name]
 
 							// Skip if resistance has default values
-							if (type == "default" && reduction == 0) {continue}
+							if (type == "resistance" && reduction == 0) {continue}
 
 							// From database
 							const damage_type = database.damage_types[name]
@@ -730,7 +730,7 @@
 							const description = damage_type.description
 
 							// Resistance value shown
-							const resistance = type != "default" ? capitalize(type) : reduction
+							const resistance = type != "resistance" ? capitalize(type) : reduction
 
 							// Element
 							collapsible(
@@ -743,9 +743,6 @@
 										{tag: "img", attributes: {src: image}},
 										{tag: "span", text: name},
 										{tag: "span", style: {position: "absolute", right: "1vh"}, text: String(resistance)}
-									],
-									children: [
-										{tag: "pre", style: {fontSize: "90%"}, text: description}
 									]
 								}
 							)
