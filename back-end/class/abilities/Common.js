@@ -495,6 +495,7 @@ var Common = class {
 
     static attack_hit_result(hit_bonus, creature, target, advantage_weight = 0) {
         creature.face_target()
+        const distance = calculate_distance(creature, target) * 5
         const target_visibility = creature.target_visibility()
 
         // Advantage Modifiers
@@ -521,9 +522,11 @@ var Common = class {
             if (advantage_weight > 0) advantage = "Advantage"
             else if (advantage_weight < 0) advantage = "Disadvantage"
         }
+        const hit = roll_to_hit + hit_bonus >= target.armor_class
+        const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
         const output = { success: false, message: "", roll: roll_result, advantage: advantage}; {
             // Critical Hit
-            if (roll_to_hit === 20) {
+            if (roll_to_hit === 20 || (hit && forced_crit)) {
                 output.success = true
                 output.message = "lands a critical hit"
             }
@@ -534,7 +537,7 @@ var Common = class {
             }
 
             // Hit
-            else if (roll_to_hit + hit_bonus >= target.armor_class) {
+            else if (hit) {
                 output.success = true
                 output.message = "hits"
 
@@ -604,7 +607,12 @@ var Common = class {
     }
 
     static attack_roll_advantage_modifiers(creature, target) {
+        const distance = calculate_distance(creature, target) * 5
         let output = 0; {
+            // Blinded
+            if (target.has_condition("Blinded")) output += 1
+            if (creature.has_condition("Blinded")) output -= 1
+
             // Blur
             if (target.has_condition("Blur")) output -= 1
 
@@ -617,8 +625,31 @@ var Common = class {
                 output += 1
             }
 
+            // Paralyzed
+            if (target.has_condition("Paralyzed")) output += 1
+
+            // Petrified
+            if (target.has_condition("Petrified")) output += 1
+
+            // Prone
+            if (creature.has_condition("Prone")) output -= 1
+            if (target.has_condition("Prone")) {
+                if (distance > 5) output -= 1
+                else if (distance < 5) output += 1
+            }
+
             // Reckless Attack
             if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
+
+            // Restrained
+            if (creature.has_condition("Restrained")) output -= 1
+            if (target.has_condition("Restrained")) output += 1
+
+            // Stunned
+            if (target.has_condition("Stunned")) output += 1
+
+            // Unconscious
+            if (target.has_condition("Unconscious")) output += 1
 
             // Unseen Attacker
             if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
