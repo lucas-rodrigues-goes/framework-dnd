@@ -10,7 +10,7 @@ let data_description; {
         )
     }
     
-    const DEFAULT_STYLE = {padding: "0.5vh 1.5vh", fontSize: "105%", textAlign: "center"}
+    const DEFAULT_STYLE = {padding: "0.5vh 1.5vh", fontSize: "105%", textAlign: "center", width: "100%"}
 
     data_description = {
         spell: ({spell, style=DEFAULT_STYLE}) => {
@@ -22,15 +22,22 @@ let data_description; {
 
             // Cast Time
             let cast_time = ""; {
-                if (spell.cast_time >= 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
-                else if (spell.cast_time == -1) cast_time = "Bonus Action"
-                else if (spell.cast_time == -2) cast_time = "Reaction"
+                if (spell.cast_time > 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
+                else cast_time = "Instantaneous"
+            }
+
+            // Resource
+            let resource = ""; {
+                if (spell.cast_time >= 0) resource = "Action"
+                else if (spell.cast_time == -1) resource = "Bonus Action"
+                else if (spell.cast_time == -2) resource = "Reaction"
             }
 
             // Attributes
             const attributes = []; {
-                if (spell.classes) attributes.push(title_value({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
-                if (spell.components) attributes.push(title_value({title: "Components", value: capitalize(spell?.components.join(", "))}))
+                attributes.push(title_value({title: "Resource", value: resource}))
+                attributes.push(title_value({title: "Casting Time", value: capitalize(cast_time)}))
+                if (spell.duration) attributes.push(title_value({title: "Duration", value: timeUnit(spell.duration)}))
                 if (spell.range) {
                     let range = spell.range + " ft"; {
                         if (spell.range == 5) range = "Touch"
@@ -38,13 +45,13 @@ let data_description; {
                     }
                     attributes.push(title_value({title: "Range", value: range}))
                 }
-                if (spell.cast_time) attributes.push(title_value({title: "Casting Time", value: capitalize(cast_time)}))
-                if (spell.duration) attributes.push(title_value({title: "Duration", value: timeUnit(spell.duration)}))
+                if (spell.components) attributes.push(title_value({title: "Components", value: capitalize(spell?.components.join(", "))}))
+                if (spell.classes) attributes.push(title_value({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
             }
 
             // Element
             return (
-                {tag: "div", style: style, children: [
+                {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                     // Title
                     {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                         {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell?.name},
@@ -66,7 +73,7 @@ let data_description; {
 
         resource: async ({resource, style=DEFAULT_STYLE}) => {
             return element(
-                {tag: "div", style: style, children: [
+                {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                     // Title
                     {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                         {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: resource.name},
@@ -113,7 +120,7 @@ let data_description; {
 
             
             return element(
-                {tag: "div", style: style, children: [
+                {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                     {tag: "div", 
                         style: {textAlign: "center", margin: "1vh", padding: 0, position: "relative", margin: "auto", marginBottom: "2vh", width: "fit-content"}, 
                         children: [
@@ -137,12 +144,22 @@ let data_description; {
         },
 
         ability: async ({ability, style=DEFAULT_STYLE}) => {
-            return element({tag: "div", style: style, children: [
+            // Attributes
+            const attributes = []; {
+                attributes.push(title_value({title: "Resources", value: ability.resources.length > 0 ? ability.resources.join(", ") : "Free"}))
+                if (ability.duration) attributes.push(title_value({title: "Duration", value: timeUnit(ability.duration)}))
+            }
+
+            return element({tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                     {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: ability.name},
                     {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: ability.origin + " Ability"},
                 ]},
+
+                // Attributes
+                {tag: "div", style: {textAlign: "left"}, children: attributes},
+
                 // Description
                 {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
                     text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
@@ -158,7 +175,7 @@ let data_description; {
                 : show_type + " Feature"
             )
 
-            return element({tag: "div", style: style, children: [
+            return element({tag: "div", style: {...DEFAULT_STYLE, ...style, width: "95%"}, children: [
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                     {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: feature.name},
@@ -178,7 +195,7 @@ let data_description; {
                 : proficiency.name
             )
 
-            return element({tag: "div", style: style, children: [
+            return element({tag: "div", style: {...DEFAULT_STYLE, ...style, width: "95%"}, children: [
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                     {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: title},
@@ -192,21 +209,5 @@ let data_description; {
         },
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 `']`
