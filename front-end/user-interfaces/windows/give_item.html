@@ -45,7 +45,10 @@
 
                 // Click
                 const click = () => backend(`
-                    for (const creature of allSelected()) creature.receive_item("`+item.name+`")
+                    for (const creature of allSelected()) {
+                        creature.receive_item("`+item.name+`")
+                        console.log(creature.name_color + " received " + "`+item.name+`", "gm")
+                    }
                 `)
 
                 // Element
