@@ -117,7 +117,7 @@ var Creature = class extends Entity {
             }
 
             // State effects
-            const conditions_with_state = ["Blur", "Rage", "Shield"]
+            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person"]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
             // Light effects
@@ -1208,7 +1208,18 @@ var Creature = class extends Entity {
     }
 
     remove_condition(condition) {
-        if(this.has_condition(condition)) this.set_condition(condition, 0)
+        if(!this.has_condition(condition)) return
+        
+        // Concentration
+        if (condition == "Concentration") {
+            const concentration = this.get_condition("Concentration")
+            for (const id of concentration.targets) {
+                instance(id).remove_condition(concentration.condition)
+            }
+            console.log(`${this.name_color} has lost concentration on ${concentration.condition}.`, "all")
+        }
+
+        this.set_condition(condition, 0)
     }
 
     reduce_all_conditions_duration(amount = 1) {

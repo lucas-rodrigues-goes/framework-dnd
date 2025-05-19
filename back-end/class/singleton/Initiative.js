@@ -190,8 +190,8 @@ var Initiative = class {
         if (!isSuspended) creature.turn_start()
 
         // Logging
-        if (!isSuspended) public_log(`${creature.name_color} started their turn.`)
-        else public_log(`${creature.name_color} has finished ${creature_init.description}.`)
+        if (!isSuspended) console.log(`${creature.name_color} started their turn.`, "all")
+        else console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
     }
 
     static suspend_turn(time, description, creature=impersonated()) {
@@ -238,7 +238,7 @@ var Initiative = class {
         }
 
         // Logging
-        public_log(`${creature.name_color} ended their turn.`)
+        console.log(`${creature.name_color} ended their turn. <br><br><br>`, "all")
 
         // Next creature
         this.next_creature()

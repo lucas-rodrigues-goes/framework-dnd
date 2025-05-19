@@ -86,6 +86,17 @@ var Spells = class {
         Common.use_resources(resources)
     }
 
+    static concentrate(creature, spell, targets) {
+        creature.remove_condition("Concentration")
+
+        // New concentration
+        creature.set_condition("Concentration", spell.duration, {
+            condition: spell.name,
+            targets: targets,
+        })
+        console.log(`${creature.name_color} has started concentrating on ${spell.name}.`, "all")
+    }
+
     //---------------------------------------------------------------------------------------------------
     // Helpers
     //---------------------------------------------------------------------------------------------------
@@ -579,6 +590,43 @@ var Spells = class {
         }
     }
 
+    static hold_person(spell) {
+        const creature = impersonated()
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [5, 7, 9] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+        }
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: max_targets,
+            saving_throw_score: "Wisdom"
+        })
+
+        // Apply effect
+        const targets = []
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition(spell.name, spell.duration, {
+                    saving_throw: {
+                        difficulty_class: 10 + spell.spellcasting_modifier,
+                        score: "Constitution"
+                    }
+                })
+                targets.push(element.target.id)
+            }
+        }
+        Spells.concentrate(creature, spell, targets)
+
+        return save_return
+    }
+
     static shatter (spell) {
         const creature = impersonated()
 
@@ -649,10 +697,7 @@ var Spells = class {
         }
 
         // Set condition
-        creature.set_condition("Concentration", spell.duration, {
-            name: name,
-            targets: [target],
-        })
+        Spells.concentrate(creature, spell, [target.id])
         target.set_condition(name, spell.duration, {
             bonus_armor_class: 2
         })
