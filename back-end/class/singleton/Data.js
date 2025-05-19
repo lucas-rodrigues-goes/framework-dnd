@@ -92,7 +92,7 @@ var data = class {
 
             // Equipment-only
             bonus_armor_class=0,
-            conditions=[],
+            resistances={},
                 // Weapon-only
                 damage = [{
                     die_ammount: 1,
@@ -124,7 +124,7 @@ var data = class {
                 switch (type) {
                     // Equipment
                     case "equipment":
-                        object = {...object, bonus_armor_class, conditions}
+                        object = {...object, bonus_armor_class, resistances}
                         break
                 }
 
