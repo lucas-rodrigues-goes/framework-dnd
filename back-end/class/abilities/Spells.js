@@ -173,7 +173,7 @@ var Spells = class {
             // Deal damage
             let damage_result; {
                 // Damage spell
-                if (damage_dice.length > 1) {
+                if (damage_dice.length >= 1) {
                     damage_result = save_result.success && !half_on_fail
                         ? ` avoiding the effects.`
                         : ` receiving ${Spells.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
@@ -190,7 +190,7 @@ var Spells = class {
             // Output
             console.log(
                 `${creature.name_color} casts ${name} (DC ${save_result.difficulty_class}) on ${target.name_color},` + 
-                ` who makes a ${saving_throw_score} saving throw and ${save_result.message} (${save_result.roll.text_color})${damage_result}`
+                ` who makes a ${saving_throw_score} save and ${save_result.message} (${save_result.roll.text_color})${damage_result}`
             , "all")
             output.targets.push({
                 save_result: save_result,
@@ -566,7 +566,7 @@ var Spells = class {
         // Apply effect
         for (const element of save_return.targets) {
             if (!element.save_result.success) {
-                element.target.set_condition("Blinded", spell.duration, {
+                element.target.set_condition(spell.name, spell.duration, {
                     saving_throw: {
                         difficulty_class: 10 + spell.spellcasting_modifier,
                         score: "Constitution"
