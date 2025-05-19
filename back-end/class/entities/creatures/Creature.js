@@ -9,18 +9,9 @@ var Creature = class extends Entity {
     #name = ""
     #type = ""
     #race = ""
-    #ability_scores = {
-        "strength": 10, "dexterity": 10, "constitution": 10,
-        "wisdom": 10, "intelligence": 10, "charisma": 10,
-    }
+    #ability_scores = { "strength": 10, "dexterity": 10, "constitution": 10, "wisdom": 10, "intelligence": 10, "charisma": 10 }
     #health = 10
-    #speed = {
-        "walk":30,
-        "climb":15,
-        "swim":15,
-        "fly":0,
-        "burrow":0,
-    }
+    #speed = { "walk": 30, "climb": 15, "swim": 15, "fly": 0, "burrow": 0 }
     #spellcasting_level = 0
     #resources = {
         "Action": {
@@ -84,35 +75,27 @@ var Creature = class extends Entity {
     // Methods
     //-----------------------------------------------------------------------------------------------------
 
-    // Updates states based on current conditions
     update_state() {
         // Verify all conditions
         for (const condition in database.conditions.data) {
             const hasCondition = this.has_condition(condition)
             switch (condition) {
-                // Blinded
                 case "Blinded": {
                     const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
                     this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
                     break
                 }
-
-                // Hidden
                 case "Hidden": {
                     if (this.has_condition("Invisible")) continue
                     this.invisible = hasCondition
                     this.opacity = hasCondition ? 0.5 : 1
                     continue
                 }
-
-                // Invisible
                 case "Invisible": {
                     this.invisible = hasCondition
                     this.opacity = hasCondition ? 0.2 : 1
                     continue
                 }
-
-                // Default
                 default: break
             }
 
@@ -126,29 +109,32 @@ var Creature = class extends Entity {
         }
     }
 
-    // Refreshes and updates resources for a new round
     turn_start() {
-        // Reduce duration of conditions
         this.reduce_all_conditions_duration(1)
-
-        // Update Stealth
         this.maintain_stealth(true)
         this.passive_search()
-        
-        // Update max attacks per action
-        let attacks = 1
-        if (this.has_feature("Three Extra Attacks")) attacks = 4
-        else if (this.has_feature("Two Extra Attacks")) attacks = 3
-        else if (this.has_feature("Extra Attack")) attacks = 2
+
+        // Resource maxes
+        let attacks = 1; {
+            if (this.has_feature("Three Extra Attacks")) attacks = 4
+            else if (this.has_feature("Two Extra Attacks")) attacks = 3
+            else if (this.has_feature("Extra Attack")) attacks = 2
+        }
+        let actions = 1; {
+            if (this.has_condition("Haste") && !this.has_condition("Slow")) actions = 2
+        }
+        let bonus_actions = 1
+        let reactions = 1
+
+        // Incapacitated
+        if (this.has_condition("Incapacitated")) actions = 0, bonus_actions = 0, reactions = 0
+
+        // Set resource maxes on character
         this.set_resource_max("Attack Action", attacks)
-
-        // Update actions
-        let actions = 1
-        if (this.has_condition("Haste") && !this.has_condition("Slow")) actions = 2
         this.set_resource_max("Action", actions)
-
-        // Update max speed
-        this.set_resource_max("Movement", this.speed) //--> Speed
+        this.set_resource_max("Bonus Action", bonus_actions)
+        this.set_resource_max("Reaction", reactions)
+        this.set_resource_max("Movement", this.speed)
 
         // Fill Resources
         for (const name in this.#resources) {
@@ -160,7 +146,6 @@ var Creature = class extends Entity {
         }
     }
 
-    // Routine for turn end
     turn_end() {
         // Condition saving throws
         for (const name in this.conditions) {
@@ -175,17 +160,16 @@ var Creature = class extends Entity {
 
                 // Result
                 if (roll_to_save >= difficulty_class) {
-                    console.log(`${this.name_color} made a ${score} saving throw (DC ${difficulty_class}) and succeded (${roll_result.text_color} + ${save_bonus}) ending ${name}.`, "all")
+                    console.log(`${this.name_color} made a ${score} save (DC ${difficulty_class}) and succeded (${roll_result.text_color} + ${save_bonus}) ending ${name}.`, "all")
                     this.remove_condition(name)
                 }
                 else {
-                    console.log(`${this.name_color} made a ${score} saving throw (DC ${difficulty_class}) against ${name} and failed (${roll_result.text_color} + ${save_bonus}).`, "all")
+                    console.log(`${this.name_color} made a ${score} save (DC ${difficulty_class}) against ${name} and failed (${roll_result.text_color} + ${save_bonus}).`, "all")
                 }
             }
         }
     }
 
-    // Refreshes resources that refill on short rest
     short_rest(hours = 1) {
         // Health
         this.health = (this.max_health / 4) * hours
@@ -200,7 +184,6 @@ var Creature = class extends Entity {
         }
     }
 
-    // Refreshes resources that refill on long rest
     long_rest() {
         // Fill Health
         this.health = this.max_health
@@ -266,7 +249,6 @@ var Creature = class extends Entity {
         return perception_modifier
     }
     
-    // Update stealth based on passive perception of nearby creatures
     maintain_stealth (new_roll=false) {
         // Stop execution if is not in stealth
         if (!this.has_condition("Hidden")) return
@@ -329,7 +311,6 @@ var Creature = class extends Entity {
         }
     }
 
-    // Reveals hidden creatures based on passive perception
     passive_search() {
         const passive_perception = this.passive_perception
 
@@ -359,7 +340,6 @@ var Creature = class extends Entity {
         }
     }
 
-    // Reveals hidden creatures based on a roll
     active_search() {
         const die_roll = roll_20()
         const perception_roll = Math.max(die_roll.result + this.skills.Perception, this.passive_perception)
@@ -394,7 +374,6 @@ var Creature = class extends Entity {
     // Basic Getters / Setters
     //-----------------------------------------------------------------------------------------------------
 
-    // Name
     get name() { return this.#name }
     set name(name) {
         this.#name = name
@@ -404,14 +383,12 @@ var Creature = class extends Entity {
         log(this.#name + " updated their name.")
     }
 
-    // Name Color
     get name_color () {
         const color = this.player ? "#48BAFF" : "#C82E42"
 
         return `<span style="color: ${color}">${this.name}</span>`
     }
 
-    // Type
     get type() { return this.#type }
     set type(type) {
         this.#type = type
@@ -421,7 +398,6 @@ var Creature = class extends Entity {
         log(this.#name + " type set to " + type + ".")
     }
 
-    // Race
     get race() { return this.#race }
     set race(race) {
         this.#race = race
@@ -436,10 +412,8 @@ var Creature = class extends Entity {
     // Ability Scores
     //-----------------------------------------------------------------------------------------------------
 
-    // Returns all ability scores
     get ability_scores() { return this.#ability_scores }
 
-    // Returns all ability score bonuses / modifiers
     get score_bonus() {
         let bonus = function (score_value) {
             return Math.floor((score_value - 10) / 2);
@@ -455,7 +429,6 @@ var Creature = class extends Entity {
         }
     }
 
-    // Set a new value for an ability score
     set_ability_score(ability_score, value) {
         // Validating parameters
         if (isNaN(Number(value))) {return}
@@ -477,17 +450,14 @@ var Creature = class extends Entity {
     // Health
     //-----------------------------------------------------------------------------------------------------
 
-    // Get current health
     get health() { return this.#health }
     
-    // Get max health
     get max_health() {
         let calculated_max_health = this.#ability_scores.constitution
 
         return calculated_max_health
     }
 
-    // Change value of health, and also update states / bars
     set health(health) {
         function crunchNumber(num, from = [0, 100], to = [0, 100]) {
             // Define the input and output ranges
@@ -526,7 +496,6 @@ var Creature = class extends Entity {
         this.save();
     }
 
-    // Calculates damage received based on its type and creature resistances
     receive_damage(value, type) {
         // Validating parameters
         if (value <= 0) {return}
@@ -550,15 +519,35 @@ var Creature = class extends Entity {
                 break;
         }
 
+        // Finish if no damage is dealt
+        if (damage == 0) return 0
+
         // Reduce HP
         this.health -= damage;
+
+        // Lose Concentration
+        if (this.has_condition("Concentration")) {
+            // Roll d20
+            const roll_result = roll_20(0)
+            const save_bonus = this.saving_throws.constitution
+            const roll_to_save = roll_result.result + save_bonus
+
+            // Difficulty Class
+            const difficulty_class = Math.max(Math.floor(damage / 2), 10) // equals damage halved or 10, whichever is highest
+
+            if (roll_to_save >= difficulty_class) {
+                console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain concentration and succeeded (${roll_result.text_color} + ${save_bonus}).`, "all")
+            } else {
+                console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain concentration and failed (${roll_result.text_color} + ${save_bonus}).`, "all")
+                this.remove_condition("Concentration")
+            }
+        }
 
         // Log
         console.log(this.#name + " received " + damage + " " + type + " damage.", "debug");
         return damage;
     }
 
-    // Calculates healing received
     receive_healing(value) {
         this.health += value
 
@@ -569,7 +558,6 @@ var Creature = class extends Entity {
     // Resistances
     //-----------------------------------------------------------------------------------------------------
 
-    // Returns a dinamic object of current resistances
     get resistances() {
         let resistances = {
             "Normal": {type: "resistance", reduction: 0},
@@ -656,7 +644,6 @@ var Creature = class extends Entity {
     // Armor Class
     //-----------------------------------------------------------------------------------------------------
 
-    // Calculates Init mod based on current equipment
     get initiative_mod() {
         const body_slot = this.equipment.body;
         let armor_type;
@@ -699,7 +686,6 @@ var Creature = class extends Entity {
         return initiative_mod;
     }
 
-    // Calculates Armor Class based on current equipment
     get armor_class() {
         const body_slot = this.equipment.body;
 
@@ -797,6 +783,12 @@ var Creature = class extends Entity {
                 "Haste": { type: "multiply", value: 2 },
                 "Slow": { type: "multiply", value: 0.5 },
                 "Ray of Frost": {type: "multiply", value: 0.5},
+                "Paralyzed": {type: "multiply", value: 0},
+                "Unconscious": {type: "multiply", value: 0},
+                "Petrified": {type: "multiply", value: 0},
+                "Grappled": {type: "multiply", value: 0},
+                "Restrained": {type: "multiply", value: 0},
+                "Stunned": {type: "multiply", value: 0},
             }
         }
 
@@ -1172,7 +1164,6 @@ var Creature = class extends Entity {
     // Conditions
     //-----------------------------------------------------------------------------------------------------
 
-    // Get all conditions stored
     get conditions() {
         this.update_state()
         return this.#conditions
@@ -1180,46 +1171,48 @@ var Creature = class extends Entity {
 
     get_condition(condition) { return this.conditions[condition] }
 
-    // Set a new condition on the creature by its name and duration
     set_condition(condition, duration, object = {}) {
-        duration = duration !== undefined ? Number(duration) : database.conditions.data[condition].duration || 0
+        duration = duration !== undefined ? Number(duration) : database.conditions.data[condition].duration || 0;
 
-        if (duration >= 1) {
+        if (duration === 0) {
+            this.remove_condition(condition);
+            return;
+        }
+
+        if (duration >= 1 || duration === -1) {
             this.#conditions[condition] = {
                 ...object,
                 duration: duration,
-            }
-            console.log(this.#name + " received the " + condition + " condition for " + duration + " rounds.", "debug");
-        }
-        else if (duration == -1) {
-            this.#conditions[condition] = {
-                ...object,
-                duration: -1
-            }
-            console.log(this.#name + " received the " + condition + " condition.", "debug");
-        }
-        else if (duration <= 0) {
-            delete this.#conditions[condition]
-            console.log(this.#name + " lost the condition " + condition + ".", "debug");
+            };
+
+            const msg = duration === -1
+                ? `${this.#name} received the ${condition} condition.`
+                : `${this.#name} received the ${condition} condition for ${duration} rounds.`;
+
+            console.log(msg, "debug");
         }
 
-        this.update_state()
-        this.save()
+        this.update_state();
+        this.save();
     }
 
     remove_condition(condition) {
-        if(!this.has_condition(condition)) return
-        
-        // Concentration
-        if (condition == "Concentration") {
-            const concentration = this.get_condition("Concentration")
+        if (!this.has_condition(condition)) return;
+
+        // Handle special logic for concentration
+        if (condition === "Concentration") {
+            const concentration = this.get_condition("Concentration");
             for (const id of concentration.targets) {
-                instance(id).remove_condition(concentration.condition)
+                instance(id).remove_condition(concentration.condition);
             }
-            console.log(`${this.name_color} has lost concentration on ${concentration.condition}.`, "all")
+            console.log(`${this.name_color} has lost concentration on ${concentration.condition}.`, "all");
         }
 
-        this.set_condition(condition, 0)
+        delete this.#conditions[condition];
+        console.log(`${this.#name} lost the condition ${condition}.`, "debug");
+
+        this.update_state();
+        this.save();
     }
 
     reduce_all_conditions_duration(amount = 1) {
@@ -1233,9 +1226,29 @@ var Creature = class extends Entity {
         }
     }
 
-    // Verifies if the creature has a condition
-    has_condition(name) {
-        return name in this.#conditions
+    has_condition(name, visited = new Set()) {
+        // Prevent infinite loops in case of circular equivalence
+        if (visited.has(name)) return false;
+        visited.add(name);
+
+        // Direct condition match
+        if (name in this.#conditions) return true;
+
+        // Equivalent conditions map
+        const equivalent_conditions = {
+            "Blinded": ["Blindness"],
+            "Incapacitated": ["Paralyzed", "Petrified", "Stunned", "Unconscious"],
+            "Paralyzed": ["Hold Person", "Hold Monster"],
+            "Unconscious": ["Sleep"]
+        };
+
+        // Check all equivalent conditions recursively
+        const equivalents = equivalent_conditions[name] || [];
+        for (const equivalent of equivalents) {
+            if (this.has_condition(equivalent, visited)) return true;
+        }
+
+        return false;
     }
 
     has_conditions(list, match = "all") {
