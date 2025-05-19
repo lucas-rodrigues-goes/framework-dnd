@@ -129,7 +129,7 @@ var Spells = class {
         }
     }
 
-    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, half_on_fail=false, range, damage_dice, saving_throw_score, advantage_weight = 0}={}) {
+    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
         const creature = impersonated()
 
         // Validate Targets
@@ -160,10 +160,21 @@ var Spells = class {
             const save_result = Spells.saving_throw_result(creature, target, spellcasting_modifier, save_bonus, half_on_fail, 0)
 
             // Deal damage
-            const damage_result = (save_result.success && !half_on_fail
-                ? ` avoiding the effects.`
-                : ` receiving ${Spells.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
-            )
+            let damage_result; {
+                // Damage spell
+                if (damage_dice.length > 1) {
+                    damage_result = save_result.success && !half_on_fail
+                        ? ` avoiding the effects.`
+                        : ` receiving ${Spells.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
+                }
+
+                // Effect only spell
+                else {
+                    damage_result = save_result.success
+                        ? ` avoiding the effects.`
+                        : `.`
+                }
+            }
 
             // Output
             console.log(
@@ -441,6 +452,28 @@ var Spells = class {
     // 1st Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static burning_hands (spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 3; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+        
+        // Output
+        Sound.play("fire")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
     static mage_armor (spell) {
         const [creature, target] = [impersonated(), selected()]
         const { name, range, spellcasting_modifier } = spell
@@ -495,31 +528,56 @@ var Spells = class {
         }
     }
 
-    static burning_hands (spell) {
-        const creature = impersonated()
-
-        // Die amount
-        let die_amount = 3; {
-            const levels = [3, 5, 7] 
-            if (creature.spellcasting_level >= levels[0]) die_amount += 1
-            if (creature.spellcasting_level >= levels[1]) die_amount += 1
-            if (creature.spellcasting_level >= levels[2]) die_amount += 1
-        }
-        
-        // Output
-        Sound.play("fire")
-        return Spells.make_spell_save({
-            ...spell,
-            targets: allSelected(),
-            half_on_fail: true,
-            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
-            saving_throw_score: "Dexterity"
-        })
-    }
-
     //---------------------------------------------------------------------------------------------------
     // 2nd Level Spells
     //---------------------------------------------------------------------------------------------------
+    
+    
+    static blindness(spell) {
+        const creature = impersonated()
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [5, 7, 9] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+        }
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: max_targets,
+            saving_throw_score: "Constitution"
+        })
+
+        // Apply effect
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition("Blinded", spell.duration, {
+                    saving_throw: {
+                        difficulty_class: 10 + spell.spellcasting_modifier,
+                        score: "Constitution"
+                    }
+                })
+            }
+        }
+
+        return save_return
+    }
+
+    static blur (spell) {
+        const creature = impersonated()
+        const { name, duration } = spell
+
+        // Set condition
+        creature.set_condition(name, duration)
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} giving attackers disadvantage on their attacks against them.`
+        }
+    }
 
     static shatter (spell) {
         const creature = impersonated()
@@ -541,18 +599,6 @@ var Spells = class {
             damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Thunder"}],
             saving_throw_score: "Dexterity"
         })
-    }
-
-    static blur (spell) {
-        const creature = impersonated()
-        const { name, duration } = spell
-
-        // Set condition
-        creature.set_condition(name, duration)
-        return {
-            success: true,
-            message: `${creature.name_color} cast ${name} giving attackers disadvantage on their attacks against them.`
-        }
     }
 
     //---------------------------------------------------------------------------------------------------

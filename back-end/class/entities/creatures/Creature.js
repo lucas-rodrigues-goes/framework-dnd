@@ -160,6 +160,31 @@ var Creature = class extends Entity {
         }
     }
 
+    // Routine for turn end
+    turn_end() {
+        // Condition saving throws
+        for (const name in this.conditions) {
+            const condition = this.conditions[name]
+            if (condition.saving_throw) {
+                const {difficulty_class, score} = condition.saving_throw
+
+                // Save roll
+                const save_bonus = this.score_bonus[score.toLowerCase()]
+                const roll_result = roll_20(0)
+                const roll_to_save = roll_result.result + save_bonus
+
+                // Result
+                if (roll_to_save >= difficulty_class) {
+                    console.log(`${this.name_color} made a ${score} saving throw (DC ${difficulty_class}) and succeded (${roll_result.text_color} + ${save_bonus}) ending ${name}.`, "all")
+                    this.remove_condition(name)
+                }
+                else {
+                    console.log(`${this.name_color} made a ${score} saving throw (DC ${difficulty_class}) against ${name} and failed (${roll_result.text_color} + ${save_bonus}).`, "all")
+                }
+            }
+        }
+    }
+
     // Refreshes resources that refill on short rest
     short_rest(hours = 1) {
         // Health
@@ -493,9 +518,10 @@ var Creature = class extends Entity {
         // Update States
         const isDead = clampedHealth <= 0
         this.set_state("Dead", isDead)
-        if (isDead) MTScript.evalMacro(`[r:
-            setBarVisible("Health", `+(isDead ? 0 : 1)+`, "`+this.id+`")
-        ]`)
+        if (isDead) {
+            if (!this.player) Initiative.remove_creature(this.id)
+            MTScript.evalMacro(`[r: setBarVisible("Health", `+(isDead ? 0 : 1)+`, "`+this.id+`") ]`)
+        }
         
         this.save();
     }
@@ -1163,18 +1189,18 @@ var Creature = class extends Entity {
                 ...object,
                 duration: duration,
             }
-            console.log(this.#name + " received the " + condition + " condition for " + duration + " rounds.", "gm");
+            console.log(this.#name + " received the " + condition + " condition for " + duration + " rounds.", "debug");
         }
         else if (duration == -1) {
             this.#conditions[condition] = {
                 ...object,
                 duration: -1
             }
-            console.log(this.#name + " received the " + condition + " condition.", "gm");
+            console.log(this.#name + " received the " + condition + " condition.", "debug");
         }
         else if (duration <= 0) {
             delete this.#conditions[condition]
-            console.log(this.#name + " lost the condition " + condition + ".", "gm");
+            console.log(this.#name + " lost the condition " + condition + ".", "debug");
         }
 
         this.update_state()

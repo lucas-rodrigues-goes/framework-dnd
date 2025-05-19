@@ -223,6 +223,7 @@ var Initiative = class {
         for (const name of ["Action", "Bonus Action", "Attack Action", "Movement"]) {
             creature.set_resource_value(name, 0)
         }
+        creature.turn_end()
 
         // Update initiative info
         const creature_init = this.creatures[this.current_creature]
