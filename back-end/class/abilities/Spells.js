@@ -286,23 +286,42 @@ var Spells = class {
     //---------------------------------------------------------------------------------------------------
 
     static fire_bolt(spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
         Sound.play("fire")
         return Spells.make_spell_attack({
             ...spell,
             target: selected(),
-            damage_dice: [{die_amount: 1, die_size: 6, damage_type: "Fire", damage_bonus: spell.spellcasting_modifier}],
+            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire", damage_bonus: spell.spellcasting_modifier}],
         })
     }
 
     static ray_of_frost(spell) {
         const target = selected()
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
 
         // Spell Attack
         Sound.play("cold")
         const attack_return = Spells.make_spell_attack({
             ...spell,
             target: target,
-            damage_dice: [{die_amount: 1, die_size: 4, damage_type: "Cold", damage_bonus: spell.spellcasting_modifier}],
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Cold", damage_bonus: spell.spellcasting_modifier}],
         })
 
         // Ray of Frost condition
@@ -398,12 +417,22 @@ var Spells = class {
     }
 
     static sacred_flame(spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
         Sound.play("radiant")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
             max_targets: 1,
-            damage_dice: [{die_amount: 1, die_size: 4, damage_type: "Radiant", damage_bonus: spell.spellcasting_modifier}],
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Radiant", damage_bonus: spell.spellcasting_modifier}],
             saving_throw_score: "Dexterity"
         })
     }
@@ -444,15 +473,37 @@ var Spells = class {
         }
     }
 
+    static shield (spell) {
+        const creature = impersonated()
+        const { name, duration } = spell
+
+        // Bonus Armor Class
+        let bonus_armor_class = 3; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) bonus_armor_class += 1
+            if (creature.spellcasting_level >= levels[1]) bonus_armor_class += 1
+            if (creature.spellcasting_level >= levels[2]) bonus_armor_class += 1
+        }
+
+        // Set condition
+        creature.set_condition(name, duration, {
+            bonus_armor_class: bonus_armor_class
+        })
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} gaining a +${bonus_armor_class} bonus to their armor class.`
+        }
+    }
+
     static burning_hands (spell) {
         const creature = impersonated()
 
         // Die amount
         let die_amount = 3; {
             const levels = [3, 5, 7] 
-            if (creature.spellcasting_level > levels[0]) die_amount += 1
-            if (creature.spellcasting_level > levels[1]) die_amount += 1
-            if (creature.spellcasting_level > levels[2]) die_amount += 1
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
         
         // Output
@@ -476,9 +527,9 @@ var Spells = class {
         // Die amount
         let die_amount = 3; {
             const levels = [5, 7, 9] 
-            if (creature.spellcasting_level > levels[0]) die_amount += 1
-            if (creature.spellcasting_level > levels[1]) die_amount += 1
-            if (creature.spellcasting_level > levels[2]) die_amount += 1
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
         
         // Output
@@ -492,6 +543,18 @@ var Spells = class {
         })
     }
 
+    static blur (spell) {
+        const creature = impersonated()
+        const { name, duration } = spell
+
+        // Set condition
+        creature.set_condition(name, duration)
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} giving attackers disadvantage on their attacks against them.`
+        }
+    }
+
     //---------------------------------------------------------------------------------------------------
     // 3rd Level Spells
     //---------------------------------------------------------------------------------------------------
@@ -502,9 +565,9 @@ var Spells = class {
         // Die amount
         let die_amount = 6; {
             const levels = [7, 9, 11] 
-            if (creature.spellcasting_level > levels[0]) die_amount += 1
-            if (creature.spellcasting_level > levels[1]) die_amount += 1
-            if (creature.spellcasting_level > levels[2]) die_amount += 1
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
         
         // Output
@@ -516,6 +579,44 @@ var Spells = class {
             damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
             saving_throw_score: "Dexterity"
         })
+    }
+
+    static haste (spell) {
+        const [creature, target] = [impersonated(), selected()]
+        const { name, range, spellcasting_modifier } = spell
+
+        // Target self if no target
+        if (!target) target = creature
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Set condition
+        creature.set_condition("Concentration", spell.duration, {
+            name: name,
+            targets: [target],
+        })
+        target.set_condition(name, spell.duration, {
+            bonus_armor_class: 2
+        })
+        return {
+            success: true,
+            message: (creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}.`
+                : `${creature.name_color} cast ${name} on themselves.`
+            )
+        }
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -532,9 +633,9 @@ var Spells = class {
         // Die amount
         let die_amount = 8; {
             const levels = [11, 13, 15] 
-            if (creature.spellcasting_level > levels[0]) die_amount += 1
-            if (creature.spellcasting_level > levels[1]) die_amount += 1
-            if (creature.spellcasting_level > levels[2]) die_amount += 1
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
         
         // Output

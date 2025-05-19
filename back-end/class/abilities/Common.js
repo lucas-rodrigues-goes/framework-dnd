@@ -605,11 +605,20 @@ var Common = class {
 
     static attack_roll_advantage_modifiers(creature, target) {
         let output = 0; {
+            // Blur
+            if (target.has_condition("Blur")) output -= 1
+
+            // Dodge
+            if (target.has_condition("Dodge")) output -= 1 
+
             // Helped
             if (creature.has_condition("Helped")) {
                 creature.remove_condition("Helped")
                 output += 1
             }
+
+            // Reckless Attack
+            if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
 
             // Unseen Attacker
             if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
@@ -617,12 +626,6 @@ var Common = class {
                 target.passive_search()
                 output += 1
             }
-
-            // Reckless Attack
-            if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
-
-            // Dodge
-            if (target.has_condition("Dodge")) output -= 1 
         }
 
         // Output
@@ -877,7 +880,7 @@ var Common = class {
 
     static switch_weapon() {
         // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements("ready", false);
+        const { valid, creature, action_details } = this.check_action_requirements("switch_weapon", false);
         if (!valid) return
 
         // Switch Weapons

@@ -133,6 +133,7 @@ var Barbarian = class extends Common {
             resources: ["Bonus Action", "Rage"],
             description: database.features.data["Rage"].description,
             image: database.conditions.data["Rage"].image,
+            duration: 10,
             origin: origin,
         }
 
@@ -152,8 +153,22 @@ var Barbarian = class extends Common {
         const { valid, creature, action_details } = this.check_action_requirements("rage", false);
         if (!valid) return;
 
+        // Reduction
+        let reduction = 3; {
+            const barbarian_level = creature.classes?.Barbarian?.level || 0
+            if (barbarian_level > 5) reduction = 5
+            if (barbarian_level > 11) reduction = 7
+            if (barbarian_level > 17) reduction += 9
+        }
+
         // Receive condition
-        creature.set_condition("Rage")
+        creature.set_condition("Rage", 10, {
+            resistances: {
+                Slashing: {type: "resistance", reduction: reduction},
+                Bludgeoning: {type: "resistance", reduction: reduction},
+                Piercing: {type: "resistance", reduction: reduction},
+            }
+        })
 
         // Consume resources
         this.use_resources(action_details.resources)
