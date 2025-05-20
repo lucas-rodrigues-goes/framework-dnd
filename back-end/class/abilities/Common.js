@@ -355,7 +355,7 @@ var Common = class {
     // Attack Helpers
     //---------------------------------------------------------------------------------------------------
 
-    static make_attack(slot, creature, target) {
+    static make_attack(slot, creature, target, {damage_bonuses=[]}={}) {
         const weapon = database.items.data[creature.equipment[slot]?.name]
         let advantage_weight = 0
 
@@ -382,8 +382,9 @@ var Common = class {
         const hit_result = this.attack_hit_result(hit_bonus, creature, target, advantage_weight)
 
         // Deal damage
+        const dmg_bonus = [...this.weapon_attack_damage_bonuses(creature), ...damage_bonuses]
         const damage_result = (hit_result.success 
-            ? ` dealing ${this.weapon_attack_damage(weapon, creature, target, hit_result.message, slot)} damage.`
+            ? ` dealing ${this.weapon_attack_damage(weapon, creature, target, hit_result.message, slot, dmg_bonus)} damage.`
             : `.`
         )
 
@@ -397,14 +398,14 @@ var Common = class {
         }
     }
 
-    static weapon_attack_damage(weapon, creature, target, hit_result, slot) {
+    static weapon_attack_damage(weapon, creature, target, hit_result, slot, damage_bonuses=[]) {
         // Weapon Properties
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
         const isOffHand = slot.includes("off hand")
         const damage_list = (weapon?.damage 
-            ? [...weapon.damage, ...this.weapon_attack_damage_bonuses(creature)] 
-            : [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}]
+            ? [...weapon.damage, ...damage_bonuses] 
+            : [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}, ...damage_bonuses]
         )
 
         // Creature Bonuses
@@ -606,7 +607,7 @@ var Common = class {
         return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
     }
 
-    static attack_roll_advantage_modifiers(creature, target) {
+    static attack_roll_advantage_modifiers(creature, target, view_only = false) {
         const distance = calculate_distance(creature, target) * 5
         let output = 0; {
             // Blinded
@@ -621,7 +622,7 @@ var Common = class {
 
             // Helped
             if (creature.has_condition("Helped")) {
-                creature.remove_condition("Helped")
+                if (!view_only) creature.remove_condition("Helped")
                 output += 1
             }
 
