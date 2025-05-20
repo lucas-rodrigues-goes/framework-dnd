@@ -399,6 +399,17 @@ var Common = class {
     }
 
     static weapon_attack_damage(weapon, creature, target, hit_result, slot, damage_bonuses=[]) {
+        function treatLastComma(str) {
+            const lastIndex = str.lastIndexOf(",");
+            if (lastIndex === -1) return str; // no comma found
+
+            return (
+                str.slice(0, lastIndex) +
+                " and" +
+                str.slice(lastIndex + 1)
+            );
+        }
+
         // Weapon Properties
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
@@ -417,8 +428,8 @@ var Common = class {
         // Damage
         const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
 
-        // Output
-        const output = []
+        // Damage to deal
+        const total_damage = {}
         let count = 0
         for (const damage of damage_list) {
             // Calculate Damage
@@ -427,27 +438,29 @@ var Common = class {
             const damage_bonus = damage.damage_bonus || 0
             const applied_once_damage_modifiers = (count == 0 ? damage_attribute_bonus + damage_modifiers : 0)
 
+            const type = damage.damage_type
             const damage_to_deal = roll_dice(die_amount, die_size) + applied_once_damage_modifiers + damage_bonus
             count ++
 
+            // Store
+            if (!total_damage[type]) total_damage[type] = 0
+            total_damage[type] += damage_to_deal
+        }
+
+        // Output
+        const output = []
+        for (const type in total_damage) {
+            const damage_to_deal = total_damage[type]
+
             // Deal Damage
-            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
-            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+            const damage_dealt = target.receive_damage(damage_to_deal, type)
+            output.push(`${damage_dealt} ${type.toLowerCase()}`)
 
             // Sound
-            if (damage_dealt > 0) Sound.play(damage.damage_type.toLowerCase())
+            Sound.play(type.toLowerCase())
         }
-        function replaceLastCommaWithAnd(str) {
-            const lastIndex = str.lastIndexOf(",");
-            if (lastIndex === -1) return str; // no comma found
-
-            return (
-                str.slice(0, lastIndex) +
-                " and" +
-                str.slice(lastIndex + 1)
-            );
-        }
-        return replaceLastCommaWithAnd(output.join(", "))
+        
+        return treatLastComma(output.join(", "))
     }
 
     static validate_weapon_attack_range(weapon, creature, target) {
