@@ -35,6 +35,16 @@ var Entity = class {
     get y() {return Number(MTScript.evalMacro(`[r:getTokenY(0,"`+this.id+`")]`))}
     set y(y) { MTScript.evalMacro(`[r:moveToken(`+this.x+`, `+y+`, 0, "`+this.id+`")]`) }
 
+    get facing() {
+        const directions = {
+            "90": "up",
+            "-90": "down",
+            "180": "left",
+            "0": "right",
+        }
+        return directions[MTScript.evalMacro(`[r:getFacing(`+this.id+`)]`)]
+    }
+
     // Size
     get size() {return MTScript.evalMacro(`[r:getSize("`+this.id+`")]`)}
     set size(size) {
