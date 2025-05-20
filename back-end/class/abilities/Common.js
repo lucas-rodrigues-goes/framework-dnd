@@ -355,12 +355,12 @@ var Common = class {
     // Attack Helpers
     //---------------------------------------------------------------------------------------------------
 
-    static make_attack(slot, creature, target, {damage_bonuses=[]}={}) {
+    static make_attack({slot, creature=impersonated(), target=selected(), damage_bonuses=[]}) {
         const weapon = database.items.data[creature.equipment[slot]?.name]
         let advantage_weight = 0
 
         // Range Validation
-        const range_validation = this.validate_weapon_attack_range(weapon, creature, target)
+        const range_validation = this.validate_weapon_attack_range({weapon, creature, target})
         if (range_validation.outOfRange) {
             return {
                 success: false,
@@ -378,13 +378,14 @@ var Common = class {
         Sound.play(release_sound, 0.1)
 
         // Calculate Hit
-        const hit_bonus = this.weapon_attack_hit_bonus(weapon, creature)
-        const hit_result = this.attack_hit_result(hit_bonus, creature, target, advantage_weight)
+        const hit_bonus = this.weapon_attack_hit_bonus({weapon, creature})
+        const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
 
         // Deal damage
-        const dmg_bonus = [...this.weapon_attack_damage_bonuses(creature), ...damage_bonuses]
+        const dmg_bonus = [...this.weapon_attack_damage_bonuses({creature}), ...damage_bonuses]
+        const args = {weapon, creature, target, hit_result: hit_result.message, slot, damage_bonuses: dmg_bonus}
         const damage_result = (hit_result.success 
-            ? ` dealing ${this.weapon_attack_damage(weapon, creature, target, hit_result.message, slot, dmg_bonus)} damage.`
+            ? ` dealing ${this.weapon_attack_damage(args)} damage.`
             : `.`
         )
 
@@ -398,7 +399,7 @@ var Common = class {
         }
     }
 
-    static weapon_attack_damage(weapon, creature, target, hit_result, slot, damage_bonuses=[]) {
+    static weapon_attack_damage({weapon, creature=impersonated(), target=selected(), hit_result="hit", slot, damage_bonuses=[]}) {
         function treatLastComma(str) {
             const lastIndex = str.lastIndexOf(",");
             if (lastIndex === -1) return str; // no comma found
@@ -423,7 +424,7 @@ var Common = class {
         const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
         const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
         const damage_attribute_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3)))
-        const damage_modifiers = this.weapon_attack_damage_modifiers(creature, target)
+        const damage_modifiers = this.weapon_attack_damage_modifiers({creature, target})
 
         // Damage
         const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
@@ -463,7 +464,7 @@ var Common = class {
         return treatLastComma(output.join(", "))
     }
 
-    static validate_weapon_attack_range(weapon, creature, target) {
+    static validate_weapon_attack_range({weapon, creature=impersonated(), target=selected()}) {
         const usesAmmo = weapon?.properties?.includes("Ammunition") || false
         const isThrown = weapon?.properties?.includes("Thrown") || false
         const isReach = weapon?.properties?.includes("Reach") || false
@@ -507,13 +508,13 @@ var Common = class {
         return output
     }
 
-    static attack_hit_result(hit_bonus, creature, target, advantage_weight = 0) {
+    static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), advantage_weight = 0}) {
         creature.face_target()
         const distance = calculate_distance(creature, target) * 5
         const target_visibility = creature.target_visibility()
 
         // Advantage Modifiers
-        advantage_weight += this.attack_roll_advantage_modifiers(creature, target)
+        advantage_weight += this.attack_roll_advantage_modifiers({creature, target})
 
         // Roll d20
         const roll_result = roll_20(advantage_weight, creature)
@@ -609,7 +610,7 @@ var Common = class {
         return output
     }
 
-    static weapon_attack_hit_bonus(weapon, creature) {
+    static weapon_attack_hit_bonus({weapon, creature=impersonated()}) {
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
 
@@ -620,7 +621,7 @@ var Common = class {
         return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
     }
 
-    static attack_roll_advantage_modifiers(creature, target, view_only = false) {
+    static attack_roll_advantage_modifiers({creature=impersonated(), target=selected(), view_only = false}) {
         const distance = calculate_distance(creature, target) * 5
         let output = 0; {
             // Blinded
@@ -677,7 +678,7 @@ var Common = class {
         return output
     }
 
-    static weapon_attack_damage_modifiers(creature, target) {
+    static weapon_attack_damage_modifiers({creature=impersonated(), target=selected()}) {
         let output = 0; {
 
             // Rage
@@ -692,7 +693,7 @@ var Common = class {
         return output
     }
 
-    static weapon_attack_damage_bonuses(creature, target) {
+    static weapon_attack_damage_bonuses({creature=impersonated(), target=selected()}) {
         const output = []; {
 
             // Imbue Weapon
@@ -719,7 +720,7 @@ var Common = class {
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack(slot, creature, target)
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return
@@ -743,7 +744,7 @@ var Common = class {
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack(slot, creature, target)
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return
@@ -767,7 +768,7 @@ var Common = class {
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack(slot, creature, target)
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return

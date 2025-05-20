@@ -126,7 +126,7 @@ var Rogue = class extends Common {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements(action_name);
         if (!valid || !target) return;
-        const hasAdvantage = this.attack_roll_advantage_modifiers(creature, target, true) > 0
+        const hasAdvantage = this.attack_roll_advantage_modifiers({creature, target, view_only: true}) > 0
         if (!hasAdvantage) {
             console.log(`${creature.name_color} needs advantage on attack roll to use Sneak Attack.`)
             return
@@ -142,7 +142,7 @@ var Rogue = class extends Common {
         }]
 
         // Make attack
-        const attack_result = this.make_attack(slot, creature, target, {damage_bonuses: damage_bonuses})
+        const attack_result = this.make_attack({slot, creature, target, damage_bonuses: damage_bonuses})
         if (!attack_result.success) {
             console.log(attack_result.message, "all")
             return
