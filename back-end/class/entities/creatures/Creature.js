@@ -498,29 +498,34 @@ var Creature = class extends Entity {
 
     receive_damage(value, type) {
         // Validating parameters
-        if (value <= 0) {return}
-        if (typeof type != "string") {return}
+        if (value <= 0) return
+        if (!this.resistances[type]) return
 
         // Calculate damage based on resistance
         const resistance = this.resistances[type];
-        let damage = 0;
-        switch (resistance.type) {
-            case "immunity":
-                damage = 0;
-                break;
-            case "vulnerability":
-                damage = value * 2;
-                break;
-            case "heals":
-                this.receive_healing(value)
-                return
-            default:
-                damage = Math.max(value - resistance.reduction, 0);
-                break;
+        let damage = 0; {
+            switch (resistance.type) {
+                case "immunity":
+                    // If Immunity from Stoneskin
+                    if (this.has_condition("Stoneskin") && ["Slashing", "Piercing", "Bludgeoning"].includes(type)) {
+                        const condition = this.get_condition("Stoneskin")
+                        
+                        if (condition.charges > 1) this.set_condition("Stoneskin", condition.duration, {...condition, charges: condition.charges - 1})
+                        else this.remove_condition("Stoneskin")
+                        console.log(`${this.name_color} used a Stoneskin charge.`, "all")
+                    }
+                    return 0
+                case "heals":
+                    this.receive_healing(value)
+                    return 0
+                case "vulnerability":
+                    damage = value * 2
+                    break
+                default:
+                    damage = Math.max(value - resistance.reduction, 0);
+                    break;
+            }
         }
-
-        // Finish if no damage is dealt
-        if (damage == 0) return 0
 
         // Reduce HP
         this.health -= damage;
