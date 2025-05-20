@@ -787,7 +787,12 @@ var Common = class {
     }
 
     static push() {
-        return;
+        const target = selected()
+        const creature = impersonated()
+
+        const direction = calculate_direction(creature, target)
+        const cells = 1
+        target.move(direction, cells)
     }
 
     static knock_prone() {

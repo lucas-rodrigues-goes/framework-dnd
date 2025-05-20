@@ -1,5 +1,3 @@
-
-
 var Entity = class {
 
     //=====================================================================================================
@@ -24,47 +22,65 @@ var Entity = class {
     get token() { return this.#token;}
 
     // Images
-    get portrait() { return MTScript.evalMacro(`[r:getTokenPortrait("","`+this.id+`")]`)}
-    get image() { return MTScript.evalMacro(`[r:getTokenImage("","`+this.id+`")]`)}
+    get portrait() { return MTScript.evalMacro(`[r:getTokenPortrait("","${this.id}")]`)}
+    get image() { return MTScript.evalMacro(`[r:getTokenImage("","${this.id}")]`)}
 
     // Position X
-    get x() {return Number(MTScript.evalMacro(`[r:getTokenX(0,"`+this.id+`")]`))}
-    set x(x) { MTScript.evalMacro(`[r:moveToken(`+x+`, `+this.y+`, 0, "`+this.id+`")]`) }
+    get x() {return Number(MTScript.evalMacro(`[r:getTokenX(0,"${this.id}")]`))}
+    set x(x) { MTScript.evalMacro(`[r:moveToken(${x}, ${this.y}, 0, "${this.id}")]`) }
 
     // Position Y
-    get y() {return Number(MTScript.evalMacro(`[r:getTokenY(0,"`+this.id+`")]`))}
-    set y(y) { MTScript.evalMacro(`[r:moveToken(`+this.x+`, `+y+`, 0, "`+this.id+`")]`) }
+    get y() {return Number(MTScript.evalMacro(`[r:getTokenY(0,"${this.id}")]`))}
+    set y(y) { MTScript.evalMacro(`[r:moveToken(${this.x}, ${y}, 0, "${this.id}")]`) }
 
+    // Facing
     get facing() {
         const directions = {
             "90": "up",
+            "0": "right",
             "-90": "down",
             "180": "left",
-            "0": "right",
+            "45": "right-up",
+            "-45": "right-down",
+            "135": "left-up",
+            "-135": "left-down"
+        };
+        return directions[MTScript.evalMacro(`[r:getTokenFacing("${this.id}")]`)];
+    }
+    set facing(direction) {
+        const angles = {
+            "up": "90",
+            "right": "0",
+            "down": "-90",
+            "left": "180",
+            "right-up": "45",
+            "right-down": "-45",
+            "left-up": "135",
+            "left-down": "-135"
         }
-        return directions[MTScript.evalMacro(`[r:getFacing(`+this.id+`)]`)]
+        MTScript.evalMacro(`[r:setTokenFacing(${angles[direction]}, "${this.id}")]`)
     }
 
     // Size
-    get size() {return MTScript.evalMacro(`[r:getSize("`+this.id+`")]`)}
+    get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
     set size(size) {
         if (!["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"].includes(size)) return
-        MTScript.evalMacro(`[r:setSize("`+size+`", "`+this.id+`")]`)
+        MTScript.evalMacro(`[r:setSize("${size}", "${this.id}")]`)
     }
 
     // Opacity
-    get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("`+this.id+`")]`)}
-    set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(`+value+`, "`+this.id+`")]`) }
+    get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("${this.id}")]`)}
+    set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(${value}, "${this.id}")]`) }
 
     // Sight
-    get sight() {return MTScript.evalMacro(`[r:getSightType("`+this.id+`")]`)}
-    set sight(value) { MTScript.evalMacro(`[r:setSightType("`+value+`", "`+this.id+`")]`) }
+    get sight() {return MTScript.evalMacro(`[r:getSightType("${this.id}")]`)}
+    set sight(value) { MTScript.evalMacro(`[r:setSightType("${value}", "${this.id}")]`) }
 
     // Invisible
-    get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("`+this.id+`")]`) == "true"}
+    get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("${this.id}")]`) == "true"}
     set invisible(value) {
         const bool = value ? 1 : 0
-        MTScript.evalMacro(`[r:setOwnerOnlyVisible(`+bool+`, "`+this.id+`")]`)
+        MTScript.evalMacro(`[r:setOwnerOnlyVisible(${bool}, "${this.id}")]`)
     }
 
     // Is player
@@ -83,32 +99,32 @@ var Entity = class {
     set_state(state, value=true) {
         const bool = value ? 1 : 0
 
-        MTScript.evalMacro(`[r: setState("`+state+`", `+bool+`,"`+this.id+`") ]`)
+        MTScript.evalMacro(`[r: setState("${state}", ${bool},"${this.id}") ]`)
         return value
     }
-    get_state(state) { return MTScript.evalMacro(`[r, if(getState("`+state+`","`+this.id+`")):"true";"false"]`) == "true" }
-    toggle_state(state) { MTScript.evalMacro(`[r: setState("`+state+`", !getState("`+state+`", "`+this.id+`"),"`+this.id+`") ]`) }
+    get_state(state) { return MTScript.evalMacro(`[r, if(getState("${state}","${this.id}")):"true";"false"]`) == "true" }
+    toggle_state(state) { MTScript.evalMacro(`[r: setState("${state}", !getState("${state}", "${this.id}"),"${this.id}") ]`) }
 
     // Light management
     set_light(light, value=true) {
         const bool = value ? 1 : 0
 
-        MTScript.evalMacro(`[r: setLight("D20","`+light+`", `+bool+`,"`+this.id+`") ]`)
+        MTScript.evalMacro(`[r: setLight("D20","${light}", ${bool},"${this.id}") ]`)
         return value
     }
 
     // Center camera on token
-    go_to() { MTScript.evalMacro(`[r:goTo("`+this.id+`")]`) }
+    go_to() { MTScript.evalMacro(`[r:goTo("${this.id}")]`) }
    
     // Select token
-    select() { MTScript.evalMacro(`[r:selectTokens("`+this.id+`")]`) }
+    select() { MTScript.evalMacro(`[r:selectTokens("${this.id}")]`) }
 
     // Impersonate token
-    impersonate() { MTScript.evalMacro(`[r:impersonate("`+this.id+`")]`) }
+    impersonate() { MTScript.evalMacro(`[r:impersonate("${this.id}")]`) }
     
     // Get a percent of how visible the target is from 0 to 1
     target_visibility(target=selected()) {
-        const visible_points = JSON.parse(MTScript.evalMacro(`[r:canSeeToken("`+target.id+`","`+this.id+`")]`))
+        const visible_points = JSON.parse(MTScript.evalMacro(`[r:canSeeToken("${target.id}","${this.id}")]`))
         return visible_points.length / 5
     }
 
@@ -118,6 +134,7 @@ var Entity = class {
         if (isNaN(cells)) return
 
         switch (direction) {
+            // Cardinal directions
             case "up":
                 this.y -= cells
                 break
@@ -130,22 +147,30 @@ var Entity = class {
             case "right":
                 this.x += cells
                 break
+                
+            // Diagonal directions
+            case "right-up":
+                this.x += cells
+                this.y -= cells
+                break
+            case "right-down":
+                this.x += cells
+                this.y += cells
+                break
+            case "left-up":
+                this.x -= cells
+                this.y -= cells
+                break
+            case "left-down":
+                this.x -= cells
+                this.y += cells
+                break
         }
     }
 
     // Rotate to face another entity
     face_target(target=selected()) {
-        const mode = "tokens"
-        const tokenId1 = this.id
-        const tokenId2 = target.id
-
-        MTScript.evalMacro(`[r:setFacing(
-            json.set("",
-                "mode","` + mode + `",
-                "tokenId1","` + tokenId1 + `",
-                "tokenId2","` + tokenId2 + `"
-            )
-        )]`)
+        this.facing = calculate_direction(this, target)
     }
     
 

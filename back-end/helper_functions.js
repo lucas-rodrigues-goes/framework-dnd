@@ -189,6 +189,44 @@ var calculate_distance = function (source, target) {
     return distance;
 }
 
+// Calculate direction from source to target
+var calculate_direction = function(source, target) {
+    const delta_x = target.x - source.x;
+    const delta_y = source.y - target.y;
+    
+    // If same position
+    if (delta_x === 0 && delta_y === 0) {
+        return "none"; // or could return current facing if you prefer
+    }
+    
+    // Calculate angle in degrees (0 = right, 90 = up, etc.)
+    const angle = Math.atan2(delta_y, delta_x) * (180 / Math.PI);
+    
+    // Normalize angle to be between -180 and 180
+    const normalizedAngle = ((angle + 180) % 360) - 180;
+    
+    // Determine direction based on angle ranges
+    if (normalizedAngle >= 67.5 && normalizedAngle <= 112.5) {
+        return "up";
+    } else if (normalizedAngle >= -112.5 && normalizedAngle <= -67.5) {
+        return "down";
+    } else if (Math.abs(normalizedAngle) <= 22.5) {
+        return "right";
+    } else if (Math.abs(normalizedAngle) >= 157.5) {
+        return "left";
+    } else if (normalizedAngle > 22.5 && normalizedAngle < 67.5) {
+        return "right-up";
+    } else if (normalizedAngle > -67.5 && normalizedAngle < -22.5) {
+        return "right-down";
+    } else if (normalizedAngle > 112.5 && normalizedAngle < 157.5) {
+        return "left-up";
+    } else if (normalizedAngle > -157.5 && normalizedAngle < -112.5) {
+        return "left-down";
+    }
+    
+    return "none"; // fallback
+}
+
 // Dice Rolling
 var roll = (sides) => Math.ceil(Math.random() * sides)
 var roll_dice = function (amount, sides, type) {
