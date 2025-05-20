@@ -185,7 +185,38 @@ var moveLock = function (lock=true) {
 var calculate_distance = function (source, target) {
     const delta_x = target.x - source.x; // Difference in X-coordinates
     const delta_y = target.y - source.y; // Difference in Y-coordinates
-    const distance = Math.round(Math.sqrt(delta_x * delta_x + delta_y * delta_y))
+    let distance = Math.round(Math.sqrt(delta_x * delta_x + delta_y * delta_y))
+
+    // Size modifiers
+    switch (source.size) {
+        case "Large":
+            distance -= 1
+            break
+        case "Huge":
+            distance -= 1
+            break
+        case "Gargantuan":
+            distance -= 2
+            break
+        case "Colossal":
+            distance -= 3
+            break
+    }
+    switch (target.size) {
+        case "Large":
+            distance -= 1
+            break
+        case "Huge":
+            distance -= 1
+            break
+        case "Gargantuan":
+            distance -= 2
+            break
+        case "Colossal":
+            distance -= 3
+            break
+    }
+
     return distance;
 }
 

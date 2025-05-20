@@ -25,13 +25,84 @@ var Entity = class {
     get portrait() { return MTScript.evalMacro(`[r:getTokenPortrait("","${this.id}")]`)}
     get image() { return MTScript.evalMacro(`[r:getTokenImage("","${this.id}")]`)}
 
+    // Opacity
+    get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("${this.id}")]`)}
+    set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(${value}, "${this.id}")]`) }
+
+    // Sight
+    get sight() {return MTScript.evalMacro(`[r:getSightType("${this.id}")]`)}
+    set sight(value) { MTScript.evalMacro(`[r:setSightType("${value}", "${this.id}")]`) }
+
+    // Invisible
+    get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("${this.id}")]`) == "true"}
+    set invisible(value) {
+        const bool = value ? 1 : 0
+        MTScript.evalMacro(`[r:setOwnerOnlyVisible(${bool}, "${this.id}")]`)
+    }
+
+    // Is player
+    get player() {return this.token.isPC()}
+    set player(player) {
+        if (player) this.token.setPC()
+        else this.token.setNPC()
+    }
+
+    // Size
+    get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
+    set size(size) {
+        if (!["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"].includes(size)) return
+        MTScript.evalMacro(`[r:setSize("${size}", "${this.id}")]`)
+    }
+
     // Position X
-    get x() {return Number(MTScript.evalMacro(`[r:getTokenX(0,"${this.id}")]`))}
-    set x(x) { MTScript.evalMacro(`[r:moveToken(${x}, ${this.y}, 0, "${this.id}")]`) }
+    get x() {
+        const size = this.size;
+        const sizeToCells = {
+            "Large": 0.5,
+            "Huge": 1,
+            "Gargantuan": 1.5,
+            "Colossal": 2.5
+        };
+        const baseX = Number(MTScript.evalMacro(`[r:getTokenX(0,"${this.id}")]`));
+        return baseX + (sizeToCells[size] || 0);
+    }
+    set x(x) {
+        const size = this.size;
+        const sizeToCells = {
+            "Large": 0.5,
+            "Huge": 1,
+            "Gargantuan": 1.5,
+            "Colossal": 2.5
+        };
+        const offset = sizeToCells[size] || 0;
+        const adjustedX = x - offset;
+        MTScript.evalMacro(`[r:moveToken(${adjustedX}, ${this.y - (sizeToCells[this.size] || 0)}, 0, "${this.id}")]`);
+    }
 
     // Position Y
-    get y() {return Number(MTScript.evalMacro(`[r:getTokenY(0,"${this.id}")]`))}
-    set y(y) { MTScript.evalMacro(`[r:moveToken(${this.x}, ${y}, 0, "${this.id}")]`) }
+    get y() {
+        const size = this.size;
+        const sizeToCells = {
+            "Large": 0.5,
+            "Huge": 1,
+            "Gargantuan": 1.5,
+            "Colossal": 2.5
+        };
+        const baseY = Number(MTScript.evalMacro(`[r:getTokenY(0,"${this.id}")]`));
+        return baseY + (sizeToCells[size] || 0);
+    }
+    set y(y) {
+        const size = this.size;
+        const sizeToCells = {
+            "Large": 0.5,
+            "Huge": 1,
+            "Gargantuan": 1.5,
+            "Colossal": 2.5
+        };
+        const offset = sizeToCells[size] || 0;
+        const adjustedY = y - offset;
+        MTScript.evalMacro(`[r:moveToken(${this.x - (sizeToCells[this.size] || 0)}, ${adjustedY}, 0, "${this.id}")]`);
+    }
 
     // Facing
     get facing() {
@@ -59,35 +130,6 @@ var Entity = class {
             "left-down": "-135"
         }
         MTScript.evalMacro(`[r:setTokenFacing(${angles[direction]}, "${this.id}")]`)
-    }
-
-    // Size
-    get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
-    set size(size) {
-        if (!["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"].includes(size)) return
-        MTScript.evalMacro(`[r:setSize("${size}", "${this.id}")]`)
-    }
-
-    // Opacity
-    get opacity() {return MTScript.evalMacro(`[r:getTokenOpacity("${this.id}")]`)}
-    set opacity(value) { MTScript.evalMacro(`[r:setTokenOpacity(${value}, "${this.id}")]`) }
-
-    // Sight
-    get sight() {return MTScript.evalMacro(`[r:getSightType("${this.id}")]`)}
-    set sight(value) { MTScript.evalMacro(`[r:setSightType("${value}", "${this.id}")]`) }
-
-    // Invisible
-    get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("${this.id}")]`) == "true"}
-    set invisible(value) {
-        const bool = value ? 1 : 0
-        MTScript.evalMacro(`[r:setOwnerOnlyVisible(${bool}, "${this.id}")]`)
-    }
-
-    // Is player
-    get player() {return this.token.isPC()}
-    set player(player) {
-        if (player) this.token.setPC()
-        else this.token.setNPC()
     }
 
 
