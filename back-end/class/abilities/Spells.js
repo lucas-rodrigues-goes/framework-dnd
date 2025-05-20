@@ -35,7 +35,7 @@ var Spells = class {
     static cast_spell(spell, player_class) {
         spell.cast_time = Number(spell.cast_time)
         spell.range = Number(spell.range)
-        const {name, level, school, target, cast_time, range, duration, classes, components} = spell
+        const {name, level, school, target, range, duration, classes, components} = spell
         const creature = impersonated()
 
         // Player Class Object
@@ -49,17 +49,29 @@ var Spells = class {
         // Resources
         let resources = []; {
             // Action
-            if (cast_time >= 0) resources = ["Action"]
-            else if (cast_time == -1) resources = ["Bonus Action"]
-            else if (cast_time == -2) resources = ["Reaction"]
+            if (spell.cast_time >= 0) resources = ["Action"]
+            else if (spell.cast_time == -1) resources = ["Bonus Action"]
+            else if (spell.cast_time == -2) resources = ["Reaction"]
 
             // Spell Slot
             if (level != "cantrip") resources.push(`${level} Level Spell Slot`)
         }
         if(!Common.has_resources_available(resources)) return
 
+        // Cast Time
+        if (spell.cast_time > 0) {
+            // Calculate weight
+            let haste_slow_weight = 0
+            if (creature.has_condition("Haste")) haste_slow_weight += 1
+            if (creature.has_condition("Slow")) haste_slow_weight -= 1
+
+            // Apply on cast time
+            if (haste_slow_weight > 0) spell.cast_time = Math.floor(spell.cast_time / 2)
+            else if (haste_slow_weight < 0) spell.cast_time = spell.cast_time * 2
+        }
+
         // Instant Casting
-        if (!Initiative.turn_order.includes(creature.id) || cast_time <= 0) {
+        if (!Initiative.turn_order.includes(creature.id) || spell.cast_time <= 0) {
             // Call Spell
             const spellcast_result = spell_function({...spell, spellcasting_modifier: spellcasting_modifier})
 
@@ -68,15 +80,15 @@ var Spells = class {
             if (!spellcast_result.success) return
             
             // Set Recovery
-            const recovery = cast_time == 0 ? 1 : 0
-            if (cast_time >= 0) Initiative.set_recovery(recovery, creature)
+            const recovery = spell.cast_time == 0 ? 1 : 0
+            if (spell.cast_time >= 0) Initiative.set_recovery(recovery, creature)
         }
         else {
             // Set spellcasting condition
             creature.set_condition("Spellcasting", 1, {spell: {...spell, spellcasting_modifier: spellcasting_modifier}})
 
             // Suspend Turn
-            Initiative.suspend_turn(cast_time, "Spellcasting", creature)
+            Initiative.suspend_turn(spell.cast_time, "Spellcasting", creature)
         }
 
         // Sound
@@ -511,8 +523,8 @@ var Spells = class {
         return {
             success: true,
             message: (creature.id != target.id
-                ? `${creature.name_color} cast ${name} on ${target.name_color} boosting their unarmored AC to 13.`
-                : `${creature.name_color} cast ${name} boosting their unarmored AC to 13.`
+                ? `${creature.name_color} cast ${name} on ${target.name_color}.`
+                : `${creature.name_color} cast ${name}.`
             )
         }
     }
@@ -535,7 +547,7 @@ var Spells = class {
         })
         return {
             success: true,
-            message: `${creature.name_color} cast ${name} gaining a +${bonus_armor_class} bonus to their armor class.`
+            message: `${creature.name_color} cast ${name}.`
         }
     }
 
@@ -546,6 +558,7 @@ var Spells = class {
     
     static blindness(spell) {
         const creature = impersonated()
+        const saving_throw_score = "Constitution"
 
         // Target Amount
         let max_targets = 1; {
@@ -560,7 +573,7 @@ var Spells = class {
             ...spell,
             targets: allSelected(),
             max_targets: max_targets,
-            saving_throw_score: "Constitution"
+            saving_throw_score: saving_throw_score
         })
 
         // Apply effect
@@ -569,7 +582,7 @@ var Spells = class {
                 element.target.set_condition(spell.name, spell.duration, {
                     saving_throw: {
                         difficulty_class: 10 + spell.spellcasting_modifier,
-                        score: "Constitution"
+                        score: saving_throw_score
                     }
                 })
             }
@@ -586,12 +599,20 @@ var Spells = class {
         creature.set_condition(name, duration)
         return {
             success: true,
-            message: `${creature.name_color} cast ${name} giving attackers disadvantage on their attacks against them.`
+            message: `${creature.name_color} cast ${name}.`
         }
     }
 
     static hold_person(spell) {
         const creature = impersonated()
+        const saving_throw_score = "Wisdom"
+
+        // Fail if non-humanoid is selected
+        for (const target of allSelected()) {
+            if (target.type != "Humanoid") {
+                console.log(`${creature.name_color} tried to cast ${spell.name} but non-humanoids can't be targets for this spell.`)
+            }
+        }
 
         // Target Amount
         let max_targets = 1; {
@@ -606,7 +627,7 @@ var Spells = class {
             ...spell,
             targets: allSelected(),
             max_targets: max_targets,
-            saving_throw_score: "Wisdom"
+            saving_throw_score: saving_throw_score
         })
 
         // Apply effect
@@ -616,7 +637,7 @@ var Spells = class {
                 element.target.set_condition(spell.name, spell.duration, {
                     saving_throw: {
                         difficulty_class: 10 + spell.spellcasting_modifier,
-                        score: "Constitution"
+                        score: saving_throw_score
                     }
                 })
                 targets.push(element.target.id)
@@ -677,7 +698,7 @@ var Spells = class {
 
     static haste (spell) {
         const [creature, target] = [impersonated(), selected()]
-        const { name, range, spellcasting_modifier } = spell
+        const { name, range } = spell
 
         // Target self if no target
         if (!target) target = creature
@@ -705,7 +726,7 @@ var Spells = class {
             success: true,
             message: (creature.id != target.id
                 ? `${creature.name_color} cast ${name} on ${target.name_color}.`
-                : `${creature.name_color} cast ${name} on themselves.`
+                : `${creature.name_color} cast ${name}.`
             )
         }
     }
@@ -714,12 +735,40 @@ var Spells = class {
     // 4th Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static stoneskin (spell) {
+        const creature = impersonated()
+        const { name, duration } = spell
+
+        // Charges
+        let charges = 3; {
+            const levels = [9, 11, 13]
+            if (creature.spellcasting_level >= levels[0]) charges += 1
+            if (creature.spellcasting_level >= levels[1]) charges += 1
+            if (creature.spellcasting_level >= levels[2]) charges += 1
+        }
+
+        // Set condition
+        creature.set_condition(name, duration, {
+            charges: charges,
+            resistances: {
+                Slashing: {type: "immunity"},
+                Bludgeoning: {type: "immunity"},
+                Piercing: {type: "immunity"},
+            }
+        })
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name}.`
+        }
+    }
+
     //---------------------------------------------------------------------------------------------------
     // 5th Level Spells
     //---------------------------------------------------------------------------------------------------
 
     static cone_of_cold (spell) {
         const creature = impersonated()
+        const saving_throw_score = "Constitution"
 
         // Die amount
         let die_amount = 8; {
@@ -736,8 +785,46 @@ var Spells = class {
             targets: allSelected(),
             half_on_fail: true,
             damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Cold"}],
-            saving_throw_score: "Constitution"
+            saving_throw_score: saving_throw_score
         })
+    }
+
+    static hold_monster(spell) {
+        const creature = impersonated()
+        const saving_throw_score = "Wisdom"
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [11, 13, 15] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+        }
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: max_targets,
+            saving_throw_score: saving_throw_score
+        })
+
+        // Apply effect
+        const targets = []
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition(spell.name, spell.duration, {
+                    saving_throw: {
+                        difficulty_class: 10 + spell.spellcasting_modifier,
+                        score: saving_throw_score
+                    }
+                })
+                targets.push(element.target.id)
+            }
+        }
+        Spells.concentrate(creature, spell, targets)
+
+        return save_return
     }
 
     //---------------------------------------------------------------------------------------------------
