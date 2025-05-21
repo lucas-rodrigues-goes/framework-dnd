@@ -255,7 +255,7 @@
 			function dragover(event) {
 				event.preventDefault();
 			}
-			function drop(event) {
+			async function drop(event) {
 				event.preventDefault();
 				const target = event.target.closest(".inventory-slot");
 
@@ -269,7 +269,7 @@
 					request += `)`
 					//` impersonated().move_item("`+initialPosition+`", "`+finalPosition+`") `
 
-					toBackend(request)
+					await backend(request)
 					updateInventoryTab()
 
 					// Reset draggedElement visibility without moving it
@@ -1470,8 +1470,8 @@
 
 														updateSpellsTab()
 													}
-													if(spellIsMemorized) buttons["Forget"] =  () => {
-														backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
+													if(spellIsMemorized) buttons["Forget"] = async () => {
+														await backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
 														updateSpellsTab()
 													}
 												}
@@ -1818,8 +1818,8 @@
 					updateInventoryTab()
 					updateAbilitiesTab()
 					updateSpellsTab()
-				}, 500)
-				setInterval(() => updateCharacterTab(), 1000)
+					updateCharacterTab()
+				}, 1000)
 			}
 
 			window.onload = function () {

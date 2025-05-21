@@ -421,11 +421,6 @@
                 // else if (player) color = "#5ab350"
                 else color = "#666"
 
-                // Status image
-                let image = ""
-                if (isPlaying) image = "asset://ca3a35626f1849b6872f2ca0704a1a1d"
-                else if (description == "Spellcasting") image = "asset://aa7f0c22bbac48d11eaf34a4b294baf8"
-
                 const show_initiative = initiative >= 12 ? initiative - 12 : initiative
 
                 return element(
@@ -470,10 +465,9 @@
                                     fontWeight: "bold", fontSize: "85%", border: "0.3vh solid " + color,
                                 },
                                 children: [
-                                    image != ""
-                                        ? {tag: "img", attributes: {src: image}, style: {height: "2.5vh"}} 
-                                        : {tag: "span", text: show_initiative}
-                            ]}
+                                    {tag: "span", text: show_initiative}
+                                ]
+                            }
                         ]
                     }
                 )
@@ -585,17 +579,10 @@
                     classes: impersonated().classes || {},
                     resources: impersonated().resources || {},
                     spells: impersonated().spells || {},
-                    hasInitiative: Initiative.turn_order.includes(impersonated().id)
+                    hasInitiative: Initiative.turn_order.includes(impersonated().id),
+                    abilities: Common.actions_list(),
                 }
             )`))
-
-            // Character Classes
-            let classes_actions_list = ""
-            for (const item of Object.keys(character.classes)) classes_actions_list += "..." + item + ".actions_list(),"
-            character["abilities"] = JSON.parse(await backend(`JSON.stringify({
-                ...Common.actions_list(),
-                `+classes_actions_list+`
-            })`))
 
             // Classes Spellcasting
             let classes_spellcasting = ""
@@ -615,7 +602,7 @@
             current_abilities_db = database
 
             // Update Abilities
-            let current_origin = undefined, current_div = undefined
+            let current_type = undefined, current_div = undefined
             async function updateAbilities() {
                 if (
                     isEqualJSON(current_abilities.abilities, character.abilities) &&
@@ -675,7 +662,10 @@
                             attributes: {class: "ability-button"},
                             style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"}, 
                             events: {
-                                click: () => {backend(code)},
+                                click: async () => {
+                                    await backend(code)
+                                    updateAbilitiesBar()
+                                },
                                 mouseover: () => show_description({object, type, player_class}),
                                 mouseout: clear_description
                             },
@@ -697,7 +687,7 @@
                     abilities_div.appendChild(current_div)
                 }
 
-                // Spells Listing
+                // Spells Ordering
                 const valid_spells = []
                 for (const player_class in character.spells) {
                     let spell_list = []
@@ -740,18 +730,29 @@
                 }
 
                 // Abilities
-                for (const key in character.abilities) {
+                const ordered_abilities = Object.keys(character.abilities).sort((a, b) => {
+                    const priority = {
+                        0: "Special",
+                        1: "Attack",
+                        2: "Common",
+                        3: "Class",
+                    }
+
+                    return priority[character.abilities?.type?.[a] || 10] - priority[character.abilities?.type?.[b] || 10]
+                })
+                for (const key of ordered_abilities) {
                     const ability = character.abilities[key]
+                    if (!ability) continue
                     const name = ability.name || capitalizeAll(key.replace(/_/g, " "))
                     
-                    // Create new div for origin
-                    const origin = ability.origin == "Common" ? "Common" : "Class" 
-                    if (current_origin != origin) {
+                    // Create new div for type
+                    const type = ability.type
+                    if (current_type != type) {
                         // Append current div
                         if (current_div) append_current_div()
 
                         // Create new div
-                        current_origin = origin
+                        current_type = type
                         current_div = ability_area()
                     }
                 
@@ -1294,7 +1295,7 @@
                 updateCurrentTarget()
                 updateCurrentParty()
                 updateLog()
-            }, 100)
+            }, 1000)
         }
 
         window.onload = function () {
