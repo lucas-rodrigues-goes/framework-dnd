@@ -1,0 +1,4 @@
+Darkvision 30: circle scale r15 distance=300
+Normal: circle r5+1 distance=300
+Allseeing: circle r300+1 distance=300
+Blinded: circle distance=5 r5+1
