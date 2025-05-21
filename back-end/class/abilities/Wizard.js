@@ -138,7 +138,6 @@ var Wizard = class extends Common {
         const character = impersonated();
         const origin = "Wizard"
         const actions = {}
-        const wizardLevel = character?.classes?.Wizard?.level || 0
 
         return actions
     }

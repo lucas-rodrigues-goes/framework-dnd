@@ -491,6 +491,7 @@ var Creature = class extends Entity {
         if (isDead) {
             if (!this.player) Initiative.remove_creature(this.id)
             MTScript.evalMacro(`[r: setBarVisible("Health", `+(isDead ? 0 : 1)+`, "`+this.id+`") ]`)
+            this.remove_condition("Concentration")
         }
         
         this.save();

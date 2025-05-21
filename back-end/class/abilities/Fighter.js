@@ -134,6 +134,7 @@ var Fighter = class extends Common {
             resources: ["Bonus Action", "Second Wind"],
             description: database.features.data["Second Wind"].description,
             image: database.resources.data["Second Wind"].image,
+            type: "Class",
             origin: origin,
         }
 
@@ -142,6 +143,7 @@ var Fighter = class extends Common {
             resources: ["Action Surge"],
             description: database.features.data["Action Surge"].description,
             image: database.resources.data["Action Surge"].image,
+            type: "Class",
             origin: origin,
         }
 

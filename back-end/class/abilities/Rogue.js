@@ -102,16 +102,15 @@ var Rogue = class extends Common {
         const creature = impersonated();
         const origin = "Rogue"
         const actions = {}
-        const hasInitiative = Initiative.turn_order.includes(creature.id)
-        const isPlaying = hasInitiative ? Initiative.current_character == creature.id : true
 
         // Sneak Attack
         const weapon = database.items.data[creature.equipment["primary main hand"]?.name]
         const dex_weapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition") : false
         if (creature.has_feature("Sneak Attack") && dex_weapon) actions["sneak_attack"] = {
-            resources: [isPlaying ? "Attack Action" : "Reaction"],
+            resources: ["Attack Action"],
             description: database.features.data["Sneak Attack"]?.description || "",
-            image: "",
+            image: "asset://435a7b34151f79f73434ceb6afa08b30",
+            type: "Attack",
             origin: origin,
         }
 
@@ -128,7 +127,7 @@ var Rogue = class extends Common {
         if (!valid || !target) return;
         const hasAdvantage = this.attack_roll_advantage_modifiers({creature, target, view_only: true}) > 0
         if (!hasAdvantage) {
-            console.log(`${creature.name_color} needs advantage on attack roll to use Sneak Attack.`)
+            console.log(`${creature.name_color} needs advantage on attack roll to use Sneak Attack.`, "all")
             return
         }
 

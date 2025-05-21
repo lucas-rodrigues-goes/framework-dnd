@@ -134,6 +134,7 @@ var Barbarian = class extends Common {
             description: database.features.data["Rage"].description,
             image: database.conditions.data["Rage"].image,
             duration: 10,
+            type: "Class",
             origin: origin,
         }
 
@@ -142,6 +143,7 @@ var Barbarian = class extends Common {
             resources: [],
             description: database.features.data["Reckless Attack"].description,
             image: database.conditions.data["Reckless Attack"]?.image || "",
+            type: "Class",
             origin: origin,
         }
 

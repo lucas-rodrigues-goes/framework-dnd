@@ -10,14 +10,19 @@ var Common = class {
         const creature = impersonated();
         const origin = "Common"
 
-        const actions = {
+        let actions = {
+            // Special
             finish_casting: undefined,
+
+            // Attacks
             attack: {
                 resources: ["Attack Action"],
                 description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
                 recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
+                type: "Attack",
                 origin: origin
             },
+            sneak_attack: undefined,
             opportunity_attack: undefined,
             off_hand_attack: undefined,
             grapple: {
@@ -25,6 +30,7 @@ var Common = class {
                 description: "Attempt to grapple the enemy, impeding their movement.",
                 recovery: 4,
                 image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
+                type: "Attack",
                 origin: origin
             },
             push: {
@@ -32,6 +38,7 @@ var Common = class {
                 description: "Attempt to push the enemy 5ft.",
                 recovery: 4,
                 image: "asset://3c2d43aac056025447140691ea97647d",
+                type: "Attack",
                 origin: origin
             },
             knock_prone: {
@@ -39,13 +46,17 @@ var Common = class {
                 description: "Attempt to knock down the enemy.",
                 recovery: 4,
                 image: "asset://74e398f61ad927dc3855f4ec649c86f9",
+                type: "Attack",
                 origin: origin
             },
+
+            // Common
             dash: {
                 resources: ["Action"],
                 description: "Gain additional movement equal to your speed.",
                 recovery: 1,
                 image: "asset://70343940fea7217d05b65ddf243b1004",
+                type: origin,
                 origin: origin
             },
             disengage: {
@@ -53,6 +64,7 @@ var Common = class {
                 description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
                 recovery: 1,
                 image: "asset://31ded0026d18d1dffa98ae83c02154e2",
+                type: origin,
                 origin: origin
             },
             dodge: {
@@ -60,6 +72,7 @@ var Common = class {
                 description: "Focus on avoiding attacks. Attack rolls against you have disadvantage.",
                 recovery: 1,
                 image: "asset://d8f7756c4828ffea746144ca2f2643b2",
+                type: origin,
                 origin: origin
             },
             help: {
@@ -67,6 +80,7 @@ var Common = class {
                 description: "Aid another creature in attacking or avoiding attacks.",
                 recovery: 4,
                 image: "asset://3968417b9587fa72407aea0b473fcb9a",
+                type: origin,
                 origin: origin
             },
             hide: {
@@ -74,6 +88,7 @@ var Common = class {
                 description: "Attempt to hide from enemies using Stealth.",
                 recovery: 1,
                 image: "asset://14959f9d383aad57803f897bc0e0f6c2",
+                type: origin,
                 origin: origin
             },
             ready: {
@@ -81,6 +96,7 @@ var Common = class {
                 description: "Prepare to take an action later in response to a trigger.",
                 recovery: 0,
                 image: "asset://93420b4771de042d1c336f1c9c0a96ba",
+                type: origin,
                 origin: origin
             },
             search: {
@@ -88,25 +104,25 @@ var Common = class {
                 description: "Devote your attention to finding something using Perception or Investigation.",
                 recovery: 1,
                 image: "asset://4429fcc699ba0b55fd3373841aebaf00",
+                type: origin,
                 origin: origin
             },
-            switch_weapon: undefined
+            switch_weapon: undefined,
         }
 
         // Finish Casting
-        {
-            if (creature.has_condition("Spellcasting") && Initiative.current_creature == creature.id) {
-                const condition = creature.get_condition("Spellcasting")
-                const { spell } = condition
+        if (creature.has_condition("Spellcasting") && Initiative.current_creature == creature.id) {
+            const condition = creature.get_condition("Spellcasting")
+            const { spell } = condition
 
-                actions.finish_casting = {
-                    name: "Finish Casting: " + spell.name,
-                    resources: [],
-                    recovery: 0,
-                    image: spell.image,
-                    origin: "Spells",
-                    description: `Use this button to finish casting prepared spell.`
-                }
+            actions.finish_casting = {
+                name: "Finish Casting: " + spell.name,
+                resources: [],
+                recovery: 0,
+                image: spell.image,
+                origin: "Spells",
+                type: "Special",
+                description: `Use this button to finish casting prepared spell.`
             }
         }
 
@@ -190,16 +206,22 @@ var Common = class {
         {
             const hasInitiative = Initiative.turn_order.includes(creature.id)
             const canUse = hasInitiative ? Initiative.current_creature == creature.id : true
-            if (canUse && (creature.equipment["secondary main hand"] != null || creature.equipment["secondary off hand"] != null)) {
+            if (canUse && (creature.equipment["secondary main hand"] != undefined || creature.equipment["secondary off hand"] != undefined)) {
                 actions.switch_weapon = {
                     name: "Switch Weapon",
                     resources: [],
                     recovery: 0,
                     image: "asset://4df58740b798e04911f0356e8931b486",
                     origin: origin,
+                    type: "Common",
                     description: `Switch primary and secondary weapon slots.`
                 }
             }
+        }
+
+        // Pull from other origins
+        for (const player_class of [Barbarian, Fighter, Rogue, Wizard]) {
+            actions = {...actions, ...player_class.actions_list()}
         }
 
         return actions
@@ -668,8 +690,8 @@ var Common = class {
 
             // Unseen Attacker
             if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
-                creature.maintain_stealth(true)
-                target.passive_search()
+                if (!view_only) creature.maintain_stealth(true)
+                if (!view_only) target.passive_search()
                 output += 1
             }
         }
