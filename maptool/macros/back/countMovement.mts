@@ -24,6 +24,7 @@
 	    const isPlaying = Initiative.current_creature == id
 	
 	    function validateMovement () {
+			if (!creature) return true
 	        const visibility = creature.has_condition("Hidden") && !creature.player ? "gm" : "all"
 	
 	        // Ilegal movement
@@ -56,7 +57,7 @@
 	        }
 	    }
 	    const validMovement = validateMovement()
-	    if (validMovement) {
+	    if (validMovement && creature) {
 	        if (isPlaying) creature.go_to()
 	        creature.onMove()
 	    }
