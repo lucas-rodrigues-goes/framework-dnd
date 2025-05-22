@@ -167,6 +167,7 @@ var Common = class {
                     resources: ["Bonus Action"],
                     description: "Use your off hand weapon to deliver a blow to the enemy.",
                     image: image,
+                    type: "Attack",
                     origin: origin
                 }
             }
@@ -197,6 +198,7 @@ var Common = class {
                     resources: ["Reaction"],
                     description: "You can make an opportunity attack when a hostile creature that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking creature. The attack occurs right before the creature leaves your reach.",
                     image: image,
+                    type: "Attack",
                     origin: origin
                 }
             }
@@ -477,7 +479,7 @@ var Common = class {
 
             // Deal Damage
             const damage_dealt = target.receive_damage(damage_to_deal, type)
-            output.push(`${damage_dealt} ${type.toLowerCase()}`)
+            output.push(`${damage_dealt ? damage_dealt : "no"} ${type.toLowerCase()}`)
 
             // Sound
             Sound.play(type.toLowerCase())

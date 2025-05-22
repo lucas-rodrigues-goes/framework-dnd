@@ -191,7 +191,23 @@ var Initiative = class {
 
         // Logging
         if (!isSuspended) console.log(`${creature.name_color} started their turn.`, "all")
-        else console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
+        else {
+            switch (creature_init.description) {
+                case "Spellcasting": {}
+                    // Success
+                    if (creature_init.token.has_condition("Spellcasting")) {
+                        console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
+                    }
+                    // Fail
+                    else {
+                        console.log(`${creature.name_color}'s ${creature_init.description} failed.`, "all")
+                    }
+                    break
+                default: 
+                    console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
+                    break
+            }
+        }
     }
 
     static suspend_turn(time, description, creature=impersonated()) {

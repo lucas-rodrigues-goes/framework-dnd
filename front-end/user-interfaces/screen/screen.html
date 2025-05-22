@@ -485,7 +485,7 @@
                 const init_creature = instance(Initiative.current_creature)
                 if(!init_creature.player || true) {
                     init_creature.impersonate();
-                    impersonated().go_to()
+                    init_creature.go_to()
                 }
             }`)
 
@@ -1296,6 +1296,9 @@
                 updateCurrentParty()
                 updateLog()
             }, 1000)
+            setInterval(()=> {
+                updateCurrentTarget()
+            }, 100)
         }
 
         window.onload = function () {

@@ -106,6 +106,14 @@ var Creature = class extends Entity {
             // Light effects
             const conditions_with_light = ["Light"]
             if (conditions_with_light.includes(condition)) this.set_light(condition, hasCondition)
+
+            // Concentration
+            if (this.has_condition("Incapacitated") && this.has_condition("Concentration")) this.remove_condition("Concentration")
+
+            // Terrain Modifier
+            MTScript.evalMacro(`
+                [h: setTerrainModifier('{"terrainModifier":1.5,"terrainModifierOperation":"MULTIPLY","terrainModifiersIgnored":["NONE"]}', "${this.id}")]
+            `)
         }
     }
 
@@ -1171,7 +1179,6 @@ var Creature = class extends Entity {
     //-----------------------------------------------------------------------------------------------------
 
     get conditions() {
-        this.update_state()
         return this.#conditions
     }
 
@@ -1180,17 +1187,20 @@ var Creature = class extends Entity {
     set_condition(condition, duration, object = {}) {
         duration = duration !== undefined ? Number(duration) : database.conditions.data[condition].duration || 0;
 
+        // If no duration remove it
         if (duration === 0) {
             this.remove_condition(condition);
             return;
         }
 
+        // If duration is higher than one or infinite (-1)
         if (duration >= 1 || duration === -1) {
             this.#conditions[condition] = {
                 ...object,
                 duration: duration,
             };
 
+            // Log
             const msg = duration === -1
                 ? `${this.#name} received the ${condition} condition.`
                 : `${this.#name} received the ${condition} condition for ${duration} rounds.`;
@@ -1205,13 +1215,37 @@ var Creature = class extends Entity {
     remove_condition(condition) {
         if (!this.has_condition(condition)) return;
 
-        // Handle special logic for concentration
-        if (condition === "Concentration") {
-            const concentration = this.get_condition("Concentration");
-            for (const id of concentration.targets) {
-                instance(id).remove_condition(concentration.condition);
+        // Special cases
+        switch (condition) {
+            case "Concentration": {
+                const concentration = this.get_condition("Concentration");
+                if (concentration?.targets && concentration?.condition) {
+                    for (const id of concentration.targets) {
+                        const target = instance(id);
+                        if (target) {
+                            target.remove_condition(concentration.condition);
+                        }
+                    }
+                    console.log(`${this.name_color} has lost concentration on ${concentration.condition}.`, "all");
+                }
+                break
             }
-            console.log(`${this.name_color} has lost concentration on ${concentration.condition}.`, "all");
+            case "Spellcasting": {
+                const spellcasting = this.get_condition("Spellcasting")
+                const {spell} = spellcasting
+                if (Initiative.turn_order.includes(this.id)) {
+                    const current_initiative = Initiative.creatures[Initiative.current_creature].initiative
+                    Initiative.creatures = {...Initiative.creatures,
+                        [this.id]: {...Initiative.creatures[this.id],
+                            initiative: current_initiative + 1
+                        }
+                    }
+                }
+
+                console.log(`${this.name_color} has lost the ${spell.name} spell they were casting.`, "all");
+                break
+            }
+            default: break
         }
 
         delete this.#conditions[condition];

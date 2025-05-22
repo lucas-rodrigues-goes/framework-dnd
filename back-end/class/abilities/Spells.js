@@ -135,7 +135,7 @@ var Spells = class {
 
         // Calculate Hit
         const hit_bonus = spellcasting_modifier + 2
-        const hit_result = Common.attack_hit_result(hit_bonus, creature, target, advantage_weight)
+        const hit_result = Common.attack_hit_result({hit_bonus, creature, target, advantage_weight})
 
         // Deal damage
         const damage_result = (hit_result.success
@@ -632,8 +632,10 @@ var Spells = class {
 
         // Apply effect
         const targets = []
+        let success = false
         for (const element of save_return.targets) {
             if (!element.save_result.success) {
+                success = true
                 element.target.set_condition(spell.name, spell.duration, {
                     saving_throw: {
                         difficulty_class: 10 + spell.spellcasting_modifier,
@@ -643,7 +645,7 @@ var Spells = class {
                 targets.push(element.target.id)
             }
         }
-        Spells.concentrate(creature, spell, targets)
+        if (success) Spells.concentrate(creature, spell, targets)
 
         return save_return
     }
@@ -811,8 +813,10 @@ var Spells = class {
 
         // Apply effect
         const targets = []
+        let success = false
         for (const element of save_return.targets) {
             if (!element.save_result.success) {
+                success = true
                 element.target.set_condition(spell.name, spell.duration, {
                     saving_throw: {
                         difficulty_class: 10 + spell.spellcasting_modifier,
@@ -822,7 +826,7 @@ var Spells = class {
                 targets.push(element.target.id)
             }
         }
-        Spells.concentrate(creature, spell, targets)
+        if (success) Spells.concentrate(creature, spell, targets)
 
         return save_return
     }

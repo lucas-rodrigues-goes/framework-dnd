@@ -116,6 +116,7 @@ var Entity = class {
             "135": "left-up",
             "-135": "left-down"
         };
+
         return directions[MTScript.evalMacro(`[r:getTokenFacing("${this.id}")]`)];
     }
     set facing(direction) {
@@ -129,6 +130,7 @@ var Entity = class {
             "left-up": "135",
             "left-down": "-135"
         }
+
         MTScript.evalMacro(`[r:setTokenFacing(${angles[direction]}, "${this.id}")]`)
     }
 
