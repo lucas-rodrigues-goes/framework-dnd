@@ -557,6 +557,24 @@ var Creature = class extends Entity {
             }
         }
 
+        // Lose Spellcasting
+        if (this.has_condition("Spellcasting")) {
+            // Roll d20
+            const roll_result = roll_20(0)
+            const save_bonus = this.saving_throws.constitution
+            const roll_to_save = roll_result.result + save_bonus
+
+            // Difficulty Class
+            const difficulty_class = Math.max(Math.floor(damage / 2), 10) // equals damage halved or 10, whichever is highest
+
+            if (roll_to_save >= difficulty_class) {
+                console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain their spellcasting and succeeded (${roll_result.text_color} + ${save_bonus}).`, "all")
+            } else {
+                console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain their spellcasting and failed (${roll_result.text_color} + ${save_bonus}).`, "all")
+                this.remove_condition("Spellcasting")
+            }
+        }
+
         // Log
         console.log(this.#name + " received " + damage + " " + type + " damage.", "debug");
         return damage;

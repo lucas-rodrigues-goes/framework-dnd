@@ -114,6 +114,35 @@ var Rogue = class extends Common {
             origin: origin,
         }
 
+        // Cunning Action
+        if (creature.has_feature("Cunning Action")) {
+            const type = "Class"
+            actions["cunning_action_dash"] = {
+                resources: ["Bonus Action"],
+                description: "Gain additional movement equal to your speed.",
+                recovery: 1,
+                image: "asset://7fe39c0d255e80ca5660f8d9a6abba3d",
+                type: type,
+                origin: origin
+            },
+            actions["cunning_action_disengage"] = {
+                resources: ["Bonus Action"],
+                description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
+                recovery: 1,
+                image: "asset://ea67e63502d661de59785523fbd74e7a",
+                type: type,
+                origin: origin
+            }
+            actions["cunning_action_hide"] = {
+                resources: ["Bonus Action"],
+                description: "Attempt to hide from enemies using Stealth.",
+                recovery: 1,
+                image: "asset://1ac1fc61d91ead286a1ed4bf61f791fc",
+                type: type,
+                origin: origin
+            }
+        }
+
         return actions
     }
 
@@ -153,6 +182,63 @@ var Rogue = class extends Common {
 
         // Logging
         console.log(attack_result.message, "all")
+    }
+
+    static cunning_action_dash () {
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("cunning_action_dash", false);
+        if (!valid) return;
+
+        // New movement
+        const current_movement = creature.resources["Movement"]
+        const speed = creature.speed
+        creature.set_resource_max("Movement", current_movement.max + speed)
+        creature.set_resource_value("Movement", current_movement.value + speed)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        public_log(creature.name_color + " dashes, gaining extra movement for this round.")
+    }
+    
+    static cunning_action_disengage () {
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements("cunning_action_disengage", false);
+        if (!valid) return;
+
+        // Condition
+        creature.set_condition("Disengage", 1)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        public_log(creature.name_color + " disengages, gaining immunity to opportunity attacks.")
+    }
+
+    static cunning_action_hide () {
+        // Free unhide
+        const creature = impersonated()
+        if(creature.has_condition("Hidden")) {
+            creature.remove_condition("Hidden")
+            public_log(`${creature.name_color} has stopped hiding.`)
+            return
+        }
+
+        // Requirements
+        const { valid, action_details } = this.check_action_requirements("cunning_action_hide", false);
+        if (!valid) return
+
+        // Condition
+        creature.set_condition("Hidden", -1)
+        creature.maintain_stealth(true)
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
 
     //---------------------------------------------------------------------------------------------------
