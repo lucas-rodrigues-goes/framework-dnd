@@ -4,35 +4,6 @@
 // Helper functions
 //=====================================================================================================
 
-function rgb(r, g, b) {
-    // Normalize RGB values to 0-1 range
-    var rn = r / 255;
-    var gn = g / 255;
-    var bn = b / 255;
-
-    // Calculate hue rotation
-    var hueRotate = Math.round(
-        Math.atan2(Math.sqrt(3) * (gn - bn), 
-        2 * rn - gn - bn
-    ) * (180 / Math.PI))
-
-    // Calculate brightness adjustment (0-200%)
-    var brightness = Math.round(
-        (rn + gn + bn) / 3 * 100 + 50
-    );
-
-    // Calculate saturation (50-150% range)
-    var max = Math.max(rn, gn, bn);
-    var min = Math.min(rn, gn, bn);
-    var saturation = max === 0 ? 0 : Math.round(
-        (max - min) / max * 100 + 50
-    );
-
-    return "brightness(" + brightness + "%) " +
-        "saturate(" + saturation + "%) " +
-        "hue-rotate(" + hueRotate + "deg)";
-}
-
 function hash(string) {
     
     let hash = 0;
@@ -95,31 +66,6 @@ function arrayToList(array, capitalize=false) {
 function isEqualJSON(a, b) {
     return JSON.stringify(a) === JSON.stringify(b)
 }
-
-
-
-//=====================================================================================================
-// Style functions
-//=====================================================================================================
-
-function animateAccordion() {
-    var acc = document.getElementsByClassName("accordion");
-    var i;
-
-    for (i = 0; i < acc.length; i++) {
-    acc[i].addEventListener("click", function() {
-        this.classList.toggle("active");
-        var panel = this.nextElementSibling;
-        if (panel.style.maxHeight) {
-        panel.style.maxHeight = null;
-        } else {
-        panel.style.maxHeight = panel.scrollHeight + "px";
-        } 
-    });
-    }
-}
-
-
 
 //=====================================================================================================
 // External functions
