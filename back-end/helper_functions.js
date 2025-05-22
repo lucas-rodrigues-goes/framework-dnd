@@ -1,4 +1,3 @@
-
 //---------------------------------------------------------------------------------------------------
 // Token Instancing
 //---------------------------------------------------------------------------------------------------
@@ -28,13 +27,23 @@ var instance = function (id) {
             else {
                 // Attempt to instance using class array
                 try {
-                    const player_class = eval(JSON.parse(token.classes)[0])
-                    token.instance = new player_class(id)
+                    const parsedClass = JSON.parse(token.classes);
+                    if (Array.isArray(parsedClass) && parsedClass.length > 0) {
+                        const player_class = eval(parsedClass[0]);
+                        token.instance = new player_class(id);
+                    } else {
+                        throw new Error("Not a valid class array");
+                    }
                 }
                 // Attempt to instance by string
-                catch {
-                    const player_class = eval(token.classes)
-                    token.instance = new player_class(id)
+                catch (e) {
+                    try {
+                        const player_class = eval(token.classes);
+                        token.instance = new player_class(id);
+                    } catch (innerError) {
+                        console.log(`Failed to instance class: ${innerError.message}`, "debug");
+                        return undefined;
+                    }
                 }
                 console.log(`Successfully updated token ${token.instance.name}`, "debug")
             }
@@ -44,13 +53,23 @@ var instance = function (id) {
         else {
             // Attempt to instance using class array
             try {
-                const player_class = eval(JSON.parse(token.classes)[0])
-                token.instance = new player_class(id)
+                const parsedClass = JSON.parse(token.classes);
+                if (Array.isArray(parsedClass) && parsedClass.length > 0) {
+                    const player_class = eval(parsedClass[0]);
+                    token.instance = new player_class(id);
+                } else {
+                    throw new Error("Not a valid class array");
+                }
             }
             // Attempt to instance by string
-            catch {
-                const player_class = eval(token.classes)
-                token.instance = new player_class(id)
+            catch (e) {
+                try {
+                    const player_class = eval(token.classes);
+                    token.instance = new player_class(id);
+                } catch (innerError) {
+                    console.log(`Failed to instance class: ${innerError.message}`, "debug");
+                    return undefined;
+                }
             }
 
             console.log(`Successfully instanced token ${token.instance.name}`, "debug")
@@ -62,16 +81,29 @@ var instance = function (id) {
         // Output
         return token.instance
     }
-    catch {
+    catch (error) {
         try {
             const maptool_token = MapTool?.tokens?.getTokenByID(id);
-            console.log(`Attempt to instance ${maptool_token.getName()} failed.`, "debug")
-            return undefined
+            console.log(`Attempt to instance ${maptool_token.getName()} failed: ${error.message}`, "debug");
+            return undefined;
         }
-        catch {
-            console.log(`Attempt to instance invalid ID.`, "debug")
-            return undefined
+        catch (innerError) {
+            console.log(`Attempt to instance invalid ID (${id}): ${innerError.message}`, "debug");
+            return undefined;
         }
+    }
+}
+
+// Cleanup cache to prevent memory leaks
+var cleanupInstanceCache = function(maxCacheSize = 100) {
+    const ids = Object.keys(instances);
+    if (ids.length > maxCacheSize) {
+        // Remove oldest entries (first 20% of cache)
+        const removeCount = Math.floor(ids.length * 0.2);
+        for (let i = 0; i < removeCount; i++) {
+            delete instances[ids[i]];
+        }
+        console.log(`Cleaned up ${removeCount} instances from cache`, "debug");
     }
 }
 
@@ -160,9 +192,8 @@ var getImpersonated = function () {
 
 // Returns currently selected characters token ID
 var getSelected = function () {
-    const return_array = MTScript.evalMacro(`[r:getSelected()]`).split(",")
-
-    return return_array
+    const mt_getSelected = MTScript.evalMacro(`[r:getSelected()]`) || ""
+    return mt_getSelected != "" ? mt_getSelected.split(",") : []
 }
 
 // Returns currently selected characters portrait
