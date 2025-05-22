@@ -193,19 +193,20 @@ var Initiative = class {
         if (!isSuspended) console.log(`${creature.name_color} started their turn.`, "all")
         else {
             switch (creature_init.description) {
-                case "Spellcasting": {}
-                    // Success
-                    if (creature_init.token.has_condition("Spellcasting")) {
-                        console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
+                case "Spellcasting": {
+                    if (creature.has_condition("Spellcasting")) {
+                        const condition = creature.get_condition("Spellcasting")
+                        const {spell} = condition
+                        console.log(`${creature.name_color} has finished casting ${spell.name}.`, "all")
                     }
-                    // Fail
-                    else {
-                        console.log(`${creature.name_color}'s ${creature_init.description} failed.`, "all")
-                    }
+                    else console.log(`${creature.name_color} resumed their turn.`, "all")
+
                     break
-                default: 
+                }
+                default: {
                     console.log(`${creature.name_color} has finished ${creature_init.description}.`, "all")
                     break
+                }
             }
         }
     }
