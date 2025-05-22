@@ -1,12 +1,12 @@
 
 
-var Barbarian = class extends Common {
+var Barbarian = class {
 
     //---------------------------------------------------------------------------------------------------
     // Class Information
     //---------------------------------------------------------------------------------------------------
 
-    static get lore() { 
+    static get lore() {
         return `
             Barbarians are primal warriors, defined by their fierce rage and unyielding endurance. 
             Channeling the untamed fury of the wilderness or their ancestral spirits, barbarians 
@@ -117,83 +117,6 @@ var Barbarian = class extends Common {
         }
         
         return {proficiencies: proficiencies, choices: choices}
-    }
-
-    //---------------------------------------------------------------------------------------------------
-    // Actions
-    //---------------------------------------------------------------------------------------------------
-
-    static actions_list() {
-        const character = impersonated();
-        const origin = "Barbarian"
-        const actions = {}
-
-        // Rage
-        if (character.has_feature("Rage")) actions["rage"] = {
-            resources: ["Bonus Action", "Rage"],
-            description: database.features.data["Rage"].description,
-            image: database.conditions.data["Rage"].image,
-            duration: 10,
-            type: "Class",
-            origin: origin,
-        }
-
-        // Reckless Attack
-        if (character.has_feature("Reckless Attack")) actions["reckless_attack"] = {
-            resources: [],
-            description: database.features.data["Reckless Attack"].description,
-            image: database.conditions.data["Reckless Attack"]?.image || "",
-            type: "Class",
-            origin: origin,
-        }
-
-        return actions
-    }
-
-    static rage() {
-        // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements("rage", false);
-        if (!valid) return;
-
-        // Reduction
-        let reduction = 3; {
-            const barbarian_level = creature.classes?.Barbarian?.level || 0
-            if (barbarian_level > 5) reduction = 5
-            if (barbarian_level > 11) reduction = 7
-            if (barbarian_level > 17) reduction += 9
-        }
-
-        // Receive condition
-        creature.set_condition("Rage", 10, {
-            resistances: {
-                Slashing: {type: "resistance", reduction: reduction},
-                Bludgeoning: {type: "resistance", reduction: reduction},
-                Piercing: {type: "resistance", reduction: reduction},
-            }
-        })
-
-        // Consume resources
-        this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, creature)
-
-        // Logging
-        public_log(`${creature.name_color} is enraged!`)
-    }
-
-    static reckless_attack() {
-        // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements("reckless_attack", false);
-        if (!valid) return;
-
-        // Receive condition
-        creature.set_condition("Reckless Attack", 1)
-
-        // Consume resources
-        this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, creature)
-
-        // Logging
-        public_log(`${creature.name_color} throws aside all concern for defense and attacks recklessly!`)
     }
 
     //---------------------------------------------------------------------------------------------------

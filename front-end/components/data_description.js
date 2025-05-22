@@ -154,7 +154,7 @@ let data_description; {
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                     {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: ability.name},
-                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: ability.origin + " Ability"},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: (ability.type || ability.origin) + " Ability"},
                 ]},
 
                 // Attributes

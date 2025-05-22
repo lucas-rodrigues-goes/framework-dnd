@@ -1,6 +1,6 @@
 
 
-var Fighter = class extends Common {
+var Fighter = class {
 
     //---------------------------------------------------------------------------------------------------
     // Class Information
@@ -118,74 +118,6 @@ var Fighter = class extends Common {
         }
         
         return {proficiencies: proficiencies, choices: choices}
-    }
-
-    //---------------------------------------------------------------------------------------------------
-    // Actions
-    //---------------------------------------------------------------------------------------------------
-
-    static actions_list() {
-        const character = impersonated();
-        const origin = "Fighter"
-        const actions = {}
-
-        // Rage
-        if (character.has_feature("Second Wind")) actions["second_wind"] = {
-            resources: ["Bonus Action", "Second Wind"],
-            description: database.features.data["Second Wind"].description,
-            image: database.resources.data["Second Wind"].image,
-            type: "Class",
-            origin: origin,
-        }
-
-        // Action Surge
-        if (character.has_feature("Action Surge")) actions["action_surge"] = {
-            resources: ["Action Surge"],
-            description: database.features.data["Action Surge"].description,
-            image: database.resources.data["Action Surge"].image,
-            type: "Class",
-            origin: origin,
-        }
-
-        return actions
-    }
-
-    static second_wind() {
-        const action_name = "second_wind"
-
-        // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
-        if (!valid) return;
-
-        // Receive Healing
-        const healing = roll(10) + (creature.classes.Fighter?.level || 1)
-        creature.receive_healing(healing)
-
-        // Consume resources
-        this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, creature)
-
-        // Logging
-        public_log(`${creature.name_color} has utilized second wind, regaining ${healing} hit points`)
-    }
-
-    static action_surge() {
-        const action_name = "action_surge"
-
-        // Requirements
-        const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
-        if (!valid) return;
-
-        // Gain extra action
-        creature.set_resource_max("Action", creature.resources["Action"].max + 1)
-        creature.set_resource_value("Action", creature.resources["Action"].value + 1)
-
-        // Consume resources
-        this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, creature)
-
-        // Logging
-        public_log(`${creature.name_color} has utilized action surge, gaining an extra action.`)
     }
 
     //---------------------------------------------------------------------------------------------------

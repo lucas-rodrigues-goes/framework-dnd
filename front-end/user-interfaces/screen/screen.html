@@ -576,11 +576,11 @@
             // Character Attributes
             const character = JSON.parse(await backend(`JSON.stringify(
                 {
-                    classes: impersonated().classes || {},
-                    resources: impersonated().resources || {},
-                    spells: impersonated().spells || {},
+                    classes: impersonated().classes,
+                    resources: impersonated().resources,
+                    spells: impersonated().spells,
                     hasInitiative: Initiative.turn_order.includes(impersonated().id),
-                    abilities: Common.actions_list(),
+                    abilities: impersonated().abilities,
                 }
             )`))
 
@@ -731,14 +731,14 @@
 
                 // Abilities
                 const ordered_abilities = Object.keys(character.abilities).sort((a, b) => {
-                    const priority = {
-                        0: "Special",
-                        1: "Attack",
-                        2: "Common",
-                        3: "Class",
-                    }
+                    const get_priority = (key) => ({
+                        Special: 0,
+                        Attack: 1,
+                        Class: 3,
+                        Common: 2,
+                    }[character.abilities[key].type] ?? 99)
 
-                    return priority[character.abilities?.type?.[a] || 10] - priority[character.abilities?.type?.[b] || 10]
+                    return get_priority(a) - get_priority(b)
                 })
                 for (const key of ordered_abilities) {
                     const ability = character.abilities[key]

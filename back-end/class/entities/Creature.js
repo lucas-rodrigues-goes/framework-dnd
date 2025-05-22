@@ -63,6 +63,45 @@ var Creature = class extends Entity {
     #notes = []
 
     //-----------------------------------------------------------------------------------------------------
+    // Basic Getters / Setters
+    //-----------------------------------------------------------------------------------------------------
+
+    get name() { return this.#name }
+    set name(name) {
+        this.#name = name
+
+        this.save()
+
+        log(this.#name + " updated their name.")
+    }
+
+    get name_color () {
+        const color = this.player ? "#48BAFF" : "#C82E42"
+
+        return `<span style="color: ${color}">${this.name}</span>`
+    }
+
+    get type() { return this.#type }
+    set type(type) {
+        this.#type = type
+
+        this.save()
+
+        log(this.#name + " type set to " + type + ".")
+    }
+
+    get race() { return this.#race }
+    set race(race) {
+        this.#race = race
+
+        this.save()
+
+        log(this.#name + " race set to " + race + ".")
+    }
+
+    get abilities() {return Abilities.abilities_list(this)}
+
+    //-----------------------------------------------------------------------------------------------------
     // Events
     //-----------------------------------------------------------------------------------------------------
 
@@ -377,44 +416,6 @@ var Creature = class extends Entity {
             console.log(text, hidden_creature.player ? "all" : "gm")
         }
     }
-
-    //-----------------------------------------------------------------------------------------------------
-    // Basic Getters / Setters
-    //-----------------------------------------------------------------------------------------------------
-
-    get name() { return this.#name }
-    set name(name) {
-        this.#name = name
-
-        this.save()
-
-        log(this.#name + " updated their name.")
-    }
-
-    get name_color () {
-        const color = this.player ? "#48BAFF" : "#C82E42"
-
-        return `<span style="color: ${color}">${this.name}</span>`
-    }
-
-    get type() { return this.#type }
-    set type(type) {
-        this.#type = type
-
-        this.save()
-
-        log(this.#name + " type set to " + type + ".")
-    }
-
-    get race() { return this.#race }
-    set race(race) {
-        this.#race = race
-
-        this.save()
-
-        log(this.#name + " race set to " + race + ".")
-    }
-    
 
     //-----------------------------------------------------------------------------------------------------
     // Ability Scores

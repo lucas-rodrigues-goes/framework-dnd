@@ -1,6 +1,29 @@
 
 
-var Spells = class {
+var Spells = class extends Abilities {
+    // Ability List
+    static abilities_list(character=impersonated()) {
+        const origin = "Spells"
+        const abilities_list = {}
+
+        // Finish Casting
+        if (character.has_condition("Spellcasting") && Initiative.current_character == character.id) {
+            const condition = character.get_condition("Spellcasting")
+            const { spell } = condition
+
+            abilities_list.finish_casting = {
+                name: "Finish Casting: " + spell.name,
+                resources: [],
+                recovery: 0,
+                image: spell.image,
+                origin: origin,
+                type: "Special",
+                description: `Use this button to finish casting prepared spell.`
+            }
+        }
+
+        return abilities_list
+    }
 
     //---------------------------------------------------------------------------------------------------
     // Cast Spell
@@ -56,7 +79,7 @@ var Spells = class {
             // Spell Slot
             if (level != "cantrip") resources.push(`${level} Level Spell Slot`)
         }
-        if(!Common.has_resources_available(resources)) return
+        if(!this.has_resources_available(resources)) return
 
         // Cast Time
         if (spell.cast_time > 0) {
@@ -95,7 +118,7 @@ var Spells = class {
         Sound.play("spell")
 
         // Consume Resources
-        Common.use_resources(resources)
+        this.use_resources(resources)
     }
 
     static concentrate(creature, spell, targets) {
@@ -107,212 +130,6 @@ var Spells = class {
             targets: targets,
         })
         console.log(`${creature.name_color} has started concentrating on ${spell.name}.`, "all")
-    }
-
-    //---------------------------------------------------------------------------------------------------
-    // Helpers
-    //---------------------------------------------------------------------------------------------------
-
-    static make_spell_attack({name, target, spellcasting_modifier, range, damage_dice, advantage_weight = 0}={}) {
-        const creature = impersonated()
-        
-        // Validate Visibility
-        const target_visibility = creature.target_visibility()
-        if (target_visibility == 0) return {
-            success: false,
-            message: `${creature.name_color} needs to see their target.`
-        }
-        
-        // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
-        if (range_validation.outOfRange) {
-            return {
-                success: false,
-                message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
-            }
-        }
-        advantage_weight += range_validation.advantage_weight
-
-        // Calculate Hit
-        const hit_bonus = spellcasting_modifier + 2
-        const hit_result = Common.attack_hit_result({hit_bonus, creature, target, advantage_weight})
-
-        // Deal damage
-        const damage_result = (hit_result.success
-            ? ` dealing ${Spells.spell_damage(creature, target, hit_result.message, damage_dice)} damage.`
-            : `.`
-        )
-
-        // Output
-        return {
-            success: true,
-            hit_result: hit_result,
-            damage_result: damage_result,
-            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with ${name} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
-        }
-    }
-
-    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
-        const creature = impersonated()
-
-        // Validate Targets
-        if (max_targets) {
-            if (targets.length > max_targets) return {
-                success: false,
-                message: `${creature.name_color} can only select up to ${max_targets} target${max_targets > 1 ? "s" : ""} for this spell.`
-            }
-        }
-
-        const output = {success: false, targets: [], message: `${creature.name_color} needs to choose a target for this spell.`}
-        for (const target of targets) {
-            // Validate Target
-            if (!target) return {
-                success: false,
-                message: `${creature.name_color} tried to cast ${name}, but one target is invalid.`
-            }
-
-            // Validate Range
-            const range_validation = Spells.validate_spell_range(creature, target, range)
-            if (range_validation.outOfRange) return {
-                success: false,
-                message: `${creature.name_color} tried to cast ${name}, but one target is out of range.`
-            }
-
-            // Saving Throw
-            const save_bonus = target.saving_throws[saving_throw_score.toLowerCase()] || 0
-            const save_result = Spells.saving_throw_result(creature, target, spellcasting_modifier, save_bonus, half_on_fail, 0)
-
-            // Deal damage
-            let damage_result; {
-                // Damage spell
-                if (damage_dice.length >= 1) {
-                    damage_result = save_result.success && !half_on_fail
-                        ? ` avoiding the effects.`
-                        : ` receiving ${Spells.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
-                }
-
-                // Effect only spell
-                else {
-                    damage_result = save_result.success
-                        ? ` avoiding the effects.`
-                        : `.`
-                }
-            }
-
-            // Output
-            console.log(
-                `${creature.name_color} casts ${name} (DC ${save_result.difficulty_class}) on ${target.name_color},` + 
-                ` who makes a ${saving_throw_score} save and ${save_result.message} (${save_result.roll.text_color})${damage_result}`
-            , "all")
-            output.targets.push({
-                save_result: save_result,
-                damage_result: damage_result,
-                target: target,
-            })
-            output.success = true
-            output.message = ""
-        }
-
-        return output
-    }
-
-    static validate_spell_range(creature, target, range) {
-        range = Number(range)
-        const distance = calculate_distance(creature, target) * 5
-        const meleeRange = distance <= 5
-
-        // Output
-        const output = { advantage_weight: 0, outOfRange: false }
-        {
-            // Out of Range
-            output.outOfRange = distance > range
-
-            // Melee Spell
-            if (range == 5) {
-
-            }
-
-            // Ranged Spell
-            else if (range > 5) {
-                // Melee disadvantage
-                if (meleeRange) output.advantage_weight -= 1
-            }
-        }
-        return output
-    }
-
-    static spell_damage(creature, target, result, damage_dice) {
-        // Critical Hit Multiplier
-        const crit_multiplier = result == "lands a critical hit" ? 2 : 1
-
-        // Save for half
-        const damage_multiplier = result == "saves for half damage" ? 0.5 : 1
-
-        // Output
-        const output = []
-        let count = 0
-        for (const damage of damage_dice) {
-            // Calculate Damage
-            const die_size = damage.die_size || 0
-            const die_amount = damage.die_amount * crit_multiplier
-            const damage_bonus = damage.damage_bonus || 0
-
-            const damage_to_deal = Math.floor((roll_dice(die_amount, die_size) + damage_bonus) * damage_multiplier)
-            count ++
-
-            // Deal Damage
-            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
-            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
-        }
-        return output.join(", ")
-    }
-
-    static remove_previous(creature, name) {
-        const current = creature.get_condition(`Maintaining: ${name}`)
-        if (current) {
-            const previous_target = instance(current.target)
-
-            // Remove conditions
-            creature.remove_condition(`Maintaining: ${name}`)
-            if (previous_target) previous_target.remove_condition(name)
-
-            return previous_target
-        }
-    }
-
-    static saving_throw_result(creature, target, spellcasting_modifier, save_bonus, half_on_fail, advantage_weight = 0) {
-        // Advantage modifiers
-        advantage_weight += 0
-
-        // Roll d20
-        const roll_result = roll_20(advantage_weight)
-        const roll_to_save = roll_result.result + save_bonus
-
-        // Difficulty Class
-        const difficulty_class = 10 + spellcasting_modifier
-
-        // Output
-        let advantage = "None"; {
-            if (advantage_weight > 0) advantage = "Advantage"
-            else if (advantage_weight < 0) advantage = "Disadvantage"
-        }
-        const output = { success: false, message: "", roll: roll_result, difficulty_class: difficulty_class, advantage: advantage}; {
-            // Save
-            if (roll_to_save >= difficulty_class) {
-                output.success = true
-                output.message = "saves" + (half_on_fail ? " for half damage" : "")
-            }
-
-            // Fail
-            else if (roll_to_save < difficulty_class) {
-                output.message = "fails the save"
-            }
-
-            // Add save bonus to text
-            output.roll.text += ` + ${save_bonus}`
-            output.roll.text_color += ` + ${save_bonus}`
-        }
-        return output
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -554,7 +371,6 @@ var Spells = class {
     //---------------------------------------------------------------------------------------------------
     // 2nd Level Spells
     //---------------------------------------------------------------------------------------------------
-    
     
     static blindness(spell) {
         const creature = impersonated()
