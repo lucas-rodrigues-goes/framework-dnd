@@ -2,13 +2,13 @@
 
 var Spells = class extends Abilities {
     // Ability List
-    static abilities_list(character=impersonated()) {
+    static abilities_list(creature=impersonated()) {
         const origin = "Spells"
         const abilities_list = {}
 
         // Finish Casting
-        if (character.has_condition("Spellcasting") && Initiative.current_character == character.id) {
-            const condition = character.get_condition("Spellcasting")
+        if (creature.has_condition("Spellcasting") && Initiative.current_creature == creature.id) {
+            const condition = creature.get_condition("Spellcasting")
             const { spell } = condition
 
             abilities_list.finish_casting = {
@@ -58,7 +58,7 @@ var Spells = class extends Abilities {
     static cast_spell(spell, player_class) {
         spell.cast_time = Number(spell.cast_time)
         spell.range = Number(spell.range)
-        const {name, level, school, target, range, duration, classes, components} = spell
+        const {name, level} = spell
         const creature = impersonated()
 
         // Player Class Object

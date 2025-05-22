@@ -2,43 +2,44 @@
 
 var Features = class extends Abilities {
     // Ability List
-    static abilities_list(character=impersonated()) {
+    static abilities_list(creature=impersonated()) {
         const origin = "Features"
         const abilities_list = {}
+        const type = "Class"
 
         /* Barbarian */ {
             // Rage
-            if (character.has_feature("Rage")) abilities_list["rage"] = {
+            if (creature.has_feature("Rage")) abilities_list["rage"] = {
                 resources: ["Bonus Action", "Rage"],
                 description: database.features.data["Rage"].description,
                 image: database.conditions.data["Rage"].image,
                 duration: 10,
-                type: "Class",
+                type: type,
                 origin: origin,
             }
 
             // Reckless Attack
-            if (character.has_feature("Reckless Attack")) abilities_list["reckless_attack"] = {
+            if (creature.has_feature("Reckless Attack")) abilities_list["reckless_attack"] = {
                 resources: [],
                 description: database.features.data["Reckless Attack"].description,
                 image: database.conditions.data["Reckless Attack"]?.image || "",
-                type: "Class",
+                type: type,
                 origin: origin,
             }
         }
 
         /* Fighter */ {
             // Second Wind
-            if (character.has_feature("Second Wind")) abilities_list["second_wind"] = {
+            if (creature.has_feature("Second Wind")) abilities_list["second_wind"] = {
                 resources: ["Bonus Action", "Second Wind"],
                 description: database.features.data["Second Wind"].description,
                 image: database.resources.data["Second Wind"].image,
-                type: "Class",
+                type: type,
                 origin: origin,
             }
 
             // Action Surge
-            if (character.has_feature("Action Surge")) abilities_list["action_surge"] = {
+            if (creature.has_feature("Action Surge")) abilities_list["action_surge"] = {
                 resources: ["Action Surge"],
                 description: database.features.data["Action Surge"].description,
                 image: database.resources.data["Action Surge"].image,
@@ -49,24 +50,23 @@ var Features = class extends Abilities {
 
         /* Rogue */ {
             // Sneak Attack
-            const weapon = database.items.data[character.equipment["primary main hand"]?.name]
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name]
             const dex_weapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition") : false
-            if (character.has_feature("Sneak Attack") && dex_weapon) abilities_list["sneak_attack"] = {
+            if (creature.has_feature("Sneak Attack") && dex_weapon) abilities_list["sneak_attack"] = {
                 resources: ["Attack Action"],
                 description: database.features.data["Sneak Attack"]?.description || "",
-                image: "asset://435a7b34151f79f73434ceb6afa08b30",
-                type: "Attack",
+                image: "asset://768444307168cbf3706b175b123254a8",
+                type: "Special",
                 origin: origin,
             }
 
             // Cunning Action
-            if (character.has_feature("Cunning Action")) {
-                const type = "Class"
+            if (creature.has_feature("Cunning Action")) {
                 abilities_list["cunning_action_dash"] = {
                     resources: ["Bonus Action"],
                     description: "Gain additional movement equal to your speed.",
                     recovery: 1,
-                    image: "asset://7fe39c0d255e80ca5660f8d9a6abba3d",
+                    image: "asset://afd94483c4e745e9286407e9222d4bc1",
                     type: type,
                     origin: origin
                 }
@@ -74,7 +74,7 @@ var Features = class extends Abilities {
                     resources: ["Bonus Action"],
                     description: "Your movement doesn't provoke opportunity attacks for the rest of the turn.",
                     recovery: 1,
-                    image: "asset://ea67e63502d661de59785523fbd74e7a",
+                    image: "asset://da4599c3e9967fc3e9bd769d414fbbfd",
                     type: type,
                     origin: origin
                 }
@@ -82,7 +82,7 @@ var Features = class extends Abilities {
                     resources: ["Bonus Action"],
                     description: "Attempt to hide from enemies using Stealth.",
                     recovery: 1,
-                    image: "asset://1ac1fc61d91ead286a1ed4bf61f791fc",
+                    image: "asset://383a78f2be296460f79b7ecd4a350daf",
                     type: type,
                     origin: origin
                 }
@@ -99,19 +99,19 @@ var Features = class extends Abilities {
     // Rage
     static rage() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("rage", false);
+        const { valid, creature, action_details } = this.check_action_requirements("rage", false);
         if (!valid) return;
 
         // Reduction
         let reduction = 3; {
-            const barbarian_level = character.classes?.Barbarian?.level || 0
+            const barbarian_level = creature.classes?.Barbarian?.level || 0
             if (barbarian_level > 5) reduction = 5
             if (barbarian_level > 11) reduction = 7
-            if (barbarian_level > 17) reduction += 9
+            if (barbarian_level > 17) reduction = 9
         }
 
         // Receive condition
-        character.set_condition("Rage", 10, {
+        creature.set_condition("Rage", 10, {
             resistances: {
                 Slashing: {type: "resistance", reduction: reduction},
                 Bludgeoning: {type: "resistance", reduction: reduction},
@@ -121,27 +121,27 @@ var Features = class extends Abilities {
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(`${character.name_color} is enraged!`)
+        public_log(`${creature.name_color} is enraged!`)
     }
 
     // Reckless Attack
     static reckless_attack() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("reckless_attack", false);
+        const { valid, creature, action_details } = this.check_action_requirements("reckless_attack", false);
         if (!valid) return;
 
         // Receive condition
-        character.set_condition("Reckless Attack", 1)
+        creature.set_condition("Reckless Attack", 1)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(`${character.name_color} throws aside all concern for defense and attacks recklessly!`)
+        public_log(`${creature.name_color} throws aside all concern for defense and attacks recklessly!`)
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -153,19 +153,19 @@ var Features = class extends Abilities {
         const action_name = "second_wind"
 
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements(action_name, false);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
         if (!valid) return;
 
         // Receive Healing
-        const healing = roll(10) + (character.classes.Fighter?.level || 1)
-        character.receive_healing(healing)
+        const healing = roll(10) + (creature.classes.Fighter?.level || 1)
+        creature.receive_healing(healing)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(`${character.name_color} has utilized second wind, regaining ${healing} hit points`)
+        public_log(`${creature.name_color} has utilized second wind, regaining ${healing} hit points`)
     }
 
     // Action Surge
@@ -173,19 +173,19 @@ var Features = class extends Abilities {
         const action_name = "action_surge"
 
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements(action_name, false);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
         if (!valid) return;
 
         // Gain extra action
-        character.set_resource_max("Action", character.resources["Action"].max + 1)
-        character.set_resource_value("Action", character.resources["Action"].value + 1)
+        creature.set_resource_max("Action", creature.resources["Action"].max + 1)
+        creature.set_resource_value("Action", creature.resources["Action"].value + 1)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(`${character.name_color} has utilized action surge, gaining an extra action.`)
+        public_log(`${creature.name_color} has utilized action surge, gaining an extra action.`)
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -297,8 +297,8 @@ var Features = class extends Abilities {
     
     // Arcane Recovery
     static arcane_recovery(level) {
-        const character = impersonated()
-        const arcane_recovery_charges = character.resources["Arcane Recovery"].value
+        const creature = impersonated()
+        const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
         const cost = {
             1: 2,
             2: 3,
@@ -309,7 +309,7 @@ var Features = class extends Abilities {
 
         // Validation
         if (arcane_recovery_charges < cost) {
-            public_log(`${character.name_color} has insufficient Arcane Recovery charges for this spell level.`)
+            public_log(`${creature.name_color} has insufficient Arcane Recovery charges for this spell level.`)
             return
         }
 
@@ -317,13 +317,13 @@ var Features = class extends Abilities {
         const slot = level
         const postfix = ["st", "nd", "rd"].length >= slot ? ["st", "nd", "rd"][slot - 1] : "th"
         const spell_slot = `${slot}${postfix} Level Spell Slot`
-        character.set_resource_value(spell_slot, character.resources[spell_slot].value + 1)
+        creature.set_resource_value(spell_slot, creature.resources[spell_slot].value + 1)
 
         // Consume Arcane Recovery Charges
-        character.set_resource_value("Arcane Recovery", arcane_recovery_charges - cost)
+        creature.set_resource_value("Arcane Recovery", arcane_recovery_charges - cost)
 
         // Logging
-        console.log(`${character.name} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`, "all")
+        console.log(`${creature.name} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`, "all")
     }
 
     //---------------------------------------------------------------------------------------------------

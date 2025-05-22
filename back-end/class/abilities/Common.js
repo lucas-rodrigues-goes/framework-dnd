@@ -2,7 +2,7 @@
 
 var Common = class extends Abilities {
     // Ability List
-    static abilities_list(character=impersonated()) {
+    static abilities_list(creature=impersonated()) {
         const origin = "Common"
 
         const abilities_list = {
@@ -10,7 +10,7 @@ var Common = class extends Abilities {
             attack: {
                 resources: ["Attack Action"],
                 description: "Use your main equipped weapon (or fists) to deliver a blow to the enemy.",
-                recovery: database?.items?.data[character?.equipment["primary main hand"]?.name]?.recovery || 2,
+                recovery: database?.items?.data[creature?.equipment["primary main hand"]?.name]?.recovery || 2,
                 type: "Attack",
                 origin: origin
             },
@@ -66,7 +66,7 @@ var Common = class extends Abilities {
             },
             help: {
                 resources: ["Action"],
-                description: "Aid another character in attacking or avoiding attacks.",
+                description: "Aid another creature in attacking or avoiding attacks.",
                 recovery: 4,
                 image: "asset://3968417b9587fa72407aea0b473fcb9a",
                 type: origin,
@@ -101,7 +101,7 @@ var Common = class extends Abilities {
         // Attack
         {
             // Validations
-            const weapon = database.items.data[character.equipment["primary main hand"]?.name];
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
             const isWeaponRanged = hasWeapon ? weapon.properties.includes("Ammunition") : false
             const isWeaponMelee = hasWeapon && !isWeaponRanged
@@ -120,7 +120,7 @@ var Common = class extends Abilities {
         // Off Hand Attack
         {
             // Validations
-            const off_hand_weapon = database.items.data[character.equipment["primary off hand"]?.name];
+            const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
             const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
             const isOffHandWeaponRanged = hasOffHandWeapon ? off_hand_weapon.properties.includes("Ammunition") : false
             const isOffHandWeaponMelee = hasOffHandWeapon && !isOffHandWeaponRanged
@@ -147,7 +147,7 @@ var Common = class extends Abilities {
         // Opportunity Attack
         {
             // Validations
-            const weapon = database.items.data[character.equipment["primary main hand"]?.name];
+            const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
             const isWeaponRanged = hasWeapon ? weapon.properties.includes("Ammunition") : false
             const isWeaponMelee = hasWeapon && !isWeaponRanged
@@ -162,12 +162,12 @@ var Common = class extends Abilities {
             // Add Action
             if (
                 !isWeaponRanged && 
-                Initiative.turn_order.includes(character.id) && 
-                Initiative.turn_order[0] != character.id
+                Initiative.turn_order.includes(creature.id) && 
+                Initiative.turn_order[0] != creature.id
             ) {
                 abilities_list["opportunity_attack"] = {
                     resources: ["Reaction"],
-                    description: "You can make an opportunity attack when a hostile character that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking character. The attack occurs right before the character leaves your reach.",
+                    description: "You can make an opportunity attack when a hostile creature that you can see moves out of your reach. To make the opportunity attack, you use your reaction to make one melee attack against the provoking creature. The attack occurs right before the creature leaves your reach.",
                     image: image,
                     type: "Attack",
                     origin: origin
@@ -177,9 +177,9 @@ var Common = class extends Abilities {
 
         // Switch Weapon
         {
-            const hasInitiative = Initiative.turn_order.includes(character.id)
-            const canUse = hasInitiative ? Initiative.current_character == character.id : true
-            if (canUse && (character.equipment["secondary main hand"] != undefined || character.equipment["secondary off hand"] != undefined)) {
+            const hasInitiative = Initiative.turn_order.includes(creature.id)
+            const canUse = hasInitiative ? Initiative.current_creature == creature.id : true
+            if (canUse && (creature.equipment["secondary main hand"] != undefined || creature.equipment["secondary off hand"] != undefined)) {
                 abilities_list.switch_weapon = {
                     name: "Switch Weapon",
                     resources: [],
@@ -205,11 +205,11 @@ var Common = class extends Abilities {
         const target = selected()
 
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements(action_name);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name);
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack({slot, character, target})
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return
@@ -217,7 +217,7 @@ var Common = class extends Abilities {
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
         public_log(attack_result.message)
@@ -229,11 +229,11 @@ var Common = class extends Abilities {
         const target = selected()
 
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements(action_name);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name);
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack({slot, character, target})
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return
@@ -241,7 +241,7 @@ var Common = class extends Abilities {
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
         public_log(attack_result.message)
@@ -253,11 +253,11 @@ var Common = class extends Abilities {
         const target = selected()
 
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements(action_name);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name);
         if (!valid || !target) return;
 
         // Make attack
-        const attack_result = this.make_attack({slot, character, target})
+        const attack_result = this.make_attack({slot, creature, target})
         if (!attack_result.success) {
             public_log(attack_result.message)
             return
@@ -265,7 +265,7 @@ var Common = class extends Abilities {
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
         public_log(attack_result.message)
@@ -277,9 +277,9 @@ var Common = class extends Abilities {
 
     static push() {
         const target = selected()
-        const character = impersonated()
+        const creature = impersonated()
 
-        const direction = calculate_direction(character, target)
+        const direction = calculate_direction(creature, target)
         const cells = 1
         target.move(direction, cells)
     }
@@ -294,65 +294,65 @@ var Common = class extends Abilities {
 
     static dash() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("dash", false);
+        const { valid, creature, action_details } = this.check_action_requirements("dash", false);
         if (!valid) return;
 
         // New movement
-        const current_movement = character.resources["Movement"]
-        const speed = character.speed
-        character.set_resource_max("Movement", current_movement.max + speed)
-        character.set_resource_value("Movement", current_movement.value + speed)
+        const current_movement = creature.resources["Movement"]
+        const speed = creature.speed
+        creature.set_resource_max("Movement", current_movement.max + speed)
+        creature.set_resource_value("Movement", current_movement.value + speed)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(character.name_color + " dashes, gaining extra movement for this round.")
+        public_log(creature.name_color + " dashes, gaining extra movement for this round.")
     }
 
     static disengage() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("disengage", false);
+        const { valid, creature, action_details } = this.check_action_requirements("disengage", false);
         if (!valid) return;
 
         // Condition
-        character.set_condition("Disengage", 1)
+        creature.set_condition("Disengage", 1)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(character.name_color + " disengages, gaining immunity to opportunity attacks.")
+        public_log(creature.name_color + " disengages, gaining immunity to opportunity attacks.")
     }
 
     static dodge() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("dodge", false);
+        const { valid, creature, action_details } = this.check_action_requirements("dodge", false);
         if (!valid) return;
 
         // Condition
-        character.set_condition("Dodge", 1)
+        creature.set_condition("Dodge", 1)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(character.name_color + " focuses on dodging, making it easier for them to avoid attacks.")
+        public_log(creature.name_color + " focuses on dodging, making it easier for them to avoid attacks.")
     }
 
     static help() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("help", true);
+        const { valid, creature, action_details } = this.check_action_requirements("help", true);
         const target = selected();
         if (!valid || !target) return;
 
         // Range Validation
-        const distance = calculate_distance(character, target)
+        const distance = calculate_distance(creature, target)
         if (distance > 1) {
-            public_log(`${character.name_color} tried to help someone, but they are not in range.`)
+            public_log(`${creature.name_color} tried to help someone, but they are not in range.`)
             return
         }
 
@@ -361,18 +361,18 @@ var Common = class extends Abilities {
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(`${character.name_color} is helping ${target.name_color} on their next roll.`)
+        public_log(`${creature.name_color} is helping ${target.name_color} on their next roll.`)
     }
 
     static hide() {
         // Free unhide
-        const character = impersonated()
-        if(character.has_condition("Hidden")) {
-            character.remove_condition("Hidden")
-            public_log(`${character.name_color} has stopped hiding.`)
+        const creature = impersonated()
+        if(creature.has_condition("Hidden")) {
+            creature.remove_condition("Hidden")
+            public_log(`${creature.name_color} has stopped hiding.`)
             return
         }
 
@@ -381,53 +381,53 @@ var Common = class extends Abilities {
         if (!valid) return
 
         // Condition
-        character.set_condition("Hidden", -1)
-        character.maintain_stealth(true)
+        creature.set_condition("Hidden", -1)
+        creature.maintain_stealth(true)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
 
     static search() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("search", false);
+        const { valid, creature, action_details } = this.check_action_requirements("search", false);
         if (!valid) return
 
         // Condition
-        character.active_search()
+        creature.active_search()
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
     
     static ready() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("ready", false);
+        const { valid, creature, action_details } = this.check_action_requirements("ready", false);
         if (!valid) return
 
         // Condition
-        character.set_condition("Ready Action", 1)
+        creature.set_condition("Ready Action", 1)
 
         // Consume resources
         this.use_resources(action_details.resources)
-        Initiative.set_recovery(action_details.recovery, character)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        console.log(`${character.name_color} is readying an action.`, "all")
+        console.log(`${creature.name_color} is readying an action.`, "all")
     }
 
     static switch_weapon() {
         // Requirements
-        const { valid, character, action_details } = this.check_action_requirements("switch_weapon", false);
+        const { valid, creature, action_details } = this.check_action_requirements("switch_weapon", false);
         if (!valid) return
 
         // Switch Weapons
-        character.switch_weapon_sets()
+        creature.switch_weapon_sets()
 
         // Logging
-        console.log(`${character.name_color} switched weapon sets.`, "all")
+        console.log(`${creature.name_color} switched weapon sets.`, "all")
     }
 
     //---------------------------------------------------------------------------------------------------

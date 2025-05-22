@@ -763,7 +763,7 @@
                 }
  
                 // Spells
-                current_level = false
+                current_level = undefined
                 for (const object of ordered_spells) {
                     const name = object.name
                     const player_class = object.class
@@ -774,12 +774,13 @@
                     const spell_image = spell.image || spell_school_images[spell.school]
 
                     // Create new div per spell slot level
-                    if (current_level != true) {
+                    const isCantrip = spell.level == "cantrip"
+                    if (current_level != isCantrip) {
                         // Append current div
                         if (current_div) append_current_div()
 
                         // Create new div
-                        current_level = true
+                        current_level = isCantrip
                         current_div = ability_area()
                     }
 

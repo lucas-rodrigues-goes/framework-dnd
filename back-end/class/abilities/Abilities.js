@@ -2,14 +2,13 @@
 
 var Abilities = class {
     // Ability List
-    static abilities_list(character=impersonated()) {
+    static abilities_list(creature=impersonated()) {
         let abilities_list = {
             // Special
             finish_casting: undefined,
 
             // Attacks
             attack: undefined,
-            sneak_attack: undefined,
             opportunity_attack: undefined,
             off_hand_attack: undefined,
             grapple: undefined,
@@ -29,7 +28,7 @@ var Abilities = class {
 
         // Pull from other origins
         for (const cls of [Common, Features, Spells]) {
-            abilities_list = {...abilities_list, ...cls.abilities_list(character)}
+            abilities_list = {...abilities_list, ...cls.abilities_list(creature)}
         }
 
         return abilities_list
@@ -41,7 +40,7 @@ var Abilities = class {
 
     static check_action_requirements(action_key, require_target = true) {
         const creature = impersonated();
-        const action_details = this.actions_list()[action_key];
+        const action_details = this.abilities_list()[action_key];
         if (!action_details) return { valid: false };
     
         // Validate Resources
@@ -456,7 +455,7 @@ var Abilities = class {
             : [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}, ...damage_bonuses]
         )
 
-        // Creature Bonuses
+        // creature Bonuses
         const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
         const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
         const damage_attribute_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3)))
