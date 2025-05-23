@@ -78,7 +78,15 @@
 
         async function updateClass() {
             const player_class = document.getElementById("class").value
-            const level_in_class = JSON.parse(await backend(`impersonated().classes`))[player_class]?.level + 1 || 1
+            const level_in_class = JSON.parse(await backend(`{
+                try {
+                    impersonated().classes["`+player_class+`"].level + 1
+                }
+                catch {
+                    1
+                }
+            }`))
+            const classIsSelected = player_class != ""
 
             // Retrieve data
             const data = JSON.parse(await backend(`JSON.stringify({
@@ -93,78 +101,99 @@
                 proficiencies: database.proficiencies.data
             })`)) || {}
 
+            // Choices
+            const class_choices = document.getElementById("class-choices"); {
+                class_choices.clearChildren()
+
+                if (classIsSelected) {
+                    // Create Options
+                    for (const type in data.level_up_info.choices) {
+                        const array = data.level_up_info.choices[type]
+
+                        for (let i = 0; i < array.length; i++) {
+                            const config = array[i]
+                            const element = choice_input(type, i, config, player_class)
+                            if (element) class_choices.appendChild(element)
+                        }
+                    }
+                }
+            }
+
             // Lore
-            const lore_div = getId("class-lore")
-            lore_div.clearChildren()
-            if (player_class != "") lore_div.appendChild({tag: "p", style: {textAlign: "left", fontStyle: "italic"}, textHTML: data.lore})
-            else lore_div.appendChild({tag: "p", text: "Choose a class to see its lore."})
+            const lore_div = document.getElementById("class-lore"); {
+                lore_div.parentNode.classList.add("hidden")
+                lore_div.clearChildren()
+
+                if (player_class) {
+                    lore_div.appendChild({tag: "p", style: {textAlign: "left", fontStyle: "italic"}, textHTML: data.lore})
+                    lore_div.parentNode.classList.remove("hidden")
+                }
+            }
 
             // Description
-            const description_div = getId("class-description")
-            description_div.clearChildren()
-            if (player_class != "") description_div.appendChild({tag: "p", style: {textAlign: "left"}, textHTML: data.description})
-            else description_div.appendChild({tag: "p", text: "Choose a class to see its description."})
+            const description_div = document.getElementById("class-description"); {
+                description_div.parentNode.classList.add("hidden")
+                description_div.clearChildren()
 
-            // Choices
-            const class_choices = document.getElementById("class-choices")
-            class_choices.clearChildren()
-            if (player_class != "") {
-                for (const type in data.level_up_info.choices) {
-                    const array = data.level_up_info.choices[type]
-
-                    for (let i = 0; i < array.length; i++) {
-                        const config = array[i]
-                        const element = choice_input(type, i, config, player_class)
-                        if (element) class_choices.appendChild(element)
-                    }
+                if (classIsSelected) {
+                    description_div.appendChild({tag: "p", style: {textAlign: "left"}, textHTML: data.description})
+                    description_div.parentNode.classList.remove("hidden")
                 }
             }
 
             // Features
-            const features_div = getId("class-features")
-            features_div.clearChildren()
-            if (player_class != "") {
-                for (const feature_name of data.features_list) {
-                    const feature = data.features[feature_name]
+            const features_div = document.getElementById("class-features"); {
+                features_div.parentNode.classList.add("hidden")
+                features_div.clearChildren()
 
-                    // If feature exists in database
-                    if (feature) {
-                        features_div.appendChild(
-                            {tag: "p", style: {textAlign: "left"}, children: [
-                                {tag: "b", text: feature.name}, 
-                                {tag: "pre", text: feature.description}
-                            ]}
-                        )
+                if (classIsSelected) {
+                    // Create Features
+                    for (const feature_name of data.features_list) {
+                        const feature = data.features[feature_name]
+
+                        // If feature exists in database
+                        if (feature) {
+                            features_div.appendChild(
+                                {tag: "p", style: {textAlign: "left"}, children: [
+                                    {tag: "b", text: feature.name}, 
+                                    {tag: "pre", text: feature.description}
+                                ]}
+                            )
+                        }
                     }
+                    if (features_div.children.length > 0) features_div.parentNode.classList.remove("hidden")
                 }
             }
-            else features_div.appendChild({tag: "p", text: "Choose a class to see its features."})
             
             // Proficiencies
-            const proficiencies_div = getId("class-proficiencies")
-            proficiencies_div.clearChildren()
-            if (player_class != "") {
-                for (const item of data.level_up_info.proficiencies) {
-                    const proficiency = data.proficiencies[item.name]
-                    // If proficiency exists in database
-                    if (proficiency) {
-                        const title = proficiency.type == "language" 
-                            ? "Language"
-                            : {0: "Proficiency", 1: "Expertise"}[item.level]
+            const proficiencies_div = document.getElementById("class-proficiencies"); {
+                proficiencies_div.parentNode.classList.add("hidden")
+                proficiencies_div.clearChildren()
 
-                        proficiencies_div.appendChild(
-                            {tag: "p", style: {textAlign: "left"}, children: [
-                                {tag: "b", text: proficiency.name + " " + title},
-                                {tag: "pre", children: [
-                                    Number(item.level) >= 0 ? {tag: "span", text: proficiency.description[0]} : null,
-                                    Number(item.level) >= 1 ? {tag: "span", text: proficiency.description[1]} : null,
+                if (classIsSelected) {
+                    // Create Proficiencies
+                    for (const item of data.level_up_info.proficiencies) {
+                        const proficiency = data.proficiencies[item.name]
+                        // If proficiency exists in database
+                        if (proficiency) {
+                            const title = proficiency.type == "language" 
+                                ? "Language"
+                                : {0: "Proficiency", 1: "Expertise"}[item.level]
+
+                            proficiencies_div.appendChild(
+                                {tag: "p", style: {textAlign: "left"}, children: [
+                                    {tag: "b", text: proficiency.name + " " + title},
+                                    {tag: "pre", children: [
+                                        Number(item.level) >= 0 ? {tag: "span", text: proficiency.description[0]} : null,
+                                        Number(item.level) >= 1 ? {tag: "span", text: proficiency.description[1]} : null,
+                                    ]}
                                 ]}
-                            ]}
-                        )
+                            )
+                        }
                     }
+                    if (proficiencies_div.children.length > 0) proficiencies_div.parentNode.classList.remove("hidden")
                 }
             }
-            else proficiencies_div.appendChild({tag: "p", text: "Choose a class to see its proficiencies."})
         }
 
         //=====================================================================================================
@@ -502,11 +531,12 @@
 
             // Options
             const class_options = []
-            for (const class_ of ["Barbarian", "Fighter", "Rogue", "Wizard"]) {
+            for (const class_ of ["Barbarian", "Cleric", "Fighter", "Rogue", "Wizard"]) {
                 class_options.push({tag: "option", text: class_})
             }
 
             // Class Tab
+            const container_options = {div: {attributes: {class: "hidden"}}}
             document.getElementById("class-tab").appendChildren([
                 {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
                     container({title: "Choices", children: [
@@ -517,32 +547,39 @@
                         }),
                         {tag: "div", attributes: {id: "class-choices"}},
                     ]}),
-                    container({title: "Lore", id: "class-lore", children: [
-                        {tag: "p", text: "Choose a class to see its lore."}
-                    ]}),
-                    container({title: "Description", id: "class-description", children: [
-                        {tag: "p", text: "Choose a class to see its description."}
-                    ]}),
+                    container({title: "Lore", id: "class-lore", options: container_options}),
+                    container({title: "Description", id: "class-description", options: container_options}),
                 ]},
                 {tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
-                    container({title: "Features", id: "class-features", children: [
-                        {tag: "p", text: "Choose a class to see its features."}
-                    ]}),
-                    container({title: "Proficiencies", id: "class-proficiencies", children: [
-                        {tag: "p", text: "Choose a class to see its proficiencies."}
-                    ]}),
+                    container({title: "Features", id: "class-features", options: container_options}),
+                    container({title: "Proficiencies", id: "class-proficiencies", options: container_options}),
                 ]},
                 {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
                     events: {click: submit}
                 }
             ])
+
+            // Update Class With Characters Main Class
+            let main_class; {
+                const character_classes = JSON.parse(await backend(`impersonated().classes`))
+                const class_input = document.getElementById("class")
+                main_class = Object.keys(character_classes)[0]
+                for (const cls of Object.keys(character_classes)) {
+                    const level = character_classes[cls].level
+
+                    if (level > character_classes[main_class].level) main_class = cls
+                }
+                class_input.value = main_class
+                class_input.dispatchEvent(new Event("input"))
+                class_input.dispatchEvent(new Event("change"))
+            }
         }
         
         //=====================================================================================================
         // Execution
         //=====================================================================================================
 
-        window.onload = function () {
+        window.onload = async function () {
             loadPage()
         }
 

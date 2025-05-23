@@ -1411,15 +1411,42 @@
 					abilities_container.clearChildren()
 					if (isEqualJSON(spellcasting, {})) return
 
+					// Filtered Spells
+					let filtered_spells = []; {
+						if (character.spellcasting.known) {
+							filtered_spells = spells_list.filter(spell => class_spells?.known?.includes(spell))
+						}
+						else {
+							filtered_spells = spells_list.filter(spell_name => {
+								const spell = database.spells[spell_name]
+
+								// Knows Spell (probably cantrips)
+								if (class_spells?.known?.includes(spell_name)) return true
+
+								// Not cantrip (cantrips are learned so are present in known list)
+								if (spell.level == "cantrip") return false
+
+								// Spell is in class spell list
+								if (!spell.classes.includes(chosen_class)) return false
+
+								// Has enough level for spell
+								const character_class_max_slot_level = Math.ceil(character.classes[chosen_class].level / 2)
+								if (Number(spell.level[0]) > character_class_max_slot_level) return false
+								
+								return true
+							})
+						}
+					}
+
 					// Create spell elements
 					let previous_level = undefined
-					for (const name of spells_list.filter(spell => class_spells.known.includes(spell))) {
+					for (const name of filtered_spells) {
 						const spell = database.spells[name]
 						const spell_image = spell.image || spell_school_images[spell.school]
 						
 						// Action type
 						let action_type
-						if (spell.cast_time > 0) action_type =  "Action"
+						if (spell.cast_time >= 0) action_type =  "Action"
 						if (spell.cast_time == -1) action_type = "Bonus Action"
 						if (spell.cast_time == -2) action_type = "Reaction"
 
