@@ -115,6 +115,7 @@ var Creature = class extends Entity {
     //-----------------------------------------------------------------------------------------------------
 
     update_state() {
+        // Update Health Bar
         function crunchNumber(num, from = [0, 100], to = [0, 100]) {
             // Define the input and output ranges
             const inputMin = from[0];
@@ -128,6 +129,8 @@ var Creature = class extends Entity {
             
             return crunched;
         }
+        const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
+
         
         // Verify all conditions
         for (const condition in database.conditions.data) {
@@ -140,11 +143,8 @@ var Creature = class extends Entity {
                 }
                 case "Dead": {
                     if (!this.player && hasCondition) Initiative.remove_creature(this.id)
-                    const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
-
-                    this.set_state(condition, hasCondition)
-                    MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
-                    MTScript.evalMacro(`[r: setBarVisible("Health", ${hasCondition ? 0 : 1}, "${this.id}") ]`)
+                    if (hasCondition) MTScript.evalMacro(`[r: setBarVisible("Health", 0, "${this.id}") ]`)
+                    else MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
                     break
                 }
                 case "Hidden": {
@@ -159,14 +159,14 @@ var Creature = class extends Entity {
                     continue
                 }
                 case "Unconscious": {
-                    MTScript.evalMacro(`[r: setHasSight(${hasCondition ? 0 : 1}, ${this.id})]`)
+                    MTScript.evalMacro(`[r: setHasSight(${hasCondition ? 0 : 1}, "${this.id}")]`)
                     break
                 }
                 default: break
             }
 
             // State effects
-            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person"]
+            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person", "Dead"]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
             // Light effects
@@ -972,22 +972,22 @@ var Creature = class extends Entity {
         // Find spellcasting slots on table based on spellcasting level
         const spellcasting_table = [
             {},
-            {1: 2},   // Level 1
-            {1: 3},   // Level 2
-            {1: 4, 2: 2},   // Level 3
-            {1: 4, 2: 3},   // Level 4
-            {1: 4, 2: 3, 3: 2},   // Level 5
-            {1: 4, 2: 3, 3: 3},   // Level 6
-            {1: 4, 2: 3, 3: 3, 4: 1},   // Level 7
-            {1: 4, 2: 3, 3: 3, 4: 2},   // Level 8
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 1},   // Level 9
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2},   // Level 10
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1},   // Level 11
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1},   // Level 12
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1},   // Level 13
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1},   // Level 14
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1},   // Level 15
-            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1},   // Level 16
+            {1: 2, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 1
+            {1: 3, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 2
+            {1: 4, 2: 2, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 3
+            {1: 4, 2: 3, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 4
+            {1: 4, 2: 3, 3: 2, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 5
+            {1: 4, 2: 3, 3: 3, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 6
+            {1: 4, 2: 3, 3: 3, 4: 1, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 7
+            {1: 4, 2: 3, 3: 3, 4: 2, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 8
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 1, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 9
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 10
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 0, 8: 0, 9: 0},   // Level 11
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 0, 8: 0, 9: 0},   // Level 12
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 0, 9: 0},   // Level 13
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 0, 9: 0},   // Level 14
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 0},   // Level 15
+            {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 0},   // Level 16
             {1: 4, 2: 3, 3: 3, 4: 3, 5: 2, 6: 1, 7: 1, 8: 1, 9: 1},   // Level 17
             {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 1, 7: 1, 8: 1, 9: 1},   // Level 18
             {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 1, 8: 1, 9: 1},   // Level 19
@@ -1003,9 +1003,10 @@ var Creature = class extends Entity {
 
             // Update max value if exists, or creates new resource
             if (this.#resources[resource]) {
-                this.set_resource_max(resource, max)
+                if (max > 0) this.set_resource_max(resource, max)
+                else delete this.#resources[resource]
             } else {
-                this.set_new_resource(resource, max, "long rest")
+                if (max > 0) this.set_new_resource(resource, max, "long rest")
             }
         }
 
