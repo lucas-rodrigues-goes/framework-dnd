@@ -115,6 +115,20 @@ var Creature = class extends Entity {
     //-----------------------------------------------------------------------------------------------------
 
     update_state() {
+        function crunchNumber(num, from = [0, 100], to = [0, 100]) {
+            // Define the input and output ranges
+            const inputMin = from[0];
+            const inputMax = from[1];
+            const outputMin = to[0];
+            const outputMax = to[1];
+            
+            // Calculate the proportion and map to new range
+            const proportion = (num - inputMin) / (inputMax - inputMin);
+            const crunched = outputMin + proportion * (outputMax - outputMin);
+            
+            return crunched;
+        }
+        
         // Verify all conditions
         for (const condition in database.conditions.data) {
             const hasCondition = this.has_condition(condition)
@@ -122,6 +136,15 @@ var Creature = class extends Entity {
                 case "Blinded": {
                     const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
                     this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
+                    break
+                }
+                case "Dead": {
+                    if (!this.player && hasCondition) Initiative.remove_creature(this.id)
+                    const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
+
+                    this.set_state(condition, hasCondition)
+                    MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
+                    MTScript.evalMacro(`[r: setBarVisible("Health", ${hasCondition ? 0 : 1}, "${this.id}") ]`)
                     break
                 }
                 case "Hidden": {
@@ -135,6 +158,10 @@ var Creature = class extends Entity {
                     this.opacity = hasCondition ? 0.2 : 1
                     continue
                 }
+                case "Unconscious": {
+                    MTScript.evalMacro(`[r: setHasSight(${hasCondition ? 0 : 1}, ${this.id})]`)
+                    break
+                }
                 default: break
             }
 
@@ -147,7 +174,7 @@ var Creature = class extends Entity {
             if (conditions_with_light.includes(condition)) this.set_light(condition, hasCondition)
 
             // Concentration
-            if (this.has_condition("Incapacitated") && this.has_condition("Concentration")) this.remove_condition("Concentration")
+            if ((this.has_conditions(["Incapacitated", "Dead"], "any")) && this.has_condition("Concentration")) this.remove_condition("Concentration")
 
             // Terrain Modifier
             MTScript.evalMacro(`
@@ -235,7 +262,8 @@ var Creature = class extends Entity {
         // Fill Health
         this.health = this.max_health
 
-        // Reduce exhaustion (not implemented yet)
+        // Update Spell Slot Maximum
+        this.update_spell_slots()
 
         // Fill resources
         for (const name in this.#resources) {
@@ -468,41 +496,17 @@ var Creature = class extends Entity {
     }
 
     set health(health) {
-        function crunchNumber(num, from = [0, 100], to = [0, 100]) {
-            // Define the input and output ranges
-            const inputMin = from[0];
-            const inputMax = from[1];
-            const outputMin = to[0];
-            const outputMax = to[1];
-            
-            // Calculate the proportion and map to new range
-            const proportion = (num - inputMin) / (inputMax - inputMin);
-            const crunched = outputMin + proportion * (outputMax - outputMin);
-            
-            return crunched;
-        }
-
         // Validating parameters
         if (isNaN(Number(health))) { return }
         const clampedHealth = Math.max(Math.min(health, this.max_health), 0)
 
         this.#health = clampedHealth;
-        
-        // Update Bar
-        const crunchedHealth = crunchNumber( clampedHealth / this.max_health, [0, 1], [0.292, 0.708])
-        MTScript.evalMacro(`[r:
-            setBar("Health", `+crunchedHealth+`, "`+this.id+`")
-        ]`)
 
         // Update States
-        const isDead = clampedHealth <= 0
-        this.set_state("Dead", isDead)
-        if (isDead) {
-            if (!this.player) Initiative.remove_creature(this.id)
-            MTScript.evalMacro(`[r: setBarVisible("Health", `+(isDead ? 0 : 1)+`, "`+this.id+`") ]`)
-            this.remove_condition("Concentration")
-        }
-        
+        if (clampedHealth <= 0) this.set_condition("Dead", -1)
+        else if (this.has_condition("Dead")) this.remove_condition("Dead")
+
+        this.update_state()
         this.save();
     }
 

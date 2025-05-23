@@ -200,27 +200,30 @@ var Humanoid = class extends Creature {
     //=====================================================================================================
 
     get spellcasting_level() {
-        let total = 0
+        let highest = 0
         for (const player_class in this.#classes) {
             const class_level = this.#classes[player_class].level
             const spellcasting = eval(player_class).spellcasting
 
             if (spellcasting) {
+                let spellcasting_level = 0
                 switch (spellcasting.type) {
                     case "full":
-                        total += class_level
+                        spellcasting_level = class_level
                         break
                     case "half":
-                        total += Math.floor(class_level / 2)
+                        spellcasting_level = Math.floor(class_level / 2)
                         break
                     case "third":
-                        total += Math.floor(class_level / 3)
+                        spellcasting_level = Math.floor(class_level / 3)
                         break
                 }
+
+                if (spellcasting_level > highest) highest = spellcasting_level
             }
         }
 
-        return total
+        return highest
     }
 
     //=====================================================================================================
