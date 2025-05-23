@@ -1,3 +1,5 @@
+
+
 //---------------------------------------------------------------------------------------------------
 // Token Instancing
 //---------------------------------------------------------------------------------------------------
@@ -30,6 +32,7 @@ var instance = function (id) {
                     const parsedClass = JSON.parse(token.classes);
                     if (Array.isArray(parsedClass) && parsedClass.length > 0) {
                         const player_class = eval(parsedClass[0]);
+                        if (!player_class) return undefined
                         token.instance = new player_class(id);
                     } else {
                         throw new Error("Not a valid class array");
@@ -150,6 +153,20 @@ var resetImpersonated = function () {
     delete instances[impersonated().id]
     MTScript.evalMacro(`[r:resetProperty("object", getImpersonated())]`)
     MTScript.evalMacro(`[r:resetProperty("class", getImpersonated())]`)
+}
+
+var allMapCreatures = function (map_name) {
+    const allMapCreatures = []
+    const tokens = MapTool.tokens.getMapTokens(map_name)
+
+    for (const token of tokens) {
+        const creature = instance(token.getId())
+
+        // Validate
+        if (!creature ) continue
+        if (creature instanceof Creature) allMapCreatures.push(creature)
+    }
+    return allMapCreatures
 }
 
 //---------------------------------------------------------------------------------------------------
