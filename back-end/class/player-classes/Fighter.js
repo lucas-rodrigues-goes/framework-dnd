@@ -96,6 +96,9 @@ var Fighter = class {
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
         const proficiencies = []
+        const features = ["Extra Attack", ...database.get_features_list({subtype: "Fighter"})].sort(
+            (a, b) => database.features.data[a].level - database.features.data[b].level
+        )
 
         // Choices based on level
         switch (current_level) {
@@ -117,7 +120,7 @@ var Fighter = class {
             }
         }
         
-        return {proficiencies: proficiencies, choices: choices}
+        return {proficiencies, choices, features}
     }
 
     //---------------------------------------------------------------------------------------------------

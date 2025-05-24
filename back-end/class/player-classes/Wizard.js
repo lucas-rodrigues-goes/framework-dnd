@@ -84,6 +84,9 @@ var Wizard = class {
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
         const proficiencies = []
+        const features = [...database.get_features_list({subtype: "Wizard"})].sort(
+            (a, b) => database.features.data[a].level - database.features.data[b].level
+        )
 
         // Choices based on level
         switch (current_level) {
@@ -127,7 +130,7 @@ var Wizard = class {
         // On every new level learn 2 spells
         if (current_level != 1) choices.spells.push({amount: 2, player_class: "Wizard", level: max_spell_slot_level})
         
-        return {proficiencies: proficiencies, choices: choices}
+        return {proficiencies, choices, features}
     }
 
     //---------------------------------------------------------------------------------------------------
