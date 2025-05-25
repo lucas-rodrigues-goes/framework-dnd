@@ -251,7 +251,57 @@
     
         </style>
         <script>
-    
+
+        //-----------------------------------------------------------------------------------------------------
+        // Components
+        //-----------------------------------------------------------------------------------------------------
+
+        const resourceContext = (event, name, resource, resource_data, character) => {
+            if (event.button != 2) return
+            const buttons = {}
+            const isGM = '+isGM()+' == 1
+            const key = name
+            
+            // Restore all
+            if(isGM) buttons["Restore All"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ resource.max +`)`); updateAbilitiesBar()
+            }
+
+            // Increase
+            if(isGM && name != "Movement") buttons["Increase"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 1) +`)`); updateAbilitiesBar()
+            }
+            else if(isGM && name == "Movement") buttons["Increase 5ft"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 5) +`)`); updateAbilitiesBar()
+            }
+
+            // Reduce
+            if(resource.value > 0  && name != "Movement") buttons["Reduce"] = async () => {
+                await backend(`impersonated().use_resource("`+key+`")`); updateAbilitiesBar()
+            }
+            else if(resource.value > 0  && name == "Movement") buttons["Reduce 5ft"] = async () => {
+                await backend(`impersonated().set_resource_value("`+key+`", `+ (resource.value - 5) +`)`); updateAbilitiesBar()
+            }
+            
+            // Description
+            /* if(!isEqualJSON(resource_data, {})) buttons["Description"] = async () => modal({parent: document.body, children: [
+                await data_description.resource({resource: resource_data})
+            ]}) */
+
+            // Spell recovery
+            if (key.includes("Level Spell Slot")) {
+                const cost = {1: 2, 2: 3, 3: 5, 4: 6, 5: 7}[key[0]]
+
+                // Arcane Recovery
+                if((character.classes["Wizard"]?.level || 0) >= 1) buttons["Arcane Recovery ("+cost+" charges)"] = async () => {
+                    await backend(`Wizard.arcane_recovery(`+level+`)`); updateAbilitiesBar()
+                }
+            }
+
+            // Run context menu
+            context_menu({event: event, buttons: buttons})
+        }
+
         //-----------------------------------------------------------------------------------------------------
         // Helper functions
         //-----------------------------------------------------------------------------------------------------
@@ -556,7 +606,7 @@
             // Unhide after updates
             character_menu.classList.remove("hidden")
         }
-    
+
         let current_abilities = {}, current_abilities_db = {}
         async function updateAbilitiesBar() {
             // Validation
@@ -585,7 +635,9 @@
             )`))
 
             // Classes Spellcasting
-            let classes_spellcasting = ""
+            let classes_spellcasting = ""; {
+
+            }
             for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
             character["spellcasting"] = JSON.parse(await backend(`JSON.stringify({
                 `+classes_spellcasting+`
@@ -811,7 +863,6 @@
                     // Validation
                     if(name == "Attack Action" && resource.value <= 0) continue
                     if(resource.restored_on == "turn start" && !character.hasInitiative) continue
-                    //if(resource.restored_on == "turn start" && resource.value <= 0) continue
 
                     // Add spacing between resource types
                     const restored_on = resource?.restored_on || ""
@@ -823,8 +874,11 @@
                     // Add element
                     resources_div.appendChildren([
                         {tag: "div",
+                            events: {
+                               mousedown: (event) => resourceContext(event, name, resource, resource_data, character)
+                            },
                             attributes: {
-                                class: "tooltip",
+                                class: "tooltip block",
                                 tooltip: name
                             },
                             style: {

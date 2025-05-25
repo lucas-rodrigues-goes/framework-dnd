@@ -446,7 +446,7 @@
 						updateEXPBar(experiencePercent)
 						if(character.basic.experience >= character.basic.level_up_experience && character.basic.level < 20) {
 							level_div.classList.add("level-up")
-							level_div.setAttribute("tooltip", "Click here to level up!")
+							level_div.setAttribute("tooltip", "You have reached level " + (character.basic.level + 1) + "!")
 							level_div.appendChild({tag:"img", 
 								attributes: {src: "asset://5282add24bd7663d499861e313980245"}, 
 								style: {height: "1.5em", marginTop: "0.7vh", cursor: "pointer"},
@@ -1067,6 +1067,7 @@
 				updateInventory()
 			}
 
+			/*
 			let abilities_tab = {
 				classes: {},
 				resources: {},
@@ -1288,6 +1289,7 @@
 				// Cashing
 				abilities_tab = character
 			}
+			*/
 
 			let spells_tab = {
 				classes: {},

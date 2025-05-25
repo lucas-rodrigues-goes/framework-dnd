@@ -16,7 +16,7 @@ var instance = function (id) {
         }
 
         // Validation
-        if (token.classes == null) return undefined
+        if (token.classes == null || token.classes == "[]") return undefined
 
         // Cached instance present
         if (instances[id] != undefined) {

@@ -72,6 +72,8 @@ let data_description; {
         },
 
         resource: async ({resource, style=DEFAULT_STYLE}) => {
+            console.log(resource)
+
             return element(
                 {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                     // Title
@@ -81,7 +83,7 @@ let data_description; {
                     ]},
                     // Description
                     {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-                        text: (resource.description || await backend(`database.features.data["`+resource.name+`"].description`))
+                        text: (resource.description || await backend(`database?.features?.data?.["`+resource.name+`"]?.description`))
                     }
                 ]}
             )
