@@ -155,18 +155,20 @@ var resetImpersonated = function () {
     MTScript.evalMacro(`[r:resetProperty("class", getImpersonated())]`)
 }
 
-var allMapCreatures = function (map_name) {
-    const allMapCreatures = []
-    const tokens = MapTool.tokens.getMapTokens(map_name)
+var mapCreatures = function (map_name) {
+    const creatures = []
+    let tokens; {
+        if (map_name) tokens = MapTool.tokens.getMapTokens(map_name)
+        else tokens = MapTool.tokens.getMapTokens()
+    }
 
     for (const token of tokens) {
         const creature = instance(token.getId())
 
         // Validate
-        if (!creature ) continue
-        if (creature instanceof Creature) allMapCreatures.push(creature)
+        if (creature instanceof Creature) creatures.push(creature)
     }
-    return allMapCreatures
+    return creatures
 }
 
 //---------------------------------------------------------------------------------------------------

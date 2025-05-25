@@ -130,7 +130,6 @@ var Creature = class extends Entity {
             return crunched;
         }
         const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
-
         
         // Verify all conditions
         for (const condition in database.conditions.data) {
@@ -184,6 +183,7 @@ var Creature = class extends Entity {
     }
 
     turn_start() {
+        this.update_state()
         this.reduce_all_conditions_duration(1)
         this.maintain_stealth(true)
         this.passive_search()
