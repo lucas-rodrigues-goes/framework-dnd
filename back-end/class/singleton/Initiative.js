@@ -214,13 +214,17 @@ var Initiative = class {
     static suspend_turn(time, description, creature=impersonated()) {
         if (creature.id != this.current_creature) return
 
-        // Update initiative info
         const creature_init = this.creatures[this.current_creature]
+        const initiative = creature_init.initiative + time
+        const recovery = initiative > 12 ? creature_init.recovery - 12 : creature_init.recovery
+
+        // Update initiative info
         this.creatures = {
             ...this.creatures,
             [creature.id]: {
                 ...creature_init,
-                initiative: creature_init.initiative + time,
+                recovery: recovery,
+                initiative: initiative,
                 status: "Suspended",
                 description: description
             }

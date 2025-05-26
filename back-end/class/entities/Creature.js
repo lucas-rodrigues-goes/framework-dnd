@@ -295,6 +295,9 @@ var Creature = class extends Entity {
             // Creature is not hidden
             if (!hidden_creature.has_condition("Hidden")) return false
 
+            // Incapacitated
+            if (revealing_creature.has_condition("Incapacitated")) return false
+
             // Too far
             const canSee = revealing_creature.target_visibility(hidden_creature) != 0
             const distance = calculate_distance(revealing_creature, hidden_creature) * 5
@@ -314,12 +317,19 @@ var Creature = class extends Entity {
             if (entering_stealth && distance <= 5) perception_modifier += 5
 
             // Vision Modifiers
-            const vision = revealing_creature.target_visibility(hidden_creature)
+            const isDay = MTScript.evalMacro(`[r:getMapVision()]`) == "Day"
+            let isFacing = false; {
+                const facingDirections = revealing_creature.facing.split("-")
+                const directionToTarget = calculate_direction(revealing_creature, hidden_creature).split("-")
+
+                for (const direction of facingDirections) {
+                    if (directionToTarget.includes(direction)) isFacing = true
+                }
+            }
+            const vision = isFacing ? revealing_creature.target_visibility(hidden_creature) : 0
             if (vision == 0) perception_modifier -= 5
             else if (vision <= 0.5) perception_modifier -= 2
-
-            // Daylight Modifier
-            if (MTScript.evalMacro(`[r:getMapVision()]`) == "Day") perception_modifier += 5
+            if (isDay && vision > 0) perception_modifier += 5
         }
         return perception_modifier
     }
@@ -1302,7 +1312,7 @@ var Creature = class extends Entity {
             "Blinded": ["Blindness"],
             "Incapacitated": ["Paralyzed", "Petrified", "Stunned", "Unconscious"],
             "Paralyzed": ["Hold Person", "Hold Monster"],
-            "Unconscious": ["Sleep"]
+            "Unconscious": ["Sleep", "Dead"]
         };
 
         // Check all equivalent conditions recursively
