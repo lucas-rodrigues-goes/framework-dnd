@@ -1612,7 +1612,7 @@
 			function loadPage() {
 
 				// Loading main div, tabs, and context menu
-				create_tabs({content:["character","inventory","abilities", "spells", "journal"], parent: document.body})
+				create_tabs({content:["character","inventory", "spells", "journal"], parent: document.body})
 
 				// Character
 				const container_options = {div: {attributes: {class: "hidden"}, style: {paddingBottom: "1vh"}}}
@@ -1722,7 +1722,7 @@
 				])
 			
 				// Abilities
-				document.getElementById("abilities-tab").appendChildren([
+				/* document.getElementById("abilities-tab").appendChildren([
 					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
 						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
 							div: {style: {height: "80vh"}},
@@ -1734,7 +1734,7 @@
 							div: {style: {height: "80vh"}},
 						}})
 					]},
-				])
+				]) */
 
 				// Journal
 				document.getElementById("journal-tab").appendChildren([
@@ -1838,14 +1838,14 @@
 				closeIfNotImpersonated()
 				updateInventoryTab()
 				updateCharacterTab()
-				updateAbilitiesTab()
+				//updateAbilitiesTab()
 				updateSpellsTab()
 
 				// Set update intervals
 				setInterval(()=> {
 					closeIfNotImpersonated()
 					updateInventoryTab()
-					updateAbilitiesTab()
+					//updateAbilitiesTab()
 					updateSpellsTab()
 					updateCharacterTab()
 				}, 1000)

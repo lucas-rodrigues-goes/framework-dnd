@@ -181,6 +181,28 @@ var Abilities = class {
     }
 
     //---------------------------------------------------------------------------------------------------
+    // General Helpers
+    //---------------------------------------------------------------------------------------------------
+
+    static roll_bonus({creature=impersonated()}) {
+        let output = 0; {
+            // Bane
+            if (creature.has_condition("Bane")) output -= roll_dice(1, 4)
+
+            // Bless
+            if (creature.has_condition("Bless")) output += roll_dice(1, 4)
+
+            // Guidance
+            if (creature.has_condition("Guidance")) {
+                creature.remove_condition("Guidance")
+                output += roll_dice(1, 4)
+            }
+        }
+
+        return output
+    }
+
+    //---------------------------------------------------------------------------------------------------
     // Spell Helpers
     //---------------------------------------------------------------------------------------------------
     
@@ -567,6 +589,9 @@ var Abilities = class {
         }
         hit_bonus -= cover
 
+        // Hit Bonus
+        hit_bonus += this.roll_bonus({creature})
+
         // Output
         let advantage = "None"; {
             if (advantage_weight > 0) advantage = "Advantage"
@@ -667,7 +692,22 @@ var Abilities = class {
             if (target.has_condition("Blur")) output -= 1
 
             // Dodge
-            if (target.has_condition("Dodge")) output -= 1 
+            if (target.has_condition("Dodge")) output -= 1
+
+            // Faerie Fire
+            if (target.has_condition("Faerie Fire")) output += 1
+
+            // Frostbite
+            if (creature.has_condition("Frostbite")) {
+                if (!view_only) creature.remove_condition("Frostbite")
+                output -= 1
+            }
+
+            // Guiding Bolt
+            if (target.has_condition("Guiding Bolt")) {
+                if (!view_only) target.remove_condition("Guiding Bolt")
+                output += 1
+            }
 
             // Helped
             if (creature.has_condition("Helped")) {

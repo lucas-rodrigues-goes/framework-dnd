@@ -136,6 +136,36 @@ var Spells = class extends Abilities {
     // Cantrips
     //---------------------------------------------------------------------------------------------------
 
+    static frostbite(spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Sound.play("cold")
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: 1,
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Cold", damage_bonus: spell.spellcasting_modifier}],
+            saving_throw_score: "Constitution"
+        })
+
+        // Apply effect
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition(spell.name, spell.duration)
+            }
+        }
+
+        return save_return
+    }
+
     static fire_bolt(spell) {
         const creature = impersonated()
 
@@ -153,6 +183,38 @@ var Spells = class extends Abilities {
             target: selected(),
             damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire", damage_bonus: spell.spellcasting_modifier}],
         })
+    }
+
+    static guidance(spell) {
+        const creature = impersonated()
+        const target = selected()
+        const { name, range } = spell
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Apply effect
+        target.set_condition(spell.name, spell.duration)
+        Spells.concentrate(creature, spell, [target])
+
+        return {
+            success: true,
+            message: (creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}.`
+                : `${creature.name_color} cast ${name}.`
+            )
+        }
     }
 
     static ray_of_frost(spell) {
