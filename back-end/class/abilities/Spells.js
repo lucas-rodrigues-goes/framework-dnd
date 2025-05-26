@@ -434,6 +434,87 @@ var Spells = class extends Abilities {
     // 1st Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static bane(spell) {
+        const creature = impersonated()
+        const saving_throw_score = "Charisma"
+
+        // Target Amount
+        let max_targets = 3; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+        }
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: max_targets,
+            saving_throw_score: saving_throw_score
+        })
+
+        // Apply effect
+        const targets = []
+        let success = false
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                success = true
+                element.target.set_condition(spell.name, spell.duration, {
+                    saving_throw: {
+                        difficulty_class: 10 + spell.spellcasting_modifier,
+                        score: saving_throw_score
+                    }
+                })
+                targets.push(element.target.id)
+            }
+        }
+        if (success) Spells.concentrate(creature, spell, targets)
+
+        return save_return
+    }
+
+    static bless(spell) {
+        const creature = impersonated()
+        const targets = allSelected()
+        const { name, range } = spell
+
+        // Target Amount
+        let max_targets = 3; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+            if (targets.length > max_targets) return {
+                success: false,
+                message: `${creature.name_color} can only select up to ${max_targets} target${max_targets > 1 ? "s" : ""} for this spell.`
+            }
+        }
+
+        // Validate Range
+        for (const target of targets) {
+            const range_validation = Spells.validate_spell_range(creature, target, range)
+            if (range_validation.outOfRange) return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+            }
+        }
+
+        // Apply effect
+        const concentration_targets = []
+        for (const target of targets) {
+            target.set_condition(spell.name, spell.duration)
+            concentration_targets.push(target.id)
+            console.log(`${creature.name_color} casts ${name} on ${target.name_color}.`)
+        }
+        Spells.concentrate(creature, spell, concentration_targets)
+
+        return {
+            success: true,
+            message: ""
+        }
+    }
+
     static burning_hands (spell) {
         const creature = impersonated()
 
@@ -454,6 +535,34 @@ var Spells = class extends Abilities {
             damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
             saving_throw_score: "Dexterity"
         })
+    }
+
+    static guiding_bolt(spell) {
+        const target = selected()
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 4; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Spell Attack
+        Sound.play("radiant")
+        const attack_return = Spells.make_spell_attack({
+            ...spell,
+            target: target,
+            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Radiant", damage_bonus: spell.spellcasting_modifier}],
+        })
+
+        // Ray of Frost condition
+        if(attack_return?.hit_result?.message?.includes("hit")) {
+            target.set_condition("Guiding Bolt", spell.duration)
+        }
+
+        return attack_return
     }
 
     static mage_armor (spell) {
