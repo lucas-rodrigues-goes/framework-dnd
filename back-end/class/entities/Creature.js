@@ -102,6 +102,30 @@ var Creature = class extends Entity {
     get abilities() {return Abilities.abilities_list(this)}
 
     //-----------------------------------------------------------------------------------------------------
+    // Buffs and Debuffs
+    //-----------------------------------------------------------------------------------------------------
+
+    roll_bonus() {
+        const creature = this
+
+        let output = 0; {
+            // Bane
+            if (creature.has_condition("Bane")) output -= roll_dice(1, 4)
+
+            // Bless
+            if (creature.has_condition("Bless")) output += roll_dice(1, 4)
+
+            // Guidance
+            if (creature.has_condition("Guidance")) {
+                creature.remove_condition("Guidance")
+                output += roll_dice(1, 4)
+            }
+        }
+
+        return output
+    }
+
+    //-----------------------------------------------------------------------------------------------------
     // Events
     //-----------------------------------------------------------------------------------------------------
 
@@ -172,8 +196,11 @@ var Creature = class extends Entity {
             const conditions_with_light = ["Light"]
             if (conditions_with_light.includes(condition)) this.set_light(condition, hasCondition)
 
-            // Concentration
-            if ((this.has_conditions(["Incapacitated", "Dead"], "any")) && this.has_condition("Concentration")) this.remove_condition("Concentration")
+            // Concentration && Spellcasting
+            if (this.has_conditions(["Incapacitated", "Dead"], "any")) {
+                this.remove_condition("Concentration")
+                this.remove_condition("Spellcasting")
+            }
 
             // Terrain Modifier
             MTScript.evalMacro(`
@@ -228,7 +255,7 @@ var Creature = class extends Entity {
                 const {difficulty_class, score} = condition.saving_throw
 
                 // Save roll
-                const save_bonus = this.score_bonus[score.toLowerCase()]
+                const save_bonus = this.score_bonus[score.toLowerCase()] + this.roll_bonus()
                 const roll_result = roll_20(0)
                 const roll_to_save = roll_result.result + save_bonus
 
@@ -347,8 +374,9 @@ var Creature = class extends Entity {
             const die_roll = roll_20(advantage_weight)
 
             // New roll and text
-            stealth_roll = die_roll.result + this.skills.Stealth
-            roll_text = `${die_roll.text_color} ${this.skills.Stealth < 0 ? "-" : "+"} ${Math.abs(this.skills.Stealth)}`
+            const stealth_bonus = this.skills.Stealth + this.roll_bonus()
+            stealth_roll = die_roll.result + stealth_bonus
+            roll_text = `${die_roll.text_color} ${stealth_bonus < 0 ? "-" : "+"} ${Math.abs(stealth_bonus)}`
 
             // Update on character conditions
             this.conditions["Hidden"] = {...this.conditions["Hidden"],
@@ -426,8 +454,9 @@ var Creature = class extends Entity {
     }
 
     active_search() {
+        const perception_bonus = this.skills.Perception + this.roll_bonus()
         const die_roll = roll_20()
-        const perception_roll = Math.max(die_roll.result + this.skills.Perception, this.passive_perception)
+        const perception_roll = Math.max(die_roll.result + perception_bonus, this.passive_perception)
 
         // Get all map tokens
         const creatures = MapTool.tokens.getMapTokens()
@@ -558,7 +587,7 @@ var Creature = class extends Entity {
         if (this.has_condition("Concentration")) {
             // Roll d20
             const roll_result = roll_20(0)
-            const save_bonus = this.saving_throws.constitution
+            const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
             // Difficulty Class
@@ -576,7 +605,7 @@ var Creature = class extends Entity {
         if (this.has_condition("Spellcasting")) {
             // Roll d20
             const roll_result = roll_20(0)
-            const save_bonus = this.saving_throws.constitution
+            const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
             // Difficulty Class

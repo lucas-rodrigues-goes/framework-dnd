@@ -181,28 +181,6 @@ var Abilities = class {
     }
 
     //---------------------------------------------------------------------------------------------------
-    // General Helpers
-    //---------------------------------------------------------------------------------------------------
-
-    static roll_bonus({creature=impersonated()}) {
-        let output = 0; {
-            // Bane
-            if (creature.has_condition("Bane")) output -= roll_dice(1, 4)
-
-            // Bless
-            if (creature.has_condition("Bless")) output += roll_dice(1, 4)
-
-            // Guidance
-            if (creature.has_condition("Guidance")) {
-                creature.remove_condition("Guidance")
-                output += roll_dice(1, 4)
-            }
-        }
-
-        return output
-    }
-
-    //---------------------------------------------------------------------------------------------------
     // Spell Helpers
     //---------------------------------------------------------------------------------------------------
     
@@ -378,6 +356,7 @@ var Abilities = class {
         advantage_weight += 0
 
         // Roll d20
+        save_bonus += creature.roll_bonus()
         const roll_result = roll_20(advantage_weight)
         const roll_to_save = roll_result.result + save_bonus
 
@@ -590,7 +569,7 @@ var Abilities = class {
         hit_bonus -= cover
 
         // Hit Bonus
-        hit_bonus += this.roll_bonus({creature})
+        hit_bonus += creature.roll_bonus()
 
         // Output
         let advantage = "None"; {
