@@ -136,6 +136,46 @@ var Spells = class extends Abilities {
     // Cantrips
     //---------------------------------------------------------------------------------------------------
 
+    static cure_wounds(spell) {
+        const creature = impersonated()
+        const target = selected()
+        const { name, range, spellcasting_modifier } = spell
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Apply effect
+        const healing = roll_dice(die_amount, 8) + spellcasting_modifier
+        target.receive_healing(healing)
+
+        return {
+            success: true,
+            message: (creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}, who receives ${healing} hit points.`
+                : `${creature.name_color} cast ${name} on themselves, receiving ${healing} hit points.`
+            )
+        }
+    }
+
     static frostbite(spell) {
         const creature = impersonated()
 
@@ -213,6 +253,46 @@ var Spells = class extends Abilities {
             message: (creature.id != target.id
                 ? `${creature.name_color} cast ${name} on ${target.name_color}.`
                 : `${creature.name_color} cast ${name}.`
+            )
+        }
+    }
+
+    static healing_word(spell) {
+        const creature = impersonated()
+        const target = selected()
+        const { name, range, spellcasting_modifier } = spell
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range(creature, target, range)
+        if (range_validation.outOfRange) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+        }
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Apply effect
+        const healing = roll_dice(die_amount, 4) + spellcasting_modifier
+        target.receive_healing(healing)
+
+        return {
+            success: true,
+            message: (creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}, who receives ${healing} hit points.`
+                : `${creature.name_color} cast ${name} on themselves, receiving ${healing} hit points.`
             )
         }
     }
