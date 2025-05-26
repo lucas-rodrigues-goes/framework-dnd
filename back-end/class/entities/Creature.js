@@ -1257,16 +1257,15 @@ var Creature = class extends Entity {
             case "Spellcasting": {
                 const spellcasting = this.get_condition("Spellcasting")
                 const {spell} = spellcasting
-                if (Initiative.turn_order.includes(this.id)) {
+                if (Initiative?.creatures?.[this.id]?.status == "Suspended") {
                     const current_initiative = Initiative.creatures[Initiative.current_creature].initiative
                     Initiative.creatures = {...Initiative.creatures,
                         [this.id]: {...Initiative.creatures[this.id],
                             initiative: current_initiative + 1
                         }
                     }
+                    console.log(`${this.name_color} has lost the ${spell.name} spell they were casting.`, "all");
                 }
-
-                console.log(`${this.name_color} has lost the ${spell.name} spell they were casting.`, "all");
                 break
             }
             default: break
