@@ -36,6 +36,13 @@ var Spells = class extends Abilities {
         // Get spell data
         const condition = creature.get_condition("Spellcasting")
         const { spell } = condition
+        const { components } = spell
+
+        // Remove Concentration if new spell requires it
+        if (components.includes("concentration")) creature.remove_condition("Concentration")
+
+        // Remove Invisibility
+        creature.remove_condition("Invisibility")
 
         // Spell Function
         const spell_function_name = spell.name.replace(/ /g, "_").toLowerCase()
@@ -51,14 +58,14 @@ var Spells = class extends Abilities {
         if (spellcast_result.message) console.log(spellcast_result.message, "all")
         if (!spellcast_result.success) return
 
-        // Remove Spellcasting Condition
+        // Remove Spellcasting
         creature.remove_condition("Spellcasting")
     }
 
     static cast_spell(spell, player_class) {
         spell.cast_time = Number(spell.cast_time)
         spell.range = Number(spell.range)
-        const {name, level} = spell
+        const {name, level, components} = spell
         const creature = impersonated()
 
         // Player Class Object
@@ -95,6 +102,12 @@ var Spells = class extends Abilities {
 
         // Instant Casting
         if (!Initiative.turn_order.includes(creature.id) || spell.cast_time <= 0) {
+            // Remove Concentration if new spell requires it
+            if (components.includes("concentration")) creature.remove_condition("Concentration")
+                
+            // Remove Invisibility
+            creature.remove_condition("Invisibility")
+
             // Call Spell
             const spellcast_result = spell_function({...spell, spellcasting_modifier: spellcasting_modifier})
 
@@ -122,8 +135,6 @@ var Spells = class extends Abilities {
     }
 
     static concentrate(creature, spell, targets) {
-        creature.remove_condition("Concentration")
-
         // New concentration
         creature.set_condition("Concentration", spell.duration, {
             condition: spell.name,
@@ -505,7 +516,7 @@ var Spells = class extends Abilities {
         for (const target of targets) {
             target.set_condition(spell.name, spell.duration)
             concentration_targets.push(target.id)
-            console.log(`${creature.name_color} casts ${name} on ${target.name_color}.`)
+            console.log(`${creature.name_color} casts ${name} on ${target.name_color}.`, "all")
         }
         Spells.concentrate(creature, spell, concentration_targets)
 
@@ -717,6 +728,29 @@ var Spells = class extends Abilities {
         return save_return
     }
 
+    static reveal_invisibility(spell) {
+        const { name, range } = spell
+        const creature = impersonated()
+
+        const invisibilityConditions = ["Invisibility", "Greater Invisibility"]
+        const revealed_creatures = []
+        for (const target of mapCreatures()) {
+            const distance = calculate_distance(creature, target) * 5
+
+            if (distance <= range && target.has_conditions(invisibilityConditions, "any")) {
+                for (const c of invisibilityConditions) target.remove_condition(c)
+                revealed_creatures.push(target.name_color)
+            }
+        }
+
+        return {
+            success: true,
+            message: revealed_creatures.length >= 1
+                ? `${creature.name_color} cast ${name} and revealed ${revealed_creatures.join(", ")}.`
+                : `${creature.name_color} cast ${name} and revealed no creatures.`
+        }
+    }
+
     static shatter (spell) {
         const creature = impersonated()
 
@@ -737,6 +771,47 @@ var Spells = class extends Abilities {
             damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Thunder"}],
             saving_throw_score: "Dexterity"
         })
+    }
+
+    static invisibility(spell) {
+        const creature = impersonated()
+        const targets = allSelected()
+        const { name, range } = spell
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+            if (targets.length > max_targets) return {
+                success: false,
+                message: `${creature.name_color} can only select up to ${max_targets} target${max_targets > 1 ? "s" : ""} for this spell.`
+            }
+        }
+
+        // Validate Range
+        for (const target of targets) {
+            const range_validation = Spells.validate_spell_range(creature, target, range)
+            if (range_validation.outOfRange) return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+            }
+        }
+
+        // Apply effect
+        const concentration_targets = []
+        for (const target of targets) {
+            target.set_condition(spell.name, spell.duration)
+            concentration_targets.push(target.id)
+            console.log(`${creature.name_color} casts ${name} on ${target.name_color}.`, "all")
+        }
+        Spells.concentrate(creature, spell, concentration_targets)
+
+        return {
+            success: true,
+            message: ""
+        }
     }
 
     //---------------------------------------------------------------------------------------------------

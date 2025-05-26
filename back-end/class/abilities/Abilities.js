@@ -424,6 +424,9 @@ var Abilities = class {
             ? ` dealing ${this.weapon_attack_damage(args)} damage.`
             : `.`
         )
+        
+        // Remove Invisibility (spell)
+        creature.remove_condition("Invisibility")
 
         // Output
         return {

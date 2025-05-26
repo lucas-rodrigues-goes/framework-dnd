@@ -172,12 +172,12 @@ var Creature = class extends Entity {
                 }
                 case "Hidden": {
                     if (this.has_condition("Invisible")) continue
-                    this.invisible = hasCondition
+                    this.invisible = this.player ? false : hasCondition
                     this.opacity = hasCondition ? 0.5 : 1
                     continue
                 }
                 case "Invisible": {
-                    this.invisible = hasCondition
+                    this.invisible = this.player ? false : hasCondition
                     this.opacity = hasCondition ? 0.2 : 1
                     continue
                 }
@@ -189,7 +189,7 @@ var Creature = class extends Entity {
             }
 
             // State effects
-            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person", "Dead"]
+            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person", "Dead", "Bless"]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
             // Light effects
@@ -344,6 +344,7 @@ var Creature = class extends Entity {
             if (entering_stealth && distance <= 5) perception_modifier += 5
 
             // Vision Modifiers
+            const isInvisible = hidden_creature.has_condition("Invisible")
             const isDay = MTScript.evalMacro(`[r:getMapVision()]`) == "Day"
             let isFacing = false; {
                 const facingDirections = revealing_creature.facing.split("-")
@@ -353,7 +354,7 @@ var Creature = class extends Entity {
                     if (directionToTarget.includes(direction)) isFacing = true
                 }
             }
-            const vision = isFacing ? revealing_creature.target_visibility(hidden_creature) : 0
+            const vision = isFacing && !isInvisible ? revealing_creature.target_visibility(hidden_creature) : 0
             if (vision == 0) perception_modifier -= 5
             else if (vision <= 0.5) perception_modifier -= 2
             if (isDay && vision > 0) perception_modifier += 5
@@ -385,15 +386,11 @@ var Creature = class extends Entity {
             }
             this.save()
         }
-
-        // All map tokens
-        const creatures = MapTool.tokens.getMapTokens()
         
         // Loop through all tokens
         let roll_was_required, highest_passive_perception = 0
         const hidden_creature = this
-        for (const token of creatures) {
-            const revealing_creature = instance(token.getId())
+        for (const revealing_creature of mapCreatures()) {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
             // Perception modifiers
@@ -427,13 +424,9 @@ var Creature = class extends Entity {
     passive_search() {
         const passive_perception = this.passive_perception
 
-        // Get all map tokens
-        const creatures = MapTool.tokens.getMapTokens()
-
         // Loop
         const revealing_creature = this
-        for (const token of creatures) {
-            const hidden_creature = instance(token.getId())
+        for (const hidden_creature of mapCreatures()) {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
             // Perception modifiers
@@ -458,13 +451,9 @@ var Creature = class extends Entity {
         const die_roll = roll_20()
         const perception_roll = Math.max(die_roll.result + perception_bonus, this.passive_perception)
 
-        // Get all map tokens
-        const creatures = MapTool.tokens.getMapTokens()
-
         // Loop
         const revealing_creature = this
-        for (const token of creatures) {
-            const hidden_creature = instance(token.getId())
+        for (const hidden_creature of mapCreatures()) {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
 
             // Perception modifiers
@@ -1236,7 +1225,6 @@ var Creature = class extends Entity {
         return skills
     }
 
-
     //-----------------------------------------------------------------------------------------------------
     // Conditions
     //-----------------------------------------------------------------------------------------------------
@@ -1341,7 +1329,8 @@ var Creature = class extends Entity {
             "Blinded": ["Blindness"],
             "Incapacitated": ["Paralyzed", "Petrified", "Stunned", "Unconscious"],
             "Paralyzed": ["Hold Person", "Hold Monster"],
-            "Unconscious": ["Sleep", "Dead"]
+            "Unconscious": ["Sleep", "Dead"],
+            "Invisible": ["Invisibility", "Greater Invisibility"]
         };
 
         // Check all equivalent conditions recursively
