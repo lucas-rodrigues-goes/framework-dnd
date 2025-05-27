@@ -356,7 +356,7 @@ var Abilities = class {
         advantage_weight += 0
 
         // Roll d20
-        save_bonus += creature.roll_bonus()
+        save_bonus += target.roll_bonus()
         const roll_result = roll_20(advantage_weight)
         const roll_to_save = roll_result.result + save_bonus
 

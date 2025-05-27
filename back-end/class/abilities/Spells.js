@@ -22,6 +22,22 @@ var Spells = class extends Abilities {
             }
         }
 
+        // End Concentration
+        if (creature.has_condition("Concentration")) {
+            const concentration = creature.get_condition("Concentration")
+            const { condition } = concentration
+
+            abilities_list.end_concentration = {
+                name: "End Concentration: " + condition,
+                resources: [],
+                recovery: 0,
+                image: database.conditions.data["Concentration"].image,
+                origin: origin,
+                type: "Special",
+                description: `Use this button to end concentration early.`
+            }
+        }
+
         return abilities_list
     }
 
@@ -141,6 +157,11 @@ var Spells = class extends Abilities {
             targets: targets,
         })
         console.log(`${creature.name_color} has started concentrating on ${spell.name}.`, "all")
+    }
+
+    static end_concentration() {
+        const creature = impersonated()
+        creature.remove_condition("Concentration")
     }
 
     //---------------------------------------------------------------------------------------------------

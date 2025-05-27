@@ -251,7 +251,7 @@ var Initiative = class {
         this.creatures = {
             ...this.creatures,
             [creature.id]: {
-                initiative: Math.max(12 + creature_init.recovery + creature.initiative_mod, 12),
+                initiative: Math.max(12 + creature_init.recovery + creature.initiative_mod, 0),
                 recovery: 0,
                 status: "None",
                 description: ""
