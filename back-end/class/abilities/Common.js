@@ -272,16 +272,126 @@ var Common = class extends Abilities {
     }
 
     static grapple() {
-        return;
+        const function_name = "grapple"
+
+        // Helper
+        const makeCheck = (creature, target=false) => {
+            const dice_roll = roll_20()
+            const bonus = (target
+                ? Math.max(creature.skills.Athletics, creature.skills.Acrobatics)
+                : creature.skills.Athletics
+            )
+
+            return {
+                result: dice_roll.result + bonus,
+                dice_roll,
+                bonus,
+                text: `${dice_roll.text_color} ${bonus >= 0 ? "+" : "-"} ${bonus}`
+            }
+        }
+
+        // Requirements
+        const { valid, creature, target, action_details } = this.check_action_requirements(function_name, true);
+        if (!valid) return;
+
+        // Validate Range
+        if (calculate_distance(target, creature) > 1) {
+            console.log(`${creature.name_color} tried to grapple ${target.name_color} but they are too far.`, "all")
+            return
+        }
+
+        // Strength Checks
+        const c_check = makeCheck(creature)
+        const t_check = makeCheck(target, true)
+        let message = "", success = false; {
+            if (c_check.result > t_check.result) {
+                success = true
+                message = `${creature.name_color} (DC ${c_check.text}) has begun to grapple ${target.name_color} (${t_check.text}).`
+            }
+            else {
+                message = `${creature.name_color} (DC ${c_check.text}) attempted to grapple ${target.name_color} (${t_check.text}) but failed.`
+            }
+        }
+
+        // Add conditions
+        if (success) {
+            // Creature
+            creature.set_condition("Grappling", -1, {
+                target: target.id,
+                offset: { x: target.x - creature.x, y: target.y - creature.y }
+            })
+            const new_movement = Math.floor(creature.get_resource_value("Movement") / 2)
+            creature.set_resource_value("Movement", new_movement)
+
+            // Target
+            target.set_condition("Grappled", -1, {
+                source: creature.id
+            })
+        }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(message, "all")
     }
 
     static push() {
-        const target = selected()
-        const creature = impersonated()
+        const function_name = "push"
 
-        const direction = calculate_direction(creature, target)
-        const cells = 1
-        target.move(direction, cells)
+        // Helper
+        const makeCheck = (creature, target=false) => {
+            const dice_roll = roll_20()
+            const bonus = (target
+                ? Math.max(creature.skills.Athletics, creature.skills.Acrobatics)
+                : creature.skills.Athletics
+            )
+
+            return {
+                result: dice_roll.result + bonus,
+                dice_roll,
+                bonus,
+                text: `${dice_roll.text_color} ${bonus >= 0 ? "+" : "-"} ${bonus}`
+            }
+        }
+
+        // Requirements
+        const { valid, creature, target, action_details } = this.check_action_requirements(function_name, true);
+        if (!valid) return;
+
+        // Validate Range
+        if (calculate_distance(target, creature) > 1) {
+            console.log(`${creature.name_color} tried to push ${target.name_color} but they are too far.`, "all")
+            return
+        }
+
+        // Strength Checks
+        const c_check = makeCheck(creature)
+        const t_check = makeCheck(target, true)
+        let message = "", success = false; {
+            if (c_check.result > t_check.result) {
+                success = true
+                message = `${creature.name_color} (DC ${c_check.text}) pushed ${target.name_color} (${t_check.text}) by 5ft.`
+            }
+            else {
+                message = `${creature.name_color} (DC ${c_check.text}) attempted to push ${target.name_color} (${t_check.text}) but failed.`
+            }
+        }
+
+        // Push
+        if (success) {
+            const direction = calculate_direction(creature, target)
+            const cells = 1
+            target.move(direction, cells)
+        }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(message, "all")
     }
 
     static knock_prone() {

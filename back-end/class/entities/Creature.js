@@ -132,6 +132,32 @@ var Creature = class extends Entity {
     onMove() {
         this.passive_search()
         this.maintain_stealth(false)
+
+        // Grappling
+        if (this.has_condition("Grappling")) {
+            const condition = this.get_condition("Grappling")
+            const target = instance(condition.target)
+            const {offset} = condition
+
+            target.x = this.x + offset.x
+            target.y = this.y + offset.y
+
+            this.face_target(target)
+            target.face_target(this)
+        }
+
+        // Grappled
+        if (this.has_condition("Grappled")) {
+            const source = instance(this.get_condition("Grappled").source)
+
+            // Remove grapple if distance is higher than melee
+            if (calculate_distance(this, source) > 1) {
+                this.remove_condition("Grappled")
+
+                // Remove grappling condition from source, if the condition points to THIS
+                if (source.get_condition("Grappling").target == this.id) source.remove_condition("Grappling")
+            }
+        }
     }
 
     //-----------------------------------------------------------------------------------------------------
@@ -210,37 +236,53 @@ var Creature = class extends Entity {
     }
 
     turn_start() {
-        this.update_state()
-        this.reduce_all_conditions_duration(1)
-        this.maintain_stealth(true)
-        this.passive_search()
+        {// Turn start refreshes
+            this.update_state()
+            this.reduce_all_conditions_duration(1)
+            this.maintain_stealth(true)
+            this.passive_search()
 
-        // Resource maxes
-        let attacks = 1; {
+            // Grappled
+            if (this.has_condition("Grappled")) {
+                const source = instance(this.get_condition("Grappled").source)
+
+                // Remove grapple if distance is higher than melee
+                if (calculate_distance(this, source) > 1) {
+                    this.remove_condition("Grappled")
+
+                    // Remove grappling condition from source, if the condition points to THIS
+                    if (source.get_condition("Grappling").target == this.id) source.remove_condition("Grappling")
+                }
+            }
+        }
+
+        // Max for Combat Resources
+        let attacks = 1, actions = 1, bonus_actions = 1, reactions = 1, movement = this.speed; {
+            // Attacks
             if (this.has_feature("Three Extra Attacks")) attacks = 4
             else if (this.has_feature("Two Extra Attacks")) attacks = 3
             else if (this.has_feature("Extra Attack")) attacks = 2
-        }
-        let actions = 1; {
-            if (this.has_condition("Haste") && !this.has_condition("Slow")) actions = 2
-        }
-        let bonus_actions = 1
-        let reactions = 1
 
-        // Incapacitated
+            // Actions
+            if (this.has_condition("Haste") && !this.has_condition("Slow")) actions = 2
+
+            // Movement
+            if (this.has_condition("Grappling")) movement = Math.floor(movement * 0.5)
+        }
+
+        // If Incapacitated
         if (this.has_condition("Incapacitated")) actions = 0, bonus_actions = 0, reactions = 0
 
         // Set resource maxes on character
-        this.set_resource_max("Attack Action", attacks)
-        this.set_resource_max("Action", actions)
-        this.set_resource_max("Bonus Action", bonus_actions)
-        this.set_resource_max("Reaction", reactions)
-        this.set_resource_max("Movement", this.speed)
+        const resourceMapping = {
+            "Attack Action": attacks, "Action": actions, "Bonus Action": bonus_actions, 
+            "Reaction": reactions, "Movement": movement,
+        }
+        for (const key in resourceMapping) this.set_resource_max(key, resourceMapping[key])
 
-        // Fill Resources
+        // Fill resources that recover on "turn start"
         for (const name in this.#resources) {
             const resource = this.#resources[name]
-            
             if (["turn start"].includes(resource.restored_on)) {
                 this.set_resource_value(name, resource.max)
             }
@@ -891,6 +933,10 @@ var Creature = class extends Entity {
     //-----------------------------------------------------------------------------------------------------
 
     get resources() {return this.#resources}
+
+    get_resource_value(resource) {
+        return this.#resources?.[resource]?.value
+    }
 
     use_resource(resource) {
         const resource_data = this.#resources[resource]
