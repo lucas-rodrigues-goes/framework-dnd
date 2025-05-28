@@ -40,6 +40,8 @@ var Abilities = class {
 
     static check_action_requirements(action_key, require_target = true) {
         const creature = impersonated();
+        const targets = allSelected();
+        const target = selected();
         const action_details = this.abilities_list()[action_key];
         if (!action_details) return { valid: false };
     
@@ -60,7 +62,7 @@ var Abilities = class {
             return { valid: false };
         }
     
-        return { valid: true, creature, action_details };
+        return { valid: true, creature, target, targets, action_details };
     }
 
     static has_resources_available(resources) {
@@ -219,7 +221,7 @@ var Abilities = class {
             success: true,
             hit_result: hit_result,
             damage_result: damage_result,
-            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with ${name} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
+            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with ${name} and ${hit_result.message} (${hit_result.dice_roll.text_color})${damage_result}`
         }
     }
 
@@ -250,8 +252,9 @@ var Abilities = class {
             }
 
             // Saving Throw
+            const difficulty_class = 10 + spellcasting_modifier
             const save_bonus = target.saving_throws[saving_throw_score.toLowerCase()] || 0
-            const save_result = Spells.saving_throw_result(creature, target, spellcasting_modifier, save_bonus, half_on_fail, 0)
+            const save_result = Spells.saving_throw_result({creature, target, difficulty_class, save_bonus, half_on_fail, advantage_weight})
 
             // Deal damage
             let damage_result; {
@@ -273,7 +276,7 @@ var Abilities = class {
             // Output
             console.log(
                 `${creature.name_color} casts ${name} (DC ${save_result.difficulty_class}) on ${target.name_color},` + 
-                ` who makes a ${saving_throw_score} save and ${save_result.message} (${save_result.roll.text_color})${damage_result}`
+                ` who makes a ${saving_throw_score} save and ${save_result.message} (${save_result.dice_roll.text_color})${damage_result}`
             , "all")
             output.targets.push({
                 save_result: save_result,
@@ -351,24 +354,21 @@ var Abilities = class {
         }
     }
 
-    static saving_throw_result(creature, target, spellcasting_modifier, save_bonus, half_on_fail, advantage_weight = 0) {
+    static saving_throw_result({target, difficulty_class, save_bonus, half_on_fail, advantage_weight = 0}) {
         // Advantage modifiers
         advantage_weight += 0
 
         // Roll d20
         save_bonus += target.roll_bonus()
-        const roll_result = roll_20(advantage_weight)
-        const roll_to_save = roll_result.result + save_bonus
-
-        // Difficulty Class
-        const difficulty_class = 10 + spellcasting_modifier
+        const dice_roll = roll_20(advantage_weight)
+        const roll_to_save = dice_roll.result + save_bonus
 
         // Output
         let advantage = "None"; {
             if (advantage_weight > 0) advantage = "Advantage"
             else if (advantage_weight < 0) advantage = "Disadvantage"
         }
-        const output = { success: false, message: "", roll: roll_result, difficulty_class: difficulty_class, advantage: advantage}; {
+        const output = { success: false, message: "", dice_roll, difficulty_class, advantage}; {
             // Save
             if (roll_to_save >= difficulty_class) {
                 output.success = true
@@ -381,8 +381,8 @@ var Abilities = class {
             }
 
             // Add save bonus to text
-            output.roll.text += ` + ${save_bonus}`
-            output.roll.text_color += ` + ${save_bonus}`
+            output.dice_roll.text += ` + ${save_bonus}`
+            output.dice_roll.text_color += ` + ${save_bonus}`
         }
         return output
     }
@@ -434,7 +434,7 @@ var Abilities = class {
             weapon: weapon,
             hit_result: hit_result,
             damage_result: damage_result,
-            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.roll.text_color})${damage_result}`
+            message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.dice_roll.text_color})${damage_result}`
         }
     }
 
@@ -556,8 +556,8 @@ var Abilities = class {
         advantage_weight += this.attack_roll_advantage_modifiers({creature, target})
 
         // Roll d20
-        const roll_result = roll_20(advantage_weight, creature)
-        const roll_to_hit = roll_result.result
+        const dice_roll = roll_20(advantage_weight, creature)
+        const roll_to_hit = dice_roll.result
 
         // Cover
         let cover = 0; {
@@ -581,7 +581,7 @@ var Abilities = class {
         }
         const hit = roll_to_hit + hit_bonus >= target.armor_class
         const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
-        const output = { success: false, message: "", roll: roll_result, advantage: advantage}; {
+        const output = { success: false, message: "", dice_roll, advantage }; {
             // Critical Hit
             if (roll_to_hit === 20 || (hit && forced_crit)) {
                 output.success = true
@@ -599,8 +599,8 @@ var Abilities = class {
                 output.message = "hits"
 
                 // Add hit bonus to text
-                output.roll.text += ` + ${hit_bonus}`
-                output.roll.text_color += ` + ${hit_bonus}`
+                output.dice_roll.text += ` + ${hit_bonus}`
+                output.dice_roll.text_color += ` + ${hit_bonus}`
             }
 
             // Miss
@@ -608,8 +608,8 @@ var Abilities = class {
                 output.message = "misses"
 
                 // Add hit bonus to text
-                output.roll.text += ` + ${hit_bonus}`
-                output.roll.text_color += ` + ${hit_bonus}`
+                output.dice_roll.text += ` + ${hit_bonus}`
+                output.dice_roll.text_color += ` + ${hit_bonus}`
             }
         }
 

@@ -227,6 +227,7 @@ var Spells = class extends Abilities {
             damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Cold", damage_bonus: spell.spellcasting_modifier}],
             saving_throw_score: "Constitution"
         })
+        if (!save_return.success) return save_return
 
         // Apply effect
         for (const element of save_return.targets) {
@@ -485,6 +486,7 @@ var Spells = class extends Abilities {
             max_targets: max_targets,
             saving_throw_score: saving_throw_score
         })
+        if (!save_return.success) return save_return
 
         // Apply effect
         const targets = []
@@ -674,6 +676,7 @@ var Spells = class extends Abilities {
             max_targets: max_targets,
             saving_throw_score: saving_throw_score
         })
+        if (!save_return.success) return save_return
 
         // Apply effect
         for (const element of save_return.targets) {
@@ -728,6 +731,7 @@ var Spells = class extends Abilities {
             max_targets: max_targets,
             saving_throw_score: saving_throw_score
         })
+        if (!save_return.success) return save_return
 
         // Apply effect
         const targets = []
@@ -973,6 +977,7 @@ var Spells = class extends Abilities {
             max_targets: max_targets,
             saving_throw_score: saving_throw_score
         })
+        if (!save_return.success) return save_return
 
         // Apply effect
         const targets = []
