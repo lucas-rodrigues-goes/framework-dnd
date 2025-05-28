@@ -98,8 +98,7 @@ var Common = class extends Abilities {
             },
         }
 
-        // Attack
-        {
+        {// Attack
             // Validations
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
@@ -117,8 +116,7 @@ var Common = class extends Abilities {
             abilities_list["attack"].image = image
         }
         
-        // Off Hand Attack
-        {
+        {// Off Hand Attack
             // Validations
             const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
             const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
@@ -144,8 +142,7 @@ var Common = class extends Abilities {
             }
         }
 
-        // Opportunity Attack
-        {
+        {// Opportunity Attack
             // Validations
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
@@ -175,8 +172,7 @@ var Common = class extends Abilities {
             }
         }
 
-        // Switch Weapon
-        {
+        {// Switch Weapon
             const hasInitiative = Initiative.turn_order.includes(creature.id)
             const canUse = hasInitiative ? Initiative.current_creature == creature.id : true
             if (canUse && (creature.equipment["secondary main hand"] != undefined || creature.equipment["secondary off hand"] != undefined)) {
@@ -192,8 +188,58 @@ var Common = class extends Abilities {
             }
         }
 
+        {// Escape Grapple
+            if (creature.has_condition("Grappled")) {
+                abilities_list.escape_grapple = {
+                    name: "Escape Grapple",
+                    resources: ["Action"],
+                    recovery: 0,
+                    image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
+                    origin: origin,
+                    type: "Special",
+                    description: `Attempt to escape grapple.`
+                }
+            }
+        }
+
+        {// Stop Grappling
+            if (creature.has_condition("Grappling")) {
+                abilities_list.stop_grappling = {
+                    name: "Stop Grappling",
+                    resources: [],
+                    recovery: 0,
+                    image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
+                    origin: origin,
+                    type: "Special",
+                    description: `Release grappled creature.`
+                }
+            }
+        }
+
+        {// Stand up
+            if (creature.has_condition("Prone")) {
+                abilities_list.stand_up = {
+                    name: "Stand up",
+                    resources: ["Movement"],
+                    recovery: 0,
+                    image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
+                    origin: origin,
+                    type: "Special",
+                    description: `Stand up from prone.`
+                }
+            }
+        }
+
         return abilities_list
     }
+
+    //---------------------------------------------------------------------------------------------------
+    // Special
+    //---------------------------------------------------------------------------------------------------
+
+    static escape_grapple() {return}
+    static stop_grappling() {return}
+    static stand_up () {return}
 
     //---------------------------------------------------------------------------------------------------
     // Attacks
