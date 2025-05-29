@@ -272,9 +272,6 @@
                 }
             }`)
         }
-        let hovered_recovery = 0
-        let hovered_recovery_type = "None"
-        let is_playing = false
 
         //-----------------------------------------------------------------------------------------------------
         // Components
@@ -465,7 +462,7 @@
         current_initiative = {
             round: 0,
             creatures: []
-        }, current_hovered_recovery = 0
+        }
         async function updateInitiative() {
             function characterElement(creature) {
                 const {id = "", player = false, portrait = "", name = "", status = "", description = "", initiative = 0} = creature
@@ -474,8 +471,7 @@
 
                 // Border color
                 let color
-                if (hovered_recovery > 0 && isPlaying) color = "#fb6"
-                else if (description == "Spellcasting") color = "#66f"
+                if (description == "Spellcasting") color = "#66f"
                 else if (status == "Suspended") color = "#fb6"
                 else if (!player) color = "#b44"
                 else if (isPlaying) color = "#ddd"
@@ -540,12 +536,10 @@
             } else {
                 document.querySelector(`[tooltip="End turn"]`).classList.add("hidden")
             }
-            is_playing = isImpersonatedPlaying
 
             // Cancel if no changes
-            if (isEqualJSON(current_initiative, {round, creatures}) && current_hovered_recovery == hovered_recovery) return
+            if (isEqualJSON(current_initiative, {round, creatures})) return
             current_initiative = {round, creatures}
-            current_hovered_recovery = hovered_recovery
 
             // Auto impersonate currently playing creature
             backend(`{
@@ -561,8 +555,7 @@
             initative_creatures_div.clearChildren()
 
             // Create elements
-            if (isImpersonatedPlaying) creatures[0].initiative += hovered_recovery
-            for (const creature of creatures.sort((a,b) => a.initiative - b.initiative)) {
+            for (const creature of creatures) {
                 if (initative_creatures_div.children.length >= 10) break
                 initative_creatures_div.appendChild(characterElement(creature))
             }
@@ -698,8 +691,6 @@
                     clear_description();
 
                     // Description Function
-                    hovered_recovery = is_playing ? Number(object.recovery || object.cast_time || 0) : 0
-                    if (is_playing) updateInitiative();
                     const descriptionFunc = data_description[type.toLowerCase()]
 
                     // Generate the description element
@@ -716,8 +707,6 @@
                 function clear_description () {
                     description_div.classList.add("hidden")
                     description_div.clearChildren()
-                    hovered_recovery = 0
-                    if (is_playing) updateInitiative()
                 }
                 function ability_slot ({object = {}, type = "Ability", player_class = "", function_name = ""}) {
                     const { name = "", image = "", origin = "" } = object
