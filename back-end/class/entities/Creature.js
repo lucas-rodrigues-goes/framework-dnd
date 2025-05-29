@@ -771,13 +771,13 @@ var Creature = class extends Entity {
         // Add armor mod
         switch (armor_type) {
             case "Heavy":
-                initiative_mod += 3;
-                break;
-            case "Medium":
                 initiative_mod += 2;
                 break;
-            case "Light":
+            case "Medium":
                 initiative_mod += 1;
+                break;
+            case "Light":
+                initiative_mod += 0;
                 break;
             default:
                 break;
@@ -787,7 +787,7 @@ var Creature = class extends Entity {
         const slot = this.equipment["primary off hand"]
         if (slot) {
             const item = database.items.data[slot.name]
-            if (item.subtype == "shield") initiative_mod += 2
+            if (item.subtype == "shield") initiative_mod += 1
         }
     
         return initiative_mod;

@@ -43,7 +43,8 @@ var Initiative = class {
                 name: creature.name,
                 status: initiative_info.status,
                 description: initiative_info.description,
-                initiative: initiative_info.initiative,
+                initiative: initiative_info.initiative - creatures[this.turn_order[0]].initiative,
+                offset: initiative_info.offset
             })
         }
 
@@ -54,14 +55,15 @@ var Initiative = class {
         if (!creature) return
 
         // Roll
-        const initiative_roll = Math.ceil(Math.random() * 6)
+        const initial_offset = Math.ceil(Math.random() * 6) + creature.initiative_mod + (nextRound ? 12 : 0)
 
         // Object
         this.creatures = {
             ...this.creatures,
             [creature.id]: {
-                initiative: initiative_roll + creature.initiative_mod + (nextRound ? 12 : 0),
+                initiative: initial_offset,
                 recovery: 0,
+                offset: initial_offset,
                 status: "None", // None, Playing, Suspended
                 description: ""
             }
@@ -145,7 +147,7 @@ var Initiative = class {
         const current_creature_id = this.turn_order[0]
 
         // Decrease initiative for all if current init > 12
-        while (this.creatures[current_creature_id].initiative >= 12) {
+        while (this.creatures[current_creature_id].initiative >= 12 && false) {
             for (const id of this.turn_order) {
                 this.creatures = {
                     ...this.creatures,
@@ -216,14 +218,12 @@ var Initiative = class {
 
         const creature_init = this.creatures[this.current_creature]
         const initiative = creature_init.initiative + time
-        const recovery = initiative > 12 ? creature_init.recovery - 12 : creature_init.recovery
 
         // Update initiative info
         this.creatures = {
             ...this.creatures,
             [creature.id]: {
                 ...creature_init,
-                recovery: recovery,
                 initiative: initiative,
                 status: "Suspended",
                 description: description
@@ -246,13 +246,17 @@ var Initiative = class {
         }
         creature.turn_end()
 
-        // Update initiative info
+        // Offset
         const creature_init = this.creatures[this.current_creature]
+        const offset = creature_init.offset + 12
+
+        // Update initiative info
         this.creatures = {
             ...this.creatures,
-            [creature.id]: {
-                initiative: Math.max(12 + creature_init.recovery + creature.initiative_mod, 0),
+            [creature.id]: {...this.creatures[creature.id],
+                initiative: offset + creature_init.recovery,
                 recovery: 0,
+                offset: offset,
                 status: "None",
                 description: ""
             }

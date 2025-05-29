@@ -272,6 +272,9 @@
                 }
             }`)
         }
+        let hovered_recovery = 0
+        let hovered_recovery_type = "None"
+        let is_playing = false
 
         //-----------------------------------------------------------------------------------------------------
         // Components
@@ -462,7 +465,7 @@
         current_initiative = {
             round: 0,
             creatures: []
-        }
+        }, current_hovered_recovery = 0
         async function updateInitiative() {
             function characterElement(creature) {
                 const {id = "", player = false, portrait = "", name = "", status = "", description = "", initiative = 0} = creature
@@ -471,17 +474,18 @@
 
                 // Border color
                 let color
-                if (description == "Spellcasting") color = "#66f"
+                if (hovered_recovery > 0 && isPlaying) color = "#fb6"
+                else if (description == "Spellcasting") color = "#66f"
                 else if (status == "Suspended") color = "#fb6"
                 else if (!player) color = "#b44"
                 else if (isPlaying) color = "#ddd"
                 // else if (player) color = "#5ab350"
                 else color = "#666"
 
-                const show_initiative = initiative >= 12 ? initiative - 12 : initiative
+                const show_initiative = initiative
 
                 return element(
-                    {tag: "div", style: {transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", position: "relative", height: "9.5vh", opacity: initiative >= 12 ? 0.5 : 1},
+                    {tag: "div", style: {transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", position: "relative", height: "9.5vh", opacity: initiative >= 12 ? 1 : 1},
                         children: [
                             {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
                                 {tag: "img", 
@@ -536,10 +540,12 @@
             } else {
                 document.querySelector(`[tooltip="End turn"]`).classList.add("hidden")
             }
+            is_playing = isImpersonatedPlaying
 
             // Cancel if no changes
-            if (isEqualJSON(current_initiative, {round, creatures})) return
+            if (isEqualJSON(current_initiative, {round, creatures}) && current_hovered_recovery == hovered_recovery) return
             current_initiative = {round, creatures}
+            current_hovered_recovery = hovered_recovery
 
             // Auto impersonate currently playing creature
             backend(`{
@@ -555,7 +561,8 @@
             initative_creatures_div.clearChildren()
 
             // Create elements
-            for (const creature of creatures) {
+            if (isImpersonatedPlaying) creatures[0].initiative += hovered_recovery
+            for (const creature of creatures.sort((a,b) => a.initiative - b.initiative)) {
                 if (initative_creatures_div.children.length >= 10) break
                 initative_creatures_div.appendChild(characterElement(creature))
             }
@@ -691,6 +698,8 @@
                     clear_description();
 
                     // Description Function
+                    hovered_recovery = is_playing ? Number(object.recovery || object.cast_time || 0) : 0
+                    if (is_playing) updateInitiative();
                     const descriptionFunc = data_description[type.toLowerCase()]
 
                     // Generate the description element
@@ -707,6 +716,8 @@
                 function clear_description () {
                     description_div.classList.add("hidden")
                     description_div.clearChildren()
+                    hovered_recovery = 0
+                    if (is_playing) updateInitiative()
                 }
                 function ability_slot ({object = {}, type = "Ability", player_class = "", function_name = ""}) {
                     const { name = "", image = "", origin = "" } = object
