@@ -1,5 +1,9 @@
 
 
+var player = MTScript.evalMacro(`[r:player.getName()]`)
+/* MTScript.evalMacro(`[r:closeOverlay("screen")]`)
+MTScript.evalMacro(`[h,macro("screen.html@lib:front"):""]`) */
+
 //---------------------------------------------------------------------------------------------------
 // Token Instancing
 //---------------------------------------------------------------------------------------------------

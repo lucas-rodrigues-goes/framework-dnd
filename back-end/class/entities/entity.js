@@ -20,6 +20,7 @@ var Entity = class {
     // Instance
     get id() { return this.#id }
     get token() { return this.#token;}
+    get owners() {return MTScript.evalMacro(`[r:getOwners(",", "${this.id}")]`).split(",")}
 
     // Images
     get portrait() { return MTScript.evalMacro(`[r:getTokenPortrait("","${this.id}")]`)}

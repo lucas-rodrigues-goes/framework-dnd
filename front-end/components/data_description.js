@@ -22,7 +22,7 @@ let data_description; {
 
             // Cast Time
             let cast_time = ""; {
-                if (spell.cast_time > 0) cast_time = (spell?.cast_time || 0) / 2 + " Seconds"
+                if (spell.cast_time > 0) cast_time = (spell?.cast_time || 0) + ""
                 else cast_time = "Instantaneous"
             }
 

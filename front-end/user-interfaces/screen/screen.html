@@ -1,9 +1,5 @@
 [overlay("Screen"), code: {
     <head>
-        <script>
-            const isGM = "{isGM()}" == "1"
-        </script>
-    
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
         [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
@@ -251,6 +247,31 @@
     
         </style>
         <script>
+        
+        const isGM = '+isGM()+' == 1
+        const portraitClick = (id) => {
+            const creature = id ? `instance("`+id+`");` : `impersonated();`
+            backend(`{
+                const creature = `+creature+`;
+                const imp_creature = impersonated();
+                const sel_creature = selected();
+
+                const ownsCreature = creature.owners.includes(player) || `+isGM+`;
+                const impersonatesCreature = imp_creature ? imp_creature.id == creature.id : false;
+                const canSeeCreature = imp_creature ? imp_creature.target_visibility(creature) > 0 : false;
+                const selectsCreature = sel_creature ? sel_creature.id == creature.id : false;
+
+                if (ownsCreature && !impersonatesCreature) {
+                    creature.impersonate();
+                } else {
+                    if (selectsCreature && canSeeCreature) {
+                        creature.go_to()
+                    } else if (!selectsCreature && canSeeCreature) {
+                        creature.select()
+                    }
+                }
+            }`)
+        }
 
         //-----------------------------------------------------------------------------------------------------
         // Components
@@ -376,21 +397,7 @@
         // Components
         //-----------------------------------------------------------------------------------------------------
     
-        function partyCharacter({portrait, health, max_health, id}) {
-            // Click function
-            function goTo() {
-                let request = isGM ? `instance("`+id+`").impersonate();` : `{
-                    const creature = instance("`+id+`")
-                    if (selected()) {
-                        if (selected().id == creature.id) creature.go_to()
-                    } else {
-                        creature.select()
-                    }
-                }`
-                
-                backend(request)
-            }
-    
+        function partyCharacter({portrait, health, max_health, id}) {    
             // Healthbar styling
             const hp_percent = health / max_health * 100
             const end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
@@ -399,7 +406,7 @@
             // Element
             return element(
                 {tag: "div", parent: getId("current-party"), attributes: {class: "circular-bar circular-bar-small"}, style: {background}, children: [
-                    {tag: "img", attributes: {src: portrait}, events: {click: goTo}} 
+                    {tag: "img", attributes: {src: portrait}, events: {click: () => portraitClick(id)}} 
                 ]}
             )
         }
@@ -481,14 +488,7 @@
                                     style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover"},
                                     attributes: {src: portrait, class: "clickable box-shadow"}, 
                                     events: {
-                                        click: () => backend(`{
-                                            const creature = instance("`+id+`")
-                                            if (selected()) {
-                                                if (selected().id == creature.id) creature.go_to()
-                                            } else {
-                                                creature.select()
-                                            }
-                                        }`),
+                                        click: () => portraitClick(id),
                                         mousedown: (event) => { if (event.button != 2) return
                                             const buttons = {}
 
@@ -531,11 +531,13 @@
             })`))
             if (isEqualJSON(current_initiative, {round, creatures})) return
             current_initiative = {round, creatures}
-            if (isGM) backend(`{
-                const init_creature = instance(Initiative.current_creature)
-                if(!init_creature.player || true) {
-                    init_creature.impersonate();
-                    init_creature.go_to()
+
+            // Auto impersonate currently playing creature
+            backend(`{
+                const creature = instance(Initiative.current_creature)
+                if (creature.owners.includes(player) || `+isGM+`) {
+                    creature.impersonate();
+                    creature.go_to()
                 }
             }`)
 
@@ -586,11 +588,12 @@
             }
     
             // Character
-            const character = {
-                health: await backend("impersonated().health"),
-                max_health: await backend("impersonated().max_health"),
-                portrait: await backend("impersonated().portrait")
-            }
+            const character = JSON.parse(await backend(`JSON.stringify({
+                health: impersonated().health,
+                max_health: impersonated().max_health,
+                portrait: impersonated().portrait,
+                id: impersonated().id
+            })`))
     
             // Verify if there is need for update
             if (!isEqualJSON(current_character, character)) {
@@ -1172,13 +1175,7 @@
                                 children: [
                                     {tag: "img", 
                                         attributes: {id: "current-character-portrait", src: ""},
-                                        events: {click: () => backend(`
-                                            if (selected()) {
-                                                if (selected().id == impersonated().id) impersonated().go_to()
-                                            } else {
-                                                impersonated().select()
-                                            }
-                                        `)}
+                                        events: {click: () => portraitClick()}
                                     },
                                 ]
                             },
