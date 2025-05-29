@@ -529,6 +529,15 @@
                 creatures: Initiative.creatures_info,
                 isImpersonatedPlaying: Initiative?.turn_order[0] == impersonated()?.id
             })`))
+
+            // Update End Turn Button
+            if (creatures.length >= 1 && (isImpersonatedPlaying || isGM)) {
+                document.querySelector(`[tooltip="End turn"]`).classList.remove("hidden")
+            } else {
+                document.querySelector(`[tooltip="End turn"]`).classList.add("hidden")
+            }
+
+            // Cancel if no changes
             if (isEqualJSON(current_initiative, {round, creatures})) return
             current_initiative = {round, creatures}
 
@@ -544,15 +553,10 @@
             // Clear elements
             const initative_creatures_div = document.getElementById("initiative-creatures")
             initative_creatures_div.clearChildren()
-            if (creatures.length >= 1 && (isImpersonatedPlaying || isGM)) {
-                document.querySelector(`[tooltip="End turn"]`).classList.remove("hidden")
-            } else {
-                document.querySelector(`[tooltip="End turn"]`).classList.add("hidden")
-            }
 
             // Create elements
             for (const creature of creatures) {
-                //if (initative_creatures_div.children.length >= 8) break
+                if (initative_creatures_div.children.length >= 10) break
                 initative_creatures_div.appendChild(characterElement(creature))
             }
 
@@ -1112,13 +1116,14 @@
 
                             // End turn
                             {tag: "button", 
-                                attributes: {class: "tooltip-bottom hidden", tooltip: "End turn"},
-                                style: {borderRadius: "2vh", width: "6vh", height: "2vh", display: "flex", justifyContent: "center", alignItems: "center"}, 
+                                //attributes: {class: "tooltip-bottom hidden", tooltip: "End turn"},
+                                attributes: {class: "hidden", tooltip: "End turn"},
+                                style: {borderRadius: "2vh", width: "8vh", height: "2vh", display: "flex", justifyContent: "center", alignItems: "center"}, 
                                 events: {
                                     click: () => backend(`Initiative.end_turn(instance(Initiative.current_creature))`)
                                 },
                                 children: [
-                                    {tag: "img", 
+                                    /* {tag: "img", 
                                         style: {
                                             position: "relative",
                                             height: "150%", 
@@ -1126,7 +1131,8 @@
                                         }, 
                                         attributes: {
                                             src: "asset://ca3a35626f1849b6872f2ca0704a1a1d"
-                                        }}
+                                        }} */
+                                    "End Turn"
                                 ]
                             },
 
