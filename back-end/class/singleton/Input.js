@@ -52,7 +52,7 @@ var input = function(fields) {
     for (let key in fields) {
         const field = fields[key];
         const value = field.value || "";
-        const label = field.label || key;
+        const label = `<html><b>${field.label || key}</b></html>`;
         const type = (field.type || "TEXT").toUpperCase();
         if (type != "LABEL") return_fields.push(key)
         

@@ -416,6 +416,9 @@ var Abilities = class {
         // Calculate Hit
         const hit_bonus = this.weapon_attack_hit_bonus({weapon, creature})
         const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
+        if (hit_result.success) {
+            damage_bonuses = [...damage_bonuses, ...this.on_attack_hit_abilities({weapon, creature, target, advantage_weight: hit_result.advantage_weight})]
+        }
 
         // Deal damage
         const dmg_bonus = [...this.weapon_attack_damage_bonuses({creature}), ...damage_bonuses]
@@ -436,6 +439,52 @@ var Abilities = class {
             damage_result: damage_result,
             message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.dice_roll.text_color})${damage_result}`
         }
+    }
+
+    static on_attack_hit_abilities({weapon, creature=impersonated(), target=selected(), advantage_weight=0}) {
+        const damage_bonuses = [];
+        const fields = {};
+
+        // Validations
+        const hasInitiative = Initiative.turn_order.includes(creature.id)
+        const isPlaying = hasInitiative ? Initiative.turn_order[0] == creature.id : false 
+
+        { // Options
+            // Sneak Attack
+            const isDexWeapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition") : false;
+            if (
+                creature.has_feature("Sneak Attack") && 
+                isDexWeapon && 
+                advantage_weight > 0 && 
+                (this.has_resources_available(["Sneak Attack"]) || !isPlaying)
+            ) {
+                fields["sneak_attack"] = {
+                    label: "Sneak Attack",
+                    value: 1,
+                    type: "check"
+                };
+            }
+        }
+
+        // Request User Input
+        if (Object.keys(fields).length <= 0) return damage_bonuses
+        const response = input(fields);
+        
+        
+        {// Apply bonuses
+            // Sneak Attack
+            if (response.sneak_attack == 1) {
+                const rogue_level = creature ? creature.classes.Rogue?.level || 1 : 1
+                damage_bonuses.push({
+                    die_amount: Math.ceil(rogue_level / 2),
+                    die_size: (calculate_distance(creature, target) * 5) > 5 ? 4 : 8,
+                    damage_type: weapon.damage?.[0]?.damage_type || "piercing" 
+                });
+                if (isPlaying) this.use_resources(["Sneak Attack"])
+            }
+        }
+
+        return damage_bonuses;
     }
 
     static weapon_attack_damage({weapon, creature=impersonated(), target=selected(), hit_result="hit", slot, damage_bonuses=[]}) {
@@ -581,7 +630,7 @@ var Abilities = class {
         }
         const hit = roll_to_hit + hit_bonus >= target.armor_class
         const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
-        const output = { success: false, message: "", dice_roll, advantage }; {
+        const output = { success: false, message: "", dice_roll, advantage, advantage_weight }; {
             // Critical Hit
             if (roll_to_hit === 20 || (hit && forced_crit)) {
                 output.success = true

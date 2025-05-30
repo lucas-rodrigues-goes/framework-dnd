@@ -52,7 +52,7 @@ var Features = class extends Abilities {
             // Sneak Attack
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name]
             const dex_weapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition") : false
-            if (creature.has_feature("Sneak Attack") && dex_weapon) abilities_list["sneak_attack"] = {
+            if (creature.has_feature("Sneak Attack") && dex_weapon && false) abilities_list["sneak_attack"] = {
                 resources: ["Attack Action"],
                 description: database.features.data["Sneak Attack"]?.description || "",
                 image: "asset://768444307168cbf3706b175b123254a8",

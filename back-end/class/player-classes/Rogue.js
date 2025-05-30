@@ -34,6 +34,9 @@ var Rogue = class {
     static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
         const current_level = humanoid.classes.Rogue.level
 
+        // Update Sneak Attack
+        if (current_level == 1) humanoid.set_new_resource("Sneak Attack", 1, "turn start") //--> Creates resource
+
         // Level based specific changes
         switch(current_level) {
             case 1: {

@@ -425,9 +425,17 @@ var Spells = class extends Abilities {
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
         }
 
+        // Damage Type
+        const damage_type = input({damage_type: {
+            label: "Damage Type",
+            value: "Fire,Lightning,Cold,Acid,Poison",
+            type: "radio",
+            options: {value: "string"}
+        }}).damage_type
+        console.log(damage_type)
+
         // Add new imbue weapon
         Spells.remove_previous(creature, name)
-        const damage_type = ["Fire", "Lightning", "Cold"][roll(3)-1]
         target.set_condition(name, spell.duration, {
             damage_bonus: spellcasting_modifier,
             damage_type: damage_type
