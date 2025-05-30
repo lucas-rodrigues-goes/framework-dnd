@@ -162,17 +162,17 @@ var data = class {
             }
 
             // Description
-            const description_array = []
+            const level_description = []
             for (let i = 0; i < description.length; i++) {
                 let current_description = ""
                 for (let j = 0; j <= i; j++) {
                     current_description += description[j]
                 }
-                description_array.push(current_description)
+                level_description.push(current_description)
             }
 
             // Object
-            return { name, type, description: description_array, image, cls }
+            return { name, type, description, level_description, image, cls }
         }
 
         return { create }
