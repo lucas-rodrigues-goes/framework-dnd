@@ -9,6 +9,8 @@ var Abilities = class {
 
             // Attacks
             attack: undefined,
+            multishot: undefined,
+            cleave: undefined,
             opportunity_attack: undefined,
             off_hand_attack: undefined,
             grapple: undefined,
