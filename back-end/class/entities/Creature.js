@@ -742,6 +742,13 @@ var Creature = class extends Entity {
             if (this.has_feature("Dwarven Resilience")) applyResistancesOfObject({
                 Poison: {type: "resistance", reduction: 10}
             })
+
+            // Heavy Armor Expertise
+            if (this.get_proficiency_level("Heavy Armor") >= 1 && this.armor_type == "Heavy") applyResistancesOfObject({
+                Slashing: {type: "resistance", reduction: 3},
+                Bludgeoning: {type: "resistance", reduction: 3},
+                Piercing: {type: "resistance", reduction: 3},
+            })
         }
         
         return resistances;
@@ -751,12 +758,9 @@ var Creature = class extends Entity {
     // Armor Class
     //-----------------------------------------------------------------------------------------------------
 
-    get initiative_mod() {
-        const body_slot = this.equipment.body;
-        let armor_type;
-        let initiative_mod = 0;
-    
-        // Updating armor_type based on currently equipped armor
+    get armor_type() {
+        const body_slot = this.equipment.body
+        let armor_type = "None"
         if (body_slot) {
             const item = database.get_item(body_slot.name);
             if (item) {
@@ -767,9 +771,14 @@ var Creature = class extends Entity {
                 armor_type = type || armor_type;
             }
         }
+        return armor_type
+    }
+
+    get initiative_mod() {
+        let initiative_mod = 0;
     
         // Add armor mod
-        switch (armor_type) {
+        switch (this.armor_type) {
             case "Heavy":
                 initiative_mod += 2;
                 break;
@@ -795,20 +804,6 @@ var Creature = class extends Entity {
 
     get armor_class() {
         const body_slot = this.equipment.body;
-
-        // Calculate Armor Type
-        let armor_type = "None"; {
-            if (body_slot) {
-                const item = database.get_item(body_slot.name);
-                if (item) {
-                    // Match armor weight by its properties
-                    const type = ["Heavy", "Medium", "Light"].find(prop => 
-                        item.properties?.includes(prop)
-                    );
-                    armor_type = type || armor_type;
-                }
-            }
-        }
     
         // Base Armor Class
         let armor_class = 10; {
@@ -817,7 +812,7 @@ var Creature = class extends Entity {
             const constitution_modifier = this.score_bonus.constitution
             const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0
 
-            switch (armor_type) {
+            switch (this.armor_type) {
                 case "Heavy":
                     armor_class = item_armor_class;
                     break;
@@ -829,7 +824,7 @@ var Creature = class extends Entity {
                     armor_class = item_armor_class + dexterity_modifier;
                     break;
                 default:
-                    armor_class = 10 + dexterity_modifier; 
+                    armor_class = 10 + dexterity_modifier;
                     
                     // Barbarian Toughness
                     if (this.has_feature("Barbarian Toughness")) {
@@ -870,7 +865,6 @@ var Creature = class extends Entity {
     
         return armor_class + equipment_bonus + condition_bonus;
     }
-
 
     //-----------------------------------------------------------------------------------------------------
     // Speed
