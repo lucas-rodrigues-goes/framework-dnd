@@ -163,7 +163,7 @@ let data_description; {
                 {tag: "div", style: {textAlign: "left"}, children: attributes},
 
                 // Description
-                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
+                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
                     text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
                 }
             ]})
@@ -184,18 +184,28 @@ let data_description; {
                     {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: subtitle},
                 ]},
                 // Description
-                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
+                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
                     text: feature.description
                 }
             ]})
         },
 
         proficiency: ({proficiency, level = 3, style=DEFAULT_STYLE}) => {
-            // title
+            // Title
             const title = (proficiency.type != "language"
                 ? proficiency.name + " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
                 : proficiency.name
             )
+
+            // Description
+            const description = []; {
+                const level_names = ["Proficiency", "Expertise", "Mastery", "Grandmastery"]
+                for (let i = 0 ; i <= level; i++) {
+                    const elem = proficiency.description[i]
+                    if (elem != "") description.push(`<b style="color: #ddd">` + level_names[i] + ":</b> " + proficiency.description[i])
+                }
+            }
+
 
             return element({tag: "div", style: {...DEFAULT_STYLE, ...style, width: "95%"}, children: [
                 // Title
@@ -204,8 +214,8 @@ let data_description; {
                     {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(proficiency.type) + " Proficiency"},
                 ]},
                 // Description
-                {tag: "pre", style: {color: "#aaa", textAlign: "justify", padding: 0, margin: 0, marginTop: "1vh"}, 
-                    text: proficiency.description[level]
+                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+                    textHTML: description.join("<br><br>")
                 }
             ]})
         },
