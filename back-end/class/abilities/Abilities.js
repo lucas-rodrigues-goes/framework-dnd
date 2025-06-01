@@ -188,7 +188,7 @@ var Abilities = class {
     // Spell Helpers
     //---------------------------------------------------------------------------------------------------
     
-    static make_spell_attack({name, target, spellcasting_modifier, range, damage_dice, advantage_weight = 0}={}) {
+    static make_spell_attack({name, target, level, spellcasting_modifier, range, damage_dice, advantage_weight = 0}={}) {
         const creature = impersonated()
         
         // Validate Visibility
@@ -209,8 +209,10 @@ var Abilities = class {
         advantage_weight += range_validation.advantage_weight
 
         // Calculate Hit
-        const hit_bonus = spellcasting_modifier + 2
-        const hit_result = Common.attack_hit_result({hit_bonus, creature, target, advantage_weight})
+        const level_number = level[0] == "c" ? 0 : Number(level[0])
+        const level_bonus = Math.max(0, Math.floor((level_number - 1) / 2));
+        const hit_bonus = spellcasting_modifier + 2 + level_bonus
+        const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
 
         // Deal damage
         const damage_result = (hit_result.success
@@ -227,7 +229,7 @@ var Abilities = class {
         }
     }
 
-    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
+    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, level, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
         const creature = impersonated()
 
         // Validate Targets
@@ -254,7 +256,9 @@ var Abilities = class {
             }
 
             // Saving Throw
-            const difficulty_class = 10 + spellcasting_modifier
+            const level_number = level[0] == "c" ? 0 : Number(level[0])
+            const level_bonus = Math.max(0, Math.floor((level_number - 1) / 2));
+            const difficulty_class = 10 + spellcasting_modifier + level_bonus
             const save_bonus = target.saving_throws[saving_throw_score.toLowerCase()] || 0
             const save_result = Spells.saving_throw_result({creature, target, difficulty_class, save_bonus, half_on_fail, advantage_weight})
 

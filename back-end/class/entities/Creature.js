@@ -817,7 +817,8 @@ var Creature = class extends Entity {
                     armor_class = item_armor_class;
                     break;
                 case "Medium":
-                    const clamped_dex_bonus = Math.max(-2, Math.min(dexterity_modifier, 2));
+                    const max_bonus = this.get_proficiency_level("Medium Armor") >= 1 ? 3 : 2
+                    const clamped_dex_bonus = Math.max(-max_bonus, Math.min(dexterity_modifier, max_bonus));
                     armor_class = item_armor_class + clamped_dex_bonus;
                     break;
                 case "Light":
@@ -1259,7 +1260,7 @@ var Creature = class extends Entity {
 
         // Apply Proficiency Bonus
         for (const skill in skills) {
-            skills[skill] += (this.get_proficiency_level(skill) + 1) * 2
+            skills[skill] += (Number(this.get_proficiency_level(skill)) + 1) * 2
         }
         
         return skills
