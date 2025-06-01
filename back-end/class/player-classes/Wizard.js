@@ -1,6 +1,6 @@
 
 
-var Wizard = class {
+var Wizard = class extends PlayerClass {
 
     //---------------------------------------------------------------------------------------------------
     // Parameters
@@ -35,17 +35,13 @@ var Wizard = class {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
+    static level_up(humanoid, choices) {
+        super.level_up(humanoid, choices, "Wizard")
         const current_level = humanoid.classes.Wizard.level
 
         // Update Arcane Recovery
         if (current_level == 1) humanoid.set_new_resource("Arcane Recovery", 2, "long rest") //--> Creates resource
         else humanoid.set_resource_max("Arcane Recovery", current_level + 1)
-
-        // Learn Spells
-        for (const spell of choices.spells) {
-            humanoid.learn_spell("Wizard", spell)
-        }
 
         // Level based specific changes
         switch(current_level) {
