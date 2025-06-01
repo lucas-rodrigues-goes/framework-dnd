@@ -27,7 +27,7 @@ var Abilities = class {
         }
 
         // Pull from other origins
-        for (const cls of [Common, Features, Spells]) {
+        for (const cls of [CommonAbilities, FeatureAbilities, Spells, ProficiencyAbilities]) {
             abilities_list = {...abilities_list, ...cls.abilities_list(creature)}
         }
 
@@ -56,7 +56,7 @@ var Abilities = class {
             return { valid: false };
         }
 
-        // Validate Range
+        // Validate Visibility
         if (require_target && creature.target_visibility() == 0) {
             public_log(`${creature.name_color} needs to see their target.`);
             return { valid: false };
@@ -391,7 +391,7 @@ var Abilities = class {
     // Attack Helpers
     //---------------------------------------------------------------------------------------------------
 
-    static make_attack({slot, creature=impersonated(), target=selected(), damage_bonuses=[]}) {
+    static make_attack({slot, creature=impersonated(), target=selected(), damage_bonuses=[], hit_bonus=0, use_release_sound=true}) {
         const weapon = database.items.data[creature.equipment[slot]?.name]
         let advantage_weight = 0
 
@@ -411,10 +411,10 @@ var Abilities = class {
             else if( weapon.name.toLowerCase().includes("crossbow") ) release_sound = "crossbow"
             else if ( weapon.name.toLowerCase().includes("bow") ) release_sound = "bow"
         }
-        Sound.play(release_sound, 0.1)
+        if (use_release_sound) Sound.play(release_sound, 0.1)
 
         // Calculate Hit
-        const hit_bonus = this.weapon_attack_hit_bonus({weapon, creature})
+        hit_bonus += this.weapon_attack_hit_bonus({weapon, creature})
         const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
         if (hit_result.success) {
             damage_bonuses = [...damage_bonuses, ...this.on_attack_hit_abilities({weapon, creature, target, advantage_weight: hit_result.advantage_weight})]
@@ -597,9 +597,9 @@ var Abilities = class {
     }
 
     static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), advantage_weight = 0}) {
-        creature.face_target()
+        creature.face_target(target)
         const distance = calculate_distance(creature, target) * 5
-        const target_visibility = creature.target_visibility()
+        const target_visibility = creature.target_visibility(target)
 
         // Advantage Modifiers
         advantage_weight += this.attack_roll_advantage_modifiers({creature, target})

@@ -1,9 +1,9 @@
 
 
-var Features = class extends Abilities {
+var FeatureAbilities = class extends Abilities {
     // Ability List
     static abilities_list(creature=impersonated()) {
-        const origin = "Features"
+        const origin = "FeatureAbilities"
         const abilities_list = {}
         const type = "Class"
 
