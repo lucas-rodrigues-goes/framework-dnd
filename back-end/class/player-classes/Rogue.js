@@ -1,6 +1,6 @@
 
 
-var Rogue = class {
+var Rogue = class extends PlayerClass {
 
     //---------------------------------------------------------------------------------------------------
     // Class Information
@@ -31,7 +31,8 @@ var Rogue = class {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
+    static level_up(humanoid, choices) {
+        super.level_up(humanoid, choices, "Rogue")
         const current_level = humanoid.classes.Rogue.level
 
         // Update Sneak Attack
@@ -46,17 +47,8 @@ var Rogue = class {
                 const starting_proficiencies = !multi_class
                     ? ["Light Armor", "Martial Weapon", "Dexterity Saves", "Intelligence Saves"]
                     : ["Light Armor"] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) {
-                    humanoid.set_proficiency(proficiency, 0, true)
-                }
-
-                // Add skills from choice
-                const skill_options = ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Performance", "Persuasion", "Sleight of Hand", "Stealth"]
-                const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
-                for (const proficiency of proficiencies) {
-                    humanoid.set_proficiency(proficiency, 0, true)
-                }
-
+                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
+                humanoid.set_proficiency("Weapon", 2, true)
                 break
             }
         }
@@ -67,6 +59,7 @@ var Rogue = class {
     static level_up_info(humanoid) {
         const current_level = humanoid ? (humanoid.classes.Rogue?.level + 1) || 1 : 1
         const multi_class = humanoid ? humanoid.level != 0 : false
+        const current_proficiencies = humanoid ? humanoid.proficiencies : {}
 
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
@@ -75,23 +68,43 @@ var Rogue = class {
             (a, b) => database.features.data[a].level - database.features.data[b].level
         )
 
+        // Combat Proficiencies
+        if ([1,5,9,13,17].includes(current_level)) choices.proficiencies.push(
+            super.combat_proficiency_choice(current_level, current_proficiencies)
+        )
+
         // Choices based on level
         switch (current_level) {
+            // Level 1
             case 1: {
                 // Starting proficiencies
                 const starting_proficiencies = !multi_class
-                    ? ["Light Armor", "Martial Weapon", "Dexterity Saves", "Intelligence Saves"]
+                    ? ["Light Armor", "Dexterity Saves", "Intelligence Saves"]
                     : ["Light Armor"] //--> Reduced list for multiclassing
                 for (const item of starting_proficiencies) {
                     proficiencies.push({name: item, level: 0})
                 }
 
-                // Choose two skills if not multiclassing
-                choices.proficiencies.push({
-                    amount: multi_class ? 1 : 4, 
-                    options: ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Performance", "Persuasion", "Sleight of Hand", "Stealth"], 
-                    level: 0
+                // Weapon Mastery
+                proficiencies.push({name: "Weapon", level: 2})
+
+                // Choose 1 - 4 skills
+                const options = ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Investigation", "Perception", "Performance", "Persuasion", "Sleight of Hand", "Stealth"]
+                const amount = multi_class ? 1 : 4
+                choices.proficiencies.push(super.skill_choice(options, amount))
+
+                break
+            }
+            // Level 2
+            case 2 : {
+                // Choose 2 skill expertises
+                const options = Object.keys(database.proficiencies.data).filter((a) => {
+                    if (database.proficiencies.data[a].type != "skill") return false
+                    if (!Object.keys(current_proficiencies).includes(a)) return false
+                    if (current_proficiencies[a] > 0) return false
+                    return true
                 })
+                choices.proficiencies.push(super.skill_choice(options, 2, true))
 
                 break
             }

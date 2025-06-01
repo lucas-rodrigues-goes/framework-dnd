@@ -24,10 +24,13 @@ var PlayerClass = class {
         return {title: "Choose a new combat proficiency", amount: 1, options: options}
     }
 
-    static skill_choice (skills_list, amount) {
-        const title = amount == 1 ? "Choose a new skill" : `Choose ${amount} new skills`
+    static skill_choice (skills_list, amount, expertise = false) {
+        let title; {
+            title = amount == 1 ? "Choose a new skill" : `Choose ${amount} new skills`
+            if (expertise) title = amount == 1 ? "Choose a new skill expertise" : `Choose ${amount} new skill expertises`
+        }
         const options = []
-        for (const prof of skills_list) options.push({name: prof, level: 0})
+        for (const prof of skills_list) options.push({name: prof, level: expertise ? 1 : 0})
         return {title, amount, options: options}
     }
 

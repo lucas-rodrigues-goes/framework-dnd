@@ -1,6 +1,6 @@
 
 
-var Cleric = class {
+var Cleric = class extends PlayerClass {
 
     //---------------------------------------------------------------------------------------------------
     // Parameters
@@ -38,17 +38,13 @@ var Cleric = class {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
+    static level_up(humanoid, choices) {
+        super.level_up(humanoid, choices, "Cleric")
         const current_level = humanoid.classes.Cleric.level
 
         // Update Channel Divinity
         if (current_level == 1) humanoid.set_new_resource("Channel Divinity", 1, "short rest") //--> Creates resource
         else if ([6, 18].includes(current_level)) humanoid.set_resource_max("Channel Divinity", humanoid.resources["Channel Divinity"].max + 1)
-
-        // Learn Spells
-        for (const spell of choices.spells) {
-            humanoid.learn_spell("Cleric", spell)
-        }
 
         // Level based specific changes
         switch(current_level) {
@@ -57,21 +53,10 @@ var Cleric = class {
 
                 // Add starting proficiencies
                 const starting_proficiencies = !multi_class
-                    ? ["Simple Weapon", "Light Armor", "Medium Armor", "Shield", "Wisdom Saves", "Charisma Saves"]
+                    ? ["Light Armor", "Medium Armor", "Shield", "Wisdom Saves", "Charisma Saves"]
                     : [] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) {
-                    humanoid.set_proficiency(proficiency, 0, true)
-                }
-
-                // Add skills from choice
-                const skill_options = ["History", "Insight", "Medicine", "Persuasion", "Religion"]
-                const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
-                if (!multi_class) {
-                    for (const proficiency of proficiencies) {
-                        humanoid.set_proficiency(proficiency, 0, true)
-                    }
-                }
-
+                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
+                humanoid.set_proficiency("Weapon", 1, true)
                 break
             }
         }
@@ -95,16 +80,19 @@ var Cleric = class {
             case 1: {
                 // Starting proficiencies
                 const starting_proficiencies = !multi_class
-                    ? ["Light Armor", "Medium Armor", "Shield", "Simple Weapon", "Wisdom Saves", "Charisma Saves"]
+                    ? ["Light Armor", "Medium Armor", "Shield", "Wisdom Saves", "Charisma Saves"]
                     : [] //--> Reduced list for multiclassing
                 for (const item of starting_proficiencies) {
                     proficiencies.push({name: item, level: 0})
                 }
 
+                // Weapon Mastery
+                proficiencies.push({name: "Weapon", level: 1})
+
                 // Choose two skills if not multiclassing
-                if (!multi_class) choices.proficiencies.push({amount: 2, options: [
-                    "History", "Insight", "Medicine", "Persuasion", "Religion"
-                ], level: 0})
+                if (!multi_class) {
+                    choices.proficiencies.push(super.skill_choice(["History", "Insight", "Medicine", "Persuasion", "Religion"], 2))
+                }
 
                 // Choose 3 new cantrips
                 choices.spells.push({amount: 3, player_class: "Cleric", level: 0})

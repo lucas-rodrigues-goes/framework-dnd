@@ -1,6 +1,6 @@
 
 
-var Barbarian = class {
+var Barbarian = class extends PlayerClass {
 
     //---------------------------------------------------------------------------------------------------
     // Class Information
@@ -30,7 +30,8 @@ var Barbarian = class {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }) {
+    static level_up(humanoid, choices) {
+        super.level_up(humanoid, choices, "Barbarian")
         const current_level = humanoid.classes.Barbarian.level
 
         // Update Rage
@@ -48,34 +49,14 @@ var Barbarian = class {
                 const starting_proficiencies = !multi_class
                     ? ["Light Armor", "Medium Armor", "Shield", "Martial Weapon", "Strength Saves", "Constitution Saves"]
                     : ["Shield", "Martial Weapon"] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) {
-                    humanoid.set_proficiency(proficiency, 0, true)
-                }
-
-                // Add skills from choice
-                const skill_options = ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"]
-                const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
-                if (!multi_class) {
-                    for (const proficiency of proficiencies) {
-                        humanoid.set_proficiency(proficiency, 0, true)
-                    }
-                }
-
+                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
+                humanoid.set_proficiency("Weapon", 2, true)
                 break
             }
 
             case 5: {
                 // Add extra attack feature
                 if (!humanoid.has_feature("Extra Attack")) { humanoid.add_feature("Extra Attack") }
-
-                break
-            }
-
-            case 20: {
-                // Increase STR and CON by 4 each
-                for (const score of ["strength", "constitution"]) {
-                    humanoid.set_ability_score(score, humanoid.ability_scores[score] + 4)
-                }
 
                 break
             }
@@ -87,6 +68,7 @@ var Barbarian = class {
     static level_up_info(humanoid) {
         const current_level = humanoid ? (humanoid.classes.Barbarian?.level + 1) || 1 : 1
         const multi_class = humanoid ? humanoid.level != 0 : false
+        const current_proficiencies = humanoid ? humanoid.proficiencies : {}
 
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
@@ -95,26 +77,29 @@ var Barbarian = class {
             (a, b) => database.features.data[a].level - database.features.data[b].level
         )
 
+        // Combat Proficiencies
+        if ([1,5,9,13,17].includes(current_level)) choices.proficiencies.push(
+            super.combat_proficiency_choice(current_level, current_proficiencies)
+        )
+
         // Choices based on level
         switch (current_level) {
             case 1: {
                 // Starting proficiencies
                 const starting_proficiencies = !multi_class
-                    ? ["Light Armor", "Medium Armor", "Shield", "Martial Weapon", "Strength Saves", "Constitution Saves"]
-                    : ["Shield", "Martial Weapon"] //--> Reduced list for multiclassing
+                    ? ["Light Armor", "Medium Armor", "Shield", "Strength Saves", "Constitution Saves"]
+                    : ["Shield"] //--> Reduced list for multiclassing
                 for (const item of starting_proficiencies) {
                     proficiencies.push({name: item, level: 0})
                 }
 
+                // Weapon Mastery
+                proficiencies.push({name: "Weapon", level: 2})
+
                 // Choose two skills if not multiclassing
-                if (!multi_class) choices.proficiencies.push({amount: 2, options: ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"], level: 0})
-
-                break
-            }
-            case 3: {
-                // Choose a subclass
-                choices.subclass.push({options: ["Berserker"]})
-
+                if (!multi_class) {
+                    choices.proficiencies.push(super.skill_choice(["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"], 2))
+                }
                 break
             }
         }

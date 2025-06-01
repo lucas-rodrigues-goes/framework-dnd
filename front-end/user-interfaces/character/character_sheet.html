@@ -1015,10 +1015,12 @@
 				updateInventory()
 
 				// Update resistances
-				function updateResistances () {
+				async function updateResistances () {
 					// Update
 					if (!isEqualJSON(inventory_tab.resistances, character.resistances)) {
 						inventory_tab.resistances = character.resistances
+
+						const damage_types = JSON.parse(await backend(`database.damage_types.data`))
 
 						// Clear container
 						const resistances = document.getElementById("inventory-resistances")
@@ -1033,7 +1035,7 @@
 							if (type == "resistance" && reduction == 0) {continue}
 
 							// From database
-							const damage_type = database.damage_types[name]
+							const damage_type = damage_types[name]
 							const image = damage_type.image
 							const description = damage_type.description
 
@@ -1294,6 +1296,7 @@
 			}
 			async function updateSpellsTab() {
 				const chosen_class = document.getElementById("spells-tab-class").value || "None"
+				const spells_switch = document.getElementById("spells-switch")
 
 				// Character Abilities
 				const character = JSON.parse(await backend(`JSON.stringify(
@@ -1344,6 +1347,10 @@
 						class_select.appendChild({tag: "option", text: name})
 					}
 					class_select.dispatchEvent(new Event("change"))
+
+					// Hide tab if character has no spellcasting classes
+					if (class_select.children.length == 0) spells_switch.classList.add("hidden")
+					else spells_switch.classList.remove("hidden")
 				}
 				updateClass()
 

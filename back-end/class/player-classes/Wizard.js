@@ -50,21 +50,10 @@ var Wizard = class extends PlayerClass {
 
                 // Add starting proficiencies
                 const starting_proficiencies = !multi_class
-                    ? ["Mundane Weapon", "Wisdom Saves", "Intelligence Saves"]
+                    ? ["Wisdom Saves", "Intelligence Saves"]
                     : [] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) {
-                    humanoid.set_proficiency(proficiency, 0, true)
-                }
-
-                // Add skills from choice
-                const skill_options = ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"]
-                const proficiencies = choices.proficiencies.filter(skill => skill_options.includes(skill))
-                if (!multi_class) {
-                    for (const proficiency of proficiencies) {
-                        humanoid.set_proficiency(proficiency, 0, true)
-                    }
-                }
-
+                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
+                humanoid.set_proficiency("Weapon", 0, true)
                 break
             }
         }
@@ -88,12 +77,17 @@ var Wizard = class extends PlayerClass {
         switch (current_level) {
             case 1: {
                 // Starting proficiencies
-                if (!multi_class) for (const item of ["Mundane Weapon", "Wisdom Saves", "Intelligence Saves"]) {
+                if (!multi_class) for (const item of ["Wisdom Saves", "Intelligence Saves"]) {
                     proficiencies.push({name: item, level: 0})
                 }
 
+                // Weapon Proficiency
+                proficiencies.push({name: "Weapon", level: 0})
+
                 // Choose two skills if not multiclassing
-                if (!multi_class) choices.proficiencies.push({amount: 2, options: ["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"], level: 0})
+                if (!multi_class) {
+                    choices.proficiencies.push(super.skill_choice(["Arcana", "History", "Insight", "Investigation", "Medicine", "Religion"], 2))
+                }
 
                 // Choose 3 new cantrips
                 choices.spells.push({amount: 3, player_class: "Wizard", level: 0})
