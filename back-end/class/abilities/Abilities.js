@@ -421,7 +421,7 @@ var Abilities = class {
 
         // Calculate Hit
         hit_bonus += this.weapon_attack_hit_bonus({weapon, creature})
-        const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
+        const hit_result = this.attack_hit_result({hit_bonus, creature, target, weapon, advantage_weight})
         if (hit_result.success) {
             damage_bonuses = [...damage_bonuses, ...this.on_attack_hit_abilities({weapon, creature, target, advantage_weight: hit_result.advantage_weight})]
         }
@@ -522,6 +522,7 @@ var Abilities = class {
 
         // Damage
         const crit_multiplier = hit_result == "lands a critical hit" ? 2 : 1;
+        const damage_multiplier = hit_result == "grazes" ? 0.5 : 1
 
         // Damage to deal
         const total_damage = {}
@@ -534,7 +535,7 @@ var Abilities = class {
             const applied_once_damage_modifiers = (count == 0 ? damage_attribute_bonus + damage_modifiers : 0)
 
             const type = damage.damage_type
-            const damage_to_deal = roll_dice(die_amount, die_size) + applied_once_damage_modifiers + damage_bonus
+            const damage_to_deal = Math.floor( (roll_dice(die_amount, die_size) + applied_once_damage_modifiers + damage_bonus) * damage_multiplier )
             count ++
 
             // Store
@@ -602,7 +603,7 @@ var Abilities = class {
         return output
     }
 
-    static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), advantage_weight = 0}) {
+    static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), weapon, advantage_weight = 0}) {
         creature.face_target(target)
         const distance = calculate_distance(creature, target) * 5
         const target_visibility = creature.target_visibility(target)
@@ -672,18 +673,15 @@ var Abilities = class {
         if (!output.message.includes("hit")) {
             const body_slot = target.equipment.body;
             const off_hand_slot = target.equipment["primary off hand"]
-            const unarmored_armor_class = 10 + target.score_bonus.dexterity
+            const unarmored_armor_class = 10
 
             // Armor bonus
-            let armor_bonus = 0; {
+            let armor_bonus = 0, is_metal_armor = false; {
                 if (body_slot) {
                     const item = database.get_item(body_slot.name)
                     if (item) {
-                        let is_metal = false
-                        for (const element of ["plate", "splint", "chain", "scale", "ring"]) { if (item.name.toLowerCase().includes(element)) is_metal = true }
-                        if (is_metal) {
-                            armor_bonus = Math.max((item.base_armor_class || 0) - unarmored_armor_class, 0)
-                        }
+                        for (const element of ["plate", "splint", "chain", "scale", "ring"]) { if (item.name.toLowerCase().includes(element)) is_metal_armor = true }
+                        armor_bonus = Math.max((item.base_armor_class || 0) - unarmored_armor_class, 0)
                     }
                 }
             }
@@ -699,11 +697,33 @@ var Abilities = class {
             }
 
             const roll = roll_to_hit + hit_bonus
+            console.log(armor_bonus)
             if (roll < unarmored_armor_class) {}
-            else if (roll < unarmored_armor_class + armor_bonus) Sound.play("armor")
+            else if (roll < unarmored_armor_class + armor_bonus) {
+                console.log("Hit on armor","all")
+                // Heavy Armor
+                if (target.armor_type != "None" && is_metal_armor) {
+                    // Turn hit into graze
+                    if (creature.get_proficiency_level("Blunt Weapon") >= 1 && weapon?.properties?.includes("Blunt")) {
+                        output.message = "grazes"
+                        output.success = true
+                    }
+                    Sound.play("armor")
+                }
+
+                // Hide or Leather Armor
+                else if (target.armor_type != "None" && !is_metal_armor) {
+                    // Turn hit into graze
+                    if (creature.get_proficiency_level("Axe") >= 1 && weapon?.properties?.includes("Axe")) {
+                        output.message = "grazes"
+                        output.success = true
+                    }
+                }
+            }
             else if (roll < unarmored_armor_class + shield_bonus + armor_bonus) Sound.play("shield")
         }
 
+        console.log(output.message)
         return output
     }
 

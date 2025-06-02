@@ -117,9 +117,8 @@ let data_description; {
             }
 
             // Other Arrays
-            const properties = item.properties.length > 0 != "" ? capitalize(item.properties.join(", ")) : ""
-            const conditions = item.conditions.length > 0 != "" ? capitalize(item.conditions.join(", ")) : ""
-
+            const properties = item.properties ? capitalize(item.properties.join(", ")) : ""
+            const conditions = item.conditions ? capitalize(item.conditions.join(", ")) : ""
             
             return element(
                 {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
