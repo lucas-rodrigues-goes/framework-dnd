@@ -802,45 +802,29 @@ var Creature = class extends Entity {
         return initiative_mod;
     }
 
-    get armor_class() {
-        const body_slot = this.equipment.body;
-    
-        // Base Armor Class
-        let armor_class = 10; {
-            // Base armor class values for calc
-            const dexterity_modifier = this.score_bonus.dexterity
-            const constitution_modifier = this.score_bonus.constitution
-            const item_armor_class = body_slot ? Number(database.get_item(body_slot.name).base_armor_class) || 0 : 0
+    get armor_class_detail() {
+        const base = 10
 
+        // Dexterity Modifier
+        let dex_mod = this.score_bonus.dexterity; {
             switch (this.armor_type) {
-                case "Heavy":
-                    armor_class = item_armor_class;
-                    break;
+                case "Heavy": 
+                    dex_mod = 0
+                    break
+
                 case "Medium":
                     const max_bonus = this.get_proficiency_level("Medium Armor") >= 1 ? 3 : 2
-                    const clamped_dex_bonus = Math.max(-max_bonus, Math.min(dexterity_modifier, max_bonus));
-                    armor_class = item_armor_class + clamped_dex_bonus;
-                    break;
-                case "Light":
-                    armor_class = item_armor_class + dexterity_modifier;
-                    break;
-                default:
-                    armor_class = 10 + dexterity_modifier;
-                    
-                    // Barbarian Toughness
-                    if (this.has_feature("Barbarian Toughness")) {
-                        armor_class = Math.max(armor_class, 10 + dexterity_modifier + constitution_modifier)
-                    }
-
-                    // Mage Armor
-                    if (this.has_condition("Mage Armor")) {
-                        armor_class = Math.max(armor_class, 13 + dexterity_modifier)
-                    }
-
-                    break;
+                    dex_mod = Math.max(-max_bonus, Math.min(this.score_bonus.dexterity, max_bonus));
+                    break
             }
         }
 
+        // Armor
+        let armor = 0; {
+            const item_base_ac = this.equipment.body ? database.get_item(this.equipment.body.name).base_armor_class || 0 : 0
+            armor = item_base_ac - 10
+        }
+        
         // Equipment Bonus
         let equipment_bonus = 0; {
             const equipment = this.#equipment;
@@ -863,8 +847,37 @@ var Creature = class extends Entity {
                 if (condition.bonus_armor_class) condition_bonus += condition.bonus_armor_class
             }
         }
-    
-        return armor_class + equipment_bonus + condition_bonus;
+
+        // Unnarmored Bonus
+        let unnarmored_bonus = 0; {
+            // Barbarian Toughness
+            if (this.has_feature("Barbarian Toughness")) {
+                unnarmored_bonus = Math.max(unnarmored_bonus, this.score_bonus.constitution)
+            }
+
+            // Mage Armor
+            if (this.has_condition("Mage Armor")) {
+                unnarmored_bonus = Math.max(unnarmored_bonus, 3)
+            }
+        }
+
+        // Total armor class
+        let total = 0; {
+            if ("None" == this.armor_type) {
+                armor = 0
+                total = base + dex_mod + unnarmored_bonus + equipment_bonus + condition_bonus
+            }
+            else {
+                unnarmored_bonus = 0
+                total = base + dex_mod + armor + equipment_bonus + condition_bonus
+            }
+        }
+
+        return {total, base, armor, unnarmored_bonus, dex_mod, equipment_bonus, condition_bonus}
+    }
+
+    get armor_class() {
+        return this.armor_class_detail.total
     }
 
     //-----------------------------------------------------------------------------------------------------
