@@ -1,5 +1,3 @@
-
-
 var Abilities = class {
     // Ability List
     static abilities_list(creature=impersonated()) {
@@ -635,92 +633,87 @@ var Abilities = class {
             if (advantage_weight > 0) advantage = "Advantage"
             else if (advantage_weight < 0) advantage = "Disadvantage"
         }
-        const hit = roll_to_hit + hit_bonus >= target.armor_class
-        const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
-        const output = { success: false, message: "", dice_roll, advantage, advantage_weight }; {
-            // Critical Hit
-            if (roll_to_hit === 20 || (hit && forced_crit)) {
-                output.success = true
-                output.message = "lands a critical hit"
-            }
 
-            // Critical Miss
-            else if (roll_to_hit === 1) {
-                output.message = "critically misses"
-            }
+        // Calculate armor and shield bonuses for graze check
+        const body_slot = target.equipment.body;
+        const off_hand_slot = target.equipment["primary off hand"]
+        const unarmored_armor_class = 10
 
-            // Hit
-            else if (hit) {
-                output.success = true
-                output.message = "hits"
-
-                // Add hit bonus to text
-                output.dice_roll.text += ` + ${hit_bonus}`
-                output.dice_roll.text_color += ` + ${hit_bonus}`
-            }
-
-            // Miss
-            else {
-                output.message = "misses"
-
-                // Add hit bonus to text
-                output.dice_roll.text += ` + ${hit_bonus}`
-                output.dice_roll.text_color += ` + ${hit_bonus}`
+        // Armor bonus
+        let armor_bonus = 0, is_metal_armor = false; {
+            if (body_slot) {
+                const item = database.get_item(body_slot.name)
+                if (item) {
+                    for (const element of ["plate", "splint", "chain", "scale", "ring"]) { if (item.name.toLowerCase().includes(element)) is_metal_armor = true }
+                    armor_bonus = Math.max((item.base_armor_class || 0) - unarmored_armor_class, 0)
+                }
             }
         }
 
-        // Sound
-        if (!output.message.includes("hit")) {
-            const body_slot = target.equipment.body;
-            const off_hand_slot = target.equipment["primary off hand"]
-            const unarmored_armor_class = 10
-
-            // Armor bonus
-            let armor_bonus = 0, is_metal_armor = false; {
-                if (body_slot) {
-                    const item = database.get_item(body_slot.name)
-                    if (item) {
-                        for (const element of ["plate", "splint", "chain", "scale", "ring"]) { if (item.name.toLowerCase().includes(element)) is_metal_armor = true }
-                        armor_bonus = Math.max((item.base_armor_class || 0) - unarmored_armor_class, 0)
-                    }
+        // Shield bonus
+        let shield_bonus = 0; {
+            if (off_hand_slot) {
+                const item = database.get_item(off_hand_slot.name)
+                if (item?.subtype == "shield") {
+                    shield_bonus = item.bonus_armor_class || 0
                 }
             }
+        }
 
-            // Shield bonus
-            let shield_bonus = 0; {
-                if (off_hand_slot) {
-                    const item = database.get_item(off_hand_slot.name)
-                    if (item?.subtype == "shield") {
-                        shield_bonus = item.bonus_armor_class || 0
-                    }
-                }
+        const roll = roll_to_hit + hit_bonus
+        const hit = roll >= target.armor_class
+        const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
+        const output = { success: false, message: "", dice_roll, advantage, advantage_weight };
+
+        // Check for graze before hit determination
+        if (!forced_crit && roll >= unarmored_armor_class && roll < target.armor_class) {
+            // Determine if graze is possible based on armor type
+            const canGraze = (target.armor_type != "None" && (
+                (is_metal_armor && weapon?.properties?.includes("Blunt")) ||
+                (!is_metal_armor && weapon?.properties?.includes("Axe"))
+            ));
+
+            if (canGraze) {
+                output.success = true;
+                output.message = "grazes";
+                // Add hit bonus to text for graze
+                output.dice_roll.text += ` + ${hit_bonus}`;
+                output.dice_roll.text_color += ` + ${hit_bonus}`;
+                if (is_metal_armor) Sound.play("armor");
+                return output;
             }
+        }
 
-            const roll = roll_to_hit + hit_bonus
-            console.log(armor_bonus)
-            if (roll < unarmored_armor_class) {}
-            else if (roll < unarmored_armor_class + armor_bonus) {
-                console.log("Hit on armor","all")
-                // Heavy Armor
-                if (target.armor_type != "None" && is_metal_armor) {
-                    // Turn hit into graze
-                    if (creature.get_proficiency_level("Blunt Weapon") >= 1 && weapon?.properties?.includes("Blunt")) {
-                        output.message = "grazes"
-                        output.success = true
-                    }
-                    Sound.play("armor")
-                }
+        // Critical Hit
+        if (roll_to_hit === 20 || (hit && forced_crit)) {
+            output.success = true
+            output.message = "lands a critical hit"
+        }
+        // Critical Miss
+        else if (roll_to_hit === 1) {
+            output.message = "critically misses"
+        }
+        // Hit
+        else if (hit) {
+            output.success = true
+            output.message = "hits"
 
-                // Hide or Leather Armor
-                else if (target.armor_type != "None" && !is_metal_armor) {
-                    // Turn hit into graze
-                    if (creature.get_proficiency_level("Axe") >= 1 && weapon?.properties?.includes("Axe")) {
-                        output.message = "grazes"
-                        output.success = true
-                    }
-                }
+            // Add hit bonus to text
+            output.dice_roll.text += ` + ${hit_bonus}`
+            output.dice_roll.text_color += ` + ${hit_bonus}`
+        }
+        // Miss
+        else {
+            output.message = "misses"
+
+            // Add hit bonus to text
+            output.dice_roll.text += ` + ${hit_bonus}`
+            output.dice_roll.text_color += ` + ${hit_bonus}`
+
+            // Play shield sound if hit shield
+            if (roll >= unarmored_armor_class + armor_bonus && roll < unarmored_armor_class + shield_bonus + armor_bonus) {
+                Sound.play("shield")
             }
-            else if (roll < unarmored_armor_class + shield_bonus + armor_bonus) Sound.play("shield")
         }
 
         console.log(output.message)
