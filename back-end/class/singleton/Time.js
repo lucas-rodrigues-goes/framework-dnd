@@ -6,7 +6,7 @@
 var Time = class {
 
     // Stored Attributes
-    static #data = MapTool.tokens.getTokenByID("tokenId")
+    static #data = MapTool.tokens.getTokenByID("EF3758F4A9B5426C8FB3437CF5DA0183")
 
     static get _object () {
         return JSON.parse(this.#data.getProperty("object")) || {}
@@ -59,6 +59,11 @@ var Time = class {
 
     static get json() {
         return JSON.stringify(this.#breakdown(this._seconds), null, 2)
+    }
+
+    // Setters
+    static set current(current) {
+        this._seconds = current
     }
 }
 
