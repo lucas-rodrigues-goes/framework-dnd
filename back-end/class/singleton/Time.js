@@ -25,15 +25,109 @@ var Time = class {
         obj.seconds = value
         this._object = obj
     }
+    
+    // Getters
+    static get current() {
+        return this._seconds
+    }
+
+    static get json() {
+        return JSON.stringify(this.#breakdown(this._seconds), null, 2)
+    }
+
+    // Setters
+    static set current(current) {
+        this._seconds = current
+    }
 
     // Methods
-    static increase(value) {
-        this._seconds = this._seconds + value
+    static increase() {
+        // Build units list with capitalized labels
+        const unit_keys = Object.keys(TimeUnit.UNITS)
+        const unit_labels = unit_keys.map(u => u.charAt(0).toUpperCase() + u.slice(1))
+
+        const user_input = input({
+            amount: {
+                value: 0,
+                label: `Amount`,
+                type: "text",
+                options: { width: 8 }
+            },
+            unit: {
+                value: unit_labels.join(","),
+                label: "Choose Time Unit",
+                type: "radio",
+                options: {
+                    delimiter: ",",
+                    value: "string",
+                    select: 0
+                }
+            }
+        })
+
+        // Convert back from capitalized label to original key
+        const { unit: selected_label, amount } = user_input
+        const index = unit_labels.indexOf(selected_label)
+        const unit = unit_keys[index]
+
+        // Convert to seconds using TimeUnit
+        const total_seconds = TimeUnit[unit + "s"](Number(amount))
+
+        // Apply the increase
+        this._seconds = this._seconds + total_seconds
     }
 
-    static decrease(value) {
-        this._seconds = this._seconds - value
+
+    static set() {
+        // Custom month names
+        const months = [
+            "Hammer", "Alturiak", "Ches", 
+            "Tarsakh", "Mirtul", "Kythorn", 
+            "Flamerule", "Eleasis", "Eleint",
+            "Marpenoth", "Uktar", "Nightal"
+        ]
+
+        // Get current breakdown of time in units
+        const current = JSON.parse(this.json)
+
+        // Build input fields for each unit with defaults
+        const fields = {
+            year:   { value: (current.year ?? 0) + 1, label: "Year",   type: "text", options: { width: 5 } },
+            month:  { 
+                value: months.join(","), 
+                label: "Month", 
+                type: "list", 
+                options: {
+                    delimiter: ",",
+                    value: "number",
+                    select: (current.month ?? 0) // default to current month index
+                }
+            },
+            day:    { value: (current.day ?? 0) + 1, label: "Day",    type: "text", options: { width: 5 } },
+            hour:   { value: current.hour   ?? 0, label: "Hour",   type: "text", options: { width: 5 } },
+            minute: { value: current.minute ?? 0, label: "Minute", type: "text", options: { width: 5 } },
+            round:  { value: current.round  ?? 0, label: "Round",  type: "text", options: { width: 5 } },
+            second: { value: current.second ?? 0, label: "Second", type: "text", options: { width: 5 } }
+        }
+
+        // Show input dialog
+        const values = input(fields)
+
+        // Convert to total seconds
+        let total_seconds = 0
+        total_seconds += TimeUnit.years(Number(values.year) - 1)
+        total_seconds += TimeUnit.months(values.month)
+        total_seconds += TimeUnit.days(Number(values.day) - 1)
+        total_seconds += TimeUnit.hours(Number(values.hour))
+        total_seconds += TimeUnit.minutes(Number(values.minute))
+        total_seconds += TimeUnit.rounds(Number(values.round))
+        total_seconds += TimeUnit.seconds(Number(values.second))
+
+        // Replace the stored time
+        this._seconds = total_seconds
     }
+
+
 
     // Helpers
     static #breakdown(seconds) {
@@ -51,20 +145,6 @@ var Time = class {
         breakdown.second += remaining
         return breakdown
     }
-
-    // Getters
-    static get current() {
-        return this._seconds
-    }
-
-    static get json() {
-        return JSON.stringify(this.#breakdown(this._seconds), null, 2)
-    }
-
-    // Setters
-    static set current(current) {
-        this._seconds = current
-    }
 }
 
 
@@ -76,7 +156,6 @@ var TimeUnit = class {
     static UNITS = {
         year:   31104000,
         month:  2592000,
-        week:   864000,
         day:    86400,
         hour:   3600,
         minute: 60,
@@ -90,7 +169,6 @@ var TimeUnit = class {
     static minutes(value) { return value * this.UNITS.minute }
     static hours(value)   { return value * this.UNITS.hour }
     static days(value)    { return value * this.UNITS.day }
-    static weeks(value)   { return value * this.UNITS.week }
     static months(value)  { return value * this.UNITS.month }
     static years(value)   { return value * this.UNITS.year }
 
@@ -100,7 +178,6 @@ var TimeUnit = class {
     static toMinutes(value) { return value / this.UNITS.minute }
     static toHours(value)   { return value / this.UNITS.hour }
     static toDays(value)    { return value / this.UNITS.day }
-    static toWeeks(value)   { return value / this.UNITS.week }
     static toMonths(value)  { return value / this.UNITS.month }
     static toYears(value)   { return value / this.UNITS.year }
 }

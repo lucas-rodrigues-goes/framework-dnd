@@ -153,6 +153,28 @@
             position: absolute;
             bottom: 15vh;
         }
+
+        /*===================================================================================================*/
+        /* Calendar/Clock */
+        /*===================================================================================================*/
+
+        .clock {
+            position: absolute;
+            width: 13vh;
+            height: 13vh;
+            margin: 0.7vh 0px;
+            right: 0;
+            bottom: 0;
+    
+            background: rgba(18,18,18,0.9);
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
     
         /*===================================================================================================*/
         /* Target */
@@ -1047,6 +1069,51 @@
             }
         }
     
+        let current_time = {}
+        async function updateClock() {
+
+            // Gather info
+            const time = JSON.parse(await backend(`Time.json`))
+
+            if (!isEqualJSON(current_time, time)) {
+                current_time = time
+
+                for (const key in time) {
+                    const elem = document.getElementById(key)
+                    const value = time[key]
+                    if (!elem) continue
+                    
+                    switch(key) {
+                        case "month":
+                            const months = [
+                                "Hammer", "Alturiak", "Ches", 
+                                "Tarsakh", "Mirtul", "Kythorn", 
+                                "Flamerule", "Eleasis", "Eleint",
+                                "Marpenoth", "Uktar", "Nightal"
+                            ]
+                            elem.textContent = months[value]
+                            break
+                        case "day":
+                            const day = value + 1
+                            const suffixes = ["st", "nd", "rd"]
+                            const suffix = day <= suffixes.length ? suffixes[day-1] : "th"
+                            elem.textContent = day + suffix
+                            break
+                        case "year":
+                            const year = value + 1
+                            elem.textContent = year
+                            break
+                        case "second":
+                            const seconds = value + time.round * 6
+                            elem.textContent =  seconds < 10 ? "0"+seconds : seconds
+                            break
+                        default:
+                            elem.textContent = value < 10 ? "0"+value : value
+                    }
+                }
+            }
+        }
+
         //-----------------------------------------------------------------------------------------------------
         // Create HTML
         //-----------------------------------------------------------------------------------------------------
@@ -1329,15 +1396,115 @@
             const gm_display = isGM ? "block" : "none"
             element(
                 {tag: "div", parent: document.body, attributes: {id: "gm-menu", class: "menu bottom right"}, style: {display: gm_display, width: "18vh"}, children: [
-                    {tag: "button", text: "Reset Character", 
-                        events: {click: () => backend(`resetImpersonated()`)}
-                    },
-                    {tag: "button", text: "Give Item",
-                        events: {click: () => openClosePage("", "Give Item", "give_item.html")}
-                    },
-                    {tag: "button", text: "Database", 
-                        events: {click: () => openClosePage("", "Database", "database.html")}
-                    },
+                    {tag: "div", style: {display: "block", position: "relative", textAlign: "center"}, children: [
+                        // Clock
+                        {tag: "div", 
+                            attributes: {class: "clock", id: ""},
+                            children: [
+                                // Time of the day
+                                {tag: "div", style: {fontSize: "140%"}, children: [
+                                    {tag: "span", children: [
+                                        {tag: "span", attributes: {id: "hour"}, text: "00"},
+                                        {tag: "span", text: ":"},
+                                        {tag: "span", attributes: {id: "minute"}, text: "00"}
+                                    ]},
+                                    {tag: "span", style: {fontSize: "65%"}, children: [
+                                        {tag: "span", text: ":"},
+                                        {tag: "span", attributes: {id: "second"}, text: "00"}
+                                    ]}
+                                ]},
+                            
+                                // Day, month, year
+                                {tag: "div", style: {fontSize: "70%"}, children: [
+                                    {tag: "span", children: [
+                                        {tag: "span", attributes: {id: "month"}, text: ""},
+                                        {tag: "span", text: " "},
+                                        {tag: "span", attributes: {id: "day"}, text: ""},
+                                        {tag: "span", text: ", "},
+                                        {tag: "span", attributes: {id: "year"}, text: ""},
+                                    ]},
+                                ]},
+
+                                {tag: "div", style: {display: "flex"}, children: [
+                                    {tag: "button",
+                                        attributes: {class: "tooltip", tooltip: "Specify Time"},
+                                        style: {borderRadius: "2vh", width: "2.5vh", height: "2.5vh", marginTop: "0.5vh"},
+                                        events: {
+                                            click: () => backend("Time.set()")
+                                        },
+                                        children: [
+                                            {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://65479d57a2b1ffc116a12a5c731d91a7"}}
+                                        ]
+                                    },
+                                    {tag: "button",
+                                        attributes: {class: "tooltip", tooltip: "Increase Time"},
+                                        style: {borderRadius: "2vh", width: "2.5vh", height: "2.5vh", marginTop: "0.5vh"},
+                                        events: {
+                                            click: () => backend("Time.increase()")
+                                        },
+                                        children: [
+                                            {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://65479d57a2b1ffc116a12a5c731d91a7"}}
+                                        ]
+                                    },
+                                ]}
+                            
+                            ]
+                        },
+
+                        // Buttons
+                        {tag: "div", style: {
+                            width: "100%", height: "100%", padding: 0, margin: 0, position: "absolute", right: "15vh",
+                        }, children: [
+                            // Reset Character
+                            {tag: "button",
+                                attributes: {class: "tooltip", tooltip: "Reset Character"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "12.3vh", right: "-2.5vh"},
+                                events: {
+                                    click: () => backend(`resetImpersonated()`)
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://65479d57a2b1ffc116a12a5c731d91a7"}}
+                                ]
+                            },
+
+                            // Give Item
+                            {tag: "button",
+                                attributes: {class: "tooltip", tooltip: "Give Item"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "8.3vh", right: "-0.4vh"},
+                                events: {
+                                    click: () => openClosePage("", "Give Item", "give_item.html")
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://711c8f12938d7ef430fbcf7e2e5845ae"}}
+                                ]
+                            },
+
+                            // Database
+                            {tag: "button",
+                                attributes: {class: "tooltip", tooltip: "Database"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", right: "-0.4vh"},
+                                events: {
+                                    click: () => openClosePage("", "Database", "database.html")
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://4e98be9419bf1ce960319891b66add73"}}
+                                ]
+                            },
+
+                            // Journal
+                            {tag: "button",
+                                attributes: {class: "tooltip", tooltip: "Journal"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, right: "-2.5vh"},
+                                events: {
+                                    click: () => openClosePage("journal", "Character Sheet", "character_sheet.html")
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://cc763e3377c5787dc7c81eb443145869"}}
+                                ]
+                            },
+                        ]},
+                        
+                    ]},
                 ]}
             )
     
@@ -1356,6 +1523,7 @@
                 updateCurrentTarget()
                 updateCurrentParty()
                 updateLog()
+                updateClock()
             }, 1000)
             setInterval(()=> {
                 updateCurrentTarget()
