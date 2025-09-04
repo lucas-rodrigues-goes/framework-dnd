@@ -58,7 +58,7 @@
         // Backend
         const request = (
             "new Humanoid(getImpersonated(), true);" +
-            "impersonated().create_character({" +
+            "impersonated().create({" +
                 "name: `" + getId("name").value + "`," +
                 "race: `" + getId("race").value + "`," +
                 "ability_scores: " + JSON.stringify(ability_scores) + "," +

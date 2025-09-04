@@ -13,7 +13,7 @@ var Humanoid = class extends Creature {
     // Character Creation
     //=====================================================================================================
 
-    create_character({name, race, ability_scores, character_class, class_choices}) {
+    create({name, race, ability_scores, character_class, class_choices}) {
         // Ability Scores
         if (ability_scores) {
             for (const [score, value] of Object.entries(ability_scores)) {
