@@ -25,6 +25,8 @@ var Monster = class extends Creature {
             race:       { label: "Race", type: "text", value: "" },
             max_health: { label: "Max Health", type: "text", value: "1" },
             challenge_rating: { label: "Challenge Rating", type: "text", value: "0" },
+            armor_class: {label: "Armor Class", type: "text", value: "10"},
+            initiative_mod: {label: "Initiative Mod", type: "text", value: "0"},
             speed:      { label: "Speed", type: "text", value: "30" },
 
             // Ability Scores (default 10)
@@ -76,6 +78,8 @@ var Monster = class extends Creature {
             race: result.race,
             max_health: parseInt(result.max_health) || 1,
             challenge_rating: result.challenge_rating,
+            armor_class: result.armor_class,
+            initiative_mod: result.initiative_mod,
             speed: result.speed,
             ability_scores,
             proficiencies,
@@ -89,6 +93,8 @@ var Monster = class extends Creature {
         race, 
         max_health, 
         challenge_rating,
+        armor_class,
+        initiative_mod,
         speed, 
 
         ability_scores, // {} where KEY=Score Name, VALUE=Value
@@ -122,6 +128,8 @@ var Monster = class extends Creature {
         this.race = race
         this.max_health = max_health
         this.challenge_rating = challenge_rating
+        this.#armor_class = armor_class
+        this.#initiative_mod = initiative_mod 
         this.speed = speed
 
         // Fill Resources
