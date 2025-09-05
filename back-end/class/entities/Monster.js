@@ -6,15 +6,95 @@ var Monster = class extends Creature {
     // Default Parameters
     //=====================================================================================================
 
-    #challenge_rating = 0
+    #challenge_rating = "0"
     #max_health = 0
     #condition_immunities = []
+    #resistances = {}
+    #armor_class = 10
+    #initiative_mod = 0
 
     //=====================================================================================================
     // Monster Creation
     //=====================================================================================================
 
-    create({}) {
+    temporary_create_screen() {
+        // Build the input fields
+        const fields = {
+            name:       { label: "Name", type: "text", value: "" },
+            type:       { label: "Type", type: "text", value: "" },
+            race:       { label: "Race", type: "text", value: "" },
+            max_health: { label: "Max Health", type: "text", value: "1" },
+            challenge_rating: { label: "Challenge Rating", type: "text", value: "0" },
+            speed:      { label: "Speed", type: "text", value: "30" },
+
+            // Ability Scores (default 10)
+            str: { label: "Strength", type: "text", value: "10" },
+            dex: { label: "Dexterity", type: "text", value: "10" },
+            con: { label: "Constitution", type: "text", value: "10" },
+            int: { label: "Intelligence", type: "text", value: "10" },
+            wis: { label: "Wisdom", type: "text", value: "10" },
+            cha: { label: "Charisma", type: "text", value: "10" },
+
+            // Extra fields
+            proficiencies: { label: "Proficiencies", type: "text", value: "" },
+            features:      { label: "Features", type: "text", value: "" },
+        };
+
+        // Run the input macro
+        const result = input(fields);
+
+        // Parse ability scores
+        const ability_scores = {
+            STR: parseInt(result.str) || 10,
+            DEX: parseInt(result.dex) || 10,
+            CON: parseInt(result.con) || 10,
+            INT: parseInt(result.int) || 10,
+            WIS: parseInt(result.wis) || 10,
+            CHA: parseInt(result.cha) || 10,
+        };
+
+        // Parse proficiencies
+        const proficiencies = {};
+        if (result.proficiencies && result.proficiencies.trim() !== "") {
+            for (const entry of result.proficiencies.split(", ")) {
+                const [name, level] = entry.split(":");
+                if (name && level) {
+                    proficiencies[name.trim()] = parseInt(level.trim()) || 0;
+                }
+            }
+        }
+
+        // Parse features
+        const features = result.features
+            ? result.features.split(", ").map(f => f.trim()).filter(f => f.length > 0)
+            : [];
+
+        // Call create method
+        this.create({
+            name: result.name,
+            type: result.type,
+            race: result.race,
+            max_health: parseInt(result.max_health) || 1,
+            challenge_rating: result.challenge_rating,
+            speed: result.speed,
+            ability_scores,
+            proficiencies,
+            features,
+        });
+    }
+
+    create({
+        name, 
+        type, 
+        race, 
+        max_health, 
+        challenge_rating,
+        speed, 
+
+        ability_scores, // {} where KEY=Score Name, VALUE=Value
+        proficiencies, // {} where KEY=Proficiency, VALUE=Level
+        features, // [] of feature names
+    }) {
         // Ability Scores
         if (ability_scores) {
             for (const [score, value] of Object.entries(ability_scores)) {
@@ -22,12 +102,27 @@ var Monster = class extends Creature {
             }
         }
 
+        // Proficiencies
+        if (proficiencies) {
+            for (const [proficiency, level] of Object.entries(proficiencies)) {
+                this.set_proficiency(proficiency, level, true)
+            }
+        }
+
+        // Features
+        if (features) {
+            for (const name of features) {
+                this.add_feature(name)
+            }
+        }
+
         // Set basic information
         this.name = name
+        this.type = type
         this.race = race
-
-        // Add class
-        if (character_class) { this.level_up(character_class, class_choices) }
+        this.max_health = max_health
+        this.challenge_rating = challenge_rating
+        this.speed = speed
 
         // Fill Resources
         this.long_rest()
@@ -49,7 +144,7 @@ var Monster = class extends Creature {
     // Challenge Rating
     //=====================================================================================================
 
-    get cr() {
+    get challenge_rating() {
         return this.#challenge_rating
     }
 
@@ -98,7 +193,7 @@ var Monster = class extends Creature {
         return cr_to_exp[cr];
     }
 
-    set cr(cr) {
+    set challenge_rating(cr) {
         const valid_options = [
             "0", "1/8", "1/4", "1/2",
             "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
@@ -108,6 +203,86 @@ var Monster = class extends Creature {
         if (!valid_options.includes(cr)) return
 
         this.#challenge_rating = cr
+    }
+
+    //=====================================================================================================
+    // Resistances
+    //=====================================================================================================
+
+    get resistances() {
+        // Gather calculated resistances from Creature
+        let resistances = super.resistances
+
+        // Helper function to apply resistances
+        const applyResistancesOfObject = (object) => {
+            // Type Priority
+            const priority = {
+                heals: 4,
+                immunity: 3,
+                weakness: 2,
+                resistance: 1
+            };
+
+            for (const damage_type in object) {
+                const resistance = object[damage_type];
+                
+                // Skip if damage type not in our base resistances
+                if (!resistances[damage_type]) continue;
+
+                // If priority of new type greater or equal current type
+                resistance.type = resistance.type || "resistance";
+                const samePriority = priority[resistance.type] == priority[resistances[damage_type].type];
+
+                // If both are of level resistance keep one with highest resistance
+                if (samePriority && resistance.type == "resistance") {
+                    if (resistance.reduction > resistances[damage_type].reduction) {
+                        resistances[damage_type] = resistance;
+                    }
+                }
+                // If new resistance priority is higher
+                else if (priority[resistance.type] > priority[resistances[damage_type].type]) {
+                    resistances[damage_type] = resistance;
+                }
+            }
+        };
+
+        // Apply monster resistances
+        applyResistancesOfObject(this.#resistances)
+    }
+
+    set resistances(resistances) {
+        if(!Object.prototype.toString.call(resistances) === "[object Object]") return
+
+        this.#resistances = resistances
+    }
+
+    //=====================================================================================================
+    // Armor Class and Initiative
+    //=====================================================================================================
+
+    get armor_type() {
+        return "None"
+    }
+
+    get initiative_mod() {
+        return this.#initiative_mod
+    }
+
+    get armor_class_detail() {
+        const base = this.#armor_class
+
+        // Condition Bonus
+        let condition_bonus = 0; {
+            for (const name in this.conditions) {
+                const condition = this.conditions[name]
+                if (condition.bonus_armor_class) condition_bonus += condition.bonus_armor_class
+            }
+        }
+
+        // Total armor class
+        let total = base + condition_bonus
+
+        return {total, base, condition_bonus}
     }
 
     //=====================================================================================================
