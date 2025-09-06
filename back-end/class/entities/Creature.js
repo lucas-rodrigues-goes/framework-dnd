@@ -1414,7 +1414,7 @@ var Creature = class extends Entity {
         }
         
         const remaining_seconds = Math.max(0, cond.end_time - Time.current);
-        return TimeUnit.toRounds(remaining_seconds);
+        return Math.round(TimeUnit.toRounds(remaining_seconds));
     }
 
     #migrate_legacy_condition(condition_name, condition) {
@@ -1454,7 +1454,7 @@ var Creature = class extends Entity {
                 durations[name] = -1; // Infinite duration
             } else {
                 const remaining_seconds = Math.max(0, condition.end_time - current_time);
-                durations[name] = TimeUnit.toRounds(remaining_seconds);
+                durations[name] = Math.round(TimeUnit.toRounds(remaining_seconds));
             }
         }
         

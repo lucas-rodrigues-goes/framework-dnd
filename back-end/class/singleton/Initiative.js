@@ -246,6 +246,32 @@ var Initiative = class {
         }
         creature.turn_end()
 
+        // Calculate time advancement based on initiative difference
+        const current_initiative = this.creatures[this.current_creature].initiative
+        const next_creature_id = this.turn_order[1] // Next creature in turn order
+        
+        let initiative_difference = 0
+        
+        if (next_creature_id) {
+            // Normal case: next creature in same round
+            const next_initiative = this.creatures[next_creature_id].initiative
+            initiative_difference = next_initiative - current_initiative
+        } else {
+            // End of round: calculate difference to first creature of next round
+            const first_creature_id = this.turn_order[0]
+            const first_initiative = this.creatures[first_creature_id].initiative
+            // Difference from current to first creature + 12 (round advancement)
+            initiative_difference = (first_initiative + 12) - current_initiative
+        }
+        
+        // Convert initiative difference to time (each initiative point = 0.5 seconds)
+        const time_advancement = initiative_difference * 0.5
+        
+        // Advance global time
+        Time.current = Time.current + time_advancement
+        
+        console.log(`Time advanced by ${time_advancement} seconds (initiative difference: ${initiative_difference}).`, "debug")
+
         // Offset
         const creature_init = this.creatures[this.current_creature]
         const offset = creature_init.offset + 12
