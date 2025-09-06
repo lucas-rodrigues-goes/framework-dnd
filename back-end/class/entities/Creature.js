@@ -1379,6 +1379,17 @@ var Creature = class extends Entity {
         const expired_conditions = [];
         
         for (const [name, condition] of Object.entries(this.conditions)) {
+            // Handle legacy conditions without end_time
+            if (condition.end_time === undefined) {
+                this.#migrate_legacy_condition(name, condition);
+                // Get the updated condition after migration
+                const migrated_condition = this.get_condition(name);
+                if (migrated_condition && migrated_condition.end_time !== -1 && migrated_condition.end_time <= current_time) {
+                    expired_conditions.push(name);
+                }
+                continue;
+            }
+            
             if (condition.end_time !== -1 && condition.end_time <= current_time) {
                 expired_conditions.push(name);
             }
@@ -1396,8 +1407,34 @@ var Creature = class extends Entity {
         const cond = this.get_condition(condition);
         if (!cond || cond.end_time === -1) return -1; // Infinite duration
         
+        // Handle legacy conditions without end_time
+        if (cond.end_time === undefined) {
+            this.#migrate_legacy_condition(condition, cond);
+            return cond.duration; // Return original duration for legacy conditions
+        }
+        
         const remaining_seconds = Math.max(0, cond.end_time - Time.current);
         return TimeUnit.toRounds(remaining_seconds);
+    }
+
+    #migrate_legacy_condition(condition_name, condition) {
+        // Calculate end_time based on current duration and global time
+        if (condition.duration === -1) {
+            condition.end_time = -1; // Infinite duration
+        } else if (condition.duration > 0) {
+            // Convert rounds to seconds and add to current time
+            condition.end_time = Time.current + TimeUnit.rounds(condition.duration);
+        } else {
+            // Duration is 0 or invalid, remove the condition
+            this.remove_condition(condition_name);
+            return;
+        }
+        
+        // Save the migrated condition
+        this.#conditions[condition_name] = condition;
+        this.save();
+        
+        console.log(`Migrated legacy condition "${condition_name}" to new time system.`, "debug");
     }
 
     get_all_remaining_durations() {
@@ -1405,6 +1442,14 @@ var Creature = class extends Entity {
         const current_time = Time.current;
         
         for (const [name, condition] of Object.entries(this.conditions)) {
+            // Handle legacy conditions without end_time
+            if (condition.end_time === undefined) {
+                this.#migrate_legacy_condition(name, condition);
+                // After migration, use the migrated condition
+                durations[name] = condition.duration; // Return original duration for legacy conditions
+                continue;
+            }
+            
             if (condition.end_time === -1) {
                 durations[name] = -1; // Infinite duration
             } else {
