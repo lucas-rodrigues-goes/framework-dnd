@@ -56,7 +56,7 @@ var Time = class {
             unit: {
                 value: unit_labels.join(","),
                 label: "Choose Time Unit",
-                type: "radio",
+                type: "list",
                 options: {
                     delimiter: ",",
                     value: "string",

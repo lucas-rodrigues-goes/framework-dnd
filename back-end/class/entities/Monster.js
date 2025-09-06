@@ -20,39 +20,40 @@ var Monster = class extends Creature {
     temporary_create_screen() {
         // Build the input fields
         const fields = {
-            name:       { label: "Name", type: "text", value: "" },
-            type:       { label: "Type", type: "text", value: "" },
-            race:       { label: "Race", type: "text", value: "" },
-            max_health: { label: "Max Health", type: "text", value: "1" },
-            challenge_rating: { label: "Challenge Rating", type: "text", value: "0" },
-            armor_class: {label: "Armor Class", type: "text", value: "10"},
-            initiative_mod: {label: "Initiative Mod", type: "text", value: "0"},
-            speed:      { label: "Speed", type: "text", value: "30" },
+            name:       { label: "Name", type: "text", value: this.name },
+            type:       { label: "Type", type: "text", value: this.type },
+            race:       { label: "Race", type: "text", value: this.race },
+            max_health: { label: "Max Health", type: "text", value: this.max_health },
+            challenge_rating: { label: "Challenge Rating", type: "text", value: this.challenge_rating },
+            armor_class: {label: "Armor Class", type: "text", value: this.armor_class },
+            initiative_mod: {label: "Initiative Mod", type: "text", value: this.initiative_mod },
+            speed:      { label: "Speed", type: "text", value: this.speed },
 
             // Ability Scores (default 10)
-            str: { label: "Strength", type: "text", value: "10" },
-            dex: { label: "Dexterity", type: "text", value: "10" },
-            con: { label: "Constitution", type: "text", value: "10" },
-            int: { label: "Intelligence", type: "text", value: "10" },
-            wis: { label: "Wisdom", type: "text", value: "10" },
-            cha: { label: "Charisma", type: "text", value: "10" },
+            str: { label: "Strength", type: "text", value: this.ability_scores.strength || "10" },
+            dex: { label: "Dexterity", type: "text", value: this.ability_scores.dexterity || "10" },
+            con: { label: "Constitution", type: "text", value: this.ability_scores.constitution || "10" },
+            int: { label: "Intelligence", type: "text", value: this.ability_scores.intelligence || "10" },
+            wis: { label: "Wisdom", type: "text", value: this.ability_scores.wisdom || "10" },
+            cha: { label: "Charisma", type: "text", value: this.ability_scores.charisma || "10" },
 
             // Extra fields
-            proficiencies: { label: "Proficiencies", type: "text", value: "" },
-            features:      { label: "Features", type: "text", value: "" },
+            proficiencies: { label: "Proficiencies", type: "text", value: this.proficiencies ? Object.entries(this.proficiencies).map(([name, level]) => `${name}:${level}`).join(", ") : "" },
+            features: { label: "Features", type: "text", value: this.features ? this.features.join(", ") : "" },
         };
 
         // Run the input macro
         const result = input(fields);
+        console.log(JSON.stringify(result))
 
         // Parse ability scores
         const ability_scores = {
-            STR: parseInt(result.str) || 10,
-            DEX: parseInt(result.dex) || 10,
-            CON: parseInt(result.con) || 10,
-            INT: parseInt(result.int) || 10,
-            WIS: parseInt(result.wis) || 10,
-            CHA: parseInt(result.cha) || 10,
+            strength: Number(result.str) || 10,
+            dexterity: Number(result.dex) || 10,
+            constitution: Number(result.con) || 10,
+            intelligence: Number(result.int) || 10,
+            wisdom: Number(result.wis) || 10,
+            charisma: Number(result.cha) || 10,
         };
 
         // Parse proficiencies
@@ -61,7 +62,7 @@ var Monster = class extends Creature {
             for (const entry of result.proficiencies.split(", ")) {
                 const [name, level] = entry.split(":");
                 if (name && level) {
-                    proficiencies[name.trim()] = parseInt(level.trim()) || 0;
+                    proficiencies[name.trim()] = Number(level.trim()) || 0;
                 }
             }
         }
@@ -76,7 +77,7 @@ var Monster = class extends Creature {
             name: result.name,
             type: result.type,
             race: result.race,
-            max_health: parseInt(result.max_health) || 1,
+            max_health: result.max_health,
             challenge_rating: result.challenge_rating,
             armor_class: result.armor_class,
             initiative_mod: result.initiative_mod,
@@ -118,7 +119,7 @@ var Monster = class extends Creature {
         // Features
         if (features) {
             for (const name of features) {
-                this.add_feature(name)
+                if (!this.has_feature(name)) this.add_feature(name)
             }
         }
 
@@ -326,13 +327,22 @@ var Monster = class extends Creature {
         this.#challenge_rating = object.challenge_rating || this.#challenge_rating
         this.#max_health = object.max_health ?? this.#max_health
         this.#condition_immunities = object.condition_immunities ?? this.#condition_immunities
+        this.#resistances = object.resistances ?? this.#resistances
+        this.#armor_class = object.armor_class ?? this.#armor_class
+        this.#initiative_mod = object.initiative_mod ?? this.#initiative_mod
     
-        this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
+        this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
     }
     
     save() {
         const object = {
             ...super.save(),
+            challenge_rating: this.#challenge_rating,
+            max_health: this.#max_health,
+            condition_immunities: this.#condition_immunities,
+            resistances: this.#resistances,
+            armor_class: this.#armor_class,
+            initiative_mod: this.#initiative_mod,
             experience: this.experience,
             classes: this.classes,
         }
