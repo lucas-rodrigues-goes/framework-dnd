@@ -37,7 +37,7 @@ var Time = class {
 
     // Setters
     static set current(current) {
-        this._seconds = current
+        this._seconds = this.#roundSeconds(current)
     }
 
     // Methods
@@ -74,7 +74,10 @@ var Time = class {
         const total_seconds = TimeUnit[unit + "s"](Number(amount))
 
         // Apply the increase
-        this._seconds = this._seconds + total_seconds
+        this._seconds = this.#roundSeconds(this._seconds + total_seconds)
+        
+        // Check for expired conditions on all creatures
+        this.check_all_creature_conditions()
     }
 
 
@@ -124,12 +127,46 @@ var Time = class {
         total_seconds += TimeUnit.seconds(Number(values.second))
 
         // Replace the stored time
-        this._seconds = total_seconds
+        this._seconds = this.#roundSeconds(total_seconds)
+        
+        // Check for expired conditions on all creatures
+        this.check_all_creature_conditions()
+    }
+
+    // Check all creature conditions for expiration
+    static check_all_creature_conditions() {
+        try {
+            const creatures = mapCreatures();
+            let total_expired = 0;
+            
+            for (const creature of creatures) {
+                if (creature && typeof creature.check_expired_conditions === 'function') {
+                    const had_expired = creature.check_expired_conditions();
+                    if (had_expired) total_expired++;
+                }
+            }
+            
+            if (total_expired > 0) {
+                console.log(`Time advanced: ${total_expired} creature(s) had expired conditions removed.`, "debug");
+            }
+        } catch (error) {
+            console.log(`Error checking creature conditions: ${error.message}`, "debug");
+        }
     }
 
 
 
     // Helpers
+    static #roundSeconds(seconds) {
+        // Round seconds, but keep 0.5 exactly as 0.5
+        const fractional = seconds % 1;
+        if (fractional === 0.5) {
+            return seconds; // Keep exactly 0.5
+        } else {
+            return Math.round(seconds); // Round all other fractional seconds
+        }
+    }
+
     static #breakdown(seconds) {
         let remaining = seconds
         const breakdown = {}
@@ -141,7 +178,7 @@ var Time = class {
             remaining -= count * factor
         }
 
-        // Keep fractional seconds
+        // Keep fractional seconds (now properly rounded)
         breakdown.second += remaining
         return breakdown
     }

@@ -531,7 +531,7 @@
 				updateSavingThrows()
 
 				// Update conditions
-				function updateConditions () {
+				async function updateConditions () {
 					if (!isEqualJSON(character_tab.conditions, character.conditions)) {
 						character_tab.conditions = character.conditions
 
@@ -539,12 +539,15 @@
 						const conditions = document.getElementById("character-conditions")
 						conditions.clearChildren()
 
+						// Get all remaining durations at once
+						const remaining_durations = await backend(`character.get_all_remaining_durations()`)
+						
 						// Append Conditions
 						for (const name in character.conditions) {
-							// From character
+							// From character - use remaining duration
 							const duration = (
-								character.conditions[name].duration != -1 
-								? timeUnit(character.conditions[name].duration) 
+								remaining_durations[name] != -1 
+								? timeUnit(remaining_durations[name]) 
 								: ""
 							)
 

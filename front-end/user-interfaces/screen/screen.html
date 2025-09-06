@@ -985,8 +985,11 @@
                 // Update conditions
                 const target_HUD_conditions = getId("current-target-conditions")
                 target_HUD_conditions.clearChildren()
+                
+                // Get all remaining durations at once
+                const remaining_durations = await backend(`target.get_all_remaining_durations()`)
+                
                 for (const name in target.conditions) {
-                    
                     const condition = target.conditions[name]
                     if (!database_conditions[name]) continue
                     const image = database_conditions[name].image || ""
@@ -996,7 +999,7 @@
                             style: {position: "relative", height: "2.8vh", width: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
                             attributes: {
                                 class: "tooltip tooltip-bottom tooltip-condition",
-                                tooltip: name + (condition.duration != -1 ? " (" + timeUnit(condition.duration).toLowerCase() + ")" : "")
+                                tooltip: name + (remaining_durations[name] != -1 ? " (" + timeUnit(remaining_durations[name]).toLowerCase() + ")" : "")
                             },
                             children: [
                                 {tag: "img", 
@@ -1013,12 +1016,12 @@
                                     },
                                     style: {
                                         position: "absolute",
-                                        display: (condition.duration != -1 && condition.duration < 999 ? "" : "none"),
+                                        display: (remaining_durations[name] != -1 && remaining_durations[name] < 999 ? "" : "none"),
                                         bottom: "-1.5vh",
                                         right: "-0.3vh",
                                         fontSize: "80%"
                                     }, 
-                                    text: condition.duration
+                                    text: remaining_durations[name]
                                 }
                             ]
                         }

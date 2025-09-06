@@ -238,7 +238,6 @@ var Creature = class extends Entity {
     turn_start() {
         {// Turn start refreshes
             this.update_state()
-            this.reduce_all_conditions_duration(1)
             this.maintain_stealth(true)
             this.passive_search()
 
@@ -1302,10 +1301,22 @@ var Creature = class extends Entity {
             return;
         }
 
-        // If duration is higher than one or infinite (-1)
-        if (duration >= 1 || duration === -1) {
+        // Calculate end time based on duration
+        let end_time = null;
+        if (duration === -1) {
+            // Infinite duration (permanent conditions)
+            end_time = -1;
+        } else if (duration >= 1) {
+            // Convert rounds to seconds and add to current time
+            end_time = Time.current + TimeUnit.rounds(duration);
+        }
+
+        // If duration is valid, set the condition
+        if (end_time !== null) {
             this.#conditions[condition] = {
                 ...object,
+                end_time: end_time,
+                // Keep duration for display/logging purposes
                 duration: duration,
             };
 
@@ -1363,15 +1374,46 @@ var Creature = class extends Entity {
         this.save();
     }
 
-    reduce_all_conditions_duration(amount = 1) {
-        for (const name in this.conditions) {
-            const condition = this.get_condition(name)
-
-            if (condition.duration != -1) {
-                const new_duration = Math.max(condition.duration - amount, 0)
-                this.set_condition(name, new_duration, condition)
+    check_expired_conditions() {
+        const current_time = Time.current;
+        const expired_conditions = [];
+        
+        for (const [name, condition] of Object.entries(this.conditions)) {
+            if (condition.end_time !== -1 && condition.end_time <= current_time) {
+                expired_conditions.push(name);
             }
         }
+        
+        // Remove expired conditions
+        for (const condition_name of expired_conditions) {
+            this.remove_condition(condition_name);
+        }
+        
+        return expired_conditions.length > 0;
+    }
+
+    get_remaining_duration(condition) {
+        const cond = this.get_condition(condition);
+        if (!cond || cond.end_time === -1) return -1; // Infinite duration
+        
+        const remaining_seconds = Math.max(0, cond.end_time - Time.current);
+        return TimeUnit.toRounds(remaining_seconds);
+    }
+
+    get_all_remaining_durations() {
+        const durations = {};
+        const current_time = Time.current;
+        
+        for (const [name, condition] of Object.entries(this.conditions)) {
+            if (condition.end_time === -1) {
+                durations[name] = -1; // Infinite duration
+            } else {
+                const remaining_seconds = Math.max(0, condition.end_time - current_time);
+                durations[name] = TimeUnit.toRounds(remaining_seconds);
+            }
+        }
+        
+        return durations;
     }
 
     has_condition(name, visited = new Set()) {
