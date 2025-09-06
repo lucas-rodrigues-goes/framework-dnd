@@ -383,7 +383,7 @@
 
 			let character_tab = {
 				basic: {}, info: {}, skills: {}, saving_throws: {}, 
-				conditions: {}, features: {}, proficiencies: {}, resistances: {}
+				conditions: {}, remaining_condition_durations: {}, features: {}, proficiencies: {}, resistances: {}
 			}
 			async function updateCharacterTab() {
 				// Character
@@ -412,6 +412,7 @@
 						skills: impersonated().skills,
 						saving_throws: impersonated().saving_throws,
 						conditions: impersonated().conditions,
+						remaining_condition_durations: impersonated().get_all_remaining_durations(),
 						features: impersonated().features,
 						proficiencies: impersonated().proficiencies
 					}
@@ -532,22 +533,24 @@
 
 				// Update conditions
 				async function updateConditions () {
-					if (!isEqualJSON(character_tab.conditions, character.conditions)) {
+					if (
+						!isEqualJSON(character_tab.conditions, character.conditions) && 
+						!isEqualJSON(character_tab.remaining_condition_durations, character.remaining_condition_durations)
+					) {
 						character_tab.conditions = character.conditions
+						character_tab.remaining_condition_durations = character.remaining_condition_durations
 
 						// Clear conditions
 						const conditions = document.getElementById("character-conditions")
 						conditions.clearChildren()
-
-						// Get all remaining durations at once
-						const remaining_durations = await backend(`character.get_all_remaining_durations()`)
 						
 						// Append Conditions
 						for (const name in character.conditions) {
 							// From character - use remaining duration
+							const remaining_duration = character.remaining_condition_durations[name]
 							const duration = (
-								remaining_durations[name] != -1 
-								? timeUnit(remaining_durations[name]) 
+								remaining_duration != -1 
+								? timeUnit(remaining_duration) 
 								: ""
 							)
 
