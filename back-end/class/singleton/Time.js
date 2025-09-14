@@ -3,6 +3,7 @@
 //=====================================================================================================
 // Time Class
 //=====================================================================================================
+
 var Time = class {
 
     // Stored Attributes
@@ -78,6 +79,9 @@ var Time = class {
         
         // Check for expired conditions on all creatures
         this.check_all_creature_conditions()
+
+        // Update maps
+        this.update_time_of_day()
     }
 
 
@@ -131,6 +135,9 @@ var Time = class {
         
         // Check for expired conditions on all creatures
         this.check_all_creature_conditions()
+
+        // Update maps
+        this.update_time_of_day()
     }
 
     // Check all creature conditions for expiration
@@ -152,6 +159,36 @@ var Time = class {
         } catch (error) {
             console.log(`Error checking creature conditions: ${error.message}`, "debug");
         }
+    }
+
+    static update_time_of_day() {
+        const hour = JSON.parse(this.json).hour
+        const daytime = hour >= 6 && hour < 18 ? "day" : "night"
+        const maps = MTScript.evalMacro(`[r:getAllMapNames()]`).split(",")
+        const current_map = MTScript.evalMacro(`[r:getCurrentMapName()]`)
+
+        for (const map of maps) {
+            const tokens = MapTool.tokens.getMapTokens(map)
+            MTScript.evalMacro(`[r:setCurrentMap("${map}")]`)
+            let isExteriorMap = false // Maps that contain a DAY or NIGHT mode are exterior maps
+
+            // Change Background Image
+            for (const token of tokens) {
+                const gm_name = MTScript.evalMacro(`[r:getGMName("${token.getId()}")]`)
+                if (gm_name != "day" && gm_name != "night") continue
+                if (daytime == gm_name) {
+                    MTScript.evalMacro(`[r:bringToFront("${token.getId()}")]`)
+                }
+
+                isExteriorMap = true
+            }
+
+            // Change map vision
+            const vision = isExteriorMap ? daytime : "off" 
+            MTScript.evalMacro(`[r:setMapVision("${vision}")]`)
+        }
+
+        MTScript.evalMacro(`[r:setCurrentMap("${current_map}")]`)
     }
 
 
@@ -188,6 +225,7 @@ var Time = class {
 //=====================================================================================================
 // TimeUnit Class
 //=====================================================================================================
+
 var TimeUnit = class {
 
     static UNITS = {
