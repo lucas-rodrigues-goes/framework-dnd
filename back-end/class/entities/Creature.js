@@ -1874,12 +1874,13 @@ var Creature = class extends Entity {
 
     // Returns notes ordered
     get notes() {
-        return [...this.#notes].sort((a, b) => a.order - b.order);
+        return [...this.#notes]
     }
 
     // Adds a new note
     add_note({text="", title="", order=100}) {
         this.#notes.push({ text, title, order })
+        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
     }
 
     // Edits a note, if the note sent does not exist does nothing
@@ -1888,14 +1889,13 @@ var Creature = class extends Entity {
         if (index == -1) return
 
         this.#notes[index] = { text, title, order }
+        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
     }
 
     // Removes a note, if it is a match in the existing notes
-    remove_note(note) {
-        const index = this.#notes.indexOf(note)
-        if (index == -1) return
-
+    remove_note(index) {
         this.#notes.splice(index, 1)
+        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
     }
 
     //=====================================================================================================

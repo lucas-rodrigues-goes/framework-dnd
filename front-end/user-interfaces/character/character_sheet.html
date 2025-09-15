@@ -361,18 +361,35 @@
 			async function addNote() {
 				modal({parent: document.getElementById("journal-tab"), options: {content: {style: {padding: "1vh"}}}, children: [
 					{tag: "div", attributes: {class: "input-container"}, style: {margin: 0}, children: [
-						input({id: "modal-note-title", placeholder: "Title", options: {div: {style: {marginTop: "1vh", width: "99%"}}}}),
-						textarea({id: "modal-note-text", placeholder: "Content", 
-							options: {
-								div: {style: {marginTop: "1vh"}},
-								placeholder: {style: {top: 0}},
-								input: {style: {borderStyle: "solid", borderRadius: "0.5vh", marginTop: "3vh", height: "10vh"}}
+						input({id: "modal-note-title", placeholder: "Title", options: {div: {style: {marginTop: "1vh", width: "69%"}}}}),
+						input({id: "modal-note-order", placeholder: "Order (number)", options: {div: {style: {marginTop: "1vh", marginLeft: "1%", width: "28%"}}}}),
+						{tag: "textarea", 
+							attributes: {
+								id: "modal-note-content",
+								placeholder: "Content of the note..."
+							},
+							style: {
+								all: "unset", 
+								width: "95%", height: "20vh",
+								border: "1px solid #666",
+								borderRadius: "1vh",
+								marginTop: "2vh",
+								padding: "1vh",
+
+								textAlign: "left",
+								wordWrap: "break-word",
 							}
-						})
-						/* {tag: "textarea", 
-							attributes: {class: "input-container"},
-							style: {border: "1px solid #888", borderRadius: "0.5vh", height: "20vh"}
-						} */
+						},
+						{tag: "button", style: {marginTop: "2vh"}, text: "Create Note", events: {
+							click: function () {
+								const title = document.getElementById("modal-note-title").value
+								const order = Number(document.getElementById("modal-note-order").value) || 100
+								const content = document.getElementById("modal-note-content").value
+
+								backend("impersonated().add_note({text: `"+content+"`, order: "+order+", title: `"+title+"`})")
+								close_modal()
+							}
+						}}
 					]}
 				]})
 			}
@@ -1068,7 +1085,6 @@
 				updateResistances()
 			}
 
-			/*
 			let abilities_tab = {
 				classes: {},
 				resources: {},
@@ -1290,7 +1306,6 @@
 				// Cashing
 				abilities_tab = character
 			}
-			*/
 
 			let spells_tab = {
 				classes: {},
@@ -1611,6 +1626,38 @@
 				updateSpellSlots()
 			}
 
+			let notes_tab = {
+				character_notes: []
+			}
+			async function updateNotesTab() {
+				const character_notes = JSON.parse(await backend("impersonated().notes"))
+				const notes_list_element = document.getElementById("journal-tab-notes-list")
+
+				if (isEqualJSON(character_notes, notes_tab.character_notes)) return
+				notes_list_element.clearChildren()
+				notes_tab.character_notes = character_notes
+
+				for (const note of character_notes) {
+					const {title, order, text} = note
+
+					collapsible(
+						{parent: notes_list_element,
+							options: {
+								button: {
+									style: {display: "flex", gap: "1vh", width: "110%", right: "10%", padding: "0.5vh", margin: "0 1vh"}, 
+									events: {},
+									attributes: {class: ""}
+								},
+							},
+							button_children: [
+								{tag: "span", text: title},
+								{tag: "span", style: {position: "absolute", right: "1vh", opacity: 0.1}, text: order}
+							],
+						}
+					)
+				}
+			}
+
 			//=====================================================================================================
 			// Create HTML
 			//=====================================================================================================
@@ -1845,6 +1892,7 @@
 				updateCharacterTab()
 				//updateAbilitiesTab()
 				updateSpellsTab()
+				updateNotesTab()
 
 				// Set update intervals
 				setInterval(()=> {
