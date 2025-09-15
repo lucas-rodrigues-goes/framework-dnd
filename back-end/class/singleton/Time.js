@@ -77,6 +77,10 @@ var Time = class {
         // Apply the increase
         this._seconds = this.#roundSeconds(this._seconds + total_seconds)
         
+        // Logging
+        const plural = Number(amount) == 1 ? "" : "s"
+        console.log(`Time advanced by ${amount} ${selected_label.toLowerCase()}${plural}.`, "all")
+        
         // Check for expired conditions on all creatures
         this.check_all_creature_conditions()
 
