@@ -1,15 +1,65 @@
 # D&D Framework for MapTool
 
-This framework aims to create an intuitive system for DMs that allow somewhat easy addition of new items/features/classes/races. While providing intuitive screens that should be more game-like, to offer an easier experience for both veteran players and newcomers.
+This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is heavily based on **D&D 5e core rules**, it incorporates many homebrew systems that would be cumbersome to manage manually (most, if not all, of these are combat-related).  
 
-## Main Goals
+## Current Features
 
-- A database with easy access and editing of player classes, races, conditions, features, items, spells and more.
-- Character sheet, inventory, journal, and abilities/spells page for players.
-- Dynamic day/night switching through an in-game clock (that is advanced as rounds go on, or at GMs control).
-- Easy addition of mp3 files to Maptool for ambience, music, etc (Integration using [JUH's MTScripts](https://forums.rptools.net/viewtopic.php?t=29143)).
-- Code that is easier to read/modify for those wanting to make their own thing from this framework (This project is being written in JavaScript, instead of MTScript).
+- **Character Creation**  
+- **Interactive Character Sheet**  
+- **Drag-and-Drop Inventory**  
+- **Spell Learning and Memorization** for single- and multi-class characters  
+- **Journal/Notes Entries** for every token *(WIP)*  
+- **Automated Actions, Abilities, and Spells** displayed through an **Action Bar HUD**  
+- **Automated Initiative** (Homebrew System)  
+- **Calendar and Time Tracking** with an automatic day-night cycle based on the current hour.
 
-## Currently
+---
 
-The project is still in development, if you want to have a preview of its current iteration, you can download the framework.cmpg file and open it on MapTool to have a look
+## Screenshots
+
+### Interface
+
+![Interface 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%200.png)
+![Interface 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%201.png)
+![Interface 2](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%202.png)
+![Interface 3](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%203.png)
+![Interface 4](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%204.png)
+
+---
+
+### Character Creation
+
+![Character Creation 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%200.png)
+![Character Creation 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png)
+![Character Creation 2](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%202.png)
+![Character Creation 3](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png)
+![Character Creation 4](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png)
+![Character Creation 5](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png)
+![Character Creation 6](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%206.png)
+![Character Creation 7](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%207.png)
+![Character Creation 8](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%208.png)
+
+---
+
+### Character Sheet
+
+![Character Sheet](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet.png)
+
+---
+
+### Inventory
+
+![Inventory](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Inventory.png)
+
+---
+
+### Spells
+
+![Spells](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Spells.png)
+
+---
+
+### Day-Night Cycle
+
+![Day Night Cycle 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cycle%200.png)
+![Day Night Cycle 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cicle%201.png)
