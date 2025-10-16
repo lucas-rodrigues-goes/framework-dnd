@@ -23,53 +23,43 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
 - **Sound System** integration with **JUH** for local audio files (currently used for damage sounds).
 - **Calendar and Time Tracking** with an automatic day-night cycle based on the current hour.
 
----
-
 ## Screenshots
 
 ### Interface
 
-![Interface 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%200.png)
-![Interface 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%201.png)
-![Interface 2](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%202.png)
-![Interface 3](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%203.png)
-![Interface 4](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%204.png)
-
----
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%200.png" width="450" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%201.png" width="450" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%202.png" width="450" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%203.png" width="450" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%204.png" width="450" />
+</div>
 
 ### Character Creation
 
-![Character Creation 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%200.png)
-![Character Creation 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png)
-![Character Creation 2](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%202.png)
-![Character Creation 3](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png)
-![Character Creation 4](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png)
-![Character Creation 5](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png)
-![Character Creation 6](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%206.png)
-![Character Creation 7](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%207.png)
-![Character Creation 8](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%208.png)
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%200.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%202.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%206.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%207.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%208.png" width="300" />
+</div>
 
----
+### Character Screens
 
-### Character Sheet
-
-![Character Sheet](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet.png)
-
----
-
-### Inventory
-
-![Inventory](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Inventory.png)
-
----
-
-### Spells
-
-![Spells](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Spells.png)
-
----
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Inventory.png" width="300" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Spells.png" width="300" />
+</div>
 
 ### Day-Night Cycle
 
-![Day Night Cycle 0](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cycle%200.png)
-![Day Night Cycle 1](https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cicle%201.png)
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cycle%200.png" width="450" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cicle%201.png" width="450" />
+</div>
