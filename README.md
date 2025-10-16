@@ -4,12 +4,12 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
 
 ## Goals for first release
 
-- **Player Classes:** 5/6 (Barbarian, Cleric, Fighter, Rogue, Wizard)
+- **Player Classes:** 5/6
 - **Implemented Spells:** 22 / 51
 - **Combat Proficiencies (Homebrew):** 9 / 28
 - **Journal/Notes Entries:** In development..
 - **Monster Creation:** In development..
-- **Audio Player for persistent background music**
+- **Audio Player**
 - **Organized Map Navigation**
 
 ## Current Features
