@@ -2,15 +2,25 @@
 
 This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is heavily based on **D&D 5e core rules**, it incorporates many homebrew systems that would be cumbersome to manage manually (most, if not all, of these are combat-related).  
 
+## Goals for first release
+
+- **Player Classes:** 5/6 (Barbarian, Cleric, Fighter, Rogue, Wizard)
+- **Implemented Spells:** 22 / 51
+- **Combat Proficiencies (Homebrew):** 9 / 28
+- **Journal/Notes Entries:** In development..
+- **Monster Creation:** In development..
+- **Audio Player for persistent background music**
+- **Organized Map Navigation**
+
 ## Current Features
 
 - **Character Creation**  
 - **Interactive Character Sheet**  
 - **Drag-and-Drop Inventory**  
 - **Spell Learning and Memorization** for single- and multi-class characters  
-- **Journal/Notes Entries** for every token *(WIP)*  
-- **Automated Actions, Abilities, and Spells** displayed through an **Action Bar HUD**  
-- **Automated Initiative** (Homebrew System)  
+- **Automated Actions, Abilities, and Spells** displayed through an **Action Bar HUD**
+- **Automated Initiative** (Homebrew System)
+- **Sound System** integration with **JUH** for local audio files (currently used for damage sounds).
 - **Calendar and Time Tracking** with an automatic day-night cycle based on the current hour.
 
 ---
