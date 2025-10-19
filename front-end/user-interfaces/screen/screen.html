@@ -667,7 +667,9 @@
             let classes_spellcasting = ""; {
 
             }
-            for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+            if (character.classes && Object.keys(character.classes).length > 0) {
+                for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+            }
             character["spellcasting"] = JSON.parse(await backend(`JSON.stringify({
                 `+classes_spellcasting+`
             })`))

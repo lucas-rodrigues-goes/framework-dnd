@@ -443,6 +443,9 @@
 							level_up_experience: impersonated().level_up_experience || 0,
 							classes: impersonated().classes,
 							ability_scores: impersonated().ability_scores,
+							// Monster
+							challenge_rating: impersonated().challenge_rating,
+							exp: impersonated().exp
 						},
 						info: {
 							"Race": impersonated().race,
@@ -490,6 +493,7 @@
 						const level_div = document.getElementById("level-div")
 						level_div.clearChildren()
 						updateEXPBar(experiencePercent)
+						// Ready to level up
 						if(character.basic.experience >= character.basic.level_up_experience && character.basic.level < 20) {
 							level_div.classList.add("level-up")
 							level_div.setAttribute("tooltip", "You have reached level " + (character.basic.level + 1) + "!")
@@ -499,6 +503,12 @@
 								events: {click: () => openPage("character_level_up.html", "")}
 							})
 						}
+						// Monster
+						else if (!character.basic.experience) {
+							level_div.appendChild({tag:"span", text: character.basic.challenge_rating})
+							level_div.setAttribute("tooltip", character.basic.exp + " XP")
+						}
+						// Regular Case
 						else {
 							level_div.classList.remove("level-up")
 							level_div.setAttribute("tooltip", character.basic.level < 20 ? character.basic.experience + " / " + character.basic.level_up_experience + " XP" : "Maximum Level")
@@ -512,6 +522,7 @@
 							class_text += capitalize(cls) + (Object.keys(character.basic.classes).length > 1 ? " " + character.basic.classes[cls].level : "")
 						}
 						document.getElementById("class").textContent = class_text || "None"
+						if (character.basic.challenge_rating) document.getElementById("class").textContent = "Monster"
 
 						// Ability Scores
 						for (const score in character.basic.ability_scores) {
