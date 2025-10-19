@@ -1872,7 +1872,7 @@ var Creature = class extends Entity {
     // Notes
     //=====================================================================================================
 
-    // Returns notes
+    // Returns ordered array of notes
     get notes() {
         if (Array.isArray(this.#notes)) this.#notes = {} // Backwards compatibility
 
@@ -1885,18 +1885,15 @@ var Creature = class extends Entity {
         return return_notes
     }
 
-    // Adds a new note
     add_note({text="", title="", order=100}) {
         this.#notes[title] = {title, text, order}
     }
 
-    // Edits a note, if the note sent does not exist does nothing
     edit_note(key, {text="", title="", order=100}) {
         this.remove_note(key)
         this.add_note({text, title, order})
     }
 
-    // Removes a note, if it is a match in the existing notes
     remove_note(title) {
         delete this.#notes[title]
     }
@@ -1905,7 +1902,7 @@ var Creature = class extends Entity {
     // Instance
     //=====================================================================================================
 
-    constructor(id, reset, inherit) { // Now explicitly takes (id, reset)
+    constructor(id, reset, inherit) {
         super(id)
 
         // Reset validation
@@ -1935,7 +1932,7 @@ var Creature = class extends Entity {
         this.#race = object.race || this.#race;
         this.#ability_scores = object.ability_scores || this.#ability_scores;
         this.#speed = object.speed || this.#speed;
-        this.#health = object.health ?? this.#health; // Use ?? to preserve 0 as valid
+        this.#health = object.health ?? this.#health;
         this.#resources = object.resources || this.#resources;
         this.#features = object.features || this.#features;
         this.#proficiencies = object.proficiencies || this.#proficiencies;

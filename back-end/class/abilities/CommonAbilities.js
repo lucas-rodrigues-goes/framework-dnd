@@ -99,7 +99,7 @@ var CommonAbilities = class extends Abilities {
             },
         }
 
-        {// Attack
+        /* Attack */ {
             // Validations
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
@@ -117,7 +117,7 @@ var CommonAbilities = class extends Abilities {
             abilities_list["attack"].image = image
         }
         
-        {// Off Hand Attack
+        /* Off Hand Attack */ {
             // Validations
             const off_hand_weapon = database.items.data[creature.equipment["primary off hand"]?.name];
             const hasOffHandWeapon = off_hand_weapon ? off_hand_weapon.subtype == "weapon" : false
@@ -143,7 +143,7 @@ var CommonAbilities = class extends Abilities {
             }
         }
 
-        {// Opportunity Attack
+        /* Opportunity Attack */ { 
             // Validations
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name];
             const hasWeapon = weapon ? true : false
@@ -173,7 +173,7 @@ var CommonAbilities = class extends Abilities {
             }
         }
 
-        {// Switch Weapon
+        /* Switch Weapon */ {
             const hasInitiative = Initiative.turn_order.includes(creature.id)
             const canUse = hasInitiative ? Initiative.current_creature == creature.id : true
             if (canUse && (creature.equipment["secondary main hand"] != undefined || creature.equipment["secondary off hand"] != undefined)) {
@@ -189,7 +189,7 @@ var CommonAbilities = class extends Abilities {
             }
         }
 
-        {// Escape Grapple
+        /* Escape Grapple */ { 
             if (creature.has_condition("Grappled")) {
                 abilities_list.escape_grapple = {
                     name: "Escape Grapple",
@@ -203,7 +203,7 @@ var CommonAbilities = class extends Abilities {
             }
         }
 
-        {// Stop Grappling
+        /* Stop Grappling */ { 
             if (creature.has_condition("Grappling")) {
                 abilities_list.stop_grappling = {
                     name: "Stop Grappling",
@@ -217,7 +217,7 @@ var CommonAbilities = class extends Abilities {
             }
         }
 
-        {// Stand up
+        /* Stand up */ { 
             if (creature.has_condition("Prone")) {
                 abilities_list.stand_up = {
                     name: "Stand up",
@@ -239,7 +239,9 @@ var CommonAbilities = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
 
     static escape_grapple() {return}
+
     static stop_grappling() {return}
+
     static stand_up () {return}
 
     //---------------------------------------------------------------------------------------------------
@@ -574,7 +576,7 @@ var CommonAbilities = class extends Abilities {
         // Logging
         console.log(`${creature.name_color} is readying an action.`, "all")
     }
-
+    
     static switch_weapon() {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements("switch_weapon", false);

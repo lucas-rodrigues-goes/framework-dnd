@@ -11,9 +11,7 @@ var ProficiencyAbilities = class extends Abilities {
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name]
 
             // Multishot
-            if (
-                creature.get_proficiency_level("Bow") >= 2 && weapon.properties.includes("Bow")
-            ) abilities_list["multishot"] = {
+            if (creature.get_proficiency_level("Bow") >= 2 && weapon.properties.includes("Bow")) abilities_list["multishot"] = {
                 resources: ["Attack Action"],
                 description: `When you use this ability, you can choose to strike up to 2 adjacent targets with a -5 penalty to your hit bonus, or 3 adjacent targets at a -7 penalty.`,
                 image: "asset://8f1fd7e5fa3d764630f297ae0181ded0",
@@ -22,8 +20,7 @@ var ProficiencyAbilities = class extends Abilities {
             }
 
             // Cleave
-            if (
-                creature.get_proficiency_level("Sword") >= 2 && weapon.properties.includes("Greatsword") ||
+            if (creature.get_proficiency_level("Sword") >= 2 && weapon.properties.includes("Greatsword") ||
                 creature.get_proficiency_level("Axe") >= 2 && weapon.properties.includes("Greataxe") ||
                 creature.get_proficiency_level("Polearm") >= 2 && weapon.properties.includes("Glaive")
             ) abilities_list["cleave"] = {

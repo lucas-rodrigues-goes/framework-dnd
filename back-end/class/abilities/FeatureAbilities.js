@@ -96,7 +96,6 @@ var FeatureAbilities = class extends Abilities {
     // Barbarian
     //---------------------------------------------------------------------------------------------------
 
-    // Rage
     static rage() {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements("rage", false);
@@ -127,7 +126,6 @@ var FeatureAbilities = class extends Abilities {
         public_log(`${creature.name_color} is enraged!`)
     }
 
-    // Reckless Attack
     static reckless_attack() {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements("reckless_attack", false);
@@ -148,7 +146,6 @@ var FeatureAbilities = class extends Abilities {
     // Fighter
     //---------------------------------------------------------------------------------------------------
 
-    // Second Wind
     static second_wind() {
         const action_name = "second_wind"
 
@@ -168,7 +165,6 @@ var FeatureAbilities = class extends Abilities {
         public_log(`${creature.name_color} has utilized second wind, regaining ${healing} hit points`)
     }
 
-    // Action Surge
     static action_surge() {
         const action_name = "action_surge"
 
@@ -192,7 +188,6 @@ var FeatureAbilities = class extends Abilities {
     // Rogue
     //---------------------------------------------------------------------------------------------------
 
-    // Sneak Attack
     static sneak_attack() {
         const action_name = "sneak_attack"
         const slot = "primary main hand"
@@ -231,7 +226,6 @@ var FeatureAbilities = class extends Abilities {
         console.log(attack_result.message, "all")
     }
 
-    // Cunning Action Dash
     static cunning_action_dash () {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements("cunning_action_dash", false);
@@ -251,7 +245,6 @@ var FeatureAbilities = class extends Abilities {
         public_log(creature.name_color + " dashes, gaining extra movement for this round.")
     }
     
-    // Cunning Action Disengage
     static cunning_action_disengage () {
         // Requirements
         const { valid, creature, action_details } = this.check_action_requirements("cunning_action_disengage", false);
@@ -268,7 +261,6 @@ var FeatureAbilities = class extends Abilities {
         public_log(creature.name_color + " disengages, gaining immunity to opportunity attacks.")
     }
 
-    // Cunning Action Hide
     static cunning_action_hide () {
         // Free unhide
         const creature = impersonated()
@@ -295,7 +287,6 @@ var FeatureAbilities = class extends Abilities {
     // Wizard
     //---------------------------------------------------------------------------------------------------
     
-    // Arcane Recovery
     static arcane_recovery(level) {
         const creature = impersonated()
         const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
