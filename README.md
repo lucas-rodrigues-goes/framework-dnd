@@ -7,7 +7,6 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
 - **Player Classes:** 5/6
 - **Implemented Spells:** 22 / 51
 - **Combat Proficiencies (Homebrew):** 9 / 28
-- **Journal/Notes Entries:** In development..
 - **Monster Creation:** In development..
 - **Audio Player**
 - **Organized Map Navigation**
@@ -22,6 +21,7 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
 - **Automated Initiative** (Homebrew System)
 - **Sound System** integration with **JUH** for local audio files (currently used for damage sounds).
 - **Calendar and Time Tracking** with an automatic day-night cycle based on the current hour.
+- **Journal/Notes Entries** a creature's owner may create notes through the journal tab in the character sheet. 
 
 ## Screenshots
 
@@ -55,6 +55,7 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
   <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet.png" width="250" />
   <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Inventory.png" width="250" />
   <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Spells.png" width="250" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Journal.png" width="250" />
 </div>
 
 ### Day-Night Cycle
