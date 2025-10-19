@@ -372,11 +372,12 @@
 					const content = document.getElementById("note-content").value
 
 					if (newNote) await backend("impersonated().add_note({text: `"+content+"`, order: "+order+", title: `"+title+"`})")
-					else await backend("impersonated().edit_note("+JSON.stringify(note)+", {text: `"+content+"`, order: "+order+", title: `"+title+"`})")
+					else await backend("impersonated().edit_note(`"+note.title+"`, {text: `"+content+"`, order: "+order+", title: `"+title+"`})")
 
 					updateNotesTab()
 					journal_tab_element.clearChildren()
 				}
+				
 				// Delete note button
 				async function deleteNote() {
 					if (newNote) return
@@ -406,6 +407,7 @@
 							padding: "1vh",
 
 							textAlign: "left",
+							whiteSpace: "pre-wrap",
 							wordWrap: "break-word",
 						}
 					},
@@ -1689,7 +1691,7 @@
 							},
 							button_children: [
 								{tag: "span", text: title},
-								{tag: "span", style: {position: "absolute", right: "1vh", opacity: 0.1}, text: order}
+								{tag: "span", style: {position: "absolute", right: "1vh", opacity: 0.1, display: order == 100 ? "none" : ""}, text: order}
 							],
 						}
 					)
@@ -1819,7 +1821,10 @@
 							},
 							children: [
 								{tag: "div", attributes: {id: "journal-tab-notes-list"}},
-								{tag: "button", style: {position: "sticky", bottom: "1vh"}, events: {click: () => noteOpen()}, text: "Add Note"},
+								{tag: "button", style: {position: "sticky", bottom: "1vh"}, events: {click: () => {
+									for (const elem of document.getElementById("journal-tab-notes-list").children) elem.children[0].classList.remove("selected")
+									noteOpen()
+								}}, text: "Add Note"},
 							]
 						})
 					]},
