@@ -358,40 +358,67 @@
 			}
 
 			// Notes
-			async function addNote() {
-				modal({parent: document.getElementById("journal-tab"), options: {content: {style: {padding: "1vh"}}}, children: [
-					{tag: "div", attributes: {class: "input-container"}, style: {margin: 0}, children: [
-						input({id: "modal-note-title", placeholder: "Title", options: {div: {style: {marginTop: "1vh", width: "69%"}}}}),
-						input({id: "modal-note-order", placeholder: "Order (number)", options: {div: {style: {marginTop: "1vh", marginLeft: "1%", width: "28%"}}}}),
-						{tag: "textarea", 
-							attributes: {
-								id: "modal-note-content",
-								placeholder: "Content of the note..."
-							},
-							style: {
-								all: "unset", 
-								width: "95%", height: "20vh",
-								border: "1px solid #666",
-								borderRadius: "1vh",
-								marginTop: "2vh",
-								padding: "1vh",
+			async function noteOpen(note = undefined) {
+				const journal_tab_element = document.getElementById("journal-tab-note")
+				journal_tab_element.clearChildren()
 
-								textAlign: "left",
-								wordWrap: "break-word",
-							}
+				// New note
+				const newNote = note == undefined
+
+				// Save note button
+				async function saveNote() {
+					const title = document.getElementById("note-title").value
+					const order = Number(document.getElementById("note-order").value) || 100
+					const content = document.getElementById("note-content").value
+
+					if (newNote) await backend("impersonated().add_note({text: `"+content+"`, order: "+order+", title: `"+title+"`})")
+					else await backend("impersonated().edit_note("+JSON.stringify(note)+", {text: `"+content+"`, order: "+order+", title: `"+title+"`})")
+
+					updateNotesTab()
+					journal_tab_element.clearChildren()
+				}
+				// Delete note button
+				async function deleteNote() {
+					if (newNote) return
+					const title = document.getElementById("note-title").value
+
+					await backend("impersonated().remove_note(`"+title+"`)")
+
+					updateNotesTab()
+					journal_tab_element.clearChildren()
+				}
+				
+				// Element
+				element({tag: "div", parent: journal_tab_element, attributes: {class: "input-container"}, style: {margin: 0}, children: [
+					input({id: "note-title", placeholder: "Title", options: {div: {style: {marginTop: "1vh", width: "69%"}}}}),
+					input({id: "note-order", placeholder: "Order (number)", options: {div: {style: {marginTop: "1vh", marginLeft: "1%", width: "28%"}}}}),
+					{tag: "textarea",
+						attributes: {
+							id: "note-content",
+							placeholder: "Content of the note..."
 						},
-						{tag: "button", style: {marginTop: "2vh"}, text: "Create Note", events: {
-							click: function () {
-								const title = document.getElementById("modal-note-title").value
-								const order = Number(document.getElementById("modal-note-order").value) || 100
-								const content = document.getElementById("modal-note-content").value
+						style: {
+							all: "unset", 
+							width: "95%", height: "60vh",
+							border: "1px solid #666",
+							borderRadius: "1vh",
+							marginTop: "2vh",
+							padding: "1vh",
 
-								backend("impersonated().add_note({text: `"+content+"`, order: "+order+", title: `"+title+"`})")
-								close_modal()
-							}
-						}}
-					]}
+							textAlign: "left",
+							wordWrap: "break-word",
+						}
+					},
+					{tag: "button", style: {marginTop: "2vh"}, text: "Save", events: {click: saveNote}},
+					newNote ? null : {tag: "button", style: {marginTop: "2vh"}, text: "Delete", events: {click: deleteNote}},
 				]})
+
+				// Add information to element
+				let elements = [document.getElementById("note-title"), document.getElementById("note-order"), document.getElementById("note-content")]
+				elements[0].value = note.title || ""
+				elements[1].value = note.order || ""
+				elements[2].value = note.text || ""
+				for (const elem of elements) elem.dispatchEvent(new Event("input"))
 			}
 
 			//=====================================================================================================
@@ -1637,15 +1664,26 @@
 				notes_list_element.clearChildren()
 				notes_tab.character_notes = character_notes
 
+				// Creation of note buttons
 				for (const note of character_notes) {
 					const {title, order, text} = note
 
+					// Clicking a note button
+					function noteClick () {
+						for (const note_element of notes_list_element.children) {
+							note_element.children[0].classList.remove("selected")
+						}
+						this.classList.add("selected")
+						noteOpen(note)
+					}
+
+					// Element
 					collapsible(
 						{parent: notes_list_element,
 							options: {
 								button: {
 									style: {display: "flex", gap: "1vh", width: "110%", right: "10%", padding: "0.5vh", margin: "0 1vh"}, 
-									events: {},
+									events: {click: noteClick},
 									attributes: {class: ""}
 								},
 							},
@@ -1663,7 +1701,6 @@
 			//=====================================================================================================
 
 			function loadPage() {
-
 				// Loading main div, tabs, and context menu
 				create_tabs({content:["character","inventory", "spells", "journal"], parent: document.body})
 
@@ -1773,21 +1810,6 @@
 					]}
 				])
 			
-				// Abilities
-				/* document.getElementById("abilities-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
-						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
-							div: {style: {height: "80vh"}},
-							content: {style: {padding: "0 2vh", paddingRight: "2.5vh"}}
-						}})
-					]},
-					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
-						container({title: "Resources", id: "abilities-tab-resources", scroll: true, options: {
-							div: {style: {height: "80vh"}},
-						}})
-					]},
-				]) */
-
 				// Journal
 				document.getElementById("journal-tab").appendChildren([
 					{tag: "div", style: {position: "absolute", left: "0%", width: "37%"}, children: [
@@ -1797,7 +1819,7 @@
 							},
 							children: [
 								{tag: "div", attributes: {id: "journal-tab-notes-list"}},
-								{tag: "button", style: {position: "sticky", bottom: "1vh"}, events: {click: addNote}, text: "Add Note"},
+								{tag: "button", style: {position: "sticky", bottom: "1vh"}, events: {click: () => noteOpen()}, text: "Add Note"},
 							]
 						})
 					]},
@@ -1879,6 +1901,21 @@
 						]})
 					]},
 				])
+			
+				// Abilities (deprecated)
+				/* document.getElementById("abilities-tab").appendChildren([
+					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
+						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
+							div: {style: {height: "80vh"}},
+							content: {style: {padding: "0 2vh", paddingRight: "2.5vh"}}
+						}})
+					]},
+					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
+						container({title: "Resources", id: "abilities-tab-resources", scroll: true, options: {
+							div: {style: {height: "80vh"}},
+						}})
+					]},
+				]) */
 			}
 
 			//=====================================================================================================

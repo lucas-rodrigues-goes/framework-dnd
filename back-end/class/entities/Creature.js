@@ -60,7 +60,7 @@ var Creature = class extends Entity {
         "secondary off hand": null
     }
     #inventory = Array.from({ length: 25 }, () => null);
-    #notes = []
+    #notes = {}
 
     //=====================================================================================================
     // Basic Getters / Setters
@@ -1872,30 +1872,33 @@ var Creature = class extends Entity {
     // Notes
     //=====================================================================================================
 
-    // Returns notes ordered
+    // Returns notes
     get notes() {
-        return [...this.#notes]
+        if (Array.isArray(this.#notes)) this.#notes = {} // Backwards compatibility
+
+        let return_notes = []
+        for (const title in this.#notes) {
+            const {text, order} = this.#notes[title]
+            return_notes.push({title, text, order})
+        }
+        return_notes = [...return_notes].sort((a, b) => a.order - b.order)
+        return return_notes
     }
 
     // Adds a new note
     add_note({text="", title="", order=100}) {
-        this.#notes.push({ text, title, order })
-        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
+        this.#notes[title] = {title, text, order}
     }
 
     // Edits a note, if the note sent does not exist does nothing
-    edit_note(note, {text="", title="", order=100}) {
-        const index = this.#notes.indexOf(note)
-        if (index == -1) return
-
-        this.#notes[index] = { text, title, order }
-        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
+    edit_note(key, {text="", title="", order=100}) {
+        this.remove_note(key)
+        this.add_note({text, title, order})
     }
 
     // Removes a note, if it is a match in the existing notes
-    remove_note(index) {
-        this.#notes.splice(index, 1)
-        this.#notes = [...this.#notes].sort((a, b) => a.order - b.order)
+    remove_note(title) {
+        delete this.#notes[title]
     }
 
     //=====================================================================================================
