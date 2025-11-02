@@ -1,7 +1,7 @@
 [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
 [h,if(id==""):id = getImpersonated()]
 
-[dialog5("Character Creation", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Monster Creation", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -20,711 +20,271 @@
     <script>
 
     const id = "'+id+'"
+    const monster = {
+        max_health: 10,
+        challenge_rating: "1/8",
+        armor_class: "10",
+        initiative_mod: "0",
+        speed: "30",
+        ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 }
+    }
 
     //=====================================================================================================
     // Helper functions
     //=====================================================================================================
     
     async function submit() {
-
-        const ability_scores = {
-            strength: getId("strength").getAttribute("value"),
-            dexterity: getId("dexterity").getAttribute("value"),
-            constitution: getId("constitution").getAttribute("value"),
-            wisdom: getId("wisdom").getAttribute("value"),
-            intelligence: getId("intelligence").getAttribute("value"),
-            charisma: getId("charisma").getAttribute("value"),
-        }
-
-        // Player Class
-        const player_class = getId("class") ? getId("class").value : undefined
-
-        // Class Choices
-        const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
-        if (player_class) {
-            const level_up_choices = JSON.parse(await backend(player_class + ".level_up_info().choices"))
-            for (const type in level_up_choices) {
-                const array = level_up_choices[type]
-                for (let index = 0; index < array.length; index++) {
-                    const choice_input = document.getElementById("choice-" + type + "-" + index)
-                    if (choice_input) {
-                        const choice_value = choice_input.value.split(", ")
-                        choices[type].push(...choice_value)
-                    }
-                }
-            }
-        }
+        // Treat Numbers
+        const keys = ["max_health", "armor_class", "initiative_mod", "speed"]
+        for (const key of keys) monster[key] = Number(monster[key]) || 0
+        for (const score in monster.ability_scores) monster.ability_scores[score] = Number(monster.ability_scores[score]) || 10
 
         // Backend
-        const request = (
-            "new Humanoid(getImpersonated(), true);" +
-            "impersonated().create({" +
-                "name: `" + getId("name").value + "`," +
-                "race: `" + getId("race").value + "`," +
-                "ability_scores: " + JSON.stringify(ability_scores) + "," +
-                "character_class: `" + player_class + "`," +
-                "class_choices: " + JSON.stringify(choices) + "," +
-            "})"
-        )
+        const request = (`
+            new Monster(getImpersonated(), true);
+            impersonated().create(`+JSON.stringify(monster)+`)
+        `)
+        //console.log(request)
         backend(request)
-        closePage("Character Creation")
-
-    }
-    function title_value({title, value}) {
-        return {tag: "p", style: {margin: "0.3vh 0", padding: "0"}, children: [
-            {tag: "span", style: {fontWeight: "bold"}, text: title + ": "},
-            {tag: "span", style: {color: "#aaa"}, text: value},
-        ]}
+        closePage("Monster Creation")
     }
 
     //=====================================================================================================
-    // Update Page
+    // Create Page
     //=====================================================================================================
 
-    async function updateRace() {
-        const race = getId("race").value
-        const raceIsSelected = race != ""
-
-        // Retrieve data
-        const data = raceIsSelected ? JSON.parse(await backend(`JSON.stringify({
-            race: database.get_race("`+race+`"),
-            features: database.features.data,
-            proficiencies: database.proficiencies.data,
-        })`)) : {}
-
-        // Description
-        const description_div = getId("race-description"); {
-            description_div.parentNode.classList.add("hidden")
-            description_div.clearChildren()
-
-            if (raceIsSelected) {
-                description_div.appendChild({tag: "pre", style: {textAlign: "left"}, textHTML: data.race.description})
-                description_div.parentNode.classList.remove("hidden")
-            }
-        }
-
-        // Features
-        const features_div = document.getElementById("race-features"); {
-            features_div.parentNode.classList.add("hidden")
-            features_div.clearChildren()
-
-            if (raceIsSelected) {
-                // Create Features
-                for (const name of data.race.features) {
-                    const feature = data.features[name]
-                    const type = feature.subtype || feature.type || "None"
-                    const image = class_images[type] || feature_images[type] || ""
-                    const description = feature.description || "Description unavailable"
-
-                    // Element
-                    collapsible(
-                        {parent: features_div,
-                            options: {
-                                button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                                    mousedown: () => modal({parent: document.getElementById("race-tab"), children: [
-                                        data_description.feature({feature: feature})
-                                    ]})
-                                }},
-                                content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                            },
-                            button_children: [
-                                {tag: "img", attributes: {src: image}},
-                                {tag: "span", text: name}
-                            ],
-                        }
-                    )
-                }
-                if (features_div.children.length > 0) features_div.parentNode.classList.remove("hidden")
-            }
-        }
-
-        // Proficiencies
-        const proficiencies_div = document.getElementById("race-proficiencies"); {
-            proficiencies_div.parentNode.classList.add("hidden")
-            proficiencies_div.clearChildren()
-
-            if (raceIsSelected) {
-                // Create Proficiencies
-                for (const {name, level} of data.race.proficiencies) {
-                    const proficiency = data.proficiencies[name]
-                    
-                    const type = proficiency?.type || "None"
-                    if (["skill"].includes(type)) continue
-                    const description = proficiency?.description?.slice(0, level + 1) || ""
-                    const image = proficiency_images[type] || ""
-                    const level_title = ["", " Expertise", " Mastery", " Grandmastery"][level]
-
-                    // Element
-                    collapsible(
-                        {parent: proficiencies_div,
-                            options: {
-                                button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                                    mousedown: () => modal({parent: document.getElementById("race-tab"), children: [
-                                        data_description.proficiency({proficiency: proficiency, level: level})
-                                    ]})
-                                }},
-                                content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                            },
-                            button_children: [
-                                {tag: "img", attributes: {src: image}},
-                                {tag: "span", text: name + (type == "language" ? "" : " " + level_title)},
-                                {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(type)}
-                            ],
-                        }
-                    )
-                }
-                if (proficiencies_div.children.length > 0) proficiencies_div.parentNode.classList.remove("hidden")
-            }
-        }
-
-        // Ability Scores
-        if (raceIsSelected) mask_point_buy_calculator(data.race.ability_scores)
-        for (const div of [document.getElementById("race-ability-scores"), document.getElementById("attributes-ability-scores")]) {
-            div.parentNode.classList.add("hidden");
-            div.clearChildren()
-
-            if (raceIsSelected) {
-                const ability_scores = []
-                for (const score of ["strength", "dexterity", "constitution", "wisdom", "intelligence", "charisma"]) {
-                    const value = data.race.ability_scores[score]
-                    if (value == 0) continue
-
-                    ability_scores.push(capitalize(score) + ": " + (value > 0 ? "+ " : "- ") + Math.abs(value))
-                }
-
-                div.appendChild({tag: "pre", style: {textAlign: "center"}, text: ability_scores.join(", ")})
-                div.parentNode.classList.remove("hidden")
-            }
-        }
-    }
-    async function updateClass() {
-        const player_class = document.getElementById("class").value
-        const level_in_class = 1
-        const classIsSelected = player_class != ""
-
-        // Retrieve data
-        const data = classIsSelected ? JSON.parse(await backend(`JSON.stringify({
-            lore: `+player_class+`.lore,
-            description: `+player_class+`.description,
-            level_up_info: `+player_class+`.level_up_info(impersonated()),
+    async function mainTab() {
+        const main_tab = document.getElementById("main-tab")
+        const database = JSON.parse(await backend(`JSON.stringify({
             features: database.features.data,
             proficiencies: database.proficiencies.data
-        })`)) : {}
-
-        // Choices
-        const class_choices = document.getElementById("class-choices"); {
-            class_choices.clearChildren()
-
-            if (classIsSelected) {
-                // Create Options
-                for (const type in data.level_up_info.choices) {
-                    const array = data.level_up_info.choices[type]
-
-                    for (let i = 0; i < array.length; i++) {
-                        const config = array[i]
-                        const element = choice_input(type, i, config, player_class)
-                        if (element) class_choices.appendChild(element)
-                    }
-                }
-            }
-        }
-
-        // Lore
-        const lore_div = document.getElementById("class-lore"); {
-            lore_div.parentNode.classList.add("hidden")
-            lore_div.clearChildren()
-
-            if (player_class) {
-                lore_div.appendChild({tag: "p", style: {textAlign: "left", fontStyle: "italic"}, textHTML: data.lore})
-                lore_div.parentNode.classList.remove("hidden")
-            }
-        }
-
-        // Description
-        const description_div = document.getElementById("class-description"); {
-            description_div.parentNode.classList.add("hidden")
-            description_div.clearChildren()
-
-            if (classIsSelected) {
-                description_div.appendChild({tag: "p", style: {textAlign: "left"}, textHTML: data.description})
-                description_div.parentNode.classList.remove("hidden")
-            }
-        }
-
-        // Features
-        const features_div = document.getElementById("class-features"); {
-            features_div.parentNode.classList.add("hidden")
-            features_div.clearChildren()
-
-            if (classIsSelected) {
-                // Create Features
-                for (const name of data.level_up_info.features) {
-                    const feature = data.features[name]
-                    const type = feature.subtype || feature.type || "None"
-                    const image = class_images[type] || feature_images[type] || ""
-                    const description = feature.description || "Description unavailable"
-                    const opacity = feature.level > level_in_class ? 0.5 : 1
-
-                    // Element
-                    collapsible(
-                        {parent: features_div,
-                            options: {
-                                button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh", opacity}, events: {
-                                    mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
-                                        data_description.feature({feature: feature})
-                                    ]})
-                                }},
-                                content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                            },
-                            button_children: [
-                                {tag: "img", attributes: {src: image}},
-                                {tag: "span", text: name},
-                                {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: "Level " + feature.level}
-                            ],
-                        }
-                    )
-                }
-                if (features_div.children.length > 0) features_div.parentNode.classList.remove("hidden")
-            }
-        }
+        })`))
+        const type_options = [
+            "Aberration", "Beast", "Celestial", 
+            "Construct", "Dragon", "Elemental", 
+            "Fey", "Fiend", "Giant", 
+            "Humanoid", "Monstrosity", "Ooze",
+            "Plant", "Undead"
+        ]
         
-        // Proficiencies
-        const proficiencies_div = document.getElementById("class-proficiencies"); {
-            proficiencies_div.parentNode.classList.add("hidden")
-            proficiencies_div.clearChildren()
+        // Elements
+        const score = (attribute) => {
+            const title = attribute.substring(0, 3).toUpperCase()
+            const updateAbilityScore = {input: function (event) {
+                monster.ability_scores[this.id] = this.value
+                //console.log(monster)
+            }}
 
-            if (classIsSelected) {
-                // Create Proficiencies
-                for (const {name, level} of data.level_up_info.proficiencies) {
-                    const proficiency = data.proficiencies[name]
-                    
-                    const type = proficiency?.type || "None"
-                    if (["skill"].includes(type)) continue
-                    const description = proficiency?.description?.slice(0, level + 1) || ""
-                    const image = proficiency_images[type] || ""
-                    const level_title = ["", " Expertise", " Mastery", " Grandmastery"][level]
-
-                    // Element
-                    collapsible(
-                        {parent: proficiencies_div,
-                            options: {
-                                button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                                    mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
-                                        data_description.proficiency({proficiency: proficiency, level: level})
-                                    ]})
-                                }},
-                                content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
-                            },
-                            button_children: [
-                                {tag: "img", attributes: {src: image}},
-                                {tag: "span", text: name + (type == "language" ? "" : level_title)},
-                                {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(type)}
-                            ],
-                        }
-                    )
-                }
-                if (proficiencies_div.children.length > 0) proficiencies_div.parentNode.classList.remove("hidden")
-            }
+            return input({id: attribute, placeholder: title, options: {
+                div: {style: {width: "10%", fontSize: "110%", marginRight: "1.5vh"}},
+                input: {attributes: {value: monster.ability_scores[attribute] || ""}, events: updateAbilityScore, style: {textAlign: "center"}}
+            }})
         }
-    
-    }
+        const abilityScores = [score("strength"), score("dexterity"), score("constitution"), score("intelligence"), score("wisdom"), score("charisma")]
+        const creatureTypeSelect = select({
+            id: "type",
+            placeholder: "Type",
+            children: type_options.map(type => ({
+                tag: "option",
+                attributes: { value: type },
+                text: type
+            })),
+            options: {input: {events: {input: function (event) {
+                monster[this.id] = this.value
+                //console.log(monster)
+            }}}} 
+        });
 
-    //=====================================================================================================
-    // Modals
-    //=====================================================================================================
+        // Update Elements
+        function updateFeaturesElem() {
+            const featureElement = document.getElementById("features")
+            featureElement.clearChildren()
 
-    function choice_input(type, index, config, player_class) {
-        // Modal Functions
-        const modalByType = {
-            spells: spell_choice_modal,
-            proficiencies: proficiency_choice_modal,
-        }
-        if (modalByType[type] == undefined) {return null}
+            for (const name of monster.features) {
+                if (!database.features[name]) continue
+                const feature = database.features[name]
 
-        // Placeholder
-        const amount = config.amount || 1
-        let show_type = type == "spells" && config.level == 0 ? "cantrips" : type //--> For cantrip type
-        show_type = amount == 1 ? type.slice(0,-1) : show_type //--> Plural handling
-        const placeholder = config.title ? config.title : "Choose " + amount + " new " + show_type
+                const { type, subtype, level, description } = feature
+                const image = class_images[subtype] || feature_images[type] || ""
 
-        // Id
-        const id = "choice-" + type + "-" + index
-
-        // Element
-        return input({id: id,
-            placeholder: placeholder,
-            options: { input: { events: { mousedown: function (e) {
-                document.activeElement.blur()
-                e.preventDefault()
-                modalByType[type](this, config, player_class)
-            }}}}
-        })
-    }
-    async function spell_choice_modal(inputElement, {amount=1, level, player_class, school}, player_current_class="None") {
-        // Store spells user choose
-        const chosen_options = inputElement ? inputElement.value.split(", ").filter(element => element != "") : []
-
-        // Retrieve spell data from backend
-        const database = JSON.parse(await backend(`JSON.stringify({
-            data: database.spells.data,
-            list: database.get_spells_list().reverse(),
-            known_spells: impersonated()?.spells?.`+player_current_class+`?.known || [],
-        })`))
-
-        // Functions
-        function select(name) {
-            if (chosen_options.length >= amount) return;
-
-            // Add spell to chosen list
-            chosen_options.push(name)
-
-            // Add indicator that spell is selected
-            document.getElementById("modal-spell-" + name).classList.add("selected")
-
-            // Update description screen
-            description(name)
-        }
-        function unselect(name) {
-            // Remove spell from chosen list
-            chosen_options.splice(chosen_options.indexOf(name), 1)
-
-            // Remove indicator that spell is selected
-            document.getElementById("modal-spell-" + name).classList.remove("selected")
-
-            // Update description screen
-            description(name)
-        }
-        function description(name) {
-            // Clear description
-            const description = document.getElementById("modal-description")
-            description.clearChildren()
-
-            // Button element
-            let button = null
-            if (chosen_options.includes(name)) {
-                button = {tag: "button", text: "Unselect", events: {click: () => unselect(name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
-            }
-            else if (chosen_options.length >= amount) {
-                button = {tag: "button", text: "Selection Limit", style: {position: "sticky", bottom: 0, marginTop: "5vh", opacity: 0.3}}
-            }
-            else {
-                button = {tag: "button", text: "Select", events: {click: () => select(name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
-            }
-            
-            
-            // Show description
-            description.appendChildren([
-                data_description.spell({spell: database.data[name], style: {padding: 0}}),
-                // Selection Button
-                button
-            ])
-        }
-        function confirm() {
-            inputElement.value = chosen_options.join(", ")
-            inputElement.dispatchEvent(new Event("input"))
-            close_modal()
-        }
-
-        // Show available spell choices
-        const spellList = []
-        for (const name of database.list) {
-            const spell = database.data[name]
-
-            // Validation
-            if (database.known_spells.includes(name)) // Already has spell
-                continue
-            if (level != undefined) { // Level
-                if (level == 0 && spell.level != "cantrip") continue
-                if (level > 0 && (Number(spell.level[0]) > level || spell.level == "cantrip")) continue
-            }
-            if (player_class) { // Player Class
-                if (!spell.classes.includes(player_class)) continue
-            }
-            if (school) { // School
-                if (spell.school != school) continue
-            }
-
-            // Create element
-            const elem_class = chosen_options.includes(name) ? "collapsible-div selected" : "collapsible-div"
-            spellList.push(
-                {tag: "div", 
-                    attributes: {class: elem_class, id: "modal-spell-" + name}, 
-                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh"},
-                    events: {
-                        mousedown: (event) => {
-                            switch (event.button) {
-                                case 0: // Left Click
-                                    description(name)
-                                    break
-                                case 2: { // Right Click
-                                    if (chosen_options.includes(name)) unselect(name)
-                                    else select(name)
-                                    break
-                                }
-                            }
-                        }
+                collapsible({parent: featureElement,
+                    options: {
+                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
+                            mousedown: () => modal({parent: main_tab, children: [
+                                data_description.feature({feature: feature})
+                            ]})
+                        }},
+                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
                     },
-                    children: [
-                        {tag: "img", attributes: {src: spell.image || spell_school_images[spell.school]}},
+                    button_children: [
+                        {tag: "img", attributes: {src: image}},
                         {tag: "span", text: name},
-                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(spell.level)},
-                    ]
-                }
-            )
-        }
-
-        // Create modal
-        modal({parent: document.getElementById("class-tab"), options: {content: {style: {height: "85%", width: "85%"}}}, children: [
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "90%"}, children: [
-                container({title: "Available Spells", scroll: true,
-                    options: {
-                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}}
-                    },
-                    children: spellList
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: subtype || capitalize(type)}
+                    ],
                 })
-            ]},
-            {tag: "div", style: {position: "absolute", right: "0", width: "50%", height: "90%"}, children: [
-                container({title: "Description", id: "modal-description", scroll: true,
-                    options: {
-                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}}
-                    },
-                    children: [
-                        {tag: "p", text: "Click an option to show its description."}
-                    ]
-                })
-            ]},
-            {tag: "button", text: "Confirm", attributes: {class: "bottom page-turner"}, style: {transform: "translate(-50%)"}, 
-                events: {click: confirm}
-            },
-        ]})
-    }
-    async function proficiency_choice_modal(inputElement, {amount=1, options=[]}) {
-        // Store spells user choose
-        const chosen_options = inputElement.value != "" ? inputElement.value.split(", ") : []
-
-        // Retrieve spell data from backend
-        const database = JSON.parse(await backend(`database.proficiencies.data`))
-
-        // Functions
-        function select(name, level, show_name) {
-            if (chosen_options.length >= amount) return;
-
-            // Add spell to chosen list
-            chosen_options.push(show_name)
-
-            // Add indicator that spell is selected
-            document.getElementById("modal-proficiency-" + name).classList.add("selected")
-
-            // Update description screen
-            description(name, level, show_name)
-        }
-        function unselect(name, level, show_name) {
-            // Remove spell from chosen list
-            chosen_options.splice(chosen_options.indexOf(show_name), 1)
-
-            // Remove indicator that spell is selected
-            document.getElementById("modal-proficiency-" + name).classList.remove("selected")
-
-            // Update description screen
-            description(name, level, show_name)
-        }
-        function description(name, level, show_name) {
-            // Clear description
-            const description = document.getElementById("modal-description")
-            description.clearChildren()
-
-            // Button element
-            let button = null; {
-                if (chosen_options.includes(show_name)) {
-                button = {tag: "button", text: "Unselect", events: {click: () => unselect(name, level, show_name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
-                }
-                else if (chosen_options.length >= amount) {
-                    button = {tag: "button", text: "Selection Limit", style: {position: "sticky", bottom: 0, marginTop: "5vh", opacity: 0.3}}
-                }
-                else {
-                    button = {tag: "button", text: "Select", events: {click: () => select(name, level, show_name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
-                }
             }
-            
-            // Show description
-            const proficiency = database[name]
-            description.appendChildren([
-                // Title
-                {tag: "div", style: {marginTop: "1vh", marginBottom: "2vh"}, children: [
-                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: show_name},
-                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: capitalize(proficiency.type) + " Proficiency"},
-                ]},
-                // Description
-                proficiency.description 
-                    && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-                            textHTML: proficiency.description[level]
-                        },
-                // Selection Button
-                button
-            ])
-        }
-        function confirm() {
-            inputElement.value = chosen_options.join(", ")
-            inputElement.dispatchEvent(new Event("input"))
-            close_modal()
-        }
 
-        // Show available spell choices
-        const proficienciesList = []
-        for (const {name, level} of options) {
-            const prof = database[name]
-            const show_name = name + ["", " Expertise", " Mastery", " Grandmastery"][level]
-
-            // Create element
-            const prof_image = proficiency_images[prof.type]
-            const elem_class = chosen_options.includes(show_name) ? "collapsible-div selected" : "collapsible-div"
-            proficienciesList.push(
-                {tag: "div", 
-                    attributes: {class: elem_class, id: "modal-proficiency-" + name}, 
-                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh"},
-                    events: {
-                        mousedown: (event) => {
-                            switch (event.button) {
-                                case 0: // Left Click
-                                    description(name, level, show_name)
-                                    break
-                                case 2: { // Right Click
-                                    if (chosen_options.includes(show_name)) unselect(name, level, show_name)
-                                    else select(name, level, show_name)
-                                    break
-                                }
-                            }
-                        }
-                    },
-                    children: [
-                        {tag: "img", attributes: {src: prof_image}},
-                        {tag: "span", text: show_name},
-                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(prof.type)},
-                    ]
-                }
-            )
+            // Hide Show feature block
+            if (featureElement.children.length > 0) featureElement.parentElement.classList.remove("hidden")
+            else featureElement.parentElement.classList.add("hidden")
         }
+        function updateProficienciesElem() {
+            const profElement = document.getElementById("proficiencies")
+            profElement.clearChildren()
 
-        // Create modal
-        modal({parent: document.getElementById("class-tab"), options: {content: {style: {height: "85%", width: "85%"}}}, children: [
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "90%"}, children: [
-                container({title: "Available Proficiencies", 
+            for (const name in monster.proficiencies) {
+                if (!database.proficiencies[name]) continue
+                
+                const level = monster.proficiencies[name]
+                const proficiency = database.proficiencies[name]
+
+                const type = proficiency?.type || "None"
+                const description = proficiency?.description?.slice(0, level + 1) || ""
+                const image = proficiency_images[type] || ""
+                const level_title = [" Proficiency", " Expertise", " Mastery", " Grandmastery"][level]
+
+                collapsible({parent: profElement,
                     options: {
-                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
-                        content: {style: {overflow: "scroll", height: "100%", padding: "0 0.5vh"}}
+                        button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
+                            mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
+                                data_description.proficiency({proficiency: proficiency, level: level})
+                            ]})
+                        }},
+                        content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
                     },
-                    children: proficienciesList
+                    button_children: [
+                        {tag: "img", attributes: {src: image}},
+                        {tag: "span", text: name + (type == "language" ? "" : level_title)},
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: capitalize(type)}
+                    ],
                 })
-            ]},
-            {tag: "div", style: {position: "absolute", right: "0", width: "50%", height: "90%"}, children: [
-                container({title: "Description", id: "modal-description",
-                    options: {
-                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
-                        content: {style: {overflow: "scroll", height: "100%", paddingRight: "0.5vh"}}
-                    },
-                    children: [
-                        {tag: "p", text: "Click an option to show its description."}
-                    ]
-                })
-            ]},
-            {tag: "button", text: "Confirm", attributes: {class: "bottom page-turner"}, style: {transform: "translate(-50%)"}, 
-                events: {click: confirm}
-            },
-        ]})
-    }
+            }
 
-    //=====================================================================================================
-    // Load HTML
-    //=====================================================================================================
-
-    async function loadPage() {
-        // Load tabs
-        create_tabs({content: ["race", "class", "attributes"], parent: document.body})
-
-        // Database
-        const data = JSON.parse(await backend(`JSON.stringify({
-            name: MapTool.tokens.getTokenByID(getImpersonated()).getName(),
-            races: database.get_races_list(),
-        })`))
-
-        // Options
-        const race_options = []
-        for (const race of data.races) {
-            race_options.push({tag: "option", text: race})
-        }
-        const class_options = []
-        for (const class_ of ["Barbarian", "Cleric", "Fighter", "Rogue", "Wizard"]) {
-            class_options.push({tag: "option", text: class_})
+            // Hide Show feature block
+            if (profElement.children.length > 0) profElement.parentElement.classList.remove("hidden")
+            else profElement.parentElement.classList.add("hidden")
         }
 
-        // Race Tab
-        const container_options = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "40vh"}}}
-        document.getElementById("race-tab").appendChildren([
+        // Update attributes
+        const updateAttribute = {input: function (event) {
+            monster[this.id] = this.value
+            //console.log(monster)
+        }}
+        const updateFeatures = {input: function (event) {
+            const features = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.features = [...new Set(features)];
+            updateFeaturesElem()
+            //console.log(monster)
+        }}
+        const updateProficiencies = {input: function (event) {
+            const proficiencies = {};
+
+            // Split into groups like "stealth:2"
+            for (const prof_group of this.value.split(",")) {
+
+                // Clean whitespace
+                const cleaned = prof_group.trim();
+                if (!cleaned) continue;  // skip empty groups
+
+                const [proficiency_raw, level_raw] = cleaned.split(":");
+
+                // Validate proficiency name
+                const proficiency = proficiency_raw?.trim();
+                if (!proficiency) continue;
+
+                // Convert level to number (default 0)
+                const level = Number(level_raw?.trim()) || 0;
+
+                // Overwriting removes duplicates automatically
+                proficiencies[proficiency] = level;
+            }
+
+            monster.proficiencies = proficiencies;
+            updateProficienciesElem();
+            //console.log(monster);
+        }};
+
+        // Main tab
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "20vh"}}}
+        main_tab.appendChildren([
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                container({title: "Choices", children: [
-                    input({id: "name", placeholder: "Name", options: {input: {attributes: {value: data.name}}}}),
-                    select({id: "race", placeholder: "Race", children: race_options, options: {
-                        input: {events: {input: updateRace}}
+                // Lore
+                container({title: "Lore", children: [
+                    // Name
+                    input({id: "name", placeholder: "Name", options: {
+                        input: {attributes: {value: monster.name || ""}, events: updateAttribute}
+                    }}),
+
+                    // Type
+                    creatureTypeSelect,
+
+                    // Race
+                    input({id: "race", placeholder: "Race", options: {
+                        input: {attributes: {value: monster.race || ""}, events: updateAttribute}
                     }})
                 ]}),
-                container({title: "Description", id: "race-description", options: container_options}),
-                container({title: "Attribute Scores", id: "race-ability-scores", options: container_options})
-            ]},
-            {tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
-                container({title: "Features", id: "race-features", options: container_options}),
-                container({title: "Proficiencies", id: "race-proficiencies", options: container_options}),
-            ]},
-            {tag: "button", text: "Next", attributes: {class: "bottom right page-turner"}, 
-                events: {click: () => getId("class-switch").click()}
-            }
-        ])
 
-        // Class Tab
-        document.getElementById("class-tab").appendChildren([
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                // Class Choice
-                container({title: "Choices", children: [
-                    select({id: "class", placeholder: "Class", children: class_options,
-                        options: {
-                            input: {events: {input: updateClass}}
-                        }
-                    }),
-                    {tag: "div", attributes: {id: "class-choices"}}
+                // Ability Scores
+                container({title: "Ability Scores", children: abilityScores}),
+
+                // Combat Stats
+                container({title: "Stats", children: [
+                    // Max Health
+                    input({id: "max_health", placeholder: "Max Health", options: {
+                        input: {attributes: {value: monster.max_health || ""}, events: updateAttribute}
+                    }}),
+
+                    // Challenge Rating
+                    input({id: "challenge_rating", placeholder: "Challenge Rating", options: {
+                        input: {attributes: {value: monster.challenge_rating || ""}, events: updateAttribute}
+                    }}),
+
+                    // Armor Class
+                    input({id: "armor_class", placeholder: "Natural Armor Class", options: {
+                        input: {attributes: {value: monster.armor_class || ""}, events: updateAttribute}
+                    }}),
+
+                    // Initiative Modifier
+                    input({id: "initiative_mod", placeholder: "Initiative Modifier", options: {
+                        input: {attributes: {value: monster.initiative_mod || ""}, events: updateAttribute}
+                    }}),
+
+                    // Speed
+                    input({id: "speed", placeholder: "Speed", options: {
+                        input: {attributes: {value: monster.speed || ""}, events: updateAttribute}
+                    }}),
                 ]}),
 
-                // Lore
-                container({title: "Lore", scroll: true, id: "class-lore", options: container_options}),
-
-                // Description
-                container({title: "Description", scroll: true, id: "class-description", options: container_options}),
             ]},
-            {tag: "div", style: {position: "absolute", right: "0", width: "50%"}, children: [
-                // Features
-                container({title: "Features", scroll: true, id: "class-features", options: container_options}),
+            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({title: "Special", children: [
+                    // Features
+                    input({placeholder: `Features (proficiency, proficiency)`, options: {
+                        input: {attributes: {value: ""}, events: updateFeatures}
+                    }}),
 
-                // Proficiencies
-                container({title: "Proficiencies", scroll: true, id: "class-proficiencies", options: container_options}),
-            ]},
-            {tag: "button", text: "Next", attributes: {class: "bottom right page-turner"}, 
-                events: {click: () => getId("attributes-switch").click()}
-            }
-        ])
-
-        // Attributes Tab
-        document.getElementById("attributes-tab").appendChildren([
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                container({title: "Ability Scores", children: [
-                    point_buy_calculator()
+                    // Proficiencies
+                    input({placeholder: `Proficiencies (proficiency:level, proficiency:level)`, options: {
+                        input: {attributes: {value: ""}, events: updateProficiencies}
+                    }}),
                 ]}),
-                {tag: "div", style: {height: "2vh"}},
-                container({title: "Racial Bonuses", id: "attributes-ability-scores", children: [
-                    {tag: "p", text: "Choose a race to see its bonuses to ability scores."}
-                ]})
+
+                container({id: "features", scroll: true, title: "Features", options: containerOptions}),
+                container({id: "proficiencies", scroll: true, title: "Proficiencies", options: containerOptions})
             ]},
             {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
                 events: {click: submit}
             }
         ])
+    }
+
+    async function loadPage() {
+        // Load tabs
+        create_tabs({content: ["main"], parent: document.body})
+        mainTab()
     }
     
     //=====================================================================================================

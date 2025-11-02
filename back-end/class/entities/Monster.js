@@ -17,77 +17,6 @@ var Monster = class extends Creature {
     // Monster Creation
     //=====================================================================================================
 
-    temporary_create_screen() {
-        // Build the input fields
-        const fields = {
-            name:       { label: "Name", type: "text", value: this.name },
-            type:       { label: "Type", type: "text", value: this.type },
-            race:       { label: "Race", type: "text", value: this.race },
-            max_health: { label: "Max Health", type: "text", value: this.max_health },
-            challenge_rating: { label: "Challenge Rating", type: "text", value: this.challenge_rating },
-            armor_class: {label: "Armor Class", type: "text", value: this.armor_class },
-            initiative_mod: {label: "Initiative Mod", type: "text", value: this.initiative_mod },
-            speed:      { label: "Speed", type: "text", value: this.speed },
-
-            // Ability Scores (default 10)
-            str: { label: "Strength", type: "text", value: this.ability_scores.strength || "10" },
-            dex: { label: "Dexterity", type: "text", value: this.ability_scores.dexterity || "10" },
-            con: { label: "Constitution", type: "text", value: this.ability_scores.constitution || "10" },
-            int: { label: "Intelligence", type: "text", value: this.ability_scores.intelligence || "10" },
-            wis: { label: "Wisdom", type: "text", value: this.ability_scores.wisdom || "10" },
-            cha: { label: "Charisma", type: "text", value: this.ability_scores.charisma || "10" },
-
-            // Extra fields
-            proficiencies: { label: "Proficiencies", type: "text", value: this.proficiencies ? Object.entries(this.proficiencies).map(([name, level]) => `${name}:${level}`).join(", ") : "" },
-            features: { label: "Features", type: "text", value: this.features ? this.features.join(", ") : "" },
-        };
-
-        // Run the input macro
-        const result = input(fields);
-        console.log(JSON.stringify(result))
-
-        // Parse ability scores
-        const ability_scores = {
-            strength: Number(result.str) || 10,
-            dexterity: Number(result.dex) || 10,
-            constitution: Number(result.con) || 10,
-            intelligence: Number(result.int) || 10,
-            wisdom: Number(result.wis) || 10,
-            charisma: Number(result.cha) || 10,
-        };
-
-        // Parse proficiencies
-        const proficiencies = {};
-        if (result.proficiencies && result.proficiencies.trim() !== "") {
-            for (const entry of result.proficiencies.split(", ")) {
-                const [name, level] = entry.split(":");
-                if (name && level) {
-                    proficiencies[name.trim()] = Number(level.trim()) || 0;
-                }
-            }
-        }
-
-        // Parse features
-        const features = result.features
-            ? result.features.split(", ").map(f => f.trim()).filter(f => f.length > 0)
-            : [];
-
-        // Call create method
-        this.create({
-            name: result.name,
-            type: result.type,
-            race: result.race,
-            max_health: result.max_health,
-            challenge_rating: result.challenge_rating,
-            armor_class: result.armor_class,
-            initiative_mod: result.initiative_mod,
-            speed: result.speed,
-            ability_scores,
-            proficiencies,
-            features,
-        });
-    }
-
     create({
         name, 
         type, 
@@ -269,29 +198,31 @@ var Monster = class extends Creature {
     // Armor Class and Initiative
     //=====================================================================================================
 
-    get armor_type() {
-        return "None"
-    }
-
     get initiative_mod() {
         return this.#initiative_mod
     }
 
     get armor_class_detail() {
-        const base = this.#armor_class
+        const armor_class_detail = super.armor_class_detail
+        const { total, condition_bonus } = armor_class_detail
+        const natural_ac = this.#armor_class
+        const natural_total = natural_ac + condition_bonus
 
-        // Condition Bonus
-        let condition_bonus = 0; {
-            for (const name in this.conditions) {
-                const condition = this.conditions[name]
-                if (condition.bonus_armor_class) condition_bonus += condition.bonus_armor_class
+        // Follow default calculation if it is better than hardcoded AC
+        if (natural_total > total) {
+            return {
+                total: natural_total,
+                base: natural_ac,
+                condition_bonus,
+                armor: 0,
+                unnarmored_bonus: 0,
+                dex_mod: 0,
+                equipment_bonus: 0
             }
         }
-
-        // Total armor class
-        let total = base + condition_bonus
-
-        return {total, base, condition_bonus}
+        else {
+            return armor_class_detail
+        }
     }
 
     //=====================================================================================================
