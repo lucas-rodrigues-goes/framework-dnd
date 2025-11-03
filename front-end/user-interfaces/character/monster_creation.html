@@ -19,14 +19,15 @@
     </style>
     <script>
 
-    const id = "'+id+'"
     const monster = {
         max_health: 10,
         challenge_rating: "1/8",
         armor_class: "10",
         initiative_mod: "0",
         speed: "30",
-        ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 }
+        ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
+        features: [],
+        proficiencies: {"Weapon": 2},
     }
 
     //=====================================================================================================
@@ -41,12 +42,80 @@
 
         // Backend
         const request = (`
-            new Monster(getImpersonated(), true);
+            if ("`+(await isMonster())+`" == "false") new Monster(getImpersonated(), true);
             impersonated().create(`+JSON.stringify(monster)+`)
         `)
         //console.log(request)
         backend(request)
+        openPage("character_sheet.html", "0")
         closePage("Monster Creation")
+    }
+    
+    function stringifyFeatures(features_array) {
+        if (!Array.isArray(features_array) || features_array.length === 0)
+            return "";
+
+        return [...new Set(features_array)]
+            .map(f => f.trim())
+            .filter(f => f !== "")
+            .join(", ");
+    }
+
+    function stringifyProficiencies(proficiencies_obj) {
+        if (!proficiencies_obj || typeof proficiencies_obj !== "object")
+            return "";
+
+        const parts = [];
+
+        for (const [name, level] of Object.entries(proficiencies_obj)) {
+            if (!name.trim()) continue;
+
+            const lvl = Number(level) || 0;
+            parts.push(name.trim()+`:`+lvl);
+        }
+
+        return parts.join(", ");
+    }
+
+    function triggerAllInputFields() {
+        for (const elem of document.querySelectorAll("input, select")) {
+            elem.dispatchEvent(new Event("input"))
+            elem.dispatchEvent(new Event("change"))
+        }
+    }
+
+    async function loadMonster() {
+        if (!(await isMonster())) return
+
+        const impersonated = JSON.parse(await backend(`try {
+            JSON.stringify({
+                name: impersonated().name,
+                type: impersonated().type,
+                race: impersonated().race,
+                max_health: impersonated().max_health,
+                challenge_rating: impersonated().challenge_rating,
+                armor_class: impersonated().armor_class,
+                initiative_mod: impersonated().initiative_mod,
+                speed: impersonated().speed,
+                ability_scores: impersonated().ability_scores,
+                features: impersonated().features,
+                proficiencies: impersonated().proficiencies
+            })
+        } catch { "{}" }`))
+        for (const key in impersonated) monster[key] = impersonated[key]
+    }
+
+    async function isMonster() {
+        return "true" == await backend(`try {
+            const token = MapTool?.tokens?.getTokenByID(getImpersonated())
+            const classes = token.getProperty("class")
+            if (classes == null || classes == "[]") {"false"}
+            else {
+                const parsedClasses = JSON.parse(classes)
+                if (parsedClasses[0] == "Monster") {"true"}
+                else {"false"}
+            }
+        } catch {"false"}`)
     }
 
     //=====================================================================================================
@@ -94,6 +163,7 @@
                 //console.log(monster)
             }}}} 
         });
+        creatureTypeSelect.children[0].value = monster.type ?? "";
 
         // Update Elements
         function updateFeaturesElem() {
@@ -146,7 +216,7 @@
                 collapsible({parent: profElement,
                     options: {
                         button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                            mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
+                            mousedown: () => modal({parent: main_tab, children: [
                                 data_description.proficiency({proficiency: proficiency, level: level})
                             ]})
                         }},
@@ -263,12 +333,12 @@
                 container({title: "Special", children: [
                     // Features
                     input({placeholder: `Features (proficiency, proficiency)`, options: {
-                        input: {attributes: {value: ""}, events: updateFeatures}
+                        input: {attributes: {value: stringifyFeatures(monster.features)}, events: updateFeatures}
                     }}),
 
                     // Proficiencies
                     input({placeholder: `Proficiencies (proficiency:level, proficiency:level)`, options: {
-                        input: {attributes: {value: ""}, events: updateProficiencies}
+                        input: {attributes: {value: stringifyProficiencies(monster.proficiencies)}, events: updateProficiencies}
                     }}),
                 ]}),
 
@@ -282,9 +352,10 @@
     }
 
     async function loadPage() {
-        // Load tabs
         create_tabs({content: ["main"], parent: document.body})
-        mainTab()
+        await loadMonster()
+        await mainTab()
+        triggerAllInputFields()
     }
     
     //=====================================================================================================

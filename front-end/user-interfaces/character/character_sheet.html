@@ -486,8 +486,18 @@
 						character_tab.basic = character.basic
 						const experiencePercent = (character.basic.experience / character.basic.level_up_experience) * 100
 
+						// Name
 						document.getElementById("name").textContent = character.basic.name
-						document.getElementById("portrait").setAttribute("src", character.basic.portrait)
+
+						// Portrait
+						const portrait = document.getElementById("portrait")
+						portrait.setAttribute("src", character.basic.portrait)
+
+						// Reset portrait clicking behavior
+						portrait.style.cursor = "default"
+						portrait.onclick = null; 
+						portrait.onmouseover = null; 
+						portrait.onmouseout = null
 
 						// Level and Experience bar
 						const level_div = document.getElementById("level-div")
@@ -504,10 +514,16 @@
 							})
 						}
 						// Monster
-						else if (!character.basic.experience) {
+						else if (!character.basic.experience && character.basic.experience != 0) {
 							level_div.appendChild({tag:"span", text: character.basic.challenge_rating})
 							level_div.setAttribute("tooltip", character.basic.exp + " XP")
+
+							portrait.style.cursor = "pointer"
+							portrait.onclick = () => {openPage("monster_creation.html", character.basic.name); closePage("Character Sheet")}
+							portrait.onmouseover = () => portrait.style.filter = "brightness(1.1)"
+							portrait.onmouseout = () => portrait.style.filter = ""
 						}
+
 						// Regular Case
 						else {
 							level_div.classList.remove("level-up")
@@ -675,6 +691,8 @@
 						for (const name of character.features) {
 							// From database
 							const feature = database.features[name]
+							if (!feature) continue
+
 							const type = feature.subtype || feature.type || "None"
 							const image = class_images[type] || feature_images[type] || ""
 							const description = feature.description || "Description unavailable"
