@@ -51,7 +51,7 @@ var data = class {
         // Create
         const create = ({name="", type="", subtype=undefined, level=0, optional=true, description="", image=""}) => {
             // Type
-            const valid_types = ["racial", "class", "feat"]
+            const valid_types = ["racial", "class", "feat", "other"]
             if (!valid_types.includes(type)) {
                 console.log(`Invalid type "${type}" for "${cls}" object."`, "debug")
                 type = ""
