@@ -199,7 +199,10 @@ var Monster = class extends Creature {
     //=====================================================================================================
 
     get initiative_mod() {
-        return this.#initiative_mod
+        let init_mod = super.initiative_mod + this.#initiative_mod
+        init_mod = Math.max(init_mod, 0)
+
+        return init_mod
     }
 
     get armor_class_detail() {
