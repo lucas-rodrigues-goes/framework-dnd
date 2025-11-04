@@ -1185,6 +1185,27 @@ var Creature = class extends Entity {
         this.save()
     }
 
+    set_innate_spell(player_class, spell_name) {
+        // Verify if spell exists
+        if (!database.get_spell(spell_name)) { return }
+
+        // Create spellcasting info if needed
+        if (!this.#spells[player_class]) {
+            this.#spells[player_class] = {}
+        }
+
+        // Create spellcasting always prepared list if needed
+        if (!this.#spells[player_class].innate) {
+            this.#spells[player_class].innate = []
+        }
+
+        // Adding spell to always prepared list
+        this.#spells[player_class].innate.push(spell_name)
+
+        console.log(this.name + "has " + spell_name + " as an innate spell.", "debug")
+        this.save()
+    }
+
     forget_spell(player_class, spell_name) {
         // Validates if spell exists, and if has it memorized
         if (!database.get_spell(spell_name)) { return }

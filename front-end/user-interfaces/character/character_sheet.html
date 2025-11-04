@@ -1,4 +1,4 @@
-[dialog5("Character Sheet", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 	<head>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 		<link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
@@ -235,7 +235,7 @@
 				return JSON.stringify(a) === JSON.stringify(b)
 			}
 			async function closeIfNotImpersonated () {
-				if (await backend("impersonated()") == "") {closePage("Character Sheet")}
+				if (await backend("impersonated()") == "") {closePage("Character")}
 			}
 
 			//=====================================================================================================
@@ -1484,8 +1484,13 @@
 					spells_tab.spells = character.spells
 					
 					// Get main class
-					const class_spells = character.spells[chosen_class] || {known: []}
 					const spellcasting = character.spellcasting
+					const class_spells = character.spells[chosen_class] || {}
+
+					// Add missing lists to class spells
+					for (const key of ["known", "memorized", "always_prepared", "innate"]) {
+						if (!class_spells[key]) class_spells[key] = []
+					}
 
 					// Clear container
 					const abilities_container = document.getElementById("spells-tab-spells")
@@ -1494,9 +1499,11 @@
 
 					// Filtered Spells
 					let filtered_spells = []; {
+						// Character Class has to learn spells
 						if (character.spellcasting.known) {
 							filtered_spells = spells_list.filter(spell => class_spells?.known?.includes(spell))
 						}
+						// Character knows all spells available to the class
 						else {
 							filtered_spells = spells_list.filter(spell_name => {
 								const spell = database.spells[spell_name]
@@ -1532,7 +1539,9 @@
 						if (spell.cast_time == -2) action_type = "Reaction"
 
 						// Conditions
-						const spellIsMemorized = character.spells[chosen_class]?.memorized?.includes(spell.name) || false
+						const spellIsMemorized = class_spells.memorized.includes(spell.name)
+						const spellIsAlwaysPrepared = class_spells.always_prepared.includes(spell.name)
+						const spellIsInnate = class_spells.innate.includes(spell.name)
 						const spellIsCantrip = spell.level == "cantrip"
 
 						// Validation
