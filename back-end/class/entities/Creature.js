@@ -1053,6 +1053,16 @@ var Creature = class extends Entity {
 
     get spellcasting_level() { return this.#spellcasting_level }
 
+    set spellcasting_level(level) {
+        this.#spellcasting_level = level
+        this.save()
+    }
+
+    reset_spells() {
+        this.#spells = {}
+        this.save()
+    }
+
     update_spell_slots() {
         // Find spellcasting slots on table based on spellcasting level
         const spellcasting_table = [
@@ -1962,6 +1972,7 @@ var Creature = class extends Entity {
         this.#equipment = object.equipment || this.#equipment;
         this.#inventory = object.inventory || this.#inventory;
         this.#notes = object.notes || this.#notes;
+        this.#spellcasting_level = object.spellcasting_level || this.#spellcasting_level
     }
     
     save() {
@@ -1980,6 +1991,7 @@ var Creature = class extends Entity {
             equipment: this.#equipment,
             inventory: this.#inventory,
             notes: this.#notes,
+            spellcasting_level: this.#spellcasting_level
         };
     
         this.token.setName(this.#name);
