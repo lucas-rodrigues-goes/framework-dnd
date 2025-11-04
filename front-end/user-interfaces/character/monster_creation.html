@@ -64,7 +64,7 @@
     
     async function submit() {
         // Treat Numbers
-        const keys = ["max_health", "armor_class", "initiative_mod", "speed"]
+        const keys = ["max_health", "armor_class", "initiative_mod", "speed", "spellcasting_level"]
         for (const key of keys) monster[key] = Number(monster[key]) || 0
         for (const score in monster.ability_scores) monster.ability_scores[score] = Number(monster.ability_scores[score]) || 10
 
@@ -73,6 +73,7 @@
             if ("`+(await isMonster())+`" == "false") new Monster(getImpersonated(), true);
             impersonated().create(`+JSON.stringify(monster)+`)
         `)
+        
         //console.log(request)
         backend(request)
         openPage("character_sheet.html", "0")
@@ -136,6 +137,7 @@
         const tab = document.getElementById("spellcasting-tab")
         const database = JSON.parse(await backend(`JSON.stringify({
             spells: database.spells.data,
+            spells_list: database.get_spells_list()
         })`))
         let spellcasting_class = monster.spellcasting_class || ""
 
@@ -147,11 +149,11 @@
 
             monster.spells = {}
             monster.spells[monster.spellcasting_class] = previous_spells
-            console.log(monster)
+            //console.log(monster)
         }}
         const updateSpellcastingLevel = {input: function (event) {
-            monster.level = Number(this.value) || 0
-            console.log(monster)
+            monster.spellcasting_level = Number(this.value) || 0
+            //console.log(monster)
         }}
         const updateKnown = {input: function (event) {
             const spells = this.value
@@ -159,7 +161,8 @@
                 .map(f => f.trim())
                 .filter(f => f !== "");
             monster.spells[monster.spellcasting_class].known = [...new Set(spells)];
-            console.log(monster)
+            updateSpellsElem()
+            //console.log(monster)
         }}
         const updateAlwaysPrepared = {input: function (event) {
             const spells = this.value
@@ -167,7 +170,8 @@
                 .map(f => f.trim())
                 .filter(f => f !== "");
             monster.spells[monster.spellcasting_class].always_prepared = [...new Set(spells)];
-            console.log(monster)
+            updateSpellsElem()
+            //console.log(monster)
         }}
         const updateInnate = {input: function (event) {
             const spells = this.value
@@ -175,11 +179,85 @@
                 .map(f => f.trim())
                 .filter(f => f !== "");
             monster.spells[monster.spellcasting_class].innate = [...new Set(spells)];
-            console.log(monster)
+            updateSpellsElem()
+            //console.log(monster)
         }}
 
+        // Update Elements
+        function updateSpellsElem() {
+            const elem = document.getElementById("spells")
+            elem.clearChildren()
+
+            // Spell List
+            const class_spells = monster.spells?.[spellcasting_class] || {}
+            const selected_spells = [
+                ...(class_spells?.known || []), 
+                ...(class_spells?.always_prepared || []),
+                ...(class_spells?.innate || [])
+            ]
+            const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
+
+            let previous_level = undefined
+            for (const name of ordered_spells) {
+                const spell = database.spells[name]
+                const spell_image = spell.image || spell_school_images[spell.school]
+
+                // Conditions
+                const spellIsMemorized = class_spells.memorized?.includes(spell.name)
+                const spellIsAlwaysPrepared = class_spells.always_prepared?.includes(spell.name)
+                const spellIsInnate = class_spells.innate?.includes(spell.name)
+                const spellIsCantrip = spell.level == "cantrip"
+                
+                // Action type
+                let action_type
+                if (spell.cast_time == -1) action_type = "Bonus Action"
+                else if (spell.cast_time == -2) action_type = "Reaction"
+                else if (spell.cast_time >= 0) action_type =  "Action"
+
+                // Accent Color
+                let accentColor = ""
+                if (spellIsInnate) accentColor = "#ca2"
+                else if (spellIsAlwaysPrepared) accentColor = "#aaa"
+
+                // Click Spell
+                function clickSpell (event) {
+                    modal({parent: tab, children: [
+                        data_description.spell({spell: spell})
+                    ]})
+                }
+
+                // Add spacing between levels
+                if (previous_level != spell.level) {
+                    elem.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
+                    previous_level = spell.level
+                }
+
+                // Add element
+                elem.appendChild(
+                    {tag: "div", 
+                        attributes: {class: "collapsible-div"}, 
+                        style: {
+                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+                            borderColor: accentColor,
+                            opacity: 1
+                        },
+                        events: {mousedown: clickSpell},
+                        children: [
+                            {tag: "img", attributes: {src: spell_image}},
+                            {tag: "span", text: name},
+                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
+                        ]
+                    }
+                )
+            }
+            
+            // Hide Show block
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
+        }
+
         // Content
-        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "40vh"}}}
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
         tab.appendChildren([
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
                 // Details
@@ -270,8 +348,8 @@
 
         // Update Elements
         function updateFeaturesElem() {
-            const featureElement = document.getElementById("features")
-            featureElement.clearChildren()
+            const elem = document.getElementById("features")
+            elem.clearChildren()
 
             for (const name of monster.features) {
                 if (!database.features[name]) continue
@@ -280,7 +358,7 @@
                 const { type, subtype, level, description } = feature
                 const image = class_images[subtype] || feature_images[type] || ""
 
-                collapsible({parent: featureElement,
+                collapsible({parent: elem,
                     options: {
                         button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
                             mousedown: () => modal({parent: tab, children: [
@@ -298,12 +376,12 @@
             }
 
             // Hide Show feature block
-            if (featureElement.children.length > 0) featureElement.parentElement.classList.remove("hidden")
-            else featureElement.parentElement.classList.add("hidden")
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
         }
         function updateProficienciesElem() {
-            const profElement = document.getElementById("proficiencies")
-            profElement.clearChildren()
+            const elem = document.getElementById("proficiencies")
+            elem.clearChildren()
 
             for (const name in monster.proficiencies) {
                 if (!database.proficiencies[name]) continue
@@ -316,7 +394,7 @@
                 const image = proficiency_images[type] || ""
                 const level_title = [" Proficiency", " Expertise", " Mastery", " Grandmastery"][level]
 
-                collapsible({parent: profElement,
+                collapsible({parent: elem,
                     options: {
                         button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
                             mousedown: () => modal({parent: tab, children: [
@@ -334,8 +412,8 @@
             }
 
             // Hide Show feature block
-            if (profElement.children.length > 0) profElement.parentElement.classList.remove("hidden")
-            else profElement.parentElement.classList.add("hidden")
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
         }
 
         // Update attributes
