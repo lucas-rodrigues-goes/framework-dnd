@@ -1,7 +1,7 @@
 [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
 [h,if(id==""):id = getImpersonated()]
 
-[dialog5("Monster Creation", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -28,6 +28,34 @@
         ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
         features: [],
         proficiencies: {"Weapon": 2},
+
+        spellcasting_level: 0,
+        spellcasting_class: "",
+        spells: {},
+    }
+
+    async function loadMonster() {
+        if (!(await isMonster())) return
+
+        const impersonated = JSON.parse(await backend(`try {
+            JSON.stringify({
+                name: impersonated().name,
+                type: impersonated().type,
+                race: impersonated().race,
+                max_health: impersonated().max_health,
+                challenge_rating: impersonated().challenge_rating,
+                armor_class: impersonated().armor_class,
+                initiative_mod: impersonated().initiative_mod,
+                speed: impersonated().speed,
+                ability_scores: impersonated().ability_scores,
+                features: impersonated().features,
+                proficiencies: impersonated().proficiencies,
+                spellcasting_level: impersonated().spellcasting_level,
+                spellcasting_class: impersonated().spellcasting_class,
+                spells: impersonated().spells,
+            })
+        } catch { "{}" }`))
+        for (const key in impersonated) monster[key] = impersonated[key]
     }
 
     //=====================================================================================================
@@ -48,7 +76,10 @@
         //console.log(request)
         backend(request)
         openPage("character_sheet.html", "0")
-        closePage("Monster Creation")
+    }
+
+    function cancel() {
+        openPage("character_sheet.html", "0")
     }
     
     function stringifyFeatures(features_array) {
@@ -84,27 +115,6 @@
         }
     }
 
-    async function loadMonster() {
-        if (!(await isMonster())) return
-
-        const impersonated = JSON.parse(await backend(`try {
-            JSON.stringify({
-                name: impersonated().name,
-                type: impersonated().type,
-                race: impersonated().race,
-                max_health: impersonated().max_health,
-                challenge_rating: impersonated().challenge_rating,
-                armor_class: impersonated().armor_class,
-                initiative_mod: impersonated().initiative_mod,
-                speed: impersonated().speed,
-                ability_scores: impersonated().ability_scores,
-                features: impersonated().features,
-                proficiencies: impersonated().proficiencies
-            })
-        } catch { "{}" }`))
-        for (const key in impersonated) monster[key] = impersonated[key]
-    }
-
     async function isMonster() {
         return "true" == await backend(`try {
             const token = MapTool?.tokens?.getTokenByID(getImpersonated())
@@ -119,14 +129,107 @@
     }
 
     //=====================================================================================================
-    // Create Page
+    // Create Tabs
     //=====================================================================================================
 
+    async function spellcastingTab () {
+        const tab = document.getElementById("spellcasting-tab")
+        const database = JSON.parse(await backend(`JSON.stringify({
+            spells: database.spells.data,
+        })`))
+        let spellcasting_class = monster.spellcasting_class || ""
+
+        // Update Attributes
+        const updateSpellcastingClass = {input: function (event) {
+            monster.spellcasting_class = this.value
+            const previous_spells = monster?.spells[spellcasting_class] || {}
+            spellcasting_class = monster.spellcasting_class
+
+            monster.spells = {}
+            monster.spells[monster.spellcasting_class] = previous_spells
+            console.log(monster)
+        }}
+        const updateSpellcastingLevel = {input: function (event) {
+            monster.level = Number(this.value) || 0
+            console.log(monster)
+        }}
+        const updateKnown = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[monster.spellcasting_class].known = [...new Set(spells)];
+            console.log(monster)
+        }}
+        const updateAlwaysPrepared = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[monster.spellcasting_class].always_prepared = [...new Set(spells)];
+            console.log(monster)
+        }}
+        const updateInnate = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[monster.spellcasting_class].innate = [...new Set(spells)];
+            console.log(monster)
+        }}
+
+        // Content
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "40vh"}}}
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                // Details
+                container({title: "Details", children: [
+                    // Class
+                    input({id: "spellcasting_class", placeholder: "Class", options: {
+                        input: {attributes: {value: spellcasting_class}, events: updateSpellcastingClass}
+                    }}),
+
+                    // Spellcasting Level
+                    input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
+                        input: {attributes: {value: monster.spellcasting_level || "0"}, events: updateSpellcastingLevel}
+                    }}),
+                ]}),
+
+                // Spell List
+                container({title: "Spell List", children: [
+                    // Known Spells
+                    input({id: "known", placeholder: "Known Spells", options: {
+                        input: {attributes: {value: ""}, events: updateKnown}
+                    }}),
+
+                    // Always Prepared Spells
+                    input({id: "always_prepared", placeholder: "Always Prepared Spells", options: {
+                        input: {attributes: {value: ""}, events: updateAlwaysPrepared}
+                    }}),
+
+                    // Innate Spells
+                    input({id: "innate", placeholder: "Innate Spells", options: {
+                        input: {attributes: {value: ""}, events: updateInnate}
+                    }}),
+                ]})
+            ]},
+            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "spells", scroll: true, title: "Spells", options: containerOptions}),
+            ]},
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
+            }
+        ])
+    }
+
     async function mainTab() {
-        const main_tab = document.getElementById("main-tab")
+        const tab = document.getElementById("main-tab")
         const database = JSON.parse(await backend(`JSON.stringify({
             features: database.features.data,
-            proficiencies: database.proficiencies.data
+            proficiencies: database.proficiencies.data,
         })`))
         const type_options = [
             "Aberration", "Beast", "Celestial", 
@@ -180,7 +283,7 @@
                 collapsible({parent: featureElement,
                     options: {
                         button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                            mousedown: () => modal({parent: main_tab, children: [
+                            mousedown: () => modal({parent: tab, children: [
                                 data_description.feature({feature: feature})
                             ]})
                         }},
@@ -216,7 +319,7 @@
                 collapsible({parent: profElement,
                     options: {
                         button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
-                            mousedown: () => modal({parent: main_tab, children: [
+                            mousedown: () => modal({parent: tab, children: [
                                 data_description.proficiency({proficiency: proficiency, level: level})
                             ]})
                         }},
@@ -277,9 +380,9 @@
             //console.log(monster);
         }};
 
-        // Main tab
+        // Content
         const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "20vh"}}}
-        main_tab.appendChildren([
+        tab.appendChildren([
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
                 // Lore
                 container({title: "Lore", children: [
@@ -347,14 +450,18 @@
             ]},
             {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
                 events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
             }
         ])
     }
 
     async function loadPage() {
-        create_tabs({content: ["main"], parent: document.body})
+        create_tabs({content: ["main", "spellcasting"], parent: document.body})
         await loadMonster()
         await mainTab()
+        await spellcastingTab()
         triggerAllInputFields()
     }
     
