@@ -655,7 +655,7 @@
             // Character Attributes
             const character = JSON.parse(await backend(`JSON.stringify(
                 {
-                    classes: impersonated().classes,
+                    classes: impersonated().classes || impersonated().spells || {},
                     resources: impersonated().resources,
                     spells: impersonated().spells,
                     hasInitiative: Initiative.turn_order.includes(impersonated().id),
@@ -665,10 +665,9 @@
 
             // Classes Spellcasting
             let classes_spellcasting = ""; {
-
-            }
-            if (character.classes && Object.keys(character.classes).length > 0) {
-                for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+                if (character.classes && Object.keys(character.classes).length > 0) {
+                    for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+                }
             }
             character["spellcasting"] = JSON.parse(await backend(`JSON.stringify({
                 `+classes_spellcasting+`
