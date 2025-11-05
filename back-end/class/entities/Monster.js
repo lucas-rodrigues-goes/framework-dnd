@@ -10,7 +10,7 @@ var Monster = class extends Creature {
     #max_health = 0
     #condition_immunities = []
     #resistances = {}
-    #armor_class = 10
+    #natural_armor_class = 10
     #initiative_mod = 0
 
     #spellcasting_class = ""
@@ -21,11 +21,12 @@ var Monster = class extends Creature {
 
     create({
         name, 
-        type, 
+        type,
+        size,
         race, 
         max_health, 
         challenge_rating,
-        armor_class,
+        natural_armor_class,
         initiative_mod,
         speed, 
 
@@ -93,16 +94,17 @@ var Monster = class extends Creature {
         this.name = name
         this.type = type
         this.race = race
+        this.size = size
         this.max_health = max_health
         this.challenge_rating = challenge_rating
-        this.#armor_class = armor_class
-        this.#initiative_mod = initiative_mod
+        this.natural_armor_class = natural_armor_class
+        this.initiative_mod = initiative_mod
         this.speed = speed
         this.spellcasting_class = spellcasting_class
         this.spellcasting_level = spellcasting_level
 
         // Fill Resources
-        this.update_spell_slots()
+        if (spellcasting_level > 0) this.update_spell_slots()
         this.long_rest()
     }
 
@@ -116,6 +118,7 @@ var Monster = class extends Creature {
 
     set max_health(max_health) {
         this.#max_health = max_health
+        this.save()
     }
 
     //=====================================================================================================
@@ -181,6 +184,7 @@ var Monster = class extends Creature {
         if (!valid_options.includes(cr)) return
 
         this.#challenge_rating = cr
+        this.save()
     }
 
     //=====================================================================================================
@@ -233,6 +237,7 @@ var Monster = class extends Creature {
         if(!Object.prototype.toString.call(resistances) === "[object Object]") return
 
         this.#resistances = resistances
+        this.save()
     }
 
     //=====================================================================================================
@@ -246,10 +251,24 @@ var Monster = class extends Creature {
         return init_mod
     }
 
+    get natural_armor_class() {
+        return this.#natural_armor_class
+    }
+
+    set initiative_mod(init) {
+        this.#initiative_mod = init
+        this.save()
+    }
+
+    set natural_armor_class(armor_class) {
+        this.#natural_armor_class = Number(armor_class) || 10
+        this.save()
+    }
+
     get armor_class_detail() {
         const armor_class_detail = super.armor_class_detail
         const { total, condition_bonus } = armor_class_detail
-        const natural_ac = this.#armor_class
+        const natural_ac = this.natural_armor_class
         const natural_total = natural_ac + condition_bonus
 
         // Follow default calculation if it is better than hardcoded AC
@@ -275,6 +294,11 @@ var Monster = class extends Creature {
 
     get spellcasting_class () {
         return this.#spellcasting_class
+    }
+
+    set spellcasting_class (spellcasting_class) {
+        this.#spellcasting_class = spellcasting_class
+        this.save()
     }
 
     //=====================================================================================================
@@ -311,7 +335,7 @@ var Monster = class extends Creature {
         this.#max_health = object.max_health ?? this.#max_health
         this.#condition_immunities = object.condition_immunities ?? this.#condition_immunities
         this.#resistances = object.resistances ?? this.#resistances
-        this.#armor_class = object.armor_class ?? this.#armor_class
+        this.#natural_armor_class = object.natural_armor_class ?? this.#natural_armor_class
         this.#initiative_mod = object.initiative_mod ?? this.#initiative_mod
         this.#spellcasting_class = object.spellcasting_class ?? this.#spellcasting_class
     
@@ -325,7 +349,7 @@ var Monster = class extends Creature {
             max_health: this.#max_health,
             condition_immunities: this.#condition_immunities,
             resistances: this.#resistances,
-            armor_class: this.#armor_class,
+            natural_armor_class: this.#natural_armor_class,
             initiative_mod: this.#initiative_mod,
             spellcasting_class: this.#spellcasting_class
         }
