@@ -1460,10 +1460,12 @@
 
 					// Conditional info
 					if (character.spellcasting.memorization) {
+						const memorization_maximum = Math.max(0, modifier) + (character?.classes?.[chosen_class]?.level || character.spellcasting_level || 0)
+
 						values["Spells Memorized"] = (
 							character?.spells[chosen_class]?.memorized?.length || 0) + 
 							" / " + 
-							(modifier + (character?.classes?.[chosen_class]?.level) || character.spellcasting_level || 0)
+							memorization_maximum
 					}
 
 					// Elements
