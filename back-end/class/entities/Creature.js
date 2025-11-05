@@ -883,6 +883,10 @@ var Creature = class extends Entity {
     // Speed
     //=====================================================================================================
 
+    get base_speed() {
+        return this.#speed.walk
+    }
+
     get speed() {
         // Modifiers
         const speed_modifiers = {
@@ -936,6 +940,7 @@ var Creature = class extends Entity {
 
     set speed(speed) {
         this.#speed.walk = speed
+        this.save()
     }
     
 
