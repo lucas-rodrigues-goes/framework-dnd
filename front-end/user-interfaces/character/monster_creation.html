@@ -20,16 +20,17 @@
     <script>
 
     const monster = {
+        size: "Medium",
         max_health: 10,
         challenge_rating: "1/8",
-        armor_class: "10",
+        natural_armor_class: "10",
         initiative_mod: "0",
         speed: "30",
         ability_scores: { strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 },
         features: [],
         proficiencies: {"Weapon": 2},
 
-        spellcasting_level: 0,
+        spellcasting_level: "",
         spellcasting_class: "",
         spells: {},
     }
@@ -41,12 +42,13 @@
             JSON.stringify({
                 name: impersonated().name,
                 type: impersonated().type,
+                size: impersonated().size,
                 race: impersonated().race,
                 max_health: impersonated().max_health,
                 challenge_rating: impersonated().challenge_rating,
-                armor_class: impersonated().armor_class,
+                natural_armor_class: impersonated().natural_armor_class,
                 initiative_mod: impersonated().initiative_mod,
-                speed: impersonated().speed,
+                speed: impersonated().base_speed,
                 ability_scores: impersonated().ability_scores,
                 features: impersonated().features,
                 proficiencies: impersonated().proficiencies,
@@ -64,7 +66,7 @@
     
     async function submit() {
         // Treat Numbers
-        const keys = ["max_health", "armor_class", "initiative_mod", "speed", "spellcasting_level"]
+        const keys = ["max_health", "natural_armor_class", "initiative_mod", "speed", "spellcasting_level"]
         for (const key of keys) monster[key] = Number(monster[key]) || 0
         for (const score in monster.ability_scores) monster.ability_scores[score] = Number(monster.ability_scores[score]) || 10
 
@@ -128,6 +130,32 @@
             }
         } catch {"false"}`)
     }
+
+    function stringifySpellList(spell_array) {
+        if (!Array.isArray(spell_array) || spell_array.length === 0)
+            return "";
+
+        return [...new Set(spell_array)]
+            .map(s => s.trim())
+            .filter(s => s !== "")
+            .join(", ");
+    }
+
+    function stringifyKnownSpells(monster, spellcasting_class) {
+        const class_obj = monster?.spells?.[spellcasting_class] || {};
+        return stringifySpellList(class_obj.known || []);
+    }
+
+    function stringifyAlwaysPreparedSpells(monster, spellcasting_class) {
+        const class_obj = monster?.spells?.[spellcasting_class] || {};
+        return stringifySpellList(class_obj.always_prepared || []);
+    }
+
+    function stringifyInnateSpells(monster, spellcasting_class) {
+        const class_obj = monster?.spells?.[spellcasting_class] || {};
+        return stringifySpellList(class_obj.innate || []);
+    }
+
 
     //=====================================================================================================
     // Create Tabs
@@ -269,7 +297,7 @@
 
                     // Spellcasting Level
                     input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
-                        input: {attributes: {value: monster.spellcasting_level || "0"}, events: updateSpellcastingLevel}
+                        input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
                     }}),
                 ]}),
 
@@ -277,17 +305,17 @@
                 container({title: "Spell List", children: [
                     // Known Spells
                     input({id: "known", placeholder: "Known Spells", options: {
-                        input: {attributes: {value: ""}, events: updateKnown}
+                        input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
                     }}),
 
                     // Always Prepared Spells
                     input({id: "always_prepared", placeholder: "Always Prepared Spells", options: {
-                        input: {attributes: {value: ""}, events: updateAlwaysPrepared}
+                        input: {attributes: {value: stringifyAlwaysPreparedSpells(monster, spellcasting_class) || ""}, events: updateAlwaysPrepared}
                     }}),
 
                     // Innate Spells
                     input({id: "innate", placeholder: "Innate Spells", options: {
-                        input: {attributes: {value: ""}, events: updateInnate}
+                        input: {attributes: {value: stringifyInnateSpells(monster, spellcasting_class) || ""}, events: updateInnate}
                     }}),
                 ]})
             ]},
@@ -316,6 +344,11 @@
             "Humanoid", "Monstrosity", "Ooze",
             "Plant", "Undead"
         ]
+        const size_options = [
+            "Fine", "Diminutive", "Tiny", 
+            "Small", "Medium", "Large", 
+            "Huge", "Gargantuan", "Colossal"
+        ]
         
         // Elements
         const score = (attribute) => {
@@ -339,12 +372,30 @@
                 attributes: { value: type },
                 text: type
             })),
-            options: {input: {events: {input: function (event) {
-                monster[this.id] = this.value
-                //console.log(monster)
+            options: {
+                div: {style: {width: "24%", marginRight: "1%"}},
+                input: {events: {input: function (event) {
+                    monster[this.id] = this.value
+                    //console.log(monster)
             }}}} 
         });
         creatureTypeSelect.children[0].value = monster.type ?? "";
+        const sizeSelect = select({
+            id: "size",
+            placeholder: "Size",
+            children: size_options.map(type => ({
+                tag: "option",
+                attributes: { value: type },
+                text: type
+            })),
+            options: {
+                div: {style: {width: "24%", marginRight: "0%"}},
+                input: {events: {input: function (event) {
+                    monster[this.id] = this.value
+                    //console.log(monster)
+            }}}} 
+        });
+        sizeSelect.children[0].value = monster.size ?? "";
 
         // Update Elements
         function updateFeaturesElem() {
@@ -474,8 +525,17 @@
 
                     // Race
                     input({id: "race", placeholder: "Race", options: {
+                        div: {style: {width: "49%", marginRight: "1%"}},
                         input: {attributes: {value: monster.race || ""}, events: updateAttribute}
-                    }})
+                    }}),
+
+                    sizeSelect,
+
+                    // Challenge Rating
+                    input({id: "challenge_rating", placeholder: "Challenge Rating", options: {
+                        div: {style: {width: "100%", marginRight: "0%"}},
+                        input: {attributes: {value: monster.challenge_rating || ""}, events: updateAttribute}
+                    }}),
                 ]}),
 
                 // Ability Scores
@@ -485,26 +545,25 @@
                 container({title: "Stats", children: [
                     // Max Health
                     input({id: "max_health", placeholder: "Max Health", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
                         input: {attributes: {value: monster.max_health || ""}, events: updateAttribute}
                     }}),
 
-                    // Challenge Rating
-                    input({id: "challenge_rating", placeholder: "Challenge Rating", options: {
-                        input: {attributes: {value: monster.challenge_rating || ""}, events: updateAttribute}
-                    }}),
-
                     // Armor Class
-                    input({id: "armor_class", placeholder: "Natural Armor Class", options: {
-                        input: {attributes: {value: monster.armor_class || ""}, events: updateAttribute}
+                    input({id: "natural_armor_class", placeholder: "Natural Armor Class", options: {
+                        div: {style: {width: "49%", marginRight: "0%"}},
+                        input: {attributes: {value: monster.natural_armor_class ?? ""}, events: updateAttribute}
                     }}),
 
                     // Initiative Modifier
                     input({id: "initiative_mod", placeholder: "Initiative Modifier", options: {
-                        input: {attributes: {value: monster.initiative_mod || ""}, events: updateAttribute}
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: monster.initiative_mod ?? ""}, events: updateAttribute}
                     }}),
 
                     // Speed
                     input({id: "speed", placeholder: "Speed", options: {
+                        div: {style: {width: "49%", marginRight: "0%"}},
                         input: {attributes: {value: monster.speed || ""}, events: updateAttribute}
                     }}),
                 ]}),
