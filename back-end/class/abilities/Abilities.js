@@ -197,7 +197,7 @@ var Abilities = class {
         }
         
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = this.validate_spell_range(creature, target, range)
         if (range_validation.outOfRange) {
             return {
                 success: false,
@@ -214,7 +214,7 @@ var Abilities = class {
 
         // Deal damage
         const damage_result = (hit_result.success
-            ? ` dealing ${Spells.spell_damage(creature, target, hit_result.message, damage_dice)} damage.`
+            ? ` dealing ${this.spell_damage(creature, target, hit_result.message, damage_dice)} damage.`
             : `.`
         )
 
@@ -258,7 +258,7 @@ var Abilities = class {
             const level_bonus = Math.max(0, Math.floor((level_number - 1) / 2));
             const difficulty_class = 10 + spellcasting_modifier + level_bonus
             const save_bonus = target.saving_throws[saving_throw_score.toLowerCase()] || 0
-            const save_result = Spells.saving_throw_result({creature, target, difficulty_class, save_bonus, half_on_fail, advantage_weight})
+            const save_result = this.saving_throw_result({creature, target, difficulty_class, save_bonus, half_on_fail, advantage_weight})
 
             // Deal damage
             let damage_result; {
@@ -266,7 +266,7 @@ var Abilities = class {
                 if (damage_dice.length >= 1) {
                     damage_result = save_result.success && !half_on_fail
                         ? ` avoiding the effects.`
-                        : ` receiving ${Spells.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
+                        : ` receiving ${this.spell_damage(creature, target, save_result.message, damage_dice)} damage.`
                 }
 
                 // Effect only spell
@@ -716,7 +716,6 @@ var Abilities = class {
             }
         }
 
-        console.log(output.message)
         return output
     }
 
