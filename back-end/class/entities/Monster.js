@@ -89,7 +89,6 @@ var Monster = class extends Creature {
             }
         }
 
-
         // Set basic information
         this.name = name
         this.type = type
@@ -103,6 +102,7 @@ var Monster = class extends Creature {
         this.spellcasting_level = spellcasting_level
 
         // Fill Resources
+        this.update_spell_slots()
         this.long_rest()
     }
 
@@ -226,6 +226,7 @@ var Monster = class extends Creature {
 
         // Apply monster resistances
         applyResistancesOfObject(this.#resistances)
+        return resistances
     }
 
     set resistances(resistances) {
