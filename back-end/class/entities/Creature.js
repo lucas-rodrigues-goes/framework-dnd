@@ -1160,7 +1160,7 @@ var Creature = class extends Entity {
         const spellcasting = eval(player_class).spellcasting
         if (spellcasting) {
             const spellcasting_modifier = this.score_bonus[spellcasting.ability]
-            const memorization_maximum = Math.max(0, spellcasting_modifier + this.classes[player_class].level)
+            const memorization_maximum = Math.max(0, spellcasting_modifier) + (this.classes?.[player_class]?.level || this.spellcasting_level || 0)
             const currently_memorized_count = this.#spells[player_class].memorized.length
             if (currently_memorized_count >= memorization_maximum) { return }
         }
