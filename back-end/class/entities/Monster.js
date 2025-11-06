@@ -112,35 +112,6 @@ var Monster = class extends Creature {
     // Health
     //=====================================================================================================
 
-    get max_health() {
-        let calculated_max_health = this.ability_scores.constitution
-        const crToNumber = s => s.includes('/') ? s.split('/').reduce((a,b)=>a/b) : +s;
-
-        // Level based health increase
-        const die_size = {
-            "Default": 5,
-            "Mage": 4,
-            "Soldier": 6,
-            "Brute": 7
-        }[this.health_archetype]
-        const size_modifier = {
-            "Fine": 0.5,
-            "Diminutive": 0.5,
-            "Tiny": 0.5, 
-            "Small": 0.75,
-            "Medium": 1,
-            "Large": 1.5, 
-            "Huge": 2, 
-            "Gargantuan": 2.5,
-            "Colossal": 3
-        }[this.size]
-        const level = crToNumber(this.challenge_rating) / 0.6
-        const adjusted_die_size = die_size * size_modifier
-        calculated_max_health += adjusted_die_size * level
-
-        return Math.floor(calculated_max_health)
-    }
-
     get health_archetype () {
         return this.#health_archetype
     }

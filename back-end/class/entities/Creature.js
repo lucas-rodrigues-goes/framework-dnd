@@ -559,8 +559,15 @@ var Creature = class extends Entity {
     get health() { return this.#health }
     
     get max_health() {
-        const level = this.level || 0
         let calculated_max_health = this.ability_scores.constitution
+        const type = this.constructor.name
+
+        let level; {
+            const crToNumber = s => s.includes('/') ? s.split('/').reduce((a,b)=>a/b) : +s;
+
+            if (type == "Humanoid") level = this.level
+            else if (type == "Monster") level = crToNumber(this.challenge_rating) / 0.6
+        }
 
         const size_modifier = {
             "Fine": 0.5,
@@ -574,8 +581,8 @@ var Creature = class extends Entity {
             "Colossal": 3
         }[this.size]
 
-        // Level based health increase
-        if (this.classes) { // Players
+        // Class or Archetype based increase
+        if (type == "Humanoid") {
             for (const player_class in this.classes) {
                 const class_base_health = eval(player_class).healthPerLevel || 4
                 const adjusted_base_health = class_base_health * size_modifier
@@ -584,8 +591,15 @@ var Creature = class extends Entity {
                 calculated_max_health += adjusted_base_health * class_level
             }
         }
-        else if (this.health_archetype) {// Monsters
-            
+        else if (type == "Monster") {
+            const arch_base_health = {
+                "Default": 5,
+                "Mage": 4,
+                "Soldier": 6,
+                "Brute": 7
+            }[this.health_archetype]
+            const adjusted_base_health = arch_base_health * size_modifier
+            calculated_max_health += adjusted_base_health * level
         }
 
         // Feature-based modifiers
@@ -599,7 +613,7 @@ var Creature = class extends Entity {
             }
         }
 
-        return floor(calculated_max_health)
+        return Math.floor(calculated_max_health)
     }
 
     get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
