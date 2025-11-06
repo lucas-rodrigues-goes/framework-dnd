@@ -7,11 +7,13 @@ var Monster = class extends Creature {
     //=====================================================================================================
 
     #challenge_rating = "0"
-    #max_health = 0
+    #health_archetype = "Default" // Default: 5, Mage: 4, Soldier: 6, Brute: 7
     #condition_immunities = []
     #resistances = {}
-    #armor_class = 10
+    #natural_armor_class = 10
     #initiative_mod = 0
+
+    #spellcasting_class = ""
 
     //=====================================================================================================
     // Monster Creation
@@ -19,17 +21,22 @@ var Monster = class extends Creature {
 
     create({
         name, 
-        type, 
+        type,
+        size,
         race, 
-        max_health, 
+        health_archetype,
         challenge_rating,
-        armor_class,
+        natural_armor_class,
         initiative_mod,
         speed, 
 
         ability_scores, // {} where KEY=Score Name, VALUE=Value
         proficiencies, // {} where KEY=Proficiency, VALUE=Level
         features, // [] of feature names
+
+        spellcasting_level,
+        spellcasting_class,
+        spells,
     }) {
         // Ability Scores
         if (ability_scores) {
@@ -52,17 +59,52 @@ var Monster = class extends Creature {
             }
         }
 
+        // Spells
+        if (spellcasting_class) {
+            // Fix structure if needed
+            if (!spells[spellcasting_class]) spells[spellcasting_class] = {}
+            for (const key of ["known", "always_prepared", "innate"]) {
+                if (!spells[spellcasting_class][key]) spells[spellcasting_class][key] = []
+            }
+
+            // Reset current spells structure
+            this.reset_spells()
+
+            // Learn all spells
+            const class_spells = spells[spellcasting_class]
+            const all_spells = [
+                ...class_spells.known,
+                ...class_spells.always_prepared,
+                ...class_spells.innate
+            ]
+            for (const name of all_spells) {
+                this.learn_spell(spellcasting_class, name)
+            }
+
+            // Set always prepared and innate
+            for (const name of class_spells.always_prepared) {
+                this.set_always_prepared_spell(spellcasting_class, name)
+            }
+            for (const name of class_spells.innate) {
+                this.set_innate_spell(spellcasting_class, name)
+            }
+        }
+
         // Set basic information
         this.name = name
         this.type = type
         this.race = race
-        this.max_health = max_health
+        this.size = size
+        this.health_archetype = health_archetype
         this.challenge_rating = challenge_rating
-        this.#armor_class = armor_class
-        this.#initiative_mod = initiative_mod 
+        this.natural_armor_class = natural_armor_class
+        this.initiative_mod = initiative_mod
         this.speed = speed
+        this.spellcasting_class = spellcasting_class
+        this.spellcasting_level = spellcasting_level
 
         // Fill Resources
+        if (spellcasting_level > 0) this.update_spell_slots()
         this.long_rest()
     }
 
@@ -70,12 +112,16 @@ var Monster = class extends Creature {
     // Health
     //=====================================================================================================
 
-    get max_health() {
-        return this.#max_health
+    get health_archetype () {
+        return this.#health_archetype
     }
 
-    set max_health(max_health) {
-        this.#max_health = max_health
+    set health_archetype(archetype) {
+        const validTypes = ["Default", "Mage", "Soldier", "Brute"]
+        if (!validTypes.includes(archetype)) return
+
+        this.#health_archetype = archetype
+        this.save()
     }
 
     //=====================================================================================================
@@ -141,6 +187,7 @@ var Monster = class extends Creature {
         if (!valid_options.includes(cr)) return
 
         this.#challenge_rating = cr
+        this.save()
     }
 
     //=====================================================================================================
@@ -186,12 +233,14 @@ var Monster = class extends Creature {
 
         // Apply monster resistances
         applyResistancesOfObject(this.#resistances)
+        return resistances
     }
 
     set resistances(resistances) {
         if(!Object.prototype.toString.call(resistances) === "[object Object]") return
 
         this.#resistances = resistances
+        this.save()
     }
 
     //=====================================================================================================
@@ -205,10 +254,24 @@ var Monster = class extends Creature {
         return init_mod
     }
 
+    get natural_armor_class() {
+        return this.#natural_armor_class
+    }
+
+    set initiative_mod(init) {
+        this.#initiative_mod = init
+        this.save()
+    }
+
+    set natural_armor_class(armor_class) {
+        this.#natural_armor_class = Number(armor_class) || 10
+        this.save()
+    }
+
     get armor_class_detail() {
         const armor_class_detail = super.armor_class_detail
         const { total, condition_bonus } = armor_class_detail
-        const natural_ac = this.#armor_class
+        const natural_ac = this.natural_armor_class
         const natural_total = natural_ac + condition_bonus
 
         // Follow default calculation if it is better than hardcoded AC
@@ -226,6 +289,19 @@ var Monster = class extends Creature {
         else {
             return armor_class_detail
         }
+    }
+
+    //=====================================================================================================
+    // Spellcasting
+    //=====================================================================================================
+
+    get spellcasting_class () {
+        return this.#spellcasting_class
+    }
+
+    set spellcasting_class (spellcasting_class) {
+        this.#spellcasting_class = spellcasting_class
+        this.save()
     }
 
     //=====================================================================================================
@@ -258,12 +334,13 @@ var Monster = class extends Creature {
         super.load()
         const object = JSON.parse(this.token.getProperty("object"));
     
-        this.#challenge_rating = object.challenge_rating || this.#challenge_rating
-        this.#max_health = object.max_health ?? this.#max_health
+        this.#challenge_rating = object.challenge_rating ?? this.#challenge_rating
+        this.#health_archetype = object.health_archetype ?? this.#health_archetype
         this.#condition_immunities = object.condition_immunities ?? this.#condition_immunities
         this.#resistances = object.resistances ?? this.#resistances
-        this.#armor_class = object.armor_class ?? this.#armor_class
+        this.#natural_armor_class = object.natural_armor_class ?? this.#natural_armor_class
         this.#initiative_mod = object.initiative_mod ?? this.#initiative_mod
+        this.#spellcasting_class = object.spellcasting_class ?? this.#spellcasting_class
     
         this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
     }
@@ -272,15 +349,15 @@ var Monster = class extends Creature {
         const object = {
             ...super.save(),
             challenge_rating: this.#challenge_rating,
-            max_health: this.#max_health,
+            health_archetype: this.#health_archetype,
             condition_immunities: this.#condition_immunities,
             resistances: this.#resistances,
-            armor_class: this.#armor_class,
+            natural_armor_class: this.#natural_armor_class,
             initiative_mod: this.#initiative_mod,
-            experience: this.experience,
-            classes: this.classes,
+            spellcasting_class: this.#spellcasting_class
         }
         
+        this.player = false
         this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
         this.token.setProperty("object", JSON.stringify(object));
     }

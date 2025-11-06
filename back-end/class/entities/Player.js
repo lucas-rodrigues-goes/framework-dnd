@@ -1,6 +1,6 @@
 
 
-var Humanoid = class extends Creature {
+var Player = class extends Creature {
 
     //=====================================================================================================
     // Default Parameters
@@ -135,36 +135,6 @@ var Humanoid = class extends Creature {
     }
 
     //=====================================================================================================
-    // Health
-    //=====================================================================================================
-    
-    get max_health() {
-        const level = this.level || 0
-        let calculated_max_health = this.ability_scores.constitution
-
-        // Level based health increase
-        for (const player_class in this.#classes) {
-            const class_base_health = eval(player_class).healthPerLevel || 4
-
-            const class_level = this.#classes[player_class].level
-            calculated_max_health += class_base_health * class_level
-        }
-
-        // Feature-based modifiers
-        const feature_modifiers = {
-            "Dwarven Toughness": { type: "add", value: 1 * level }
-        };
-        for (const [feature, modifier] of Object.entries(feature_modifiers)) {
-            if (this.has_feature(feature)) {
-                if (modifier.type === "add") { calculated_max_health += modifier.value; } 
-                else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
-            }
-        }
-
-        return calculated_max_health
-    }
-
-    //=====================================================================================================
     // Features
     //=====================================================================================================
 
@@ -235,11 +205,11 @@ var Humanoid = class extends Creature {
         
         // Reset validation
         const noObject = String(this.token.getProperty("object")) === "null"
-        const notHumanoid = String(this.token.getProperty("class")) !== "null"
-            ? !JSON.parse(this.token.getProperty("class")).includes("Humanoid")
+        const notPlayer = String(this.token.getProperty("class")) !== "null"
+            ? !(JSON.parse(this.token.getProperty("class")).includes("Player") || JSON.parse(this.token.getProperty("class")).includes("Humanoid"))
             : true
 
-        const needsReset = noObject || reset || notHumanoid
+        const needsReset = noObject || reset || notPlayer
         if (needsReset) {
             this.name = this.token.getName();
             this.type = "Humanoid"
@@ -260,7 +230,7 @@ var Humanoid = class extends Creature {
         this.#classes = object.classes || this.#classes
         this.#experience = object.experience ?? this.#experience
     
-        this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
+        this.token.setProperty("class", JSON.stringify(["Player", "Creature", "Entity"]));
     }
     
     save() {
@@ -270,9 +240,12 @@ var Humanoid = class extends Creature {
             classes: this.classes,
         }
         
-        this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
+        this.player = true
+        this.token.setProperty("class", JSON.stringify(["Player", "Creature", "Entity"]));
         this.token.setProperty("object", JSON.stringify(object));
     }
 
     //=====================================================================================================
 }
+
+var Humanoid = Player

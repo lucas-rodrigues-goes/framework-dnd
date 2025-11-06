@@ -559,10 +559,80 @@ var Creature = class extends Entity {
     get health() { return this.#health }
     
     get max_health() {
-        let calculated_max_health = this.#ability_scores.constitution
+        let calculated_max_health = this.ability_scores.constitution
+        const type = this.constructor.name
 
-        return calculated_max_health
+        let level; {
+            const crToNumber = s => s.includes('/') ? s.split('/').reduce((a,b)=>a/b) : +s;
+
+            if (type == "Player") level = this.level
+            else if (type == "Monster") level = crToNumber(this.challenge_rating) / 0.6
+        }
+
+        const size_modifier = {
+            "Fine": 0.5,
+            "Diminutive": 0.5,
+            "Tiny": 0.5, 
+            "Small": 0.75,
+            "Medium": 1,
+            "Large": 1.5, 
+            "Huge": 2, 
+            "Gargantuan": 2.5,
+            "Colossal": 3
+        }[this.size]
+
+        // Class or Archetype based increase
+        if (type == "Player") {
+            for (const player_class in this.classes) {
+                const class_base_health = eval(player_class).healthPerLevel || 4
+                const adjusted_base_health = class_base_health * size_modifier
+
+                const class_level = this.classes[player_class].level
+                calculated_max_health += adjusted_base_health * class_level
+            }
+        }
+        else if (type == "Monster") {
+            const arch_base_health = {
+                "Default": 5,
+                "Mage": 4,
+                "Soldier": 6,
+                "Brute": 7
+            }[this.health_archetype]
+            const adjusted_base_health = arch_base_health * size_modifier
+            calculated_max_health += adjusted_base_health * level
+        }
+
+        // Feature-based modifiers
+        const feature_modifiers = {
+            "Dwarven Toughness": { type: "add", value: 1 * level }
+        };
+        for (const [feature, modifier] of Object.entries(feature_modifiers)) {
+            if (this.has_feature(feature)) {
+                if (modifier.type === "add") { calculated_max_health += modifier.value; } 
+                else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
+            }
+        }
+
+        return Math.floor(calculated_max_health)
     }
+
+    get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
+    set size(size) {
+        const valid_sizes = ["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"];
+        if (!valid_sizes.includes(size)) return;
+
+        // Store percentage of health
+        const health_percentage = this.health / this.max_health;
+
+        // Apply size change in MPTool
+        MTScript.evalMacro(`[r:setSize("${size}", "${this.id}")]`);
+
+        const new_max_health = this.max_health;
+
+        // Recalculate health based on percentage
+        this.health = Math.floor(new_max_health * health_percentage);
+    }
+
 
     set health(health) {
         // Validating parameters
@@ -883,6 +953,10 @@ var Creature = class extends Entity {
     // Speed
     //=====================================================================================================
 
+    get base_speed() {
+        return this.#speed.walk
+    }
+
     get speed() {
         // Modifiers
         const speed_modifiers = {
@@ -936,6 +1010,7 @@ var Creature = class extends Entity {
 
     set speed(speed) {
         this.#speed.walk = speed
+        this.save()
     }
     
 
@@ -1053,6 +1128,16 @@ var Creature = class extends Entity {
 
     get spellcasting_level() { return this.#spellcasting_level }
 
+    set spellcasting_level(level) {
+        this.#spellcasting_level = level
+        this.save()
+    }
+
+    reset_spells() {
+        this.#spells = {}
+        this.save()
+    }
+
     update_spell_slots() {
         // Find spellcasting slots on table based on spellcasting level
         const spellcasting_table = [
@@ -1150,7 +1235,7 @@ var Creature = class extends Entity {
         const spellcasting = eval(player_class).spellcasting
         if (spellcasting) {
             const spellcasting_modifier = this.score_bonus[spellcasting.ability]
-            const memorization_maximum = Math.max(0, spellcasting_modifier + this.classes[player_class].level)
+            const memorization_maximum = Math.max(0, spellcasting_modifier) + (this.classes?.[player_class]?.level || this.spellcasting_level || 0)
             const currently_memorized_count = this.#spells[player_class].memorized.length
             if (currently_memorized_count >= memorization_maximum) { return }
         }
@@ -1182,6 +1267,27 @@ var Creature = class extends Entity {
         this.#spells[player_class].always_prepared.push(spell_name)
 
         console.log(this.name + "has the " + spell_name + " spell always prepared.", "debug")
+        this.save()
+    }
+
+    set_innate_spell(player_class, spell_name) {
+        // Verify if spell exists
+        if (!database.get_spell(spell_name)) { return }
+
+        // Create spellcasting info if needed
+        if (!this.#spells[player_class]) {
+            this.#spells[player_class] = {}
+        }
+
+        // Create spellcasting always prepared list if needed
+        if (!this.#spells[player_class].innate) {
+            this.#spells[player_class].innate = []
+        }
+
+        // Adding spell to always prepared list
+        this.#spells[player_class].innate.push(spell_name)
+
+        console.log(this.name + "has " + spell_name + " as an innate spell.", "debug")
         this.save()
     }
 
@@ -1941,6 +2047,7 @@ var Creature = class extends Entity {
         this.#equipment = object.equipment || this.#equipment;
         this.#inventory = object.inventory || this.#inventory;
         this.#notes = object.notes || this.#notes;
+        this.#spellcasting_level = object.spellcasting_level || this.#spellcasting_level
     }
     
     save() {
@@ -1959,6 +2066,7 @@ var Creature = class extends Entity {
             equipment: this.#equipment,
             inventory: this.#inventory,
             notes: this.#notes,
+            spellcasting_level: this.#spellcasting_level
         };
     
         this.token.setName(this.#name);

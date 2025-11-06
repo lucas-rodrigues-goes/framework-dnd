@@ -1,4 +1,4 @@
-[dialog5("Character Sheet", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 	<head>
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 		<link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
@@ -235,7 +235,7 @@
 				return JSON.stringify(a) === JSON.stringify(b)
 			}
 			async function closeIfNotImpersonated () {
-				if (await backend("impersonated()") == "") {closePage("Character Sheet")}
+				if (await backend("impersonated()") == "") {closePage("Character")}
 			}
 
 			//=====================================================================================================
@@ -1380,9 +1380,10 @@
 				// Character Abilities
 				const character = JSON.parse(await backend(`JSON.stringify(
 					{
-						classes: impersonated().classes || {},
+						classes: impersonated().classes || impersonated().spells || {},
 						spells: impersonated().spells || {},
 						resources: impersonated().resources || {},
+						spellcasting_level: impersonated().spellcasting_level || 0,
 						spellcasting: ` + (chosen_class == "None" 
 							? `{}` 
 							: chosen_class + `.spellcasting`) + `,
@@ -1459,7 +1460,12 @@
 
 					// Conditional info
 					if (character.spellcasting.memorization) {
-						values["Spells Memorized"] = (character?.spells[chosen_class]?.memorized?.length || 0) + " / " + (modifier + character.classes[chosen_class].level)
+						const memorization_maximum = Math.max(0, modifier) + (character?.classes?.[chosen_class]?.level || character.spellcasting_level || 0)
+
+						values["Spells Memorized"] = (
+							character?.spells[chosen_class]?.memorized?.length || 0) + 
+							" / " + 
+							memorization_maximum
 					}
 
 					// Elements
@@ -1484,8 +1490,13 @@
 					spells_tab.spells = character.spells
 					
 					// Get main class
-					const class_spells = character.spells[chosen_class] || {known: []}
 					const spellcasting = character.spellcasting
+					const class_spells = character.spells[chosen_class] || {}
+
+					// Add missing lists to class spells
+					for (const key of ["known", "memorized", "always_prepared", "innate"]) {
+						if (!class_spells[key]) class_spells[key] = []
+					}
 
 					// Clear container
 					const abilities_container = document.getElementById("spells-tab-spells")
@@ -1493,12 +1504,14 @@
 					if (isEqualJSON(spellcasting, {})) return
 
 					// Filtered Spells
-					let filtered_spells = []; {
+					let ordered_spells = []; {
+						// Character Class has to learn spells
 						if (character.spellcasting.known) {
-							filtered_spells = spells_list.filter(spell => class_spells?.known?.includes(spell))
+							ordered_spells = spells_list.filter(spell => class_spells?.known?.includes(spell))
 						}
+						// Character knows all spells available to the class
 						else {
-							filtered_spells = spells_list.filter(spell_name => {
+							ordered_spells = spells_list.filter(spell_name => {
 								const spell = database.spells[spell_name]
 
 								// Knows Spell (probably cantrips)
@@ -1521,9 +1534,15 @@
 
 					// Create spell elements
 					let previous_level = undefined
-					for (const name of filtered_spells) {
+					for (const name of ordered_spells) {
 						const spell = database.spells[name]
 						const spell_image = spell.image || spell_school_images[spell.school]
+
+						// Conditions
+						const spellIsMemorized = class_spells.memorized.includes(spell.name)
+						const spellIsAlwaysPrepared = class_spells.always_prepared.includes(spell.name)
+						const spellIsInnate = class_spells.innate.includes(spell.name)
+						const spellIsCantrip = spell.level == "cantrip"
 						
 						// Action type
 						let action_type
@@ -1531,13 +1550,52 @@
 						if (spell.cast_time == -1) action_type = "Bonus Action"
 						if (spell.cast_time == -2) action_type = "Reaction"
 
-						// Conditions
-						const spellIsMemorized = character.spells[chosen_class]?.memorized?.includes(spell.name) || false
-						const spellIsCantrip = spell.level == "cantrip"
+						// Accent Color
+						let accentColor = ""
+						if (spellIsInnate) accentColor = "#ca2"
+						else if (spellIsAlwaysPrepared) accentColor = "#aaa"
 
-						// Validation
+						// Filters
 						if (!(spellIsCantrip || spellIsMemorized) && !showAll) continue
 						if (levelFilter && (levelFilter != spell.level)) continue
+
+						// Click Spell
+						function clickSpell (event) {
+							switch (event.button) {
+								case 0: // Left Click
+									break
+								case 2: { // Right Click
+									// Buttons
+									const buttons = {
+										"Description": () => modal({parent: document.getElementById("spells-tab"), children: [
+											data_description.spell({spell: spell})
+										]}),
+									}
+
+									// Conditional buttons
+									if (spellcasting.memorization) {
+										if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
+											const result = await backend(`impersonated().memorize_spell("` + chosen_class + `", "` + spell.name + `")`)
+											
+											// Show warning if no memorization occurred
+											if (!result) warning(
+												{parent: document.getElementById("spells-tab"), text: "You have reached memorization limit."}
+											)
+
+											updateSpellsTab()
+										}
+										if(spellIsMemorized) buttons["Forget"] = async () => {
+											await backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
+											updateSpellsTab()
+										}
+									}
+
+									// Run context menu
+									context_menu({event: event, buttons: buttons})
+									break
+								}
+							}
+						}
 
 						// Add spacing between levels
 						if (previous_level != spell.level) {
@@ -1551,46 +1609,10 @@
 								attributes: {class: "collapsible-div"}, 
 								style: {
 									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+									borderColor: accentColor,
 									opacity: spellIsMemorized || spellIsCantrip || !spellcasting.memorization ? 1 : 0.4
 								},
-								events: {
-									mousedown: (event) => {
-										switch (event.button) {
-											case 0: // Left Click
-												break
-											case 2: { // Right Click
-												// Buttons
-												const buttons = {
-													"Description": () => modal({parent: document.getElementById("spells-tab"), children: [
-														data_description.spell({spell: spell})
-													]}),
-												}
-
-												// Conditional buttons
-												if (spellcasting.memorization) {
-													if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
-														const result = await backend(`impersonated().memorize_spell("` + chosen_class + `", "` + spell.name + `")`)
-														
-														// Show warning if no memorization occurred
-														if (!result) warning(
-															{parent: document.getElementById("spells-tab"), text: "You have reached memorization limit."}
-														)
-
-														updateSpellsTab()
-													}
-													if(spellIsMemorized) buttons["Forget"] = async () => {
-														await backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
-														updateSpellsTab()
-													}
-												}
-
-												// Run context menu
-												context_menu({event: event, buttons: buttons})
-												break
-											}
-										}
-									}
-								},
+								events: {mousedown: clickSpell},
 								children: [
 									{tag: "img", attributes: {src: spell_image}},
 									{tag: "span", text: name},

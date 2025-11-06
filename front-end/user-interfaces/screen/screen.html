@@ -655,7 +655,7 @@
             // Character Attributes
             const character = JSON.parse(await backend(`JSON.stringify(
                 {
-                    classes: impersonated().classes,
+                    classes: impersonated().classes || impersonated().spells || {},
                     resources: impersonated().resources,
                     spells: impersonated().spells,
                     hasInitiative: Initiative.turn_order.includes(impersonated().id),
@@ -665,10 +665,9 @@
 
             // Classes Spellcasting
             let classes_spellcasting = ""; {
-
-            }
-            if (character.classes && Object.keys(character.classes).length > 0) {
-                for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+                if (character.classes && Object.keys(character.classes).length > 0) {
+                    for (const item of Object.keys(character.classes)) classes_spellcasting += item + ": " + item + ".spellcasting,"
+                }
             }
             character["spellcasting"] = JSON.parse(await backend(`JSON.stringify({
                 `+classes_spellcasting+`
@@ -1319,8 +1318,8 @@
                         
                     ]},
                     {tag: "div", attributes: {id: "create-character-menu", class: "menu bottom left hidden"}, style: {width: "18vh"}, children: [
-                        {tag: "button", text: "Character Creation", 
-                            events: {click: () => openClosePage("", "Character Creation", "character_creation.html")}
+                        {tag: "button", text: "Player Creation", 
+                            events: {click: () => openClosePage("", "Player Creation", "player_creation.html")}
                         },
                         {tag: "button", text: "Monster Creation", 
                             events: {click: () => openClosePage("", "Monster Creation", "monster_creation.html")}
@@ -1503,7 +1502,7 @@
                                 attributes: {class: "tooltip", tooltip: "Blank"},
                                 style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, right: "-2.5vh"},
                                 events: {
-                                    click: () => openClosePage("journal", "Character Sheet", "character_sheet.html")
+                                    click: () => openClosePage("journal", "Character", "character_sheet.html")
                                 },
                                 children: [
                                     {tag: "img", style: {height: "100%", width: "100%", display: "none"}, attributes: {src: "asset://cc763e3377c5787dc7c81eb443145869"}}

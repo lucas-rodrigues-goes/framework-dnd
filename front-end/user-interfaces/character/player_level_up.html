@@ -1,6 +1,6 @@
 [h,if(!argCount()>0):id = arg(0); id = getImpersonated()]
 [h,if(id==""):id = getImpersonated()]
-[dialog5("Level Up", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
+[dialog5("Character", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
     <script>
         
@@ -64,7 +64,7 @@
         // Backend
         const request = `impersonated().level_up("`+player_class+`", ` + JSON.stringify(choices) + `)`
         backend(request)
-        closePage("Level Up")
+        openPage("character_sheet.html")
 
     }
     function title_value({title, value}) {

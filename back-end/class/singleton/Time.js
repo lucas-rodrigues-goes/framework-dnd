@@ -39,6 +39,12 @@ var Time = class {
     // Setters
     static set current(current) {
         this._seconds = this.#roundSeconds(current)
+        
+        // Check for expired conditions on all creatures
+        this.check_all_creature_conditions()
+
+        // Update maps
+        this.update_time_of_day()
     }
 
     // Methods
