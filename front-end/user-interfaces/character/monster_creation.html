@@ -31,8 +31,12 @@
         proficiencies: {"Weapon": 2},
 
         spellcasting_level: "",
-        spellcasting_class: "",
-        spells: {},
+        spells: {
+            Monster: {
+                known: [],
+                innate: []
+            }
+        },
     }
 
     async function loadMonster() {
@@ -53,11 +57,15 @@
                 features: impersonated().features,
                 proficiencies: impersonated().proficiencies,
                 spellcasting_level: impersonated().spellcasting_level,
-                spellcasting_class: impersonated().spellcasting_class,
                 spells: impersonated().spells,
             })
         } catch { "{}" }`))
         for (const key in impersonated) monster[key] = impersonated[key]
+
+        if (!monster.spells) monster.spells = {}
+        if (!monster.spells.Monster) monster.spells.Monster = { known: [], innate: [] }
+        if (!monster.spells.Monster.known) monster.spells.Monster.known = []
+        if (!monster.spells.Monster.innate) monster.spells.Monster.innate = []
     }
 
     //=====================================================================================================
@@ -141,18 +149,13 @@
             .join(", ");
     }
 
-    function stringifyKnownSpells(monster, spellcasting_class) {
-        const class_obj = monster?.spells?.[spellcasting_class] || {};
+    function stringifyKnownSpells(monster) {
+        const class_obj = monster?.spells?.Monster || {};
         return stringifySpellList(class_obj.known || []);
     }
 
-    function stringifyAlwaysPreparedSpells(monster, spellcasting_class) {
-        const class_obj = monster?.spells?.[spellcasting_class] || {};
-        return stringifySpellList(class_obj.always_prepared || []);
-    }
-
-    function stringifyInnateSpells(monster, spellcasting_class) {
-        const class_obj = monster?.spells?.[spellcasting_class] || {};
+    function stringifyInnateSpells(monster) {
+        const class_obj = monster?.spells?.Monster || {};
         return stringifySpellList(class_obj.innate || []);
     }
 
@@ -167,18 +170,9 @@
             spells: database.spells.data,
             spells_list: database.get_spells_list()
         })`))
-        let spellcasting_class = monster.spellcasting_class || ""
+        const spellcasting_class = "Monster"
 
         // Update Attributes
-        const updateSpellcastingClass = {input: function (event) {
-            monster.spellcasting_class = this.value
-            const previous_spells = monster?.spells[spellcasting_class] || {}
-            spellcasting_class = monster.spellcasting_class
-
-            monster.spells = {}
-            monster.spells[monster.spellcasting_class] = previous_spells
-            //console.log(monster)
-        }}
         const updateSpellcastingLevel = {input: function (event) {
             monster.spellcasting_level = Number(this.value) || 0
             //console.log(monster)
@@ -188,16 +182,7 @@
                 .split(", ")
                 .map(f => f.trim())
                 .filter(f => f !== "");
-            monster.spells[monster.spellcasting_class].known = [...new Set(spells)];
-            updateSpellsElem()
-            //console.log(monster)
-        }}
-        const updateAlwaysPrepared = {input: function (event) {
-            const spells = this.value
-                .split(", ")
-                .map(f => f.trim())
-                .filter(f => f !== "");
-            monster.spells[monster.spellcasting_class].always_prepared = [...new Set(spells)];
+            monster.spells[spellcasting_class].known = [...new Set(spells)];
             updateSpellsElem()
             //console.log(monster)
         }}
@@ -206,7 +191,7 @@
                 .split(", ")
                 .map(f => f.trim())
                 .filter(f => f !== "");
-            monster.spells[monster.spellcasting_class].innate = [...new Set(spells)];
+            monster.spells[spellcasting_class].innate = [...new Set(spells)];
             updateSpellsElem()
             //console.log(monster)
         }}
@@ -219,8 +204,7 @@
             // Spell List
             const class_spells = monster.spells?.[spellcasting_class] || {}
             const selected_spells = [
-                ...(class_spells?.known || []), 
-                ...(class_spells?.always_prepared || []),
+                ...(class_spells?.known || []),
                 ...(class_spells?.innate || [])
             ]
             const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
@@ -290,11 +274,6 @@
             {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
                 // Details
                 container({title: "Details", children: [
-                    // Class
-                    input({id: "spellcasting_class", placeholder: "Class", options: {
-                        input: {attributes: {value: spellcasting_class}, events: updateSpellcastingClass}
-                    }}),
-
                     // Spellcasting Level
                     input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
                         input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
@@ -306,11 +285,6 @@
                     // Known Spells
                     input({id: "known", placeholder: "Known Spells", options: {
                         input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
-                    }}),
-
-                    // Always Prepared Spells
-                    input({id: "always_prepared", placeholder: "Always Prepared Spells", options: {
-                        input: {attributes: {value: stringifyAlwaysPreparedSpells(monster, spellcasting_class) || ""}, events: updateAlwaysPrepared}
                     }}),
 
                     // Innate Spells
