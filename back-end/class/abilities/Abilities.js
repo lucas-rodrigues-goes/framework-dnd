@@ -218,6 +218,9 @@ var Abilities = class {
             : `.`
         )
 
+        // Make stealth tests and others
+        this.attack_roll_advantage_modifiers({creature, target})
+
         // Output
         return {
             success: true,
@@ -431,9 +434,9 @@ var Abilities = class {
             ? ` dealing ${this.weapon_attack_damage(args)} damage.`
             : `.`
         )
-        
-        // Remove Invisibility (spell)
-        creature.remove_condition("Invisibility")
+
+        // Make stealth tests and others
+        this.attack_roll_advantage_modifiers({creature, target})
 
         // Output
         return {
@@ -607,7 +610,7 @@ var Abilities = class {
         const target_visibility = creature.target_visibility(target)
 
         // Advantage Modifiers
-        advantage_weight += this.attack_roll_advantage_modifiers({creature, target})
+        advantage_weight += this.attack_roll_advantage_modifiers({creature, target, view_only: true})
 
         // Roll d20
         const dice_roll = roll_20(advantage_weight, creature)
@@ -792,8 +795,11 @@ var Abilities = class {
 
             // Unseen Attacker
             if (creature.has_conditions(["Hidden", "Invisible"], "any")) {
-                if (!view_only) creature.maintain_stealth(true)
-                if (!view_only) target.passive_search()
+                if (!view_only) {
+                    creature.maintain_stealth(true)
+                    target.passive_search()
+                    creature.remove_condition("Invisibility")
+                }
                 output += 1
             }
         }
