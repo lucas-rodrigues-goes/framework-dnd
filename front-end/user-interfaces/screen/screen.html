@@ -777,7 +777,11 @@
                     // If class memorizes spells
                     if (character.spellcasting[player_class].memorization) {
                         // Memorized Spells
-                        spell_list = [...(character.spells[player_class].memorized || [])]
+                        spell_list = [
+                            ...(character.spells[player_class].memorized || []),
+                            ...(character.spells[player_class].always_prepared || []),
+                            ...(character.spells[player_class].innate || [])
+                        ]
 
                         // Cantrips
                         for (const spell of character.spells[player_class].known) {

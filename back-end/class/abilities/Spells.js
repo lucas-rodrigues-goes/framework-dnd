@@ -98,9 +98,13 @@ var Spells = class extends Abilities {
             if (spell.cast_time >= 0) resources = ["Action"]
             else if (spell.cast_time == -1) resources = ["Bonus Action"]
             else if (spell.cast_time == -2) resources = ["Reaction"]
+            
+            // Conditions
+            const isCantrip = level == "cantrip"
+            const isInnateSpell = (creature.spells?.[player_class]?.innate || []).includes(name)
 
             // Spell Slot
-            if (level != "cantrip") resources.push(`${level} Level Spell Slot`)
+            if (!isCantrip && !isInnateSpell) resources.push(`${level} Level Spell Slot`)
         }
         if(!this.has_resources_available(resources)) return
 

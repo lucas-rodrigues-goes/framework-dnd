@@ -1539,10 +1539,12 @@
 						const spell_image = spell.image || spell_school_images[spell.school]
 
 						// Conditions
-						const spellIsMemorized = class_spells.memorized.includes(spell.name)
 						const spellIsAlwaysPrepared = class_spells.always_prepared.includes(spell.name)
 						const spellIsInnate = class_spells.innate.includes(spell.name)
 						const spellIsCantrip = spell.level == "cantrip"
+						const spellIsMemorized = class_spells.memorized.includes(spell.name) || spellIsInnate || spellIsAlwaysPrepared || spellIsCantrip
+						const spellIsForgettable = spellIsMemorized && !spellIsInnate && !spellIsAlwaysPrepared && !spellIsCantrip
+						const spellIsMemorizable = !spellIsMemorized && !spellIsCantrip && !spellIsInnate && !spellIsAlwaysPrepared
 						
 						// Action type
 						let action_type
@@ -1574,7 +1576,7 @@
 
 									// Conditional buttons
 									if (spellcasting.memorization) {
-										if(!spellIsMemorized && !spellIsCantrip) buttons["Memorize"] = async function () {
+										if(spellIsMemorizable) buttons["Memorize"] = async function () {
 											const result = await backend(`impersonated().memorize_spell("` + chosen_class + `", "` + spell.name + `")`)
 											
 											// Show warning if no memorization occurred
@@ -1584,7 +1586,7 @@
 
 											updateSpellsTab()
 										}
-										if(spellIsMemorized) buttons["Forget"] = async () => {
+										if(spellIsForgettable) buttons["Forget"] = async () => {
 											await backend(`impersonated().forget_spell("` + chosen_class + `", "` + spell.name + `")`)
 											updateSpellsTab()
 										}
@@ -1610,7 +1612,7 @@
 								style: {
 									display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
 									borderColor: accentColor,
-									opacity: spellIsMemorized || spellIsCantrip || !spellcasting.memorization ? 1 : 0.4
+									opacity: spellIsMemorized || spellIsInnate || spellIsCantrip || !spellcasting.memorization ? 1 : 0.4
 								},
 								events: {mousedown: clickSpell},
 								children: [
