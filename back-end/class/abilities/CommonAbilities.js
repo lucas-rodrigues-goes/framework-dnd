@@ -223,7 +223,7 @@ var CommonAbilities = class extends Abilities {
                     name: "Stand up",
                     resources: ["Movement"],
                     recovery: 0,
-                    image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
+                    image: "asset://74e398f61ad927dc3855f4ec649c86f9",
                     origin: origin,
                     type: "Special",
                     description: `Stand up from prone.`
@@ -238,11 +238,164 @@ var CommonAbilities = class extends Abilities {
     // Special
     //---------------------------------------------------------------------------------------------------
 
-    static escape_grapple() {return}
+    static escape_grapple() {
+        const function_name = "escape_grapple"
 
-    static stop_grappling() {return}
+        // Helper
+        const makeCheck = (creature, target=false) => {
+            const dice_roll = roll_20()
+            const bonus = (target
+                ? Math.max(creature.skills.Athletics, creature.skills.Acrobatics)
+                : creature.skills.Athletics
+            )
 
-    static stand_up () {return}
+            return {
+                result: dice_roll.result + bonus,
+                dice_roll,
+                bonus,
+                text: `${dice_roll.text_color} ${bonus >= 0 ? "+" : "-"} ${bonus}`
+            }
+        }
+
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements(function_name, false);
+        if (!valid) return;
+
+        // Validate creature is grappled
+        if (!creature.has_condition("Grappled")) {
+            console.log(`${creature.name_color} is not grappled.`, "all")
+            return
+        }
+
+        // Get grappler
+        const grappler_id = creature.get_condition("Grappled").source
+        const grappler = instance(grappler_id)
+        if (!grappler) {
+            console.log(`${creature.name_color} tried to escape grapple but the grappler is no longer valid.`, "all")
+            creature.remove_condition("Grappled")
+            return
+        }
+
+        // Make escape check (Athletics or Acrobatics) vs grappler's Athletics
+        const escape_check = makeCheck(creature, true)
+        const grappler_check = makeCheck(grappler)
+        
+        let message = "", success = false; {
+            if (escape_check.result > grappler_check.result) {
+                success = true
+                message = `${creature.name_color} (${escape_check.text}) successfully escaped the grapple from ${grappler.name_color} (DC ${grappler_check.text}).`
+            }
+            else {
+                message = `${creature.name_color} (${escape_check.text}) attempted to escape the grapple from ${grappler.name_color} (DC ${grappler_check.text}) but failed.`
+            }
+        }
+
+        // Remove conditions and restore movement if successful
+        if (success) {
+            // Remove Grappled condition from creature
+            creature.remove_condition("Grappled")
+            
+            // Remove Grappling condition from grappler if it points to this creature
+            if (grappler.has_condition("Grappling") && grappler.get_condition("Grappling").target == creature.id) {
+                grappler.remove_condition("Grappling")
+                
+                // Restore grappler's movement (double it back, but cap at max)
+                const current_movement = grappler.get_resource_value("Movement")
+                const max_movement = grappler.resources["Movement"].max
+                const restored_movement = Math.min(current_movement * 2, max_movement)
+                grappler.set_resource_value("Movement", restored_movement)
+            }
+        }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(message, "all")
+    }
+
+    static stop_grappling() {
+        const function_name = "stop_grappling"
+
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements(function_name, false);
+        if (!valid) return;
+
+        // Validate creature is grappling
+        if (!creature.has_condition("Grappling")) {
+            console.log(`${creature.name_color} is not grappling anyone.`, "all")
+            return
+        }
+
+        // Get grappled target
+        const grappled_id = creature.get_condition("Grappling").target
+        const grappled_target = instance(grappled_id)
+        if (!grappled_target) {
+            console.log(`${creature.name_color} tried to stop grappling but the target is no longer valid.`, "all")
+            creature.remove_condition("Grappling")
+            return
+        }
+
+        // Remove conditions
+        creature.remove_condition("Grappling")
+        
+        // Remove Grappled condition from target if it points to this creature
+        if (grappled_target.has_condition("Grappled") && grappled_target.get_condition("Grappled").source == creature.id) {
+            grappled_target.remove_condition("Grappled")
+        }
+
+        // Restore creature's movement (double it back, but cap at max)
+        const current_movement = creature.get_resource_value("Movement")
+        const max_movement = creature.resources["Movement"].max
+        const restored_movement = Math.min(current_movement * 2, max_movement)
+        creature.set_resource_value("Movement", restored_movement)
+
+        // Consume resources (should be empty, but just in case)
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(`${creature.name_color} released ${grappled_target.name_color} from the grapple.`, "all")
+    }
+
+    static stand_up() {
+        const function_name = "stand_up"
+
+        // Requirements
+        const { valid, creature, action_details } = this.check_action_requirements(function_name, false);
+        if (!valid) return;
+
+        // Validate creature is prone
+        if (!creature.has_condition("Prone")) {
+            console.log(`${creature.name_color} is not prone.`, "all")
+            return
+        }
+
+        // Calculate half movement cost
+        const speed = creature.speed
+        const half_movement = Math.floor(speed / 2)
+        const current_movement = creature.resources["Movement"]
+        
+        // Check if creature has enough movement
+        if (current_movement.value < half_movement) {
+            console.log(`${creature.name_color} doesn't have enough movement (${current_movement.value}/${half_movement}) to stand up.`, "all")
+            return
+        }
+
+        // Consume half movement
+        const new_movement = current_movement.value - half_movement
+        creature.set_resource_value("Movement", new_movement)
+
+        // Remove Prone condition
+        creature.remove_condition("Prone")
+
+        // Set recovery
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(`${creature.name_color} stands up from prone, using ${half_movement} feet of movement.`, "all")
+    }
 
     //---------------------------------------------------------------------------------------------------
     // Attacks
@@ -444,7 +597,58 @@ var CommonAbilities = class extends Abilities {
     }
 
     static knock_prone() {
-        return;
+        const function_name = "knock_prone"
+
+        // Helper
+        const makeCheck = (creature, target=false) => {
+            const dice_roll = roll_20()
+            const bonus = (target
+                ? Math.max(creature.skills.Athletics, creature.skills.Acrobatics)
+                : creature.skills.Athletics
+            )
+
+            return {
+                result: dice_roll.result + bonus,
+                dice_roll,
+                bonus,
+                text: `${dice_roll.text_color} ${bonus >= 0 ? "+" : "-"} ${bonus}`
+            }
+        }
+
+        // Requirements
+        const { valid, creature, target, action_details } = this.check_action_requirements(function_name, true);
+        if (!valid) return;
+
+        // Validate Range
+        if (calculate_distance(target, creature) > 1) {
+            console.log(`${creature.name_color} tried to knock down ${target.name_color} but they are too far.`, "all")
+            return
+        }
+
+        // Strength Checks
+        const c_check = makeCheck(creature)
+        const t_check = makeCheck(target, true)
+        let message = "", success = false; {
+            if (c_check.result > t_check.result) {
+                success = true
+                message = `${creature.name_color} (DC ${c_check.text}) knocked down ${target.name_color} (${t_check.text}).`
+            }
+            else {
+                message = `${creature.name_color} (DC ${c_check.text}) attempted to knock down ${target.name_color} (${t_check.text}) but failed.`
+            }
+        }
+
+        // Apply Prone condition
+        if (success) {
+            target.set_condition("Prone", -1)
+        }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+
+        // Logging
+        console.log(message, "all")
     }
 
     //---------------------------------------------------------------------------------------------------
