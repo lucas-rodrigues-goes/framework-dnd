@@ -1,6 +1,6 @@
 
 
-var Humanoid = class extends Creature {
+var Player = class extends Creature {
 
     //=====================================================================================================
     // Default Parameters
@@ -205,11 +205,11 @@ var Humanoid = class extends Creature {
         
         // Reset validation
         const noObject = String(this.token.getProperty("object")) === "null"
-        const notHumanoid = String(this.token.getProperty("class")) !== "null"
-            ? !JSON.parse(this.token.getProperty("class")).includes("Humanoid")
+        const notPlayer = String(this.token.getProperty("class")) !== "null"
+            ? !(JSON.parse(this.token.getProperty("class")).includes("Player") || JSON.parse(this.token.getProperty("class")).includes("Humanoid"))
             : true
 
-        const needsReset = noObject || reset || notHumanoid
+        const needsReset = noObject || reset || notPlayer
         if (needsReset) {
             this.name = this.token.getName();
             this.type = "Humanoid"
@@ -230,7 +230,7 @@ var Humanoid = class extends Creature {
         this.#classes = object.classes || this.#classes
         this.#experience = object.experience ?? this.#experience
     
-        this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
+        this.token.setProperty("class", JSON.stringify(["Player", "Creature", "Entity"]));
     }
     
     save() {
@@ -240,9 +240,12 @@ var Humanoid = class extends Creature {
             classes: this.classes,
         }
         
-        this.token.setProperty("class", JSON.stringify(["Humanoid", "Creature", "Entity"]));
+        this.player = true
+        this.token.setProperty("class", JSON.stringify(["Player", "Creature", "Entity"]));
         this.token.setProperty("object", JSON.stringify(object));
     }
 
     //=====================================================================================================
 }
+
+var Humanoid = Player

@@ -357,6 +357,7 @@ var Monster = class extends Creature {
             spellcasting_class: this.#spellcasting_class
         }
         
+        this.player = false
         this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
         this.token.setProperty("object", JSON.stringify(object));
     }

@@ -565,7 +565,7 @@ var Creature = class extends Entity {
         let level; {
             const crToNumber = s => s.includes('/') ? s.split('/').reduce((a,b)=>a/b) : +s;
 
-            if (type == "Humanoid") level = this.level
+            if (type == "Player") level = this.level
             else if (type == "Monster") level = crToNumber(this.challenge_rating) / 0.6
         }
 
@@ -582,7 +582,7 @@ var Creature = class extends Entity {
         }[this.size]
 
         // Class or Archetype based increase
-        if (type == "Humanoid") {
+        if (type == "Player") {
             for (const player_class in this.classes) {
                 const class_base_health = eval(player_class).healthPerLevel || 4
                 const adjusted_base_health = class_base_health * size_modifier
