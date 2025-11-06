@@ -67,6 +67,7 @@ var Abilities = class {
 
     static has_resources_available(resources) {
         const creature = impersonated();
+        const isMonster = creature.constructor.name == "Monster"
         
         let return_value = true;
         const missing_resources = [];
@@ -74,14 +75,19 @@ var Abilities = class {
         for (const name of resources) {
             const resource = creature?.resources[name]?.value || 0;
 
+            // Conditions
+            const isTurnResource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+            const hasInitiative = Initiative.turn_order.includes(creature.id);
+            const isSpell = JSON.stringify(resources).includes("Spell Slot")
+
+            // Monster Ignores Specific Resources
+            if (!isTurnResource && !isSpell && isMonster) continue
+
             // Ignore turn resources if not in initiative
-            const is_turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
-            const has_initiative = Initiative.turn_order.includes(creature.id);
-            if (is_turn_resource && !has_initiative) continue;
+            if (isTurnResource && !hasInitiative) continue;
             
             // Check if we can use Ready Action substitution
-            const isNotSpell = !JSON.stringify(resources).includes("Spell Slot")
-            const can_use_reaction = creature.has_condition("Ready Action") && (name === "Action" || name === "Attack Action") && isNotSpell
+            const canUseReaction = creature.has_condition("Ready Action") && (name === "Action" || name === "Attack Action") && !isSpell
             
             switch (name) {
                 case "Attack Action": {
@@ -89,7 +95,7 @@ var Abilities = class {
                     const reaction_res = creature?.resources["Reaction"]?.value || 0;
                     
                     if (resource < 1) {
-                        if (can_use_reaction && reaction_res >= 1) {
+                        if (canUseReaction && reaction_res >= 1) {
                             // Can use Reaction instead of Action
                             continue;
                         }
@@ -104,7 +110,7 @@ var Abilities = class {
                 }
                 
                 case "Action": {
-                    if (can_use_reaction) {
+                    if (canUseReaction) {
                         const reaction_res = creature?.resources["Reaction"]?.value || 0;
                         if (resource < 1 && reaction_res < 1) {
                             return_value = false;
@@ -135,22 +141,28 @@ var Abilities = class {
 
     static use_resources(resources) {
         const creature = impersonated();
+        const isMonster = creature.constructor.name == "Monster"
 
         for (const name of resources) {
             const resource = creature.resources[name];
 
+            // Conditions
+            const isTurnResource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
+            const hasInitiative = Initiative.turn_order.includes(creature.id);
+            const isSpell = JSON.stringify(resources).includes("Spell Slot")
+
             // Ignore turn resources if not in initiative
-            const turn_resource = ["Action", "Attack Action", "Bonus Action", "Reaction", "Movement"].includes(name);
-            const has_initiative = Initiative.turn_order.includes(creature.id);
-            if (turn_resource && !has_initiative) continue;
+            if (isTurnResource && !hasInitiative) continue;
+
+            // Monster Ignores Specific Resources
+            if (!isTurnResource && !isSpell && isMonster) continue
             
             // Check if we can use Ready Action substitution
-            const can_use_reaction = creature.has_condition("Ready Action") && 
-                                (name === "Action" || name === "Attack Action");
+            const canUseReaction = creature.has_condition("Ready Action") && (name === "Action" || name === "Attack Action");
 
             // Handle Attack Action with possible Action/Reaction substitution
             if (name === "Attack Action" && resource.value < 1) {
-                if (can_use_reaction && creature.resources["Reaction"].value >= 1) {
+                if (canUseReaction && creature.resources["Reaction"].value >= 1) {
                     // Use Reaction instead of Action
                     creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
                     creature.remove_condition("Ready Action")
@@ -167,7 +179,7 @@ var Abilities = class {
             }
 
             // Handle Action with Ready Action substitution
-            if (name === "Action" && resource.value < 1 && can_use_reaction) {
+            if (name === "Action" && resource.value < 1 && canUseReaction) {
                 creature.set_resource_value("Reaction", creature.resources["Reaction"].value - 1);
                 creature.remove_condition("Ready Action")
                 creature.set_resource_value("Action", resource.max);
