@@ -64,6 +64,7 @@ var Player = class extends Creature {
 
     level_up(class_choice, choices) {
         if (this.level >= 20) { return }
+        const health_percentage = this.health / this.max_health;
 
         // Pay experience cost
         this.experience = this.experience - this.level_up_experience
@@ -75,6 +76,9 @@ var Player = class extends Creature {
 
         // Increase level
         this.#classes[class_choice].level += 1
+        
+        // Maintain current HP percentage
+        this.health = Math.floor(this.max_health * health_percentage);
 
         // Call class level up
         eval(class_choice).level_up(this, choices)
