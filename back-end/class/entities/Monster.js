@@ -7,7 +7,7 @@ var Monster = class extends Creature {
     //=====================================================================================================
 
     #challenge_rating = "0"
-    #max_health = 0
+    #health_archetype = "Default" // Default: 5, Mage: 4, Soldier: 6, Brute: 7
     #condition_immunities = []
     #resistances = {}
     #natural_armor_class = 10
@@ -24,7 +24,7 @@ var Monster = class extends Creature {
         type,
         size,
         race, 
-        max_health, 
+        health_archetype,
         challenge_rating,
         natural_armor_class,
         initiative_mod,
@@ -95,7 +95,7 @@ var Monster = class extends Creature {
         this.type = type
         this.race = race
         this.size = size
-        this.max_health = max_health
+        this.health_archetype = health_archetype
         this.challenge_rating = challenge_rating
         this.natural_armor_class = natural_armor_class
         this.initiative_mod = initiative_mod
@@ -113,11 +113,43 @@ var Monster = class extends Creature {
     //=====================================================================================================
 
     get max_health() {
-        return this.#max_health
+        let calculated_max_health = this.ability_scores.constitution
+        const crToNumber = s => s.includes('/') ? s.split('/').reduce((a,b)=>a/b) : +s;
+
+        // Level based health increase
+        const die_size = {
+            "Default": 5,
+            "Mage": 4,
+            "Soldier": 6,
+            "Brute": 7
+        }[this.health_archetype]
+        const size_modifier = {
+            "Fine": 0.5,
+            "Diminutive": 0.5,
+            "Tiny": 0.5, 
+            "Small": 0.75,
+            "Medium": 1,
+            "Large": 1.5, 
+            "Huge": 2, 
+            "Gargantuan": 2.5,
+            "Colossal": 3
+        }[this.size]
+        const level = crToNumber(this.challenge_rating) / 0.6
+        const adjusted_die_size = die_size * size_modifier
+        calculated_max_health += adjusted_die_size * level
+
+        return Math.floor(calculated_max_health)
     }
 
-    set max_health(max_health) {
-        this.#max_health = max_health
+    get health_archetype () {
+        return this.#health_archetype
+    }
+
+    set health_archetype(archetype) {
+        const validTypes = ["Default", "Mage", "Soldier", "Brute"]
+        if (!validTypes.includes(archetype)) return
+
+        this.#health_archetype = archetype
         this.save()
     }
 
@@ -331,8 +363,8 @@ var Monster = class extends Creature {
         super.load()
         const object = JSON.parse(this.token.getProperty("object"));
     
-        this.#challenge_rating = object.challenge_rating || this.#challenge_rating
-        this.#max_health = object.max_health ?? this.#max_health
+        this.#challenge_rating = object.challenge_rating ?? this.#challenge_rating
+        this.#health_archetype = object.health_archetype ?? this.#health_archetype
         this.#condition_immunities = object.condition_immunities ?? this.#condition_immunities
         this.#resistances = object.resistances ?? this.#resistances
         this.#natural_armor_class = object.natural_armor_class ?? this.#natural_armor_class
@@ -346,7 +378,7 @@ var Monster = class extends Creature {
         const object = {
             ...super.save(),
             challenge_rating: this.#challenge_rating,
-            max_health: this.#max_health,
+            health_archetype: this.#health_archetype,
             condition_immunities: this.#condition_immunities,
             resistances: this.#resistances,
             natural_armor_class: this.#natural_armor_class,

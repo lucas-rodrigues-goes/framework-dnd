@@ -21,7 +21,7 @@
 
     const monster = {
         size: "Medium",
-        max_health: 10,
+        health_archetype: "Default",
         challenge_rating: "1/8",
         natural_armor_class: "10",
         initiative_mod: "0",
@@ -44,7 +44,7 @@
                 type: impersonated().type,
                 size: impersonated().size,
                 race: impersonated().race,
-                max_health: impersonated().max_health,
+                health_archetype: impersonated().health_archetype,
                 challenge_rating: impersonated().challenge_rating,
                 natural_armor_class: impersonated().natural_armor_class,
                 initiative_mod: impersonated().initiative_mod,
@@ -337,6 +337,9 @@
             features: database.features.data,
             proficiencies: database.proficiencies.data,
         })`))
+        const health_archetype_options = [
+            "Default", "Mage", "Soldier", "Brute"
+        ]
         const type_options = [
             "Aberration", "Beast", "Celestial", 
             "Construct", "Dragon", "Elemental", 
@@ -396,6 +399,22 @@
             }}}} 
         });
         sizeSelect.children[0].value = monster.size ?? "";
+        const healthArchetypeSelect = select({
+            id: "health_archetype",
+            placeholder: "Health Archetype",
+            children: health_archetype_options.map(type => ({
+                tag: "option",
+                attributes: { value: type },
+                text: type
+            })),
+            options: {
+                div: {style: {width: "49%", marginRight: "1%"}},
+                input: {events: {input: function (event) {
+                    monster[this.id] = this.value
+                    //console.log(monster)
+            }}}} 
+        });
+        healthArchetypeSelect.children[0].value = monster.health_archetype ?? "Default";
 
         // Update Elements
         function updateFeaturesElem() {
@@ -543,11 +562,8 @@
 
                 // Combat Stats
                 container({title: "Stats", children: [
-                    // Max Health
-                    input({id: "max_health", placeholder: "Max Health", options: {
-                        div: {style: {width: "49%", marginRight: "2%"}},
-                        input: {attributes: {value: monster.max_health || ""}, events: updateAttribute}
-                    }}),
+                    // Health Archetype
+                    healthArchetypeSelect,
 
                     // Armor Class
                     input({id: "natural_armor_class", placeholder: "Natural Armor Class", options: {

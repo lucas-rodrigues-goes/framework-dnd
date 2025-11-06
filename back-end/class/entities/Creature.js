@@ -559,10 +559,66 @@ var Creature = class extends Entity {
     get health() { return this.#health }
     
     get max_health() {
-        let calculated_max_health = this.#ability_scores.constitution
+        const level = this.level || 0
+        let calculated_max_health = this.ability_scores.constitution
 
-        return calculated_max_health
+        const size_modifier = {
+            "Fine": 0.5,
+            "Diminutive": 0.5,
+            "Tiny": 0.5, 
+            "Small": 0.75,
+            "Medium": 1,
+            "Large": 1.5, 
+            "Huge": 2, 
+            "Gargantuan": 2.5,
+            "Colossal": 3
+        }[this.size]
+
+        // Level based health increase
+        if (this.classes) { // Players
+            for (const player_class in this.classes) {
+                const class_base_health = eval(player_class).healthPerLevel || 4
+                const adjusted_base_health = class_base_health * size_modifier
+
+                const class_level = this.classes[player_class].level
+                calculated_max_health += adjusted_base_health * class_level
+            }
+        }
+        else if (this.health_archetype) {// Monsters
+            
+        }
+
+        // Feature-based modifiers
+        const feature_modifiers = {
+            "Dwarven Toughness": { type: "add", value: 1 * level }
+        };
+        for (const [feature, modifier] of Object.entries(feature_modifiers)) {
+            if (this.has_feature(feature)) {
+                if (modifier.type === "add") { calculated_max_health += modifier.value; } 
+                else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
+            }
+        }
+
+        return floor(calculated_max_health)
     }
+
+    get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
+    set size(size) {
+        const valid_sizes = ["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"];
+        if (!valid_sizes.includes(size)) return;
+
+        // Store percentage of health
+        const health_percentage = this.health / this.max_health;
+
+        // Apply size change in MPTool
+        MTScript.evalMacro(`[r:setSize("${size}", "${this.id}")]`);
+
+        const new_max_health = this.max_health;
+
+        // Recalculate health based on percentage
+        this.health = Math.floor(new_max_health * health_percentage);
+    }
+
 
     set health(health) {
         // Validating parameters

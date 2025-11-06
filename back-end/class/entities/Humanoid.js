@@ -142,12 +142,25 @@ var Humanoid = class extends Creature {
         const level = this.level || 0
         let calculated_max_health = this.ability_scores.constitution
 
+        const size_modifier = {
+            "Fine": 0.5,
+            "Diminutive": 0.5,
+            "Tiny": 0.5, 
+            "Small": 0.75,
+            "Medium": 1,
+            "Large": 1.5, 
+            "Huge": 2, 
+            "Gargantuan": 2.5,
+            "Colossal": 3
+        }[this.size]
+
         // Level based health increase
         for (const player_class in this.#classes) {
             const class_base_health = eval(player_class).healthPerLevel || 4
+            const adjusted_base_health = class_base_health * size_modifier
 
             const class_level = this.#classes[player_class].level
-            calculated_max_health += class_base_health * class_level
+            calculated_max_health += adjusted_base_health * class_level
         }
 
         // Feature-based modifiers
