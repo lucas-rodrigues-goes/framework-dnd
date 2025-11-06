@@ -64,7 +64,7 @@
         // Backend
         const request = `impersonated().level_up("`+player_class+`", ` + JSON.stringify(choices) + `)`
         backend(request)
-        openPage("character_sheet.html")
+        openPage("character_sheet.html", "")
 
     }
     function title_value({title, value}) {
