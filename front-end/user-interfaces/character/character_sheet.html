@@ -1448,9 +1448,20 @@
 					if(isEqualJSON(character.spellcasting, {})) {return}
 
 					// Info construction
-					const modifier = character.score_bonus[character.spellcasting.ability]
+					let spellcasting_ability = character.spellcasting.ability
+					let modifier = character.score_bonus[spellcasting_ability] || -5
+					if (spellcasting_ability == "highest") {
+						for (const score in character.score_bonus) {
+							if (!["wisdom", "charisma", "intelligence"].includes(score)) continue
+							const value = character.score_bonus[score]
+							if (value > modifier) {
+								spellcasting_ability = score
+								modifier = value
+							}
+						}
+					}
 					const values = {
-						"Spellcasting Ability": capitalize(character.spellcasting.ability),
+						"Spellcasting Ability": capitalize(spellcasting_ability),
 						"Spellcasting Modifier": modifier > 0 ? "+" + modifier : modifier,
 						"  ":"",
 						"Spell Save DC": 10 + modifier,
@@ -1466,6 +1477,9 @@
 							character?.spells[chosen_class]?.memorized?.length || 0) + 
 							" / " + 
 							memorization_maximum
+					}
+					if (character.spellcasting.ability == "highest") {
+						values["Spellcasting Level"] = character.spellcasting_level
 					}
 
 					// Elements

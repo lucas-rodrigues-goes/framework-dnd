@@ -86,7 +86,18 @@ var Spells = class extends Abilities {
 
         // Player Class Object
         const player_cls_obj = eval(player_class)
-        const spellcasting_modifier = creature.score_bonus[player_cls_obj.spellcasting.ability]
+        let spellcasting_ability = player_cls_obj.spellcasting.ability
+        let spellcasting_modifier = creature.score_bonus[spellcasting_ability] || -5
+        if (spellcasting_ability == "highest") {
+            for (const score in creature.score_bonus) {
+                if (!["wisdom", "charisma", "intelligence"].includes(score)) continue
+                const value = creature.score_bonus[score]
+                if (value > spellcasting_modifier) {
+                    spellcasting_ability = score
+                    spellcasting_modifier = value
+                }
+            }
+        }
 
         // Spell Function
         const spell_function_name = name.replace(/ /g, "_").toLowerCase()
