@@ -13,8 +13,6 @@ var Monster = class extends Creature {
     #natural_armor_class = 10
     #initiative_mod = 0
 
-    #spellcasting_class = ""
-
     //=====================================================================================================
     // Monster Creation
     //=====================================================================================================
@@ -35,7 +33,6 @@ var Monster = class extends Creature {
         features, // [] of feature names
 
         spellcasting_level,
-        spellcasting_class,
         spells,
     }) {
         // Ability Scores
@@ -60,7 +57,9 @@ var Monster = class extends Creature {
         }
 
         // Spells
-        if (spellcasting_class) {
+        {
+            const spellcasting_class = "Monster"
+
             // Fix structure if needed
             if (!spells[spellcasting_class]) spells[spellcasting_class] = {}
             for (const key of ["known", "always_prepared", "innate"]) {
@@ -74,17 +73,13 @@ var Monster = class extends Creature {
             const class_spells = spells[spellcasting_class]
             const all_spells = [
                 ...class_spells.known,
-                ...class_spells.always_prepared,
                 ...class_spells.innate
             ]
             for (const name of all_spells) {
                 this.learn_spell(spellcasting_class, name)
             }
 
-            // Set always prepared and innate
-            for (const name of class_spells.always_prepared) {
-                this.set_always_prepared_spell(spellcasting_class, name)
-            }
+            // Set innate
             for (const name of class_spells.innate) {
                 this.set_innate_spell(spellcasting_class, name)
             }
@@ -100,7 +95,6 @@ var Monster = class extends Creature {
         this.natural_armor_class = natural_armor_class
         this.initiative_mod = initiative_mod
         this.speed = speed
-        this.spellcasting_class = spellcasting_class
         this.spellcasting_level = spellcasting_level
 
         // Fill Resources
@@ -295,14 +289,7 @@ var Monster = class extends Creature {
     // Spellcasting
     //=====================================================================================================
 
-    get spellcasting_class () {
-        return this.#spellcasting_class
-    }
 
-    set spellcasting_class (spellcasting_class) {
-        this.#spellcasting_class = spellcasting_class
-        this.save()
-    }
 
     //=====================================================================================================
     // Instance
@@ -340,7 +327,6 @@ var Monster = class extends Creature {
         this.#resistances = object.resistances ?? this.#resistances
         this.#natural_armor_class = object.natural_armor_class ?? this.#natural_armor_class
         this.#initiative_mod = object.initiative_mod ?? this.#initiative_mod
-        this.#spellcasting_class = object.spellcasting_class ?? this.#spellcasting_class
     
         this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
     }
@@ -354,7 +340,6 @@ var Monster = class extends Creature {
             resistances: this.#resistances,
             natural_armor_class: this.#natural_armor_class,
             initiative_mod: this.#initiative_mod,
-            spellcasting_class: this.#spellcasting_class
         }
         
         this.player = false
