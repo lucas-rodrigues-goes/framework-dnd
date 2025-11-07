@@ -288,7 +288,7 @@
 				// Define context-menu buttons
 				const buttons = {
 					"Description": async () => {modal({parent: document.getElementById("inventory-tab"), children: [
-						await data_description.item({slot: slot})
+						await data_description.item({object: slot})
 					]})},
 					"Unequip": () => backend(`impersonated().split_item("`+position+`")`),
 					"Split": () => {itemSplit(slot, position)},
@@ -675,7 +675,7 @@
 							// Buttons
 							const buttons = {
 								"Description": async () => modal({parent: document.getElementById("character-tab"), children: [
-									await data_description.feature({feature: feature})
+									await data_description.feature({object: feature})
 								]}),
 							}
 
@@ -703,7 +703,7 @@
 									options: {
 										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
 											mousedown: () => modal({parent: document.getElementById("character-tab"), children: [
-												data_description.feature({feature: feature})
+												data_description.feature({object: feature})
 											]})
 										}},
 										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
@@ -762,7 +762,7 @@
 									options: {
 										button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
 											mousedown: () => modal({parent: document.getElementById("character-tab"), children: [
-												data_description.proficiency({proficiency: proficiency, level: level})
+												data_description.proficiency({object: proficiency, level: level})
 											]})
 										}},
 										content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
@@ -1255,7 +1255,7 @@
 										const buttons = {
 											"Use": () => backend(ability.origin + `.` + name + `()`),
 											"Description": async () => modal({parent: document.getElementById("abilities-tab"), children: [
-												await data_description.ability({ability: {...ability, name: show_name}})
+												await data_description.ability({object: {...ability, name: show_name}})
 											]}),
 										}
 
@@ -1339,7 +1339,7 @@
 										
 										// Description
 										if(!isEqualJSON(resource_data, {})) buttons["Description"] = async () => modal({parent: document.getElementById("abilities-tab"), children: [
-											await data_description.resource({resource: resource_data})
+											await data_description.resource({object: resource_data})
 										]})
 
 										// Run context menu
@@ -1584,7 +1584,7 @@
 									// Buttons
 									const buttons = {
 										"Description": () => modal({parent: document.getElementById("spells-tab"), children: [
-											data_description.spell({spell: spell})
+											data_description.spell({object: spell})
 										]}),
 									}
 
