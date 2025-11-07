@@ -740,7 +740,7 @@
                 }
                 function ability_slot ({object = {}, type = "Ability", player_class = "", function_name = ""}) {
                     const { name = "", image = "", origin = "" } = object
-                    if (origin == "MonsterAbilities" || "Monster") type = "MonsterAbilities"
+                    if (origin == "MonsterAbilities" || origin == "Monster") type = "MonsterAbilities"
 
                     let code; {
                         if (type == "Spell") code = "Spells.cast_spell(database.spells.data[`"+name+"`], `"+player_class+"`)"
