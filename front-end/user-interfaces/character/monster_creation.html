@@ -37,6 +37,8 @@
                 innate: []
             }
         },
+
+        actions: {}
     }
 
     async function loadMonster() {
@@ -163,147 +165,6 @@
     //=====================================================================================================
     // Create Tabs
     //=====================================================================================================
-
-    async function spellcastingTab () {
-        const tab = document.getElementById("spellcasting-tab")
-        const database = JSON.parse(await backend(`JSON.stringify({
-            spells: database.spells.data,
-            spells_list: database.get_spells_list()
-        })`))
-        const spellcasting_class = "Monster"
-
-        // Update Attributes
-        const updateSpellcastingLevel = {input: function (event) {
-            monster.spellcasting_level = Number(this.value) || 0
-            //console.log(monster)
-        }}
-        const updateKnown = {input: function (event) {
-            const spells = this.value
-                .split(", ")
-                .map(f => f.trim())
-                .filter(f => f !== "");
-            monster.spells[spellcasting_class].known = [...new Set(spells)];
-            updateSpellsElem()
-            //console.log(monster)
-        }}
-        const updateInnate = {input: function (event) {
-            const spells = this.value
-                .split(", ")
-                .map(f => f.trim())
-                .filter(f => f !== "");
-            monster.spells[spellcasting_class].innate = [...new Set(spells)];
-            updateSpellsElem()
-            //console.log(monster)
-        }}
-
-        // Update Elements
-        function updateSpellsElem() {
-            const elem = document.getElementById("spells")
-            elem.clearChildren()
-
-            // Spell List
-            const class_spells = monster.spells?.[spellcasting_class] || {}
-            const selected_spells = [
-                ...(class_spells?.known || []),
-                ...(class_spells?.innate || [])
-            ]
-            const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
-
-            let previous_level = undefined
-            for (const name of ordered_spells) {
-                const spell = database.spells[name]
-                const spell_image = spell.image || spell_school_images[spell.school]
-
-                // Conditions
-                const spellIsMemorized = class_spells.memorized?.includes(spell.name)
-                const spellIsAlwaysPrepared = class_spells.always_prepared?.includes(spell.name)
-                const spellIsInnate = class_spells.innate?.includes(spell.name)
-                const spellIsCantrip = spell.level == "cantrip"
-                
-                // Action type
-                let action_type
-                if (spell.cast_time == -1) action_type = "Bonus Action"
-                else if (spell.cast_time == -2) action_type = "Reaction"
-                else if (spell.cast_time >= 0) action_type =  "Action"
-
-                // Accent Color
-                let accentColor = ""
-                if (spellIsInnate) accentColor = "#ca2"
-                else if (spellIsAlwaysPrepared) accentColor = "#aaa"
-
-                // Click Spell
-                function clickSpell (event) {
-                    modal({parent: tab, children: [
-                        data_description.spell({spell: spell})
-                    ]})
-                }
-
-                // Add spacing between levels
-                if (previous_level != spell.level) {
-                    elem.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
-                    previous_level = spell.level
-                }
-
-                // Add element
-                elem.appendChild(
-                    {tag: "div", 
-                        attributes: {class: "collapsible-div"}, 
-                        style: {
-                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
-                            borderColor: accentColor,
-                            opacity: 1
-                        },
-                        events: {mousedown: clickSpell},
-                        children: [
-                            {tag: "img", attributes: {src: spell_image}},
-                            {tag: "span", text: name},
-                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
-                        ]
-                    }
-                )
-            }
-            
-            // Hide Show block
-            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
-            else elem.parentElement.classList.add("hidden")
-        }
-
-        // Content
-        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
-        tab.appendChildren([
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                // Details
-                container({title: "Details", children: [
-                    // Spellcasting Level
-                    input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
-                        input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
-                    }}),
-                ]}),
-
-                // Spell List
-                container({title: "Spell List", children: [
-                    // Known Spells
-                    input({id: "known", placeholder: "Known Spells", options: {
-                        input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
-                    }}),
-
-                    // Innate Spells
-                    input({id: "innate", placeholder: "Innate Spells", options: {
-                        input: {attributes: {value: stringifyInnateSpells(monster, spellcasting_class) || ""}, events: updateInnate}
-                    }}),
-                ]})
-            ]},
-            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
-                container({id: "spells", scroll: true, title: "Spells", options: containerOptions}),
-            ]},
-            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
-                events: {click: submit}
-            },
-            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
-                events: {click: cancel}
-            }
-        ])
-    }
 
     async function mainTab() {
         const tab = document.getElementById("main-tab")
@@ -584,11 +445,207 @@
         ])
     }
 
+    async function spellcastingTab () {
+        const tab = document.getElementById("spellcasting-tab")
+        const database = JSON.parse(await backend(`JSON.stringify({
+            spells: database.spells.data,
+            spells_list: database.get_spells_list()
+        })`))
+        const spellcasting_class = "Monster"
+
+        // Update Attributes
+        const updateSpellcastingLevel = {input: function (event) {
+            monster.spellcasting_level = Number(this.value) || 0
+            //console.log(monster)
+        }}
+        const updateKnown = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[spellcasting_class].known = [...new Set(spells)];
+            updateSpellsElem()
+            //console.log(monster)
+        }}
+        const updateInnate = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[spellcasting_class].innate = [...new Set(spells)];
+            updateSpellsElem()
+            //console.log(monster)
+        }}
+
+        // Update Elements
+        function updateSpellsElem() {
+            const elem = document.getElementById("spells")
+            elem.clearChildren()
+
+            // Spell List
+            const class_spells = monster.spells?.[spellcasting_class] || {}
+            const selected_spells = [
+                ...(class_spells?.known || []),
+                ...(class_spells?.innate || [])
+            ]
+            const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
+
+            let previous_level = undefined
+            for (const name of ordered_spells) {
+                const spell = database.spells[name]
+                const spell_image = spell.image || spell_school_images[spell.school]
+
+                // Conditions
+                const spellIsMemorized = class_spells.memorized?.includes(spell.name)
+                const spellIsAlwaysPrepared = class_spells.always_prepared?.includes(spell.name)
+                const spellIsInnate = class_spells.innate?.includes(spell.name)
+                const spellIsCantrip = spell.level == "cantrip"
+                
+                // Action type
+                let action_type
+                if (spell.cast_time == -1) action_type = "Bonus Action"
+                else if (spell.cast_time == -2) action_type = "Reaction"
+                else if (spell.cast_time >= 0) action_type =  "Action"
+
+                // Accent Color
+                let accentColor = ""
+                if (spellIsInnate) accentColor = "#ca2"
+                else if (spellIsAlwaysPrepared) accentColor = "#aaa"
+
+                // Click Spell
+                function clickSpell (event) {
+                    modal({parent: tab, children: [
+                        data_description.spell({spell: spell})
+                    ]})
+                }
+
+                // Add spacing between levels
+                if (previous_level != spell.level) {
+                    elem.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
+                    previous_level = spell.level
+                }
+
+                // Add element
+                elem.appendChild(
+                    {tag: "div", 
+                        attributes: {class: "collapsible-div"}, 
+                        style: {
+                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+                            borderColor: accentColor,
+                            opacity: 1
+                        },
+                        events: {mousedown: clickSpell},
+                        children: [
+                            {tag: "img", attributes: {src: spell_image}},
+                            {tag: "span", text: name},
+                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
+                        ]
+                    }
+                )
+            }
+            
+            // Hide Show block
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
+        }
+
+        // Content
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                // Details
+                container({title: "Details", children: [
+                    // Spellcasting Level
+                    input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
+                        input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
+                    }}),
+                ]}),
+
+                // Spell List
+                container({title: "Spell List", children: [
+                    // Known Spells
+                    input({id: "known", placeholder: "Known Spells", options: {
+                        input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
+                    }}),
+
+                    // Innate Spells
+                    input({id: "innate", placeholder: "Innate Spells", options: {
+                        input: {attributes: {value: stringifyInnateSpells(monster, spellcasting_class) || ""}, events: updateInnate}
+                    }}),
+                ]})
+            ]},
+            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "spells", scroll: true, title: "Spells", options: containerOptions}),
+            ]},
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
+            }
+        ])
+    }
+
+    async function actionsTab() {
+        const tab = document.getElementById("actions-tab")
+        let action_name = ""
+        let action = {
+            description: "",
+            type: "Attack", // Attack or Spell
+            origin: "Monster",
+
+            // Attack type
+            resources: [],
+            damage: [],
+            hit_bonus: 2,
+            recovery: 0,
+            range: 5,
+            max_targets: 1,
+            difficulty_class: 10, // Optional
+            condition: {name: "", duration: 1}, // Optional
+
+            // Spell-like type
+            resources: [],
+            damage: [],
+            half_damage_on_save: false,
+            difficulty_class: 10,
+            cast_time: 0,
+            range: 5,
+            max_targets: 1,
+            condition: {name: "", duration: 1}, // Optional
+        }
+
+        // Content
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                container({title: "Action Details", children: [
+                    // Name
+                    input({id: "action-name", placeholder: "Name", options: {
+                        input: {attributes: {value: ""}, events: {}}
+                    }}),
+                ]})
+            ]},
+            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "actions", scroll: true, title: "Actions", options: containerOptions}),
+            ]},
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
+            }
+        ])
+    }
+
     async function loadPage() {
-        create_tabs({content: ["main", "spellcasting"], parent: document.body})
+        create_tabs({content: ["main", "spellcasting", "actions"], parent: document.body})
         await loadMonster()
+
         await mainTab()
         await spellcastingTab()
+        await actionsTab()
+
         triggerAllInputFields()
     }
     
