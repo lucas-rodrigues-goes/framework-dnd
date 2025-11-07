@@ -302,11 +302,14 @@ var Monster = class extends Creature {
     // abilities
     //=====================================================================================================
 
+    get custom_abilities () {
+        return this.#abilities
+    }
+
     get abilities () {
         const abilities = Abilities.abilities_list(this)
-        const customAbilities = this.#abilities
 
-        return {...customAbilities, ...abilities}
+        return {...this.#abilities, ...abilities}
     }
 
     set abilities (abilities) {
