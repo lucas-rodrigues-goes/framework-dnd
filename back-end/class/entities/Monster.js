@@ -12,6 +12,7 @@ var Monster = class extends Creature {
     #resistances = {}
     #natural_armor_class = 10
     #initiative_mod = 0
+    #abilities = {}
 
     //=====================================================================================================
     // Monster Creation
@@ -26,7 +27,7 @@ var Monster = class extends Creature {
         challenge_rating,
         natural_armor_class,
         initiative_mod,
-        speed, 
+        speed,
 
         ability_scores, // {} where KEY=Score Name, VALUE=Value
         proficiencies, // {} where KEY=Proficiency, VALUE=Level
@@ -34,6 +35,8 @@ var Monster = class extends Creature {
 
         spellcasting_level,
         spells,
+
+        abilities,
     }) {
         // Ability Scores
         if (ability_scores) {
@@ -96,6 +99,7 @@ var Monster = class extends Creature {
         this.initiative_mod = initiative_mod
         this.speed = speed
         this.spellcasting_level = spellcasting_level
+        this.abilities = abilities
 
         // Fill Resources
         if (spellcasting_level > 0) this.update_spell_slots()
@@ -295,6 +299,21 @@ var Monster = class extends Creature {
     }
 
     //=====================================================================================================
+    // abilities
+    //=====================================================================================================
+
+    get abilities () {
+        const abilities = Abilities.abilities_list(this)
+        const customAbilities = this.#abilities
+
+        return {...customAbilities, ...abilities}
+    }
+
+    set abilities (abilities) {
+        this.#abilities = abilities
+    }
+
+    //=====================================================================================================
     // Instance
     //=====================================================================================================
 
@@ -330,6 +349,7 @@ var Monster = class extends Creature {
         this.#resistances = object.resistances ?? this.#resistances
         this.#natural_armor_class = object.natural_armor_class ?? this.#natural_armor_class
         this.#initiative_mod = object.initiative_mod ?? this.#initiative_mod
+        this.#abilities = object.abilities || this.#abilities
     
         this.token.setProperty("class", JSON.stringify(["Monster", "Creature", "Entity"]));
     }
@@ -343,6 +363,7 @@ var Monster = class extends Creature {
             resistances: this.#resistances,
             natural_armor_class: this.#natural_armor_class,
             initiative_mod: this.#initiative_mod,
+            abilities: this.#abilities,
         }
         
         this.player = false
