@@ -39,7 +39,7 @@ var Initiative = class {
             return_list.push({
                 id: id,
                 player: creature.player,
-                portrait: creature.portrait,
+                portrait: creature.portrait || creature.image,
                 name: creature.name,
                 status: initiative_info.status,
                 description: initiative_info.description,

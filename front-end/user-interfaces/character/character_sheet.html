@@ -437,7 +437,7 @@
 					{
 						basic: {
 							name: impersonated().name,
-							portrait: impersonated().portrait,
+							portrait: impersonated().portrait || impersonated().image,
 							level: impersonated().level,
 							experience: impersonated().experience,
 							level_up_experience: impersonated().level_up_experience || 0,
@@ -1791,7 +1791,7 @@
 								attributes: {class: "exp-bar", id: "experience"},
 								style: {background: "rgba(0,0,0,0.15)"},
 								children: [
-									{tag: "img", attributes: {id: "portrait"}},
+									{tag: "img", attributes: {id: "portrait"}, style: {backgroundColor: "#222"}},
 								]
 							},
 							{tag: "div",

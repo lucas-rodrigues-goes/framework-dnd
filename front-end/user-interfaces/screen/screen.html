@@ -503,11 +503,17 @@
                 const show_initiative = initiative
 
                 return element(
-                    {tag: "div", style: {transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", position: "relative", height: "9.5vh", opacity: initiative >= 12 ? 1 : 1},
+                    {tag: "div", 
+                        style: {
+                            transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", 
+                            position: "relative", 
+                            height: "9.5vh", 
+                            opacity: initiative >= 12 ? 1 : 1,
+                        },
                         children: [
                             {tag: "div", style: {border: "0.3vh solid " + color, width: "5.5vh", height: "7vh", borderRadius: "1vh", overflow: "hidden"}, children: [
                                 {tag: "img", 
-                                    style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover"},
+                                    style: {height: "102%", width: "102%", objectPosition: "center", objectFit: "cover", backgroundColor: "#222",},
                                     attributes: {src: portrait, class: "clickable box-shadow"}, 
                                     events: {
                                         click: () => portraitClick(id),
@@ -617,7 +623,7 @@
             const character = JSON.parse(await backend(`JSON.stringify({
                 health: impersonated().health,
                 max_health: impersonated().max_health,
-                portrait: impersonated().portrait,
+                portrait: impersonated().portrait || impersonated().image,
                 id: impersonated().id
             })`))
     
@@ -1258,6 +1264,7 @@
                                 children: [
                                     {tag: "img", 
                                         attributes: {id: "current-character-portrait", src: ""},
+                                        style: {backgroundColor: "#222"},
                                         events: {click: () => portraitClick()}
                                     },
                                 ]
