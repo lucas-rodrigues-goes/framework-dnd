@@ -13,40 +13,40 @@ let data_description; {
     const DEFAULT_STYLE = {padding: "0.5vh 1.5vh", fontSize: "105%", textAlign: "center", width: "100%"}
 
     data_description = {
-        spell: ({spell, style=DEFAULT_STYLE}) => {
+        spell: ({object, style=DEFAULT_STYLE}) => {
             // Subtitle
             let title; {
-                if (spell.level == "cantrip") title = capitalize(spell?.school) + " Cantrip"
-                else title = spell.level + " Level " + capitalize(spell?.school) + " Spell"
+                if (object.level == "cantrip") title = capitalize(object?.school) + " Cantrip"
+                else title = object.level + " Level " + capitalize(object?.school) + " Spell"
             }
 
             // Cast Time
             let cast_time = ""; {
-                if (spell.cast_time > 0) cast_time = (spell?.cast_time || 0) + ""
+                if (object.cast_time > 0) cast_time = (object?.cast_time || 0) + ""
                 else cast_time = "Instantaneous"
             }
 
             // Resource
             let resource = ""; {
-                if (spell.cast_time >= 0) resource = "Action"
-                else if (spell.cast_time == -1) resource = "Bonus Action"
-                else if (spell.cast_time == -2) resource = "Reaction"
+                if (object.cast_time >= 0) resource = "Action"
+                else if (object.cast_time == -1) resource = "Bonus Action"
+                else if (object.cast_time == -2) resource = "Reaction"
             }
 
             // Attributes
             const attributes = []; {
                 attributes.push(title_value({title: "Resource", value: resource}))
                 attributes.push(title_value({title: "Casting Time", value: capitalize(cast_time)}))
-                if (spell.duration) attributes.push(title_value({title: "Duration", value: timeUnit(spell.duration)}))
-                if (spell.range) {
-                    let range = spell.range + " ft"; {
-                        if (spell.range == 5) range = "Touch"
-                        else if (spell.range == 0) range = "Self"
+                if (object.duration) attributes.push(title_value({title: "Duration", value: timeUnit(object.duration)}))
+                if (object.range) {
+                    let range = object.range + " ft"; {
+                        if (object.range == 5) range = "Touch"
+                        else if (object.range == 0) range = "Self"
                     }
                     attributes.push(title_value({title: "Range", value: range}))
                 }
-                if (spell.components) attributes.push(title_value({title: "Components", value: capitalize(spell?.components.join(", "))}))
-                if (spell.classes) attributes.push(title_value({title: "Classes", value: capitalize(spell?.classes.join(", "))}))
+                if (object.components) attributes.push(title_value({title: "Components", value: capitalize(object?.components.join(", "))}))
+                if (object.classes) attributes.push(title_value({title: "Classes", value: capitalize(object?.classes.join(", "))}))
             }
 
             // Element
@@ -54,18 +54,18 @@ let data_description; {
                 {tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                     // Title
                     {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-                        {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: spell?.name},
+                        {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: object?.name},
                         {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: title},
                     ]},
                     // Attributes
                     {tag: "div", style: {textAlign: "left"}, children: attributes},
                     // Description
-                    spell.description 
-                        && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: spell?.description || ""},
-                    spell.description_higher_levels 
+                    object.description
+                        && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, text: object?.description || ""},
+                    object.description_higher_levels 
                         && {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, children: [
                             {tag: "b", style: {color: "#ddd"}, text: "At Higher Levels: "},
-                            {tag: "span", text: spell.description_higher_levels || ""}
+                            {tag: "span", text: object.description_higher_levels || ""}
                         ]},
                 ]}
             )
@@ -144,18 +144,18 @@ let data_description; {
             )
         },
 
-        ability: async ({ability, style=DEFAULT_STYLE}) => {
+        ability: async ({object, style=DEFAULT_STYLE}) => {
             // Attributes
             const attributes = []; {
-                attributes.push(title_value({title: "Resources", value: ability.resources.length > 0 ? ability.resources.join(", ") : "Free"}))
-                if (ability.duration) attributes.push(title_value({title: "Duration", value: timeUnit(ability.duration)}))
+                attributes.push(title_value({title: "Resources", value: object.resources.length > 0 ? object.resources.join(", ") : "Free"}))
+                if (object.duration) attributes.push(title_value({title: "Duration", value: timeUnit(object.duration)}))
             }
 
             return element({tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
-                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: ability.name},
-                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: (ability.type || ability.origin) + " Ability"},
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: object.name},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: (object.type || object.origin) + " Ability"},
                 ]},
 
                 // Attributes
@@ -163,7 +163,28 @@ let data_description; {
 
                 // Description
                 {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-                    text: (ability.description || await backend(`database.features.data["`+ability.name+`"].description`))
+                    text: (object.description || await backend(`database.features.data["`+object.name+`"].description`))
+                }
+            ]})
+        },
+
+        monster_ability: async ({object, style=DEFAULT_STYLE}) => {
+            // Attributes
+            const attributes = []; {
+                attributes.push(title_value({title: "Resources", value: object.resources.length > 0 ? object.resources.join(", ") : "Free"}))
+                if (object.duration) attributes.push(title_value({title: "Duration", value: timeUnit(object.duration)}))
+            }
+
+            return element({tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
+                // Title
+                {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: object.name},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: (object.type || object.origin)},
+                ]},
+
+                // Description
+                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+                    text: (object.description || "")
                 }
             ]})
         },
