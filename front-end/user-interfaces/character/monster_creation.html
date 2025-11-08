@@ -738,6 +738,7 @@
             get("ability-type").value = ability.type;
             get("ability-type").dispatchEvent(new Event("change"));
             get("ability-type").dispatchEvent(new Event("input"));
+            get("ability-description").value = ability.description;
 
             get("ability-resources").value = (ability.resources || []).join(", ");
             get("ability-hit-bonus").value = ability.hit_bonus != null ? ability.hit_bonus : "";
@@ -848,12 +849,19 @@
                 container({title: "Action Details", children: [
                     // Name
                     input({id: "ability-name", placeholder: "Name", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
                         input: {attributes: {value: ""}, events: {input: function() {ability.name = this.value}}}
                     }}),
 
                     // Type
                     select({id: "ability-type", placeholder: "Type", children: ["Attack", "Monster Ability"].map(i => ({tag: "option", text: i})), options: {
+                        div: {style: {width: "49%", marginRight: "0%"}},
                         input: {events: updateType}
+                    }}),
+
+                    // Description
+                    input({id: "ability-description", placeholder: "Description", options: {
+                        input: {attributes: {value: ""}, events: {input: function() {ability.description = this.value}}}
                     }}),
 
                     // Resources
