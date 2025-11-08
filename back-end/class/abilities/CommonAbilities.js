@@ -17,7 +17,8 @@ var CommonAbilities = class extends Abilities {
             },
             grapple: {
                 resources: ["Attack Action"],
-                description: "Attempt to grapple the enemy, impeding their movement.",
+                description: "Attempt to grapple the enemy, impeding their movement. When grappling a creature, they have disadvantage on attacks to targets other than you " +
+                             "and attacks from others on that creature are made with advantage.",
                 recovery: 4,
                 image: "asset://3a90ab2008c2c129ca918ded3f25ef35",
                 type: "Attack",
