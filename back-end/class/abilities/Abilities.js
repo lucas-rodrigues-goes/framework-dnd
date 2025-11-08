@@ -346,9 +346,9 @@ var Abilities = class {
         let count = 0
         for (const damage of damage_dice) {
             // Calculate Damage
-            const die_size = damage.die_size || 0
-            const die_amount = damage.die_amount * crit_multiplier
-            const damage_bonus = damage.damage_bonus || 0
+            const die_size = Number(damage.die_size) || 0
+            const die_amount = Number(damage.die_amount) * crit_multiplier
+            const damage_bonus = Number(damage.damage_bonus) || Number(damage.bonus_damage) || 0
 
             const damage_to_deal = Math.floor((roll_dice(die_amount, die_size) + damage_bonus) * damage_multiplier)
             count ++
@@ -789,7 +789,7 @@ var Abilities = class {
             if (creature.has_condition("Prone")) output -= 1
             if (target.has_condition("Prone")) {
                 if (distance > 5) output -= 1
-                else if (distance < 5) output += 1
+                else if (distance <= 5) output += 1
             }
 
             // Reckless Attack

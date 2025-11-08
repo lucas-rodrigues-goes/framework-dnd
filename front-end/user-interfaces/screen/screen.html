@@ -666,6 +666,7 @@
                     spells: impersonated().spells,
                     hasInitiative: Initiative.turn_order.includes(impersonated().id),
                     abilities: impersonated().abilities,
+                    actions: impersonated().actions || {},
                 }
             )`))
 
@@ -720,12 +721,12 @@
                     clear_description();
 
                     // Description Function
+                    if (type == "MonsterAbilities") type = "monster_ability"
                     const descriptionFunc = data_description[type.toLowerCase()]
 
                     // Generate the description element
                     const descriptionElement = await descriptionFunc({ 
-                        spell: object, 
-                        ability: object,
+                        object,
                         style: {padding: "0 1vh", fontSize: "80%", textAlign: "center"}
                     });
 
@@ -739,9 +740,11 @@
                 }
                 function ability_slot ({object = {}, type = "Ability", player_class = "", function_name = ""}) {
                     const { name = "", image = "", origin = "" } = object
+                    if (origin == "MonsterAbilities" || origin == "Monster") type = "MonsterAbilities"
 
                     let code; {
                         if (type == "Spell") code = "Spells.cast_spell(database.spells.data[`"+name+"`], `"+player_class+"`)"
+                        else if (type == "MonsterAbilities") code = `MonsterAbilities.use(`+JSON.stringify(object)+`)`
                         else if (type == "Ability") code = origin + "." + function_name + "()"
                     }
 
@@ -800,6 +803,9 @@
                     else {
                         spell_list = character.spells[player_class].known || []
                     }
+
+                    // Remove  duplicates
+                    spell_list = [...new Set(spell_list)]
 
                     // Output
                     const output_list = []

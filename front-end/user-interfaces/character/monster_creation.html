@@ -37,6 +37,8 @@
                 innate: []
             }
         },
+
+        abilities: {}
     }
 
     async function loadMonster() {
@@ -58,6 +60,7 @@
                 proficiencies: impersonated().proficiencies,
                 spellcasting_level: impersonated().spellcasting_level,
                 spells: impersonated().spells,
+                abilities: impersonated().custom_abilities || {},
             })
         } catch { "{}" }`))
         for (const key in impersonated) monster[key] = impersonated[key]
@@ -163,147 +166,6 @@
     //=====================================================================================================
     // Create Tabs
     //=====================================================================================================
-
-    async function spellcastingTab () {
-        const tab = document.getElementById("spellcasting-tab")
-        const database = JSON.parse(await backend(`JSON.stringify({
-            spells: database.spells.data,
-            spells_list: database.get_spells_list()
-        })`))
-        const spellcasting_class = "Monster"
-
-        // Update Attributes
-        const updateSpellcastingLevel = {input: function (event) {
-            monster.spellcasting_level = Number(this.value) || 0
-            //console.log(monster)
-        }}
-        const updateKnown = {input: function (event) {
-            const spells = this.value
-                .split(", ")
-                .map(f => f.trim())
-                .filter(f => f !== "");
-            monster.spells[spellcasting_class].known = [...new Set(spells)];
-            updateSpellsElem()
-            //console.log(monster)
-        }}
-        const updateInnate = {input: function (event) {
-            const spells = this.value
-                .split(", ")
-                .map(f => f.trim())
-                .filter(f => f !== "");
-            monster.spells[spellcasting_class].innate = [...new Set(spells)];
-            updateSpellsElem()
-            //console.log(monster)
-        }}
-
-        // Update Elements
-        function updateSpellsElem() {
-            const elem = document.getElementById("spells")
-            elem.clearChildren()
-
-            // Spell List
-            const class_spells = monster.spells?.[spellcasting_class] || {}
-            const selected_spells = [
-                ...(class_spells?.known || []),
-                ...(class_spells?.innate || [])
-            ]
-            const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
-
-            let previous_level = undefined
-            for (const name of ordered_spells) {
-                const spell = database.spells[name]
-                const spell_image = spell.image || spell_school_images[spell.school]
-
-                // Conditions
-                const spellIsMemorized = class_spells.memorized?.includes(spell.name)
-                const spellIsAlwaysPrepared = class_spells.always_prepared?.includes(spell.name)
-                const spellIsInnate = class_spells.innate?.includes(spell.name)
-                const spellIsCantrip = spell.level == "cantrip"
-                
-                // Action type
-                let action_type
-                if (spell.cast_time == -1) action_type = "Bonus Action"
-                else if (spell.cast_time == -2) action_type = "Reaction"
-                else if (spell.cast_time >= 0) action_type =  "Action"
-
-                // Accent Color
-                let accentColor = ""
-                if (spellIsInnate) accentColor = "#ca2"
-                else if (spellIsAlwaysPrepared) accentColor = "#aaa"
-
-                // Click Spell
-                function clickSpell (event) {
-                    modal({parent: tab, children: [
-                        data_description.spell({spell: spell})
-                    ]})
-                }
-
-                // Add spacing between levels
-                if (previous_level != spell.level) {
-                    elem.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
-                    previous_level = spell.level
-                }
-
-                // Add element
-                elem.appendChild(
-                    {tag: "div", 
-                        attributes: {class: "collapsible-div"}, 
-                        style: {
-                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
-                            borderColor: accentColor,
-                            opacity: 1
-                        },
-                        events: {mousedown: clickSpell},
-                        children: [
-                            {tag: "img", attributes: {src: spell_image}},
-                            {tag: "span", text: name},
-                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
-                        ]
-                    }
-                )
-            }
-            
-            // Hide Show block
-            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
-            else elem.parentElement.classList.add("hidden")
-        }
-
-        // Content
-        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
-        tab.appendChildren([
-            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
-                // Details
-                container({title: "Details", children: [
-                    // Spellcasting Level
-                    input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
-                        input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
-                    }}),
-                ]}),
-
-                // Spell List
-                container({title: "Spell List", children: [
-                    // Known Spells
-                    input({id: "known", placeholder: "Known Spells", options: {
-                        input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
-                    }}),
-
-                    // Innate Spells
-                    input({id: "innate", placeholder: "Innate Spells", options: {
-                        input: {attributes: {value: stringifyInnateSpells(monster, spellcasting_class) || ""}, events: updateInnate}
-                    }}),
-                ]})
-            ]},
-            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
-                container({id: "spells", scroll: true, title: "Spells", options: containerOptions}),
-            ]},
-            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
-                events: {click: submit}
-            },
-            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
-                events: {click: cancel}
-            }
-        ])
-    }
 
     async function mainTab() {
         const tab = document.getElementById("main-tab")
@@ -584,11 +446,473 @@
         ])
     }
 
+    async function spellcastingTab () {
+        const tab = document.getElementById("spellcasting-tab")
+        const database = JSON.parse(await backend(`JSON.stringify({
+            spells: database.spells.data,
+            spells_list: database.get_spells_list()
+        })`))
+        const spellcasting_class = "Monster"
+
+        // Update Attributes
+        const updateSpellcastingLevel = {input: function (event) {
+            monster.spellcasting_level = Number(this.value) || 0
+            //console.log(monster)
+        }}
+        const updateKnown = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[spellcasting_class].known = [...new Set(spells)];
+            updateSpellsElem()
+            //console.log(monster)
+        }}
+        const updateInnate = {input: function (event) {
+            const spells = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            monster.spells[spellcasting_class].innate = [...new Set(spells)];
+            updateSpellsElem()
+            //console.log(monster)
+        }}
+
+        // Update Elements
+        function updateSpellsElem() {
+            const elem = document.getElementById("spells")
+            elem.clearChildren()
+
+            // Spell List
+            const class_spells = monster.spells?.[spellcasting_class] || {}
+            const selected_spells = [
+                ...(class_spells?.known || []),
+                ...(class_spells?.innate || [])
+            ]
+            const ordered_spells = database.spells_list.filter(spell => selected_spells.includes(spell))
+
+            let previous_level = undefined
+            for (const name of ordered_spells) {
+                const spell = database.spells[name]
+                const spell_image = spell.image || spell_school_images[spell.school]
+
+                // Conditions
+                const spellIsMemorized = class_spells.memorized?.includes(spell.name)
+                const spellIsAlwaysPrepared = class_spells.always_prepared?.includes(spell.name)
+                const spellIsInnate = class_spells.innate?.includes(spell.name)
+                const spellIsCantrip = spell.level == "cantrip"
+                
+                // Action type
+                let action_type
+                if (spell.cast_time == -1) action_type = "Bonus Action"
+                else if (spell.cast_time == -2) action_type = "Reaction"
+                else if (spell.cast_time >= 0) action_type =  "Action"
+
+                // Accent Color
+                let accentColor = ""
+                if (spellIsInnate) accentColor = "#ca2"
+                else if (spellIsAlwaysPrepared) accentColor = "#aaa"
+
+                // Click Spell
+                function clickSpell (event) {
+                    modal({parent: tab, children: [
+                        data_description.spell({spell: spell})
+                    ]})
+                }
+
+                // Add spacing between levels
+                if (previous_level != spell.level) {
+                    elem.appendChild({tag: "div", style: {margin: "1.3vh", marginTop: "2vh", padding: 0, fontWeight: "bold"}, text: spell.level == "cantrip" ? "Cantrips" : spell.level + " Level Spells"})
+                    previous_level = spell.level
+                }
+
+                // Add element
+                elem.appendChild(
+                    {tag: "div", 
+                        attributes: {class: "collapsible-div"}, 
+                        style: {
+                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
+                            borderColor: accentColor,
+                            opacity: 1
+                        },
+                        events: {mousedown: clickSpell},
+                        children: [
+                            {tag: "img", attributes: {src: spell_image}},
+                            {tag: "span", text: name},
+                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: action_type},
+                        ]
+                    }
+                )
+            }
+            
+            // Hide Show block
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
+        }
+
+        // Content
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                // Details
+                container({title: "Details", children: [
+                    // Spellcasting Level
+                    input({id: "spellcasting_level", placeholder: "Spellcasting Level", options: {
+                        input: {attributes: {value: monster.spellcasting_level || ""}, events: updateSpellcastingLevel}
+                    }}),
+                ]}),
+
+                // Spell List
+                container({title: "Spell List", children: [
+                    // Known Spells
+                    input({id: "known", placeholder: "Known Spells", options: {
+                        input: {attributes: {value: stringifyKnownSpells(monster, spellcasting_class) || ""}, events: updateKnown}
+                    }}),
+
+                    // Innate Spells
+                    input({id: "innate", placeholder: "Innate Spells", options: {
+                        input: {attributes: {value: stringifyInnateSpells(monster, spellcasting_class) || ""}, events: updateInnate}
+                    }}),
+                ]})
+            ]},
+            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "spells", scroll: true, title: "Spells", options: containerOptions}),
+            ]},
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
+            }
+        ])
+    }
+
+        async function abilitiesTab() {
+        const tab = document.getElementById("abilities-tab")
+        let ability = {
+            name: "",
+            description: "",
+            type: "Attack", // Attack or Monster Ability
+            origin: "Monster",
+            resources: [],
+            damage: [],
+            difficulty_class: "",
+            save_attribute: "",
+            conditions: [],
+            range: 5,
+            max_targets: 1,
+            image: "",
+
+            // Attack type
+            recovery: 0,
+            hit_bonus: 2,
+
+            // Monster Ability type
+            cast_time: 0,
+            half_damage_on_save: false,
+        }
+
+        // Updates
+        const updateType = {input: function (event) {
+            ability.type = this.value
+            const attackElements = ["hit-bonus", "recovery"]
+            const monsterAbilityElements = ["half-damage-on-save", "cast-time"]
+
+            switch(this.value) {
+                case "Attack": {
+                    for (const element of monsterAbilityElements) document.getElementById("ability-" + element + "-div").style.display = "none"
+                    for (const element of attackElements) document.getElementById("ability-" + element + "-div").style.display = ""
+                    break
+                }
+                case "Monster Ability": {
+                    for (const element of monsterAbilityElements) document.getElementById("ability-" + element + "-div").style.display = ""
+                    for (const element of attackElements) document.getElementById("ability-" + element + "-div").style.display = "none"
+                    break
+                }
+                default: {
+                    for (const element of [...attackElements, ...monsterAbilityElements]) document.getElementById("ability-" + element + "-div").style.display = "none"
+                    break
+                }
+            }
+        }}
+        const updateResources = {input: function (event) {
+            const resources = this.value
+                .split(",")
+                .map(f => f.trim())
+                .filter(f => f !== "")
+            ability.resources = [...new Set(resources)]
+        }}
+        const updateDamage = {input: function (event) {
+            const damage = [];
+            const entries = this.value.split(",").map(s => s.trim());
+            for (const entry of entries) {
+                if (!entry) continue;
+                const parts = entry.split(" ");
+                if (parts.length < 2) continue;
+                const dice_block = parts[0];
+                const damage_type = parts.slice(1).join(" ");
+                let die_amount = "";
+                let die_size = "";
+                let damage_bonus = "";
+                const d_index = dice_block.indexOf("d");
+                if (d_index === -1) continue;
+                die_amount = dice_block.substring(0, d_index);
+                let after_d = dice_block.substring(d_index + 1);
+                let plus_index = after_d.indexOf("+");
+                let minus_index = after_d.indexOf("-");
+                if (plus_index !== -1) {
+                    die_size = after_d.substring(0, plus_index);
+                    damage_bonus = after_d.substring(plus_index + 1);
+                } else if (minus_index !== -1) {
+                    die_size = after_d.substring(0, minus_index);
+                    damage_bonus = "-" + after_d.substring(minus_index + 1);
+                } else {
+                    die_size = after_d;
+                }
+                const dmg_obj = { damage_type, die_amount, die_size };
+                if (damage_bonus !== "") dmg_obj.damage_bonus = damage_bonus;
+                damage.push(dmg_obj);
+            }
+            ability.damage = damage;
+        }}
+        const updateConditions = {input: function (event) {
+            const conditions = [];
+            const entries = this.value.split(",").map(s => s.trim());
+            for (const entry of entries) {
+                if (!entry) continue;
+                const parts = entry.split(":").map(s => s.trim());
+                if (parts.length !== 2) continue;
+                const name = parts[0];
+                const duration = parseInt(parts[1], 10);
+                if (isNaN(duration)) continue;
+                conditions.push({ name, duration });
+            }
+            ability.conditions = conditions;
+        }}
+        const updateSaveAttribute = {input: function (event) {
+            ability.save_attribute = this.value.toLowerCase()
+        }}
+
+        // Update Form
+        function updateForm() {
+            const get = id => document.getElementById(id);
+
+            get("ability-name").value = ability.name || "";
+            get("ability-type").value = ability.type;
+            get("ability-type").dispatchEvent(new Event("change"));
+            get("ability-type").dispatchEvent(new Event("input"));
+
+            get("ability-resources").value = (ability.resources || []).join(", ");
+            get("ability-hit-bonus").value = ability.hit_bonus != null ? ability.hit_bonus : "";
+            get("ability-recovery").value = ability.recovery != null ? ability.recovery : "";
+            get("ability-half-damage-on-save").value = ability.half_damage_on_save ? "True" : "False";
+            get("ability-half-damage-on-save").dispatchEvent(new Event("change"));
+            get("ability-half-damage-on-save").dispatchEvent(new Event("input"));
+
+            get("ability-cast-time").value = ability.cast_time != null ? ability.cast_time : "";
+            get("ability-damage").value = (ability.damage || [])
+                .map(d => {
+                    const bonus = d.damage_bonus ? (d.damage_bonus.startsWith("-") ? d.damage_bonus : "+" + d.damage_bonus) : "";
+                    return d.die_amount + "d" + d.die_size + bonus + " " + d.damage_type;
+                }).join(", ");
+            get("ability-difficulty-class").value = ability.difficulty_class != null ? ability.difficulty_class : "";
+            get("ability-save-attribute").value = ability.save_attribute
+                ? ability.save_attribute.charAt(0).toUpperCase() + ability.save_attribute.slice(1)
+                : "";
+            get("ability-save-attribute").dispatchEvent(new Event("change"));
+            get("ability-save-attribute").dispatchEvent(new Event("input"));
+
+            get("ability-conditions").value = (ability.conditions || []).map(c => c.name + ":" + c.duration).join(", ");
+            get("ability-range").value = ability.range != null ? ability.range : "";
+            get("ability-max-targets").value = ability.max_targets != null ? ability.max_targets : "";
+            get("ability-image").value = ability.image || "";
+        }
+
+        // Update Abilities List
+        function updateAbilitiesElem() {
+            const elem = document.getElementById("actions")
+            elem.clearChildren()
+
+            for (const name in monster.abilities) {
+                const cur_ability = monster.abilities[name]
+                cur_ability.name = name
+
+                function remove() {
+                    delete monster.abilities[name]
+                    updateAbilitiesElem()
+                }
+
+                function edit() {
+                    ability = structuredClone(cur_ability)
+                    updateForm()
+                }
+
+                async function mousedown(event) {
+                    if (event.button === 0) {
+                        modal({parent: tab, children: [await data_description.monster_ability({object: cur_ability})]})
+                    } else if (event.button === 2) {
+                        context_menu({event, buttons: {"Edit": edit, "Remove": remove}})
+                    }
+                }
+
+                elem.appendChild({
+                    tag: "div",
+                    attributes: {class: "collapsible-div"},
+                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh", opacity: 1},
+                    events: {mousedown},
+                    children: [
+                        {tag: "img", attributes: {src: cur_ability.image || ""}},
+                        {tag: "span", text: name},
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: cur_ability.type},
+                    ]
+                })
+            }
+
+            // Hide Show abilities block
+            if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
+            else elem.parentElement.classList.add("hidden")
+        }
+
+        async function getImageFromSelected() {
+            const elem = document.getElementById("ability-image")
+            const image = await backend(`getSelectedImage()`)
+            elem.value = image
+            ability.image = image
+        }
+
+        const set = {click: function() {
+            if (!ability.name) return
+            
+            // Trigger all input and change events for all form elements
+            document.querySelectorAll("#abilities-tab input, #abilities-tab select").forEach(element => {
+                element.dispatchEvent(new Event("input"));
+                element.dispatchEvent(new Event("change"));
+            });
+            
+            monster.abilities[ability.name] = structuredClone(ability);
+            console.log(structuredClone(ability));
+            updateAbilitiesElem();
+        }}
+
+        // Content
+        const containerOptions = {div: {attributes: {class: "hidden"}}, content: {style: {maxHeight: "80vh"}}}
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%"}, children: [
+                container({title: "Action Details", children: [
+                    // Name
+                    input({id: "ability-name", placeholder: "Name", options: {
+                        input: {attributes: {value: ""}, events: {input: function() {ability.name = this.value}}}
+                    }}),
+
+                    // Type
+                    select({id: "ability-type", placeholder: "Type", children: ["Attack", "Monster Ability"].map(i => ({tag: "option", text: i})), options: {
+                        input: {events: updateType}
+                    }}),
+
+                    // Resources
+                    input({id: "ability-resources", placeholder: "Resources", options: {
+                        input: {attributes: {value: ""}, events: updateResources}
+                    }}),
+
+                    // Damage
+                    input({id: "ability-damage", placeholder: "Damage (1d4+2 Bludgeoning, 1d4 Fire)", options: {
+                        input: {attributes: {value: ""}, events: updateDamage}
+                    }}),
+
+                    // Conditions
+                    input({id: "ability-conditions", placeholder: "Conditions (Paralyzed:1, Prone:-1)", options: {
+                        input: {attributes: {value: ""}, events: updateConditions}
+                    }}),
+
+                    // Hit Bonus
+                    input({id: "ability-hit-bonus", placeholder: "Hit Bonus", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.hit_bonus = Number(this.value) || 0 }
+                        }}
+                    }}),
+
+                    // Recovery  
+                    input({id: "ability-recovery", placeholder: "Recovery", options: {
+                        div: {style: {width: "49%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.recovery = Number(this.value) || 0 }
+                        }}
+                    }}),
+
+                    // Difficulty Class
+                    input({id: "ability-difficulty-class", placeholder: "Difficulty Class", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.difficulty_class = Number(this.value) || ""}
+                        }}
+                    }}),
+
+                    // Save Attribute
+                    select({id: "ability-save-attribute", placeholder: "DC Attribute", children: ["Strength","Dexterity","Constitution","Wisdom","Intelligence","Charisma"].map(i => ({tag: "option", text: i})), options: {
+                        div: {style: {width: "49%"}},
+                        input: {events: updateSaveAttribute}
+                    }}),
+
+                    // Cast Time
+                    input({id: "ability-cast-time", placeholder: "Cast Time", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.cast_time = Number(this.value) || 0}}}
+                    }}),
+
+                    // Half Damage on Save
+                    select({id: "ability-half-damage-on-save", placeholder: "Half Damage on Save", children: [{tag:"option", text:"False"}, {tag:"option", text:"True"}], options: {
+                        div: {style: {width: "49%"}},
+                        input: {events: {input: function() {ability.half_damage_on_save = this.value === "True"}}}
+                    }}),
+
+                    // Range
+                    input({id: "ability-range", placeholder: "Range", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.range = Number(this.value) || 5}}}
+                    }}),
+
+                    // Max Targets
+                    input({id: "ability-max-targets", placeholder: "Max Targets", options: {
+                        div: {style: {width: "49%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.max_targets = Number(this.value) || 1}}}
+                    }}),
+
+                    // Image
+                    input({id: "ability-image", placeholder: "Image", options: {
+                        div: {style: {width: "60%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.image = this.value}}}
+                    }}),
+                    {tag: "button", text: "Get from selected token", style: {margin: 0, marginLeft: "1%", width: "39%"}, events: {click: getImageFromSelected}},
+
+                    {tag: "br"},
+
+                    // Save Button
+                    {tag: "button", text: "Save", events: set, style: {marginTop: "2vh"}}
+                ]})
+            ]},
+            {tag: "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "actions", scroll: true, title: "Actions", options: containerOptions})
+            ]},
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
+            },
+            {tag: "button", text: "Cancel", attributes: {class: "bottom left page-turner"}, 
+                events: {click: cancel}
+            }
+        ])
+
+        updateAbilitiesElem()
+    }
+
     async function loadPage() {
-        create_tabs({content: ["main", "spellcasting"], parent: document.body})
+        create_tabs({content: ["main", "spellcasting", "abilities"], parent: document.body})
         await loadMonster()
+
         await mainTab()
         await spellcastingTab()
+        await abilitiesTab()
+
         triggerAllInputFields()
     }
     

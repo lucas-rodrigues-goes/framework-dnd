@@ -115,6 +115,16 @@ var CommonAbilities = class extends Abilities {
 
             // Add Image
             abilities_list["attack"].image = image
+
+            // If unnarmed and has monster custom attack, do not show unnarmed attack
+            if (!hasWeapon && creature.custom_abilities) {
+                for (const name in creature.custom_abilities) {
+                    const ability = creature.custom_abilities[name]
+                    if (ability.type == "Attack") {
+                        abilities_list["attack"] = undefined
+                    }
+                }
+            }
         }
         
         /* Off Hand Attack */ {

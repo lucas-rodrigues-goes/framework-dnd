@@ -51,8 +51,14 @@ var Spells = class extends Abilities {
 
         // Get spell data
         const condition = creature.get_condition("Spellcasting")
-        const { spell } = condition
+        const { spell, isMonsterAbility } = condition
         const { components } = spell
+
+        // Monster Ability
+        if (isMonsterAbility) {
+            MonsterAbilities.finish_monster_casting()
+            return
+        }
 
         // Remove Concentration if new spell requires it
         if (components.includes("concentration")) creature.remove_condition("Concentration")
