@@ -238,6 +238,9 @@ var MonsterAbilities = class extends Abilities {
                 ? ` dealing ${this.spell_damage(creature, target, hit_result.message, ability.damage)} damage.`
                 : `.`
 
+            // Make stealth checks and others
+            this.attack_roll_advantage_modifiers({creature, target})
+
             // Damage sound
             if (hit_result.success) {
                 for (const damage of ability.damage) Sound.play(damage.damage_type.toLowerCase())
