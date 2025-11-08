@@ -215,7 +215,9 @@ var Creature = class extends Entity {
             }
 
             // State effects
-            const conditions_with_state = ["Blur", "Rage", "Shield", "Hold Person", "Dead", "Bless", "Prone"]
+            const conditions_with_state = [
+                "Blur", "Rage", "Shield", "Hold Person", "Hold Monster", "Dead", "Bless", "Prone"
+            ]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
             // Light effects
