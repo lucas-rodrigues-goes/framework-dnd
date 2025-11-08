@@ -587,26 +587,27 @@
         ])
     }
 
-    async function abilitiesTab() {
+        async function abilitiesTab() {
         const tab = document.getElementById("abilities-tab")
-        let ability_name = ""
-        const ability = {
+        let ability = {
+            name: "",
             description: "",
-            type: "Attack", // Attack or Special
+            type: "Attack", // Attack or Monster Ability
             origin: "Monster",
             resources: [],
             damage: [],
-            difficulty_class: 10,
-            save_attribute: "strength",
+            difficulty_class: "",
+            save_attribute: "",
             conditions: [],
             range: 5,
             max_targets: 1,
+            image: "",
 
             // Attack type
             recovery: 0,
             hit_bonus: 2,
 
-            // Special type
+            // Monster Ability type
             cast_time: 0,
             half_damage_on_save: false,
         }
@@ -615,199 +616,119 @@
         const updateType = {input: function (event) {
             ability.type = this.value
             const attackElements = ["hit-bonus", "recovery"]
-            const specialElements = ["half-damage-on-save", "cast-time"]
+            const monsterAbilityElements = ["half-damage-on-save", "cast-time"]
 
             switch(this.value) {
                 case "Attack": {
-                    for (const element of specialElements) document.getElementById("ability-" + element + "-div").style.display = "none"
+                    for (const element of monsterAbilityElements) document.getElementById("ability-" + element + "-div").style.display = "none"
                     for (const element of attackElements) document.getElementById("ability-" + element + "-div").style.display = ""
                     break
                 }
-                case "Special": {
-                    for (const element of specialElements) document.getElementById("ability-" + element + "-div").style.display = ""
+                case "Monster Ability": {
+                    for (const element of monsterAbilityElements) document.getElementById("ability-" + element + "-div").style.display = ""
                     for (const element of attackElements) document.getElementById("ability-" + element + "-div").style.display = "none"
                     break
                 }
                 default: {
-                    for (const element of [...attackElements, ...specialElements]) document.getElementById("ability-" + element + "-div").style.display = "none"
+                    for (const element of [...attackElements, ...monsterAbilityElements]) document.getElementById("ability-" + element + "-div").style.display = "none"
                     break
                 }
             }
         }}
         const updateResources = {input: function (event) {
             const resources = this.value
-                .split(", ")
+                .split(",")
                 .map(f => f.trim())
-                .filter(f => f !== "");
-            ability.resources = [...new Set(resources)];
+                .filter(f => f !== "")
+            ability.resources = [...new Set(resources)]
         }}
         const updateDamage = {input: function (event) {
             const damage = [];
-
-            // Example input:
-            // "1d4 Piercing, 2d6+3 Fire, 3d8-1 Cold"
             const entries = this.value.split(",").map(s => s.trim());
-
             for (const entry of entries) {
                 if (!entry) continue;
-
-                // Split into first part (dice block) and the rest (damage type)
-                // Example: "2d6+3 Fire" → ["2d6+3", "Fire"]
                 const parts = entry.split(" ");
                 if (parts.length < 2) continue;
-
-                const dice_block = parts[0];          // "2d6+3"
-                const damage_type = parts.slice(1).join(" "); // "Fire"
-
-                // Find where the dice end and bonus begins
-                // Allowed formats:
-                // XdY
-                // XdY+Z
-                // XdY-Z
-
+                const dice_block = parts[0];
+                const damage_type = parts.slice(1).join(" ");
                 let die_amount = "";
                 let die_size = "";
                 let damage_bonus = "";
-
-                // STEP 1 — Split by "d"
                 const d_index = dice_block.indexOf("d");
                 if (d_index === -1) continue;
-
                 die_amount = dice_block.substring(0, d_index);
                 let after_d = dice_block.substring(d_index + 1);
-
-                // STEP 2 — Detect + or -
                 let plus_index = after_d.indexOf("+");
                 let minus_index = after_d.indexOf("-");
-
                 if (plus_index !== -1) {
-                    // format 2d6+3
                     die_size = after_d.substring(0, plus_index);
                     damage_bonus = after_d.substring(plus_index + 1);
-                }
-                else if (minus_index !== -1) {
-                    // format 3d8-1
+                } else if (minus_index !== -1) {
                     die_size = after_d.substring(0, minus_index);
                     damage_bonus = "-" + after_d.substring(minus_index + 1);
-                }
-                else {
-                    // format only XdY
+                } else {
                     die_size = after_d;
                 }
-
-                // put it together
-                const dmg_obj = {
-                    damage_type,
-                    die_amount,
-                    die_size
-                };
-
-                if (damage_bonus !== "") {
-                    dmg_obj.damage_bonus = damage_bonus;
-                }
-
+                const dmg_obj = { damage_type, die_amount, die_size };
+                if (damage_bonus !== "") dmg_obj.damage_bonus = damage_bonus;
                 damage.push(dmg_obj);
             }
-
             ability.damage = damage;
-        }};
+        }}
         const updateConditions = {input: function (event) {
             const conditions = [];
-
-            // Split by comma → ["Prone:-1", "Ray of Frost: 1"]
             const entries = this.value.split(",").map(s => s.trim());
-
             for (const entry of entries) {
                 if (!entry) continue;
-
-                // Split by ":" → ["Prone", "-1"] or ["Ray of Frost", "1"]
                 const parts = entry.split(":").map(s => s.trim());
                 if (parts.length !== 2) continue;
-
                 const name = parts[0];
-                const duration_string = parts[1];
-
-                // Convert duration to number (fallback if invalid)
-                const duration = parseInt(duration_string, 10);
+                const duration = parseInt(parts[1], 10);
                 if (isNaN(duration)) continue;
-
-                conditions.push({
-                    name,
-                    duration
-                });
+                conditions.push({ name, duration });
             }
-
             ability.conditions = conditions;
-        }};
+        }}
         const updateSaveAttribute = {input: function (event) {
             ability.save_attribute = this.value.toLowerCase()
         }}
 
-        // Update Elements
+        // Update Form
         function updateForm() {
-            var get = function (id) { return document.getElementById(id); };
+            const get = id => document.getElementById(id);
 
-            // Name
             get("ability-name").value = ability.name || "";
-
-            // Type
             get("ability-type").value = ability.type;
-            get("ability-type").dispatchEvent(new Event("change"))
+            get("ability-type").dispatchEvent(new Event("change"));
+            get("ability-type").dispatchEvent(new Event("input"));
 
-            // Resources
             get("ability-resources").value = (ability.resources || []).join(", ");
-
-            // Hit bonus
             get("ability-hit-bonus").value = ability.hit_bonus != null ? ability.hit_bonus : "";
-
-            // Recovery
             get("ability-recovery").value = ability.recovery != null ? ability.recovery : "";
-
-            // Half damage on save
             get("ability-half-damage-on-save").value = ability.half_damage_on_save ? "True" : "False";
-            get("ability-half-damage-on-save").dispatchEvent(new Event("change"))
+            get("ability-half-damage-on-save").dispatchEvent(new Event("change"));
+            get("ability-half-damage-on-save").dispatchEvent(new Event("input"));
 
-            // Cast time
             get("ability-cast-time").value = ability.cast_time != null ? ability.cast_time : "";
-
-            // Damage stringification
             get("ability-damage").value = (ability.damage || [])
-                .map(function (d) {
-                    var bonus = "";
-                    if (d.damage_bonus) {
-                        if (d.damage_bonus.indexOf("-") === 0) bonus = d.damage_bonus;
-                        else bonus = "+" + d.damage_bonus;
-                    }
+                .map(d => {
+                    const bonus = d.damage_bonus ? (d.damage_bonus.startsWith("-") ? d.damage_bonus : "+" + d.damage_bonus) : "";
                     return d.die_amount + "d" + d.die_size + bonus + " " + d.damage_type;
-                })
-                .join(", ");
+                }).join(", ");
+            get("ability-difficulty-class").value = ability.difficulty_class != null ? ability.difficulty_class : "";
+            get("ability-save-attribute").value = ability.save_attribute
+                ? ability.save_attribute.charAt(0).toUpperCase() + ability.save_attribute.slice(1)
+                : "";
+            get("ability-save-attribute").dispatchEvent(new Event("change"));
+            get("ability-save-attribute").dispatchEvent(new Event("input"));
 
-            // Difficulty class
-            get("ability-difficulty-class").value =
-                ability.difficulty_class != null ? ability.difficulty_class : "";
-
-            // Save attribute
-            get("ability-save-attribute").value =
-                ability.save_attribute
-                    ? ability.save_attribute.charAt(0).toUpperCase() + ability.save_attribute.slice(1)
-                    : "Strength";
-            get("ability-save-attribute").dispatchEvent(new Event("change"))
-
-            // Conditions
-            get("ability-conditions").value = (ability.conditions || [])
-                .map(function (c) {
-                    return c.name + ":" + c.duration;
-                })
-                .join(", ");
-
-            // Range
+            get("ability-conditions").value = (ability.conditions || []).map(c => c.name + ":" + c.duration).join(", ");
             get("ability-range").value = ability.range != null ? ability.range : "";
-
-            // Max targets
-            get("ability-max-targets").value =
-                ability.max_targets != null ? ability.max_targets : "";
+            get("ability-max-targets").value = ability.max_targets != null ? ability.max_targets : "";
+            get("ability-image").value = ability.image || "";
         }
 
+        // Update Abilities List
         function updateAbilitiesElem() {
             const elem = document.getElementById("actions")
             elem.clearChildren()
@@ -816,67 +737,61 @@
                 const cur_ability = monster.abilities[name]
                 cur_ability.name = name
 
-                // Remove
-                function remove () {
+                function remove() {
                     delete monster.abilities[name]
                     updateAbilitiesElem()
                 }
 
-                // Edit
-                function edit () {
-                    for (const key in cur_ability) ability[key] = cur_ability[key]
+                function edit() {
+                    ability = structuredClone(cur_ability)
                     updateForm()
                 }
 
-                // Mousedown
-                async function mousedown (event) {
-                    // Left Click
-                    if (event.button == 0) {
-                        modal({parent: tab, children: [
-                            await data_description.monster_ability({object: cur_ability})
-                        ]})
-                    }
-                    // Right click
-                    else if (event.button == 2) {
-                        // Buttons
-                        const buttons = {
-                            "Edit": edit,
-                            "Remove": remove,
-                        }
-
-                        // Run context menu
-                        context_menu({event: event, buttons: buttons})
+                async function mousedown(event) {
+                    if (event.button === 0) {
+                        modal({parent: tab, children: [await data_description.monster_ability({object: cur_ability})]})
+                    } else if (event.button === 2) {
+                        context_menu({event, buttons: {"Edit": edit, "Remove": remove}})
                     }
                 }
 
-                // Add element
-                elem.appendChild(
-                    {tag: "div", 
-                        attributes: {class: "collapsible-div"}, 
-                        style: {
-                            display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh",
-                            opacity: 1
-                        },
-                        events: {mousedown: mousedown},
-                        children: [
-                            {tag: "img", attributes: {src: ""}},
-                            {tag: "span", text: name},
-                            {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: ability.type},
-                        ]
-                    }
-                )
+                elem.appendChild({
+                    tag: "div",
+                    attributes: {class: "collapsible-div"},
+                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh", opacity: 1},
+                    events: {mousedown},
+                    children: [
+                        {tag: "img", attributes: {src: cur_ability.image || ""}},
+                        {tag: "span", text: name},
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: cur_ability.type},
+                    ]
+                })
             }
-            
-            // Hide Show block
+
+            // Hide Show abilities block
             if (elem.children.length > 0) elem.parentElement.classList.remove("hidden")
             else elem.parentElement.classList.add("hidden")
         }
 
-        // Set
-        const set = {click: function (event) {
-            if (ability_name) monster.abilities[ability_name] = ability
-            console.log(monster.abilities)
-            updateAbilitiesElem()
+        async function getImageFromSelected() {
+            const elem = document.getElementById("ability-image")
+            const image = await backend(`getSelectedImage()`)
+            elem.value = image
+            ability.image = image
+        }
+
+        const set = {click: function() {
+            if (!ability.name) return
+            
+            // Trigger all input and change events for all form elements
+            document.querySelectorAll("#abilities-tab input, #abilities-tab select").forEach(element => {
+                element.dispatchEvent(new Event("input"));
+                element.dispatchEvent(new Event("change"));
+            });
+            
+            monster.abilities[ability.name] = structuredClone(ability);
+            console.log(structuredClone(ability));
+            updateAbilitiesElem();
         }}
 
         // Content
@@ -886,98 +801,98 @@
                 container({title: "Action Details", children: [
                     // Name
                     input({id: "ability-name", placeholder: "Name", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability_name = this.value}}}
+                        input: {attributes: {value: ""}, events: {input: function() {ability.name = this.value}}}
                     }}),
 
                     // Type
-                    select({id: "ability-type", placeholder: "Type", 
-                        children: ["Attack", "Special"].map((item) => ({tag: "option", text: item})),
-                        options: {
-                            input: {events: updateType}
-                        }
-                    }),
+                    select({id: "ability-type", placeholder: "Type", children: ["Attack", "Monster Ability"].map(i => ({tag: "option", text: i})), options: {
+                        input: {events: updateType}
+                    }}),
 
                     // Resources
                     input({id: "ability-resources", placeholder: "Resources", options: {
                         input: {attributes: {value: ""}, events: updateResources}
                     }}),
 
-                    // Hit Bonus
-                    input({id: "ability-hit-bonus", placeholder: "Hit Bonus", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.hit_bonus = Number(this.value) || 0}}}
-                    }}),
-
-                    // Recovery
-                    input({id: "ability-recovery", placeholder: "Recovery", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.recovery = Number(this.value) || 0}}}
-                    }}),
-
-                    // Half Damage on Save
-                    select({
-                        id: "ability-half-damage-on-save",
-                        placeholder: "Half Damage on Save",
-                        children: [
-                            { tag: "option", text: "False" },
-                            { tag: "option", text: "True" }
-                        ],
-                        options: {
-                            input: {
-                                events: {
-                                    input: function (event) {
-                                        ability.half_damage_on_save = this.value === "True";
-                                    }
-                                }
-                            }
-                        }
-                    }),
-
-
-                    // Cast Time
-                    input({id: "ability-cast-time", placeholder: "Cast Time", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.cast_time = Number(this.value) || 0}}}
-                    }}),
-                    
                     // Damage
                     input({id: "ability-damage", placeholder: "Damage (1d4+2 Bludgeoning, 1d4 Fire)", options: {
                         input: {attributes: {value: ""}, events: updateDamage}
                     }}),
-
-                    // Difficulty Class
-                    input({id: "ability-difficulty-class", placeholder: "Difficulty Class", options: {
-                        div: {style:{width: "49%", marginRight: "2%"}},
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.difficulty_class = Number(this.value) || 0}}}
-                    }}),
-
-                    // Save Attribute
-                    select({id: "ability-save-attribute", placeholder: "DC Attribute", 
-                        children: ["Strength", "Dexterity", "Constitution", "Wisdom", "Intelligence", "Charisma"].map((item) => ({tag: "option", text: item})),
-                        options: {
-                            div: {style:{width: "49%"}},
-                            input: {events: updateSaveAttribute}
-                        }
-                    }),
 
                     // Conditions
                     input({id: "ability-conditions", placeholder: "Conditions (Paralyzed:1, Prone:-1)", options: {
                         input: {attributes: {value: ""}, events: updateConditions}
                     }}),
 
+                    // Hit Bonus
+                    input({id: "ability-hit-bonus", placeholder: "Hit Bonus", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.hit_bonus = Number(this.value) || 0 }
+                        }}
+                    }}),
+
+                    // Recovery  
+                    input({id: "ability-recovery", placeholder: "Recovery", options: {
+                        div: {style: {width: "49%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.recovery = Number(this.value) || 0 }
+                        }}
+                    }}),
+
+                    // Difficulty Class
+                    input({id: "ability-difficulty-class", placeholder: "Difficulty Class", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {
+                            input: function() { ability.difficulty_class = Number(this.value) || ""}
+                        }}
+                    }}),
+
+                    // Save Attribute
+                    select({id: "ability-save-attribute", placeholder: "DC Attribute", children: ["Strength","Dexterity","Constitution","Wisdom","Intelligence","Charisma"].map(i => ({tag: "option", text: i})), options: {
+                        div: {style: {width: "49%"}},
+                        input: {events: updateSaveAttribute}
+                    }}),
+
+                    // Cast Time
+                    input({id: "ability-cast-time", placeholder: "Cast Time", options: {
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.cast_time = Number(this.value) || 0}}}
+                    }}),
+
+                    // Half Damage on Save
+                    select({id: "ability-half-damage-on-save", placeholder: "Half Damage on Save", children: [{tag:"option", text:"False"}, {tag:"option", text:"True"}], options: {
+                        div: {style: {width: "49%"}},
+                        input: {events: {input: function() {ability.half_damage_on_save = this.value === "True"}}}
+                    }}),
+
                     // Range
                     input({id: "ability-range", placeholder: "Range", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.range = Number(this.value) || 5}}}
+                        div: {style: {width: "49%", marginRight: "2%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.range = Number(this.value) || 5}}}
                     }}),
 
                     // Max Targets
                     input({id: "ability-max-targets", placeholder: "Max Targets", options: {
-                        input: {attributes: {value: ""}, events: {input: function (event) {ability.max_targets = Number(this.value) || 1}}}
+                        div: {style: {width: "49%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.max_targets = Number(this.value) || 1}}}
                     }}),
-                
-                    // Save
+
+                    // Image
+                    input({id: "ability-image", placeholder: "Image", options: {
+                        div: {style: {width: "60%"}},
+                        input: {attributes: {value: ""}, events: {input: function() {ability.image = this.value}}}
+                    }}),
+                    {tag: "button", text: "Get from selected token", style: {margin: 0, marginLeft: "1%", width: "39%"}, events: {click: getImageFromSelected}},
+
+                    {tag: "br"},
+
+                    // Save Button
                     {tag: "button", text: "Save", events: set, style: {marginTop: "2vh"}}
-                ]}),
+                ]})
             ]},
-            {tag : "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
-                container({id: "actions", scroll: true, title: "Actions", options: containerOptions}),
+            {tag: "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
+                container({id: "actions", scroll: true, title: "Actions", options: containerOptions})
             ]},
             {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
                 events: {click: submit}
