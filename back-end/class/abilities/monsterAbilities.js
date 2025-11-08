@@ -246,8 +246,9 @@ var MonsterAbilities = class extends Abilities {
             // Apply condition
             const saving_throw_messages = []
             const appliesCondition = ability.conditions.length > 0
-            if (appliesCondition && hit_result.success) {
-                let applyConditions = true
+            const appliesDamageOnSaveFail = (ability?.damage_on_save_fail?.length || 0) > 0
+            if ((appliesCondition || appliesDamageOnSaveFail) && hit_result.success) {
+                let applyEffects = true
                 const requiresSave = ability.difficulty_class != 0
 
                 if (requiresSave) {
@@ -261,11 +262,11 @@ var MonsterAbilities = class extends Abilities {
                         advantage_weight: 0
                     })
 
-                    applyConditions = save_result.success
+                    applyEffects = save_result.success
                     if (!save_result.success) saving_throw_messages.push(`${target.name_color} resisted the effects of ${ability.name.toLowerCase()}.`)
                 }
 
-                if (applyConditions) {
+                if (applyEffects) {
                     for (const condition of ability.conditions) {
                         const {name, duration} = condition
                         const duration_text = duration == -1 ? `` : ` for ${duration} rounds`
@@ -273,6 +274,14 @@ var MonsterAbilities = class extends Abilities {
                         target.set_condition(name, duration)
                         saving_throw_messages.push(`${target.name_color} received ${name} condition${duration_text} due to ${ability.name.toLowerCase()}.`)
                     }
+                    if (appliesDamageOnSaveFail) {
+                        const damage = this.spell_damage(creature, target, "failed save", ability.damage_on_save_fail)
+                        saving_throw_messages.push(`${target.name_color} received ${damage} damage due to ${ability.name.toLowerCase()}`)
+                    }
+                }
+                else if (ability.half_damage_on_save && appliesDamageOnSaveFail) {
+                    const damage = this.spell_damage(creature, target, "saves for half damage", ability.damage_on_save_fail)
+                    saving_throw_messages.push(`${target.name_color} resisted some of the effects of ${ability.name.toLowerCase()} receiving ${damage} damage.`)
                 }
             }
 

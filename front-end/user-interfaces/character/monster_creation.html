@@ -587,7 +587,7 @@
         ])
     }
 
-        async function abilitiesTab() {
+    async function abilitiesTab() {
         const tab = document.getElementById("abilities-tab")
         let ability = {
             name: "",
@@ -596,12 +596,14 @@
             origin: "Monster",
             resources: [],
             damage: [],
+            damage_on_save_fail: [], // NEW: Added this property
             difficulty_class: "",
             save_attribute: "",
             conditions: [],
             range: 5,
             max_targets: 1,
             image: "",
+            half_damage_on_save: false,
 
             // Attack type
             recovery: 0,
@@ -609,14 +611,13 @@
 
             // Monster Ability type
             cast_time: 0,
-            half_damage_on_save: false,
         }
 
         // Updates
         const updateType = {input: function (event) {
             ability.type = this.value
-            const attackElements = ["hit-bonus", "recovery"]
-            const monsterAbilityElements = ["half-damage-on-save", "cast-time"]
+            const attackElements = ["hit-bonus", "recovery", "damage-on-save-fail"]
+            const monsterAbilityElements = ["cast-time"]
 
             switch(this.value) {
                 case "Attack": {
@@ -675,6 +676,42 @@
             }
             ability.damage = damage;
         }}
+        
+        // NEW: Add update function for damage_on_save_fail
+        const updateDamageOnSaveFail = {input: function (event) {
+            const damage = [];
+            const entries = this.value.split(",").map(s => s.trim());
+            for (const entry of entries) {
+                if (!entry) continue;
+                const parts = entry.split(" ");
+                if (parts.length < 2) continue;
+                const dice_block = parts[0];
+                const damage_type = parts.slice(1).join(" ");
+                let die_amount = "";
+                let die_size = "";
+                let damage_bonus = "";
+                const d_index = dice_block.indexOf("d");
+                if (d_index === -1) continue;
+                die_amount = dice_block.substring(0, d_index);
+                let after_d = dice_block.substring(d_index + 1);
+                let plus_index = after_d.indexOf("+");
+                let minus_index = after_d.indexOf("-");
+                if (plus_index !== -1) {
+                    die_size = after_d.substring(0, plus_index);
+                    damage_bonus = after_d.substring(plus_index + 1);
+                } else if (minus_index !== -1) {
+                    die_size = after_d.substring(0, minus_index);
+                    damage_bonus = "-" + after_d.substring(minus_index + 1);
+                } else {
+                    die_size = after_d;
+                }
+                const dmg_obj = { damage_type, die_amount, die_size };
+                if (damage_bonus !== "") dmg_obj.damage_bonus = damage_bonus;
+                damage.push(dmg_obj);
+            }
+            ability.damage_on_save_fail = damage;
+        }}
+        
         const updateConditions = {input: function (event) {
             const conditions = [];
             const entries = this.value.split(",").map(s => s.trim());
@@ -710,11 +747,21 @@
             get("ability-half-damage-on-save").dispatchEvent(new Event("input"));
 
             get("ability-cast-time").value = ability.cast_time != null ? ability.cast_time : "";
+            
+            // Existing damage field
             get("ability-damage").value = (ability.damage || [])
                 .map(d => {
                     const bonus = d.damage_bonus ? (d.damage_bonus.startsWith("-") ? d.damage_bonus : "+" + d.damage_bonus) : "";
                     return d.die_amount + "d" + d.die_size + bonus + " " + d.damage_type;
                 }).join(", ");
+                
+            // NEW: Damage on Save Fail field
+            get("ability-damage-on-save-fail").value = (ability.damage_on_save_fail || [])
+                .map(d => {
+                    const bonus = d.damage_bonus ? (d.damage_bonus.startsWith("-") ? d.damage_bonus : "+" + d.damage_bonus) : "";
+                    return d.die_amount + "d" + d.die_size + bonus + " " + d.damage_type;
+                }).join(", ");
+
             get("ability-difficulty-class").value = ability.difficulty_class != null ? ability.difficulty_class : "";
             get("ability-save-attribute").value = ability.save_attribute
                 ? ability.save_attribute.charAt(0).toUpperCase() + ability.save_attribute.slice(1)
@@ -824,71 +871,77 @@
                         input: {attributes: {value: ""}, events: updateConditions}
                     }}),
 
-                    // Hit Bonus
-                    input({id: "ability-hit-bonus", placeholder: "Hit Bonus", options: {
-                        div: {style: {width: "49%", marginRight: "2%"}},
-                        input: {attributes: {value: ""}, events: {
-                            input: function() { ability.hit_bonus = Number(this.value) || 0 }
-                        }}
-                    }}),
+                    // Hit Bonus and Recovery on same line
+                    {tag: "div", style: {display: "flex", width: "100%", gap: "2%"}, children: [
+                        input({id: "ability-hit-bonus", placeholder: "Hit Bonus", options: {
+                            div: {id: "ability-hit-bonus-div", style: {width: "49%", marginRight: "0%"}},
+                            input: {attributes: {value: ""}, events: {
+                                input: function() { ability.hit_bonus = Number(this.value) || 0 }
+                            }}
+                        }}),
+                        input({id: "ability-recovery", placeholder: "Recovery", options: {
+                            div: {id: "ability-recovery-div", style: {width: "49%", marginRight: "0%"}},
+                            input: {attributes: {value: ""}, events: {
+                                input: function() { ability.recovery = Number(this.value) || 0 }
+                            }}
+                        }})
+                    ]},
 
-                    // Recovery  
-                    input({id: "ability-recovery", placeholder: "Recovery", options: {
-                        div: {style: {width: "49%"}},
-                        input: {attributes: {value: ""}, events: {
-                            input: function() { ability.recovery = Number(this.value) || 0 }
-                        }}
-                    }}),
-
-                    // Difficulty Class
-                    input({id: "ability-difficulty-class", placeholder: "Difficulty Class", options: {
-                        div: {style: {width: "49%", marginRight: "2%"}},
-                        input: {attributes: {value: ""}, events: {
-                            input: function() { ability.difficulty_class = Number(this.value) || ""}
-                        }}
-                    }}),
-
-                    // Save Attribute
-                    select({id: "ability-save-attribute", placeholder: "DC Attribute", children: ["Strength","Dexterity","Constitution","Wisdom","Intelligence","Charisma"].map(i => ({tag: "option", text: i})), options: {
-                        div: {style: {width: "49%"}},
-                        input: {events: updateSaveAttribute}
-                    }}),
+                    // Difficulty Class and Save Attribute on same line
+                    {tag: "div", style: {display: "flex", width: "100%", gap: "2%"}, children: [
+                        input({id: "ability-difficulty-class", placeholder: "Difficulty Class", options: {
+                            div: {style: {width: "49%", marginRight: "0%"}},
+                            input: {attributes: {value: ""}, events: {
+                                input: function() { ability.difficulty_class = Number(this.value) || ""}
+                            }}
+                        }}),
+                        select({id: "ability-save-attribute", placeholder: "DC Attribute", children: ["Strength","Dexterity","Constitution","Wisdom","Intelligence","Charisma"].map(i => ({tag: "option", text: i})), options: {
+                            div: {style: {width: "49%", marginRight: "0%"}},
+                            input: {events: updateSaveAttribute}
+                        }})
+                    ]},
 
                     // Cast Time
                     input({id: "ability-cast-time", placeholder: "Cast Time", options: {
-                        div: {style: {width: "49%", marginRight: "2%"}},
+                        div: {id: "ability-cast-time-div", style: {width: "49%", marginRight: "2%"}},
                         input: {attributes: {value: ""}, events: {input: function() {ability.cast_time = Number(this.value) || 0}}}
                     }}),
 
-                    // Half Damage on Save
+                    //Half Damage on Save
                     select({id: "ability-half-damage-on-save", placeholder: "Half Damage on Save", children: [{tag:"option", text:"False"}, {tag:"option", text:"True"}], options: {
                         div: {style: {width: "49%"}},
                         input: {events: {input: function() {ability.half_damage_on_save = this.value === "True"}}}
                     }}),
 
-                    // Range
-                    input({id: "ability-range", placeholder: "Range", options: {
-                        div: {style: {width: "49%", marginRight: "2%"}},
-                        input: {attributes: {value: ""}, events: {input: function() {ability.range = Number(this.value) || 5}}}
+                    // Damage on Save Fail (only for Attack type)
+                    input({id: "ability-damage-on-save-fail", placeholder: "Damage on Save Fail", options: {
+                        div: {id: "ability-damage-on-save-fail-div", style: {width: "49%", marginLeft: "2%"}},
+                        input: {attributes: {value: ""}, events: updateDamageOnSaveFail}
                     }}),
 
-                    // Max Targets
-                    input({id: "ability-max-targets", placeholder: "Max Targets", options: {
-                        div: {style: {width: "49%"}},
-                        input: {attributes: {value: ""}, events: {input: function() {ability.max_targets = Number(this.value) || 1}}}
-                    }}),
+                    // Range and Max Targets on same line
+                    {tag: "div", style: {display: "flex", width: "100%", gap: "2%"}, children: [
+                        input({id: "ability-range", placeholder: "Range", options: {
+                            div: {style: {width: "49%", marginRight: "0%"}},
+                            input: {attributes: {value: ""}, events: {input: function() {ability.range = Number(this.value) || 5}}}
+                        }}),
+                        input({id: "ability-max-targets", placeholder: "Max Targets", options: {
+                            div: {style: {width: "49%", marginRight: "0%"}},
+                            input: {attributes: {value: ""}, events: {input: function() {ability.max_targets = Number(this.value) || 1}}}
+                        }})
+                    ]},
 
-                    // Image
+                    // Image and Get Image button on same line
                     input({id: "ability-image", placeholder: "Image", options: {
-                        div: {style: {width: "60%"}},
+                        div: {style: {width: "60%", marginRight: "1%"}},
                         input: {attributes: {value: ""}, events: {input: function() {ability.image = this.value}}}
                     }}),
-                    {tag: "button", text: "Get from selected token", style: {margin: 0, marginLeft: "1%", width: "39%"}, events: {click: getImageFromSelected}},
+                    {tag: "button", text: "Get from selected token", style: {margin: 0, width: "39%"}, events: {click: getImageFromSelected}},
 
                     {tag: "br"},
 
                     // Save Button
-                    {tag: "button", text: "Save", events: set, style: {marginTop: "2vh"}}
+                    {tag: "button", text: "Save", events: set, style: {marginTop: "2vh", width: "100%"}}
                 ]})
             ]},
             {tag: "div", style: {position: "absolute", right: 0, width: "50%"}, children: [
