@@ -795,6 +795,18 @@ var Abilities = class {
             // Reckless Attack
             if (target.has_condition("Reckless Attack") || creature.has_condition("Reckless Attack")) output += 1
 
+            // Grappled
+            if (creature.has_condition("Grappled")) {
+                // Grappled creature gains disadvantage attacking others (not the grappler)
+                const grappler_id = creature.get_condition("Grappled").source
+                if (target.id != grappler_id) output -= 1
+            }
+            if (target.has_condition("Grappled")) {
+                // Advantage if you are attacking someone grappled by another (you are not the grappler)
+                const grappler_id = target.get_condition("Grappled").source
+                if (creature.id != grappler_id) output += 1
+            }
+
             // Restrained
             if (creature.has_condition("Restrained")) output -= 1
             if (target.has_condition("Restrained")) output += 1
