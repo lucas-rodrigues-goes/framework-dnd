@@ -169,9 +169,98 @@ let data_description; {
         },
 
         monster_ability: async ({object, style=DEFAULT_STYLE}) => {
+            // Subtitle
+            let title; {
+                title = (object.type || object.origin) + " Ability"
+                if (object.type == "Monster Ability") title = object.type
+            }
+
+            // Resource
+            let resource = ""; {
+                if (object.resources.length > 0) resource = object.resources.join(", ")
+                else resource = "Free"
+            }
+
+            // Range
+            let range = ""; {
+                range = object.range + " ft"
+            }
+
             // Attributes
             const attributes = []; {
-                attributes.push(title_value({title: "Resources", value: object.resources.length > 0 ? object.resources.join(", ") : "Free"}))
+                // Resources
+                attributes.push(title_value({title: "Resource", value: resource}))
+
+                // Damage
+                if (object.damage && object.damage.length > 0) {
+                    const damage_text = object.damage.map(dmg => {
+                        const bonus = dmg.damage_bonus ? (dmg.damage_bonus.startsWith("-") ? dmg.damage_bonus : "+" + dmg.damage_bonus) : ""
+                        return dmg.die_amount + "d" + dmg.die_size + bonus + " " + dmg.damage_type
+                    }).join(", ")
+                    attributes.push(title_value({title: "Damage", value: damage_text}))
+                }
+                
+                // Type-specific attributes
+                if (object.type === "Attack") {
+                    attributes.push(title_value({title: "Hit Bonus", value: "+" + object.hit_bonus}))
+                    attributes.push(title_value({title: "Recovery", value: object.recovery}))
+                } else if (object.type === "Special") {
+                    attributes.push(title_value({title: "Casting Time", value: object.cast_time}))
+                    attributes.push(title_value({title: "Half Damage on Save", value: object.half_damage_on_save ? "Yes" : "No"}))
+                }
+                
+                // Difficulty Class
+                if (object.difficulty_class > 0) {
+                    const save_text = "DC " + object.difficulty_class + " " + 
+                        (object.save_attribute ? object.save_attribute.charAt(0).toUpperCase() + object.save_attribute.slice(1) : "")
+                    attributes.push(title_value({title: "Saving Throw", value: save_text}))
+                }
+                
+                // Conditions
+                if (object.conditions && object.conditions.length > 0) {
+                    const conditions_text = object.conditions.map(cond => {
+                        const duration = cond.duration === -1 ? "Permanent" : cond.duration + " round(s)"
+                        return cond.name + " (" + duration + ")"
+                    }).join(", ")
+                    attributes.push(title_value({title: "Conditions", value: conditions_text}))
+                }
+
+                attributes.push(title_value({title: "Range", value: range}))
+                attributes.push(title_value({title: "Max Targets", value: object.max_targets}))
+            }
+
+            return element({tag: "div", style: {...DEFAULT_STYLE, ...style}, children: [
+                // Title
+                {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
+                    {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: object.name},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: title},
+                ]},
+
+                // Attributes
+                {tag: "div", style: {textAlign: "left"}, children: attributes},
+
+                // Description
+                {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
+                    text: (object.description || "")
+                }
+            ]})
+        },
+
+        ability: async ({object, style=DEFAULT_STYLE}) => {
+            // Subtitle
+            let title; {
+                title = (object.type || object.origin) + " Ability"
+            }
+
+            // Resource
+            let resource = ""; {
+                if (object.resources.length > 0) resource = object.resources.join(", ")
+                else resource = "Free"
+            }
+
+            // Attributes
+            const attributes = []; {
+                attributes.push(title_value({title: "Resource", value: resource}))
                 if (object.duration) attributes.push(title_value({title: "Duration", value: timeUnit(object.duration)}))
             }
 
@@ -179,12 +268,15 @@ let data_description; {
                 // Title
                 {tag: "div", style: {marginTop: "0.5vh", marginBottom: "2vh"}, children: [
                     {tag: "div", style: {fontSize: "120%", fontWeight: "bold", margin: 0}, text: object.name},
-                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: (object.type || object.origin)},
+                    {tag: "div", style: {color: "#aaa", margin: 0, marginBottom: "1vh"}, text: title},
                 ]},
+
+                // Attributes
+                {tag: "div", style: {textAlign: "left"}, children: attributes},
 
                 // Description
                 {tag: "pre", style: {color: "#aaa", textAlign: "left", padding: 0, margin: 0, marginTop: "1vh"}, 
-                    text: (object.description || "")
+                    text: (object.description || await backend(`database.features.data["`+object.name+`"].description`))
                 }
             ]})
         },
