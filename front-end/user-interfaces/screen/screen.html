@@ -804,6 +804,9 @@
                         spell_list = character.spells[player_class].known || []
                     }
 
+                    // Remove  duplicates
+                    spell_list = [...new Set(spell_list)]
+
                     // Output
                     const output_list = []
                     for (const spell of spell_list) output_list.push({name: spell, class: player_class})
