@@ -789,7 +789,7 @@ var Abilities = class {
             if (creature.has_condition("Prone")) output -= 1
             if (target.has_condition("Prone")) {
                 if (distance > 5) output -= 1
-                else if (distance < 5) output += 1
+                else if (distance <= 5) output += 1
             }
 
             // Reckless Attack
