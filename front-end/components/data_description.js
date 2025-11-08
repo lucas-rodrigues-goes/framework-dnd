@@ -169,6 +169,9 @@ let data_description; {
         },
 
         monster_ability: async ({object, style=DEFAULT_STYLE}) => {
+            // Validation
+            if (!object.damage_on_save_fail) object.damage_on_save_fail = []
+
             // Subtitle
             let title; {
                 title = (object.type || object.origin) + " Ability"
@@ -204,18 +207,19 @@ let data_description; {
                 if (object.type === "Attack") {
                     attributes.push(title_value({title: "Hit Bonus", value: "+" + object.hit_bonus}))
                     attributes.push(title_value({title: "Recovery", value: object.recovery}))
-                } else if (object.type === "Special") {
+                } else if (object.type === "Monster Ability") {
                     attributes.push(title_value({title: "Casting Time", value: object.cast_time}))
-                    attributes.push(title_value({title: "Half Damage on Save", value: object.half_damage_on_save ? "Yes" : "No"}))
                 }
-                
-                // Difficulty Class
-                if (object.difficulty_class > 0) {
-                    const save_text = "DC " + object.difficulty_class + " " + 
-                        (object.save_attribute ? object.save_attribute.charAt(0).toUpperCase() + object.save_attribute.slice(1) : "")
-                    attributes.push(title_value({title: "Saving Throw", value: save_text}))
+
+                // Damage on Save Fail
+                if (object.damage_on_save_fail && object.damage_on_save_fail.length > 0) {
+                    const damage_on_fail_text = object.damage_on_save_fail.map(dmg => {
+                        const bonus = dmg.damage_bonus ? (dmg.damage_bonus.startsWith("-") ? dmg.damage_bonus : "+" + dmg.damage_bonus) : ""
+                        return dmg.die_amount + "d" + dmg.die_size + bonus + " " + dmg.damage_type
+                    }).join(", ")
+                    attributes.push(title_value({title: "Damage on Save Fail", value: damage_on_fail_text}))
                 }
-                
+
                 // Conditions
                 if (object.conditions && object.conditions.length > 0) {
                     const conditions_text = object.conditions.map(cond => {
@@ -223,6 +227,18 @@ let data_description; {
                         return cond.name + " (" + duration + ")"
                     }).join(", ")
                     attributes.push(title_value({title: "Conditions", value: conditions_text}))
+                }
+                
+                // Difficulty Class
+                if (object.difficulty_class > 0) {
+                    const save_text = "DC " + object.difficulty_class + " " + 
+                    (object.save_attribute ? object.save_attribute.charAt(0).toUpperCase() + object.save_attribute.slice(1) : "")
+                    attributes.push(title_value({title: "Saving Throw", value: save_text}))
+                }
+
+                // Half Damage on Save
+                if (object.half_damage_on_save !== undefined && object.damage_on_save_fail.length > 0) {
+                    attributes.push(title_value({title: "Half Damage on Save", value: object.half_damage_on_save ? "Yes" : "No"}))
                 }
 
                 attributes.push(title_value({title: "Range", value: range}))
