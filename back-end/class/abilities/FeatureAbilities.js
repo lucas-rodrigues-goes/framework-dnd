@@ -89,6 +89,79 @@ var FeatureAbilities = class extends Abilities {
             }
         }
 
+        /* Wizard */ {
+            // Arcane Recovery
+            if (creature.has_feature("Arcane Recovery")) abilities_list["arcane_recovery"] = {
+                resources: ["Action"],
+                description: database.features.data["Arcane Recovery"]?.description || "",
+                image: "asset://35c7096bb5a958052e60523d7cff4543",
+                type: type,
+                origin: origin,
+            }
+        }
+
+        /* Sorcerer */ {
+            // Flexible Casting
+            if (creature.has_feature("Font of Magic")) abilities_list["flexible_casting"] = {
+                name: "Font of Magic",
+                resources: ["Bonus Action"],
+                description: "You can use a bonus action to convert between your spell slots and sorcery points.",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+
+            // Metamagic: Distant Spell
+            if (creature.has_feature("Metamagic: Distant Spell")) abilities_list["mm_distant_spell"] = {
+                name: "Distant Spell",
+                resources: ["Sorcery Point"],
+                description: database.features.data["Metamagic: Distant Spell"]?.description || "",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+
+            // Metamagic: Empowered Spell
+            if (creature.has_feature("Metamagic: Empowered Spell")) abilities_list["mm_empowered_spell"] = {
+                name: "Empowered Spell",
+                resources: ["Sorcery Point"],
+                description: database.features.data["Metamagic: Empowered Spell"]?.description || "",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+
+            // Metamagic: Transmute Spells
+            if (creature.has_feature("Metamagic: Transmute Spells")) abilities_list["mm_transmute_spells"] = {
+                name: "Transmute Spells",
+                resources: ["Sorcery Point"],
+                description: database.features.data["Metamagic: Transmute Spells"]?.description || "",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+
+            // Metamagic: Extended Spells
+            if (creature.has_feature("Metamagic: Extended Spell")) abilities_list["mm_extended_spell"] = {
+                name: "Extended Spells",
+                resources: ["Sorcery Point"],
+                description: database.features.data["Metamagic: Extended Spell"]?.description || "",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+
+            // Metamagic: Quickened Spell
+            if (creature.has_feature("Metamagic: Quickened Spell")) abilities_list["mm_quickened_spell"] = {
+                name: "Quickened Spell",
+                resources: ["Sorcery Point"],
+                description: database.features.data["Metamagic: Quickened Spell"]?.description || "",
+                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                type: type,
+                origin: origin,
+            }
+        }
+
         return abilities_list
     }
 
@@ -288,6 +361,34 @@ var FeatureAbilities = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
     
     static arcane_recovery(level) {
+        // Ask level if not provided
+        if (!level) {
+            // Get the creature's spellcasting level
+            const spellcastingLevel = impersonated().spellcasting_level
+            
+            // Calculate maximum spell slot level (ceil(spellcasting_level/2) up to maximum of 5)
+            const maxSpellSlotLevel = Math.min(Math.ceil(spellcastingLevel / 2), 5)
+            
+            // Generate available options from 1 to maxSpellSlotLevel
+            const availableOptions = []
+            for (let i = 1; i <= maxSpellSlotLevel; i++) {
+                availableOptions.push(i.toString())
+            }
+
+            level = input({
+                "spellSlotLevel": {
+                    value: availableOptions.join(","),
+                    label: "Spell Slot Level",
+                    type: "list",
+                    options: {
+                        select: 0, // Selects the first option by default
+                        value: "string", // Return the string value instead of index number
+                        delimiter: "," // Delimiter for the list
+                    }
+                }
+            }).spellSlotLevel
+        }
+
         const creature = impersonated()
         const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
         const cost = {
@@ -314,7 +415,187 @@ var FeatureAbilities = class extends Abilities {
         creature.set_resource_value("Arcane Recovery", arcane_recovery_charges - cost)
 
         // Logging
-        console.log(`${creature.name} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`, "all")
+        console.log(`${creature.name_color} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`, "all")
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Sorcerer
+    //---------------------------------------------------------------------------------------------------
+    
+    static flexible_casting() {
+        const creature = impersonated()
+        const sorceryPoints = creature.resources["Sorcery Point"].value
+        
+        // Calculate available spell slot levels (same logic as arcane_recovery)
+        const spellcastingLevel = creature.spellcasting_level
+        const maxSpellSlotLevel = Math.min(Math.ceil(spellcastingLevel / 2), 5)
+        
+        const availableSpellSlots = []
+        for (let i = 1; i <= maxSpellSlotLevel; i++) {
+            availableSpellSlots.push(i.toString())
+        }
+
+        // Single input asking what to do
+        const result = input({
+            "action": {
+                value: "Sorcery Points, Spell Slots",
+                label: "Convert to",
+                type: "list",
+                options: {
+                    select: 0,
+                    value: "string",
+                    delimiter: ","
+                }
+            },
+            "spellSlotLevel": {
+                value: availableSpellSlots.join(","),
+                label: "Spell Slot Level",
+                type: "list",
+                options: {
+                    select: 0,
+                    value: "string",
+                    delimiter: ","
+                }
+            }
+        })
+
+        const action = result.action
+        const slotLevel = Number(result.spellSlotLevel)
+        
+        // Use the same cost structure as arcane_recovery
+        const cost = {
+            1: 2,
+            2: 3,
+            3: 5,
+            4: 6,
+            5: 7
+        }[slotLevel]
+
+        const postfix = ["st", "nd", "rd"].length >= slotLevel ? ["st", "nd", "rd"][slotLevel - 1] : "th"
+        const spellSlotName = `${slotLevel}${postfix} Level Spell Slot`
+
+        if (action === "Spell Slots") {
+            // Convert Sorcery Points to Spell Slots
+            if (sorceryPoints < cost) {
+                public_log(`${creature.name_color} has insufficient Sorcery Points. Need ${cost} but only have ${sorceryPoints}.`)
+                return
+            }
+
+            // Create spell slot and consume Sorcery Points
+            creature.set_resource_value(spellSlotName, creature.resources[spellSlotName].value + 1)
+            creature.set_resource_value("Sorcery Point", sorceryPoints - cost)
+
+            console.log(`${creature.name_color} used ${cost} Sorcery Points to create a ${spellSlotName}.`, "all")
+
+        } else if (action === "Sorcery Points") {
+            // Convert Spell Slots to Sorcery Points
+            if (creature.resources[spellSlotName].value < 1) {
+                public_log(`${creature.name_color} has no available ${spellSlotName} to convert.`)
+                return
+            }
+
+            // Consume spell slot and add Sorcery Points
+            creature.set_resource_value(spellSlotName, creature.resources[spellSlotName].value - 1)
+            creature.set_resource_value("Sorcery Point", sorceryPoints + cost)
+
+            console.log(`${creature.name_color} converted a ${spellSlotName} into ${cost} Sorcery Points.`, "all")
+        }
+    }
+
+    static _metamagic_ability(conditionName, cost = 1) {
+        const creature = impersonated()
+        
+        // Check if already has condition - if so, cancel it and refund
+        if (creature.has_condition(conditionName)) {
+            creature.remove_condition(conditionName)
+            // Refund resource if creature has Sorcery Points resource
+            if (creature.resources["Sorcery Point"]) {
+                creature.set_resource_value("Sorcery Point", creature.resources["Sorcery Point"].value + cost)
+            }
+            public_log(`${creature.name_color} has cancelled ${conditionName}.`)
+            return
+        }
+
+        // Check resource if creature has Sorcery Points
+        if (creature.resources["Sorcery Point"]) {
+            const sorceryPoints = creature.resources["Sorcery Point"].value
+            if (sorceryPoints < cost) {
+                public_log(`${creature.name_color} has insufficient Sorcery Points. Need ${cost} but only have ${sorceryPoints}.`)
+                return
+            }
+            
+            // Consume resource
+            creature.set_resource_value("Sorcery Point", sorceryPoints - cost)
+        }
+
+        // Set condition with indefinite duration
+        creature.set_condition(conditionName, -1)
+
+        // Logging
+        public_log(`${creature.name_color} has activated ${conditionName}!`)
+    }
+
+    static mm_distant_spell() {
+        this._metamagic_ability("Metamagic: Distant Spell", 1)
+    }
+
+    static mm_empowered_spell() {
+        this._metamagic_ability("Metamagic: Empowered Spell", 2)
+    }
+
+    static mm_transmute_spells() {
+        const conditionName = "Metamagic: Transmute Spells"
+        const cost = 2
+        const element = input({
+            "element": {
+                value: "Acid,Cold,Fire,Lightning,Poison,Thunder",
+                label: "Element",
+                type: "list",
+                options: {
+                    select: 0,
+                    value: "string",
+                    delimiter: ","
+                }
+            },
+        }).element
+        const creature = impersonated()
+        
+        // Check if already has condition - if so, cancel it and refund
+        if (creature.has_condition(conditionName)) {
+            creature.remove_condition(conditionName)
+            // Refund resource if creature has Sorcery Points resource
+            if (creature.resources["Sorcery Point"]) {
+                creature.set_resource_value("Sorcery Point", creature.resources["Sorcery Point"].value + cost)
+            }
+            public_log(`${creature.name_color} has cancelled ${conditionName}.`)
+            return
+        }
+
+        // Check resource if creature has Sorcery Points
+        if (creature.resources["Sorcery Point"]) {
+            const sorceryPoints = creature.resources["Sorcery Point"].value
+            if (sorceryPoints < cost) {
+                public_log(`${creature.name_color} has insufficient Sorcery Points. Need ${cost} but only have ${sorceryPoints}.`)
+                return
+            }
+            
+            // Consume resource
+            creature.set_resource_value("Sorcery Point", sorceryPoints - cost)
+        }
+
+        // Set condition with indefinite duration
+        creature.set_condition(conditionName, -1, {element})
+
+        // Logging
+        public_log(`${creature.name_color} has activated ${conditionName}!`)
+    }
+
+    static mm_extended_spell() {
+        this._metamagic_ability("Metamagic: Extended Spell", 1)
+    }
+
+    static mm_quickened_spell() {
+        this._metamagic_ability("Metamagic: Quickened Spell", 1)
     }
 
     //---------------------------------------------------------------------------------------------------

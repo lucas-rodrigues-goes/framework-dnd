@@ -327,11 +327,12 @@
     // Modals
     //=====================================================================================================
 
-    function choice_input(type, index, config, player_class) {
+        function choice_input(type, index, config, player_class) {
         // Modal Functions
         const modalByType = {
             spells: spell_choice_modal,
             proficiencies: proficiency_choice_modal,
+            features: feature_choice_modal,
         }
         if (modalByType[type] == undefined) {return null}
 
@@ -408,7 +409,7 @@
             
             // Show description
             description.appendChildren([
-                data_description.spell({spell: database.data[name], style: {padding: 0}}),
+                data_description.spell({object: database.data[name], style: {padding: 0}}),
                 // Selection Button
                 button
             ])
@@ -626,6 +627,131 @@
             },
         ]})
     }
+    async function feature_choice_modal(inputElement, {amount=1, options=[]}) {
+        // Store features user choose
+        const chosen_options = inputElement.value != "" ? inputElement.value.split(", ") : []
+
+        // Retrieve feature data from backend
+        const database = JSON.parse(await backend(`database.features.data`))
+
+        // Functions
+        function select(name) {
+            if (chosen_options.length >= amount) return;
+
+            // Add feature to chosen list
+            chosen_options.push(name)
+
+            // Add indicator that feature is selected
+            document.getElementById("modal-feature-" + name).classList.add("selected")
+
+            // Update description screen
+            description(name)
+        }
+        function unselect(name) {
+            // Remove feature from chosen list
+            chosen_options.splice(chosen_options.indexOf(name), 1)
+
+            // Remove indicator that feature is selected
+            document.getElementById("modal-feature-" + name).classList.remove("selected")
+
+            // Update description screen
+            description(name)
+        }
+        function description(name) {
+            // Clear description
+            const description = document.getElementById("modal-description")
+            description.clearChildren()
+
+            // Button element
+            let button = null; {
+                if (chosen_options.includes(name)) {
+                    button = {tag: "button", text: "Unselect", events: {click: () => unselect(name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
+                }
+                else if (chosen_options.length >= amount) {
+                    button = {tag: "button", text: "Selection Limit", style: {position: "sticky", bottom: 0, marginTop: "5vh", opacity: 0.3}}
+                }
+                else {
+                    button = {tag: "button", text: "Select", events: {click: () => select(name)}, style: {position: "sticky", bottom: 0, marginTop: "5vh"}}
+                }
+            }
+            
+            // Show description
+            const feature = database[name]
+            description.appendChildren([
+                data_description.feature({object: feature}),
+                // Selection Button
+                button
+            ])
+        }
+        function confirm() {
+            inputElement.value = chosen_options.join(", ")
+            inputElement.dispatchEvent(new Event("input"))
+            close_modal()
+        }
+
+        // Show available feature choices
+        const featuresList = []
+        for (const name of options) {
+            const feature = database[name]
+            
+            // Create element
+            const type = feature.subtype || feature.type || "None"
+            const image = class_images[type] || feature_images[type] || ""
+            const elem_class = chosen_options.includes(name) ? "collapsible-div selected" : "collapsible-div"
+            featuresList.push(
+                {tag: "div", 
+                    attributes: {class: elem_class, id: "modal-feature-" + name}, 
+                    style: {display: "flex", gap: "1vh", padding: "0.5vh", marginTop: "1vh"},
+                    events: {
+                        mousedown: (event) => {
+                            switch (event.button) {
+                                case 0: // Left Click
+                                    description(name)
+                                    break
+                                case 2: { // Right Click
+                                    if (chosen_options.includes(name)) unselect(name)
+                                    else select(name)
+                                    break
+                                }
+                            }
+                        }
+                    },
+                    children: [
+                        {tag: "img", attributes: {src: image}},
+                        {tag: "span", text: name},
+                        {tag: "span", style: {position: "absolute", right: "0.5vh"}, text: "Level " + feature.level},
+                    ]
+                }
+            )
+        }
+
+        // Create modal
+        modal({parent: document.getElementById("class-tab"), options: {content: {style: {height: "85%", width: "85%"}}}, children: [
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "90%"}, children: [
+                container({title: "Available Features", 
+                    options: {
+                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
+                        content: {style: {overflow: "scroll", height: "100%", padding: "0 0.5vh"}}
+                    },
+                    children: featuresList
+                })
+            ]},
+            {tag: "div", style: {position: "absolute", right: "0", width: "50%", height: "90%"}, children: [
+                container({title: "Description", id: "modal-description",
+                    options: {
+                        div: {style: {height: "95%", paddingBottom: 0, paddingTop: "2vh"}},
+                        content: {style: {overflow: "scroll", height: "100%", paddingRight: "0.5vh"}}
+                    },
+                    children: [
+                        {tag: "p", text: "Click an option to show its description."}
+                    ]
+                })
+            ]},
+            {tag: "button", text: "Confirm", attributes: {class: "bottom page-turner"}, style: {transform: "translate(-50%)"}, 
+                events: {click: confirm}
+            },
+        ]})
+    }
 
     //=====================================================================================================
     // Load HTML
@@ -639,6 +765,7 @@
         const data = JSON.parse(await backend(`JSON.stringify({
             name: MapTool.tokens.getTokenByID(getImpersonated()).getName(),
             races: database.get_races_list(),
+            player_classes: PlayerClass.list,
         })`))
 
         // Options
@@ -647,7 +774,7 @@
             race_options.push({tag: "option", text: race})
         }
         const class_options = []
-        for (const class_ of ["Barbarian", "Cleric", "Fighter", "Rogue", "Wizard"]) {
+        for (const class_ of data.player_classes) {
             class_options.push({tag: "option", text: class_})
         }
 

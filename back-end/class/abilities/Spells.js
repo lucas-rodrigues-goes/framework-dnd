@@ -41,6 +41,13 @@ var Spells = class extends Abilities {
         return abilities_list
     }
 
+    static play_element_sound(type) {
+        const hasTransmuteSpells = impersonated().has_condition("Metamagic: Transmute Spells")
+        const element = hasTransmuteSpells ? impersonated()?.get_condition("Metamagic: Transmute Spells")?.element : type
+
+        Sound.play(element.toLowerCase())
+    }
+
     //---------------------------------------------------------------------------------------------------
     // Cast Spell
     //---------------------------------------------------------------------------------------------------
@@ -85,10 +92,26 @@ var Spells = class extends Abilities {
     }
 
     static cast_spell(spell, player_class) {
+        spell = {...spell}
+
         spell.cast_time = Number(spell.cast_time)
         spell.range = Number(spell.range)
         const {name, level, components} = spell
         const creature = impersonated()
+
+        // Metamagic Distant Spell
+        const hasDistantSpell = creature.has_condition("Metamagic: Distant Spell")
+        if (hasDistantSpell) {
+            spell.range = spell.range <= 5 ? spell.range = 30 : spell.range * 2
+            creature.remove_condition("Metamagic: Distant Spell")
+        }
+
+        // Metamagic Extended Spell
+        const hasExtendedSpell = creature.has_condition("Metamagic: Extended Spell")
+        if (hasExtendedSpell && spell.duration > 0) {
+            spell.duration = spell.duration * 2
+            creature.remove_condition("Metamagic: Distant Spell")
+        }
 
         // Player Class Object
         const player_cls_obj = eval(player_class)
@@ -127,14 +150,25 @@ var Spells = class extends Abilities {
 
         // Cast Time
         if (spell.cast_time > 0) {
+            const old_cast_time = spell.cast_time
+
+            // Metamagic
+            const hasQuickenedSpell = creature.has_condition("Metamagic: Quickened Spell")
+            if (hasQuickenedSpell) creature.remove_condition("Metamagic: Quickened Spell")
+
             // Calculate weight
             let haste_slow_weight = 0
             if (creature.has_condition("Haste")) haste_slow_weight += 1
+            if (hasQuickenedSpell) haste_slow_weight += 1
             if (creature.has_condition("Slow")) haste_slow_weight -= 1
 
             // Apply on cast time
-            if (haste_slow_weight > 0) spell.cast_time = Math.floor(spell.cast_time / 2)
-            else if (haste_slow_weight < 0) spell.cast_time = spell.cast_time * 2
+            if (haste_slow_weight == 2) spell.cast_time = 0
+            else if (haste_slow_weight == 1) spell.cast_time = Math.floor(spell.cast_time / 2)
+            else if (haste_slow_weight == -1) spell.cast_time = spell.cast_time * 2
+
+            // Log cast time reduction
+            if (hasQuickenedSpell) console.log(`Quickened Spell reduced cast time of ${spell.name} from ${old_cast_time} to ${spell.cast_time}`, "gm")
         }
 
         // Instant Casting
@@ -240,7 +274,7 @@ var Spells = class extends Abilities {
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
 
-        Sound.play("cold")
+        Spells.play_element_sound("cold")
         const save_return = Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -271,7 +305,7 @@ var Spells = class extends Abilities {
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
 
-        Sound.play("fire")
+        Spells.play_element_sound("fire")
         return Spells.make_spell_attack({
             ...spell,
             target: selected(),
@@ -364,7 +398,7 @@ var Spells = class extends Abilities {
         }
 
         // Spell Attack
-        Sound.play("cold")
+        Spells.play_element_sound("cold")
         const attack_return = Spells.make_spell_attack({
             ...spell,
             target: target,
@@ -482,7 +516,7 @@ var Spells = class extends Abilities {
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
 
-        Sound.play("radiant")
+        Spells.play_element_sound("radiant")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -590,7 +624,7 @@ var Spells = class extends Abilities {
         }
         
         // Output
-        Sound.play("fire")
+        Spells.play_element_sound("fire")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -613,7 +647,7 @@ var Spells = class extends Abilities {
         }
 
         // Spell Attack
-        Sound.play("radiant")
+        Spells.play_element_sound("radiant")
         const attack_return = Spells.make_spell_attack({
             ...spell,
             target: target,
@@ -817,7 +851,7 @@ var Spells = class extends Abilities {
         }
         
         // Output
-        Sound.play("thunder")
+        Spells.play_element_sound("thunder")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -884,7 +918,7 @@ var Spells = class extends Abilities {
         }
         
         // Output
-        Sound.play("fire")
+        Spells.play_element_sound("fire")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
@@ -920,6 +954,16 @@ var Spells = class extends Abilities {
         target.set_condition(name, spell.duration, {
             bonus_armor_class: 2
         })
+
+        // Add action and movement if target is self
+        if (target.id == creature.id) {
+            creature.set_resource_max("Action", 2)
+            creature.set_resource_value("Action", creature.resources["Action"].value + 1)
+
+            creature.set_resource_max("Movement", creature.speed)
+            creature.set_resource_value("Movement", creature.resources["Movement"].value + creature.speed/2)
+        }
+
         return {
             success: true,
             message: (creature.id != target.id
@@ -977,7 +1021,7 @@ var Spells = class extends Abilities {
         }
         
         // Output
-        Sound.play("cold")
+        Spells.play_element_sound("cold")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),

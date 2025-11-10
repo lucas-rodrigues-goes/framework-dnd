@@ -1050,12 +1050,18 @@ var Creature = class extends Entity {
     }
 
     set_resource_value(resource, value) {
-        // Clamp value
-        const resource_data = this.#resources[resource]
-        const clamped_value = Math.min(resource_data.max, Math.max(0, value))
+        const resourcesThatCanGoOverMax = ["Sorcery Point"]
+        const ignoreMax = resourcesThatCanGoOverMax.includes(resource) || resource.includes("Spell Slot")
 
         // Set
-        this.#resources[resource].value = clamped_value
+        if (!ignoreMax) {
+            // Clamp value
+            const resource_data = this.#resources[resource]
+            const clamped_value = Math.min(resource_data.max, Math.max(0, value))
+            this.#resources[resource].value = clamped_value
+            
+        }
+        else this.#resources[resource].value = value
 
         this.save()
     }

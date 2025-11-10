@@ -67,11 +67,11 @@ var MonsterAbilities = class extends Abilities {
                         damage_result = ` avoiding the effects.`;
                     } else {
                         // Save fails OR save succeeds with half damage → apply damage
-                        damage_result = ` receiving ${this.spell_damage(creature, target, save_result.message, ability.damage)} damage.`;
+                        damage_result = ` receiving ${this.damage(creature, target, save_result.message, ability.damage)} damage.`;
                     }
                 } else {
                     // No saving throw → full damage
-                    damage_result = ` receiving ${this.spell_damage(creature, target, "hit", ability.damage)} damage.`;
+                    damage_result = ` receiving ${this.damage(creature, target, "hit", ability.damage)} damage.`;
                 }
             } else {
                 // No damage dice, just effects
@@ -235,7 +235,7 @@ var MonsterAbilities = class extends Abilities {
 
             // Damage result
             const damage_result = hit_result.success
-                ? ` dealing ${this.spell_damage(creature, target, hit_result.message, ability.damage)} damage.`
+                ? ` dealing ${this.damage(creature, target, hit_result.message, ability.damage)} damage.`
                 : `.`
 
             // Make stealth checks and others
@@ -278,12 +278,12 @@ var MonsterAbilities = class extends Abilities {
                         saving_throw_messages.push(`${target.name_color} received ${name} condition${duration_text} due to ${ability.name.toLowerCase()}.`)
                     }
                     if (appliesDamageOnSaveFail) {
-                        const damage = this.spell_damage(creature, target, "failed save", ability.damage_on_save_fail)
+                        const damage = this.damage(creature, target, "failed save", ability.damage_on_save_fail)
                         saving_throw_messages.push(`${target.name_color} received ${damage} damage due to ${ability.name.toLowerCase()}`)
                     }
                 }
                 else if (ability.half_damage_on_save && appliesDamageOnSaveFail) {
-                    const damage = this.spell_damage(creature, target, "saves for half damage", ability.damage_on_save_fail)
+                    const damage = this.damage(creature, target, "saves for half damage", ability.damage_on_save_fail)
                     saving_throw_messages.push(`${target.name_color} resisted some of the effects of ${ability.name.toLowerCase()} receiving ${damage} damage.`)
                 }
             }

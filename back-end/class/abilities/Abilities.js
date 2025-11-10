@@ -194,6 +194,32 @@ var Abilities = class {
         }
     }
 
+    static damage(creature, target, result, damage_dice) {
+        // Critical Hit Multiplier
+        const crit_multiplier = result == "lands a critical hit" ? 2 : 1
+
+        // Save for half
+        const damage_multiplier = result == "saves for half damage" ? 0.5 : 1
+
+        // Output
+        const output = []
+        let count = 0
+        for (const damage of damage_dice) {
+            // Calculate Damage
+            const die_size = Number(damage.die_size) || 0
+            const die_amount = Number(damage.die_amount) * crit_multiplier
+            const damage_bonus = Number(damage.damage_bonus) || Number(damage.bonus_damage) || 0
+
+            const damage_to_deal = Math.floor((roll_dice(die_amount, die_size) + damage_bonus) * damage_multiplier)
+            count ++
+
+            // Deal Damage
+            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
+            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+        }
+        return output.join(", ")
+    }
+
     //---------------------------------------------------------------------------------------------------
     // Spell Helpers
     //---------------------------------------------------------------------------------------------------
@@ -229,6 +255,9 @@ var Abilities = class {
             ? ` dealing ${this.spell_damage(creature, target, hit_result.message, damage_dice)} damage.`
             : `.`
         )
+
+        // Metamagic Empowered Spell
+        if (creature.has_condition("Metamagic: Empowered Spell")) creature.remove_condition("Metamagic: Empowered Spell")
 
         // Make stealth tests and others
         this.attack_roll_advantage_modifiers({creature, target})
@@ -306,6 +335,11 @@ var Abilities = class {
             output.message = ""
         }
 
+        // Metamagic Empowered Spell
+        if (creature.has_condition("Metamagic: Empowered Spell") && damage_dice.length > 0) {
+            creature.remove_condition("Metamagic: Empowered Spell")
+        }
+
         return output
     }
 
@@ -338,6 +372,15 @@ var Abilities = class {
         // Critical Hit Multiplier
         const crit_multiplier = result == "lands a critical hit" ? 2 : 1
 
+        // Metamagic Transmute Spells
+        const hasTransmuteSpells = creature.has_condition("Metamagic: Transmute Spells")
+        const element = hasTransmuteSpells ? creature.get_condition("Metamagic: Transmute Spells").element : "None"
+
+        // Metamagic Empowered Spell
+        const hasEmpoweredSpell = creature.has_condition("Metamagic: Empowered Spell")
+        console.log(hasEmpoweredSpell, "all")
+        let empowered_spell_bonus_damage = 0
+
         // Save for half
         const damage_multiplier = result == "saves for half damage" ? 0.5 : 1
 
@@ -349,14 +392,34 @@ var Abilities = class {
             const die_size = Number(damage.die_size) || 0
             const die_amount = Number(damage.die_amount) * crit_multiplier
             const damage_bonus = Number(damage.damage_bonus) || Number(damage.bonus_damage) || 0
+            const damage_type = hasTransmuteSpells ? element : damage.damage_type
 
-            const damage_to_deal = Math.floor((roll_dice(die_amount, die_size) + damage_bonus) * damage_multiplier)
-            count ++
+            // Roll damage normally first
+            let damage_roll = roll_dice(die_amount, die_size)
+            
+            // Apply Empowered Spell if active
+            if (hasEmpoweredSpell) {               
+                // Simple implementation: reroll the entire damage and take the better result
+                const alternative_roll = roll_dice(die_amount, die_size)
+                if (alternative_roll > damage_roll) {
+                    empowered_spell_bonus_damage += (alternative_roll - damage_roll)
+                    damage_roll = alternative_roll
+                }
+            }
+
+            const damage_to_deal = Math.floor((damage_roll + damage_bonus) * damage_multiplier)
+            count++
 
             // Deal Damage
-            const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
-            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+            const damage_dealt = target.receive_damage(damage_to_deal, damage_type)
+            output.push(`${damage_dealt} ${damage_type.toLowerCase()}`)
         }
+
+        // Log metamagic
+        if (hasEmpoweredSpell) {
+            console.log(`Empowered Spell increased damage by ${empowered_spell_bonus_damage}`, "gm")
+        }
+
         return output.join(", ")
     }
 
@@ -395,7 +458,7 @@ var Abilities = class {
             }
 
             // Fail
-            else if (roll_to_save < difficulty_class) {
+            else if (roll_to_save < difficulty_class || target.has_condition("Paralyzed")) {
                 output.message = "fails the save"
             }
 
