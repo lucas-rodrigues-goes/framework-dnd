@@ -553,6 +553,51 @@ var Spells = class extends Abilities {
     // 1st Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static arms_of_hadar (spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 2; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+        
+        // Output
+        Spells.play_element_sound("necrotic")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Necrotic"}],
+            saving_throw_score: "Strength"
+        })
+    }
+
+    static hellish_rebuke (spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 2; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+        
+        // Output
+        Spells.play_element_sound("fire")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: 1,
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 10, damage_type: "Fire"}],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
     static bane(spell) {
         const creature = impersonated()
         const saving_throw_score = "Charisma"
@@ -655,6 +700,32 @@ var Spells = class extends Abilities {
             damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
             saving_throw_score: "Dexterity"
         })
+    }
+
+    static false_life (spell) {
+        const [creature] = [impersonated(), selected()]
+        const { name, range, spellcasting_modifier } = spell
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [3, 5, 7]
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Temporary Hit points
+        const isInCombat = Initiative.turn_order.includes(creature.id) 
+        const temporary_hit_points = isInCombat
+            ? roll_dice(die_amount, 4) + spellcasting_modifier
+            : (die_amount * 4) + spellcasting_modifier
+
+        // Set false life
+        creature.gain_temporary_health(temporary_hit_points)
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} receiving ${temporary_hit_points} temporary health.`
+        }
     }
 
     static guiding_bolt(spell) {
