@@ -181,6 +181,7 @@ var Creature = class extends Entity {
             return crunched;
         }
         const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
+        const crunchedTempHealth = crunchNumber(this.temporary_health / this.max_health, [0, 1], [0.292, 0.708])
         
         // Verify all conditions
         for (const condition in database.conditions.data) {
@@ -193,8 +194,14 @@ var Creature = class extends Entity {
                 }
                 case "Dead": {
                     if (!this.player && hasCondition) Initiative.remove_creature(this.id)
-                    if (hasCondition) MTScript.evalMacro(`[r: setBarVisible("Health", 0, "${this.id}") ]`)
-                    else MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
+                    if (hasCondition) {
+                        MTScript.evalMacro(`[r: setBarVisible("Health", 0, "${this.id}") ]`)
+                        MTScript.evalMacro(`[r: setBarVisible("TemporaryHealth", 0, "${this.id}") ]`)
+                    }
+                    else {
+                        MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
+                        MTScript.evalMacro(`[r: setBar("TemporaryHealth", ${crunchedTempHealth}, "${this.id}")]`)
+                    }
                     break
                 }
                 case "Hidden": {
@@ -619,7 +626,32 @@ var Creature = class extends Entity {
         return Math.floor(calculated_max_health)
     }
 
+    get temporary_health() { return this.#temporary_health }
+    
+    set temporary_health(value) {
+        // Validating parameters
+        if (isNaN(Number(value))) { return }
+        const clampedValue = Math.max(0, Number(value))
+        
+        this.#temporary_health = clampedValue;
+        
+        this.update_state()
+        this.save();
+    }
+
+    gain_temporary_health(value) {
+        // Validating parameters
+        if (isNaN(Number(value))) { return }
+        
+        const oldTempHP = Number(this.#temporary_health) || 0
+        const newTempHP = Math.max(oldTempHP, Number(value));
+        this.temporary_health = newTempHP;
+        
+        log(this.#name + " gained " + value + " temporary hit points (total: " + (newTempHP - oldTempHP) + ").");
+    }
+
     get size() {return MTScript.evalMacro(`[r:getSize("${this.id}")]`)}
+    
     set size(size) {
         const valid_sizes = ["Fine", "Diminutive", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan", "Colossal"];
         if (!valid_sizes.includes(size)) return;
@@ -683,18 +715,36 @@ var Creature = class extends Entity {
             }
         }
 
-        // Reduce HP
-        this.health -= damage;
+        // Apply damage to temporary health first, then to actual health
+        let damageToHealth = damage;
+        
+        if (this.#temporary_health > 0) {
+            const tempHPLost = Math.min(damage, this.#temporary_health);
+            this.#temporary_health -= tempHPLost;
+            damageToHealth = damage - tempHPLost;
+            
+            console.log(`${this.name_color} lost ${tempHPLost} temporary hit points.`, "debug");
+            
+            // If all temporary HP is gone, log it
+            if (this.#temporary_health === 0) {
+                console.log(`${this.name_color} has no more temporary hit points.`, "debug");
+            }
+        }
 
-        // Lose Concentration
-        if (this.has_condition("Concentration")) {
+        // Apply remaining damage to actual health
+        if (damageToHealth > 0) {
+            this.health -= damageToHealth;
+        }
+
+        // Lose Concentration (only check if actual health was damaged)
+        if (damageToHealth > 0 && this.has_condition("Concentration")) {
             // Roll d20
             const roll_result = roll_20(0)
             const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
             // Difficulty Class
-            const difficulty_class = Math.max(Math.floor(damage / 2), 10) // equals damage halved or 10, whichever is highest
+            const difficulty_class = Math.max(Math.floor(damageToHealth / 2), 10) // equals damage halved or 10, whichever is highest
 
             if (roll_to_save >= difficulty_class) {
                 console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain concentration and succeeded (${roll_result.text_color} + ${save_bonus}).`, "all")
@@ -704,15 +754,15 @@ var Creature = class extends Entity {
             }
         }
 
-        // Lose Spellcasting
-        if (this.has_condition("Spellcasting")) {
+        // Lose Spellcasting (only check if actual health was damaged)
+        if (damageToHealth > 0 && this.has_condition("Spellcasting")) {
             // Roll d20
             const roll_result = roll_20(0)
             const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
             // Difficulty Class
-            const difficulty_class = Math.max(Math.floor(damage / 2), 10) // equals damage halved or 10, whichever is highest
+            const difficulty_class = Math.max(Math.floor(damageToHealth / 2), 10) // equals damage halved or 10, whichever is highest
 
             if (roll_to_save >= difficulty_class) {
                 console.log(`${this.name_color} made a Constitution save (DC ${difficulty_class}) to maintain their spellcasting and succeeded (${roll_result.text_color} + ${save_bonus}).`, "all")
@@ -723,8 +773,17 @@ var Creature = class extends Entity {
         }
 
         // Log
-        console.log(this.#name + " received " + damage + " " + type + " damage.", "debug");
-        return damage;
+        const totalDamage = damage;
+        const tempDamage = damage - damageToHealth;
+        const healthDamage = damageToHealth;
+        
+        let logMessage = `${this.name} received ${totalDamage} ${type} damage`;
+        if (tempDamage > 0) {
+            logMessage += ` (${tempDamage} to temporary HP, ${healthDamage} to HP)`;
+        }
+        console.log(logMessage, "debug");
+        
+        return totalDamage;
     }
 
     receive_healing(value) {
@@ -2048,6 +2107,7 @@ var Creature = class extends Entity {
         this.#ability_scores = object.ability_scores || this.#ability_scores;
         this.#speed = object.speed || this.#speed;
         this.#health = object.health ?? this.#health;
+        this.#temporary_health = object.temporary_health ?? this.#temporary_health;
         this.#resources = object.resources || this.#resources;
         this.#features = object.features || this.#features;
         this.#proficiencies = object.proficiencies || this.#proficiencies;
@@ -2067,6 +2127,7 @@ var Creature = class extends Entity {
             ability_scores: this.#ability_scores,
             speed: this.#speed,
             health: this.#health,
+            temporary_health: this.#temporary_health,
             resources: this.#resources,
             features: this.#features,
             proficiencies: this.#proficiencies,
