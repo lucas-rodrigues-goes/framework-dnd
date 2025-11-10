@@ -94,7 +94,7 @@ var FeatureAbilities = class extends Abilities {
             if (creature.has_feature("Arcane Recovery")) abilities_list["arcane_recovery"] = {
                 resources: ["Action"],
                 description: database.features.data["Arcane Recovery"]?.description || "",
-                image: "asset://35c7096bb5a958052e60523d7cff4543",
+                image: "asset://9450ecc71390028f870554777fd30aa9",
                 type: type,
                 origin: origin,
             }
@@ -106,7 +106,7 @@ var FeatureAbilities = class extends Abilities {
                 name: "Font of Magic",
                 resources: ["Bonus Action"],
                 description: "You can use a bonus action to convert between your spell slots and sorcery points.",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://8b516a8c5b986107a44dbbe3604e4921",
                 type: type,
                 origin: origin,
             }
@@ -116,7 +116,7 @@ var FeatureAbilities = class extends Abilities {
                 name: "Distant Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Distant Spell"]?.description || "",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://6d29265ebcb20f82aa9dc7f4ef8f9770",
                 type: type,
                 origin: origin,
             }
@@ -126,7 +126,7 @@ var FeatureAbilities = class extends Abilities {
                 name: "Empowered Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Empowered Spell"]?.description || "",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://c0c5e4d651770d8a0a75d7effbab970e",
                 type: type,
                 origin: origin,
             }
@@ -136,17 +136,17 @@ var FeatureAbilities = class extends Abilities {
                 name: "Transmute Spells",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Transmute Spells"]?.description || "",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://c13971b025cf97b90d4ff5ee17cd9702",
                 type: type,
                 origin: origin,
             }
 
-            // Metamagic: Extended Spells
+            // Metamagic: Extended Spell
             if (creature.has_feature("Metamagic: Extended Spell")) abilities_list["mm_extended_spell"] = {
-                name: "Extended Spells",
+                name: "Extended Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Extended Spell"]?.description || "",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://31ce71797870fbfb2f73ea599cae5e36",
                 type: type,
                 origin: origin,
             }
@@ -156,7 +156,7 @@ var FeatureAbilities = class extends Abilities {
                 name: "Quickened Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Quickened Spell"]?.description || "",
-                image: "asset://57460f85630f7d84602ff9128eccfef4",
+                image: "asset://60567c73fd315a82ce2a75d4c9bd8fab",
                 type: type,
                 origin: origin,
             }
