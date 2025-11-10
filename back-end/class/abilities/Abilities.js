@@ -590,10 +590,25 @@ var Abilities = class {
             : [{die_amount: 1, die_size: 1, damage_type: "Bludgeoning", damage_bonus: 0}, ...damage_bonuses]
         )
 
-        // creature Bonuses
-        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0
-        const damage_attribute_bonus = (isOffHand ? 0 : Math.max(str_bonus, Math.min(dex_bonus, 3)))
+        // Creature Conditions
+        const hasPactOfTheBlade = creature.has_feature("Pact of the Blade")
+
+        // Applicable bonuses
+        const str_bonus = creature.score_bonus["strength"];
+        const dex_bonus = Math.min(creature.score_bonus["dexterity"], 3);
+        const cha_bonus = creature.score_bonus["charisma"]
+
+        // Attribute Bonus
+        let damage_attribute_bonus = 0;
+        if (!isAmmo) damage_attribute_bonus = str_bonus
+        else if (!isAmmo && isFinesse) damage_attribute_bonus = Math.max(str_bonus, dex_bonus)
+        else if (isAmmo) damage_attribute_bonus = dex_bonus
+
+        // Special Cases
+        if (isOffHand) damage_attribute_bonus = 0;
+        else if (hasPactOfTheBlade) damage_attribute_bonus = Math.max(cha_bonus, damage_attribute_bonus);
+         
+        // Other damage modifiers
         const damage_modifiers = this.weapon_attack_damage_modifiers({creature, target})
 
         // Damage
@@ -800,12 +815,26 @@ var Abilities = class {
     static weapon_attack_hit_bonus({weapon, creature=impersonated()}) {
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+        const hasPactOfTheBlade = creature.has_feature("Pact of the Blade")
 
         // Applicable bonuses
-        const str_bonus = !isAmmo ? creature.score_bonus["strength"] : 0;
-        const dex_bonus = isFinesse || isAmmo ? creature.score_bonus["dexterity"] : 0;
+        const str_bonus = Math.min(creature.score_bonus["strength"], 3);
+        const dex_bonus = creature.score_bonus["dexterity"];
+        const cha_bonus = creature.score_bonus["charisma"]
 
-        return Math.max(Math.min(str_bonus, 3), dex_bonus) + 2;
+        // Hit Bonus
+        let hit_bonus = 0;
+        if (!isAmmo) hit_bonus = str_bonus
+        else if (!isAmmo && isFinesse) hit_bonus = Math.max(str_bonus, dex_bonus)
+        else if (isAmmo) hit_bonus = dex_bonus
+        
+        // Pact of the blade
+        if (hasPactOfTheBlade) hit_bonus = Math.max(hit_bonus, cha_bonus)
+
+        // Proficiency
+        const prof_bonus = 2
+
+        return hit_bonus + prof_bonus;
     }
 
     static attack_roll_advantage_modifiers({creature=impersonated(), target=selected(), view_only = false}) {

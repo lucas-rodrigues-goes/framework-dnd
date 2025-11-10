@@ -143,8 +143,31 @@ var Spells = class extends Abilities {
             const isCantrip = level == "cantrip"
             const isInnateSpell = (creature.spells?.[player_class]?.innate || []).includes(name)
 
-            // Spell Slot
-            if (!isCantrip && !isInnateSpell) resources.push(`${level} Level Spell Slot`)
+            // Spell Slot - Handle regular slots and pact slots
+            if (!isCantrip && !isInnateSpell) {
+                const regularSpellSlot = `${level} Level Spell Slot`
+                const hasRegularSlot = (creature?.resources[regularSpellSlot]?.value || 0) > 0
+                const hasPactSlot = (creature?.resources["Pact Slot"]?.value || 0) > 0
+                
+                if (hasRegularSlot && hasPactSlot) {
+                    // Both available - ask user which to use
+                    const slotChoice = input({slot_type: {
+                        label: "Damage Type",
+                        value: `${regularSpellSlot},Pact Slot`,
+                        type: "radio",
+                        options: {value: "string"}
+                    }}).slot_type
+                    resources.push(slotChoice)
+                } 
+                else if (hasPactSlot) {
+                    // Only pact slot available and eligible
+                    resources.push("Pact Slot")
+                }
+                else {
+                    // Only regular slot available
+                    resources.push(regularSpellSlot)
+                }
+            }
         }
         if(!this.has_resources_available(resources)) return
 

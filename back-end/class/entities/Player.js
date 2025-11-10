@@ -200,6 +200,34 @@ var Player = class extends Creature {
         return highest
     }
 
+    get spellcasting_level_no_warlock () {
+        let highest = 0
+        for (const player_class in this.#classes) {
+            if (player_class == "Warlock") continue
+            const class_level = this.#classes[player_class].level
+            const spellcasting = eval(player_class).spellcasting
+
+            if (spellcasting) {
+                let spellcasting_level = 0
+                switch (spellcasting.type) {
+                    case "full":
+                        spellcasting_level = class_level
+                        break
+                    case "half":
+                        spellcasting_level = Math.floor(class_level / 2)
+                        break
+                    case "third":
+                        spellcasting_level = Math.floor(class_level / 3)
+                        break
+                }
+
+                if (spellcasting_level > highest) highest = spellcasting_level
+            }
+        }
+
+        return highest
+    }
+
     //=====================================================================================================
     // Instance
     //=====================================================================================================

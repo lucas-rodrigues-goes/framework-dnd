@@ -11,6 +11,7 @@ var Creature = class extends Entity {
     #race = ""
     #ability_scores = { "strength": 10, "dexterity": 10, "constitution": 10, "wisdom": 10, "intelligence": 10, "charisma": 10 }
     #health = 10
+    #temporary_health = 0
     #speed = { "walk": 30, "climb": 15, "swim": 15, "fly": 0, "burrow": 0 }
     #spellcasting_level = 0
     #resources = {
@@ -1149,7 +1150,7 @@ var Creature = class extends Entity {
     update_spell_slots() {
         // Find spellcasting slots on table based on spellcasting level
         const spellcasting_table = [
-            {},
+            {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 0
             {1: 2, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 1
             {1: 3, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 2
             {1: 4, 2: 2, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0},   // Level 3
@@ -1171,7 +1172,7 @@ var Creature = class extends Entity {
             {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 1, 8: 1, 9: 1},   // Level 19
             {1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1}    // Level 20
         ]
-        const spellcasting_level_slots = spellcasting_table[this.spellcasting_level]
+        const spellcasting_level_slots = spellcasting_table[(this.spellcasting_level_no_warlock ?? this.spellcasting_level)]
 
         // Update spellcasting slot resources
         for (const slot in spellcasting_level_slots) {
