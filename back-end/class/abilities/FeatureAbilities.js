@@ -361,6 +361,10 @@ var FeatureAbilities = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
     
     static arcane_recovery(level) {
+        // Requirements
+        const { valid, action_details } = this.check_action_requirements("arcane_recovery", false);
+        if (!valid) return
+
         // Ask level if not provided
         if (!level) {
             // Get the creature's spellcasting level
@@ -387,6 +391,10 @@ var FeatureAbilities = class extends Abilities {
                     }
                 }
             }).spellSlotLevel
+
+            // Consume resources
+            this.use_resources(action_details.resources)
+            Initiative.set_recovery(action_details.recovery, creature)
         }
 
         const creature = impersonated()
@@ -425,6 +433,10 @@ var FeatureAbilities = class extends Abilities {
     static flexible_casting() {
         const creature = impersonated()
         const sorceryPoints = creature.resources["Sorcery Point"].value
+
+        // Requirements
+        const { valid, action_details } = this.check_action_requirements("flexible_casting", false);
+        if (!valid) return
         
         // Calculate available spell slot levels (same logic as arcane_recovery)
         const spellcastingLevel = creature.spellcasting_level
@@ -440,7 +452,7 @@ var FeatureAbilities = class extends Abilities {
             "action": {
                 value: "Sorcery Points, Spell Slots",
                 label: "Convert to",
-                type: "list",
+                type: "radio",
                 options: {
                     select: 0,
                     value: "string",
@@ -450,7 +462,7 @@ var FeatureAbilities = class extends Abilities {
             "spellSlotLevel": {
                 value: availableSpellSlots.join(","),
                 label: "Spell Slot Level",
-                type: "list",
+                type: "radio",
                 options: {
                     select: 0,
                     value: "string",
@@ -500,6 +512,10 @@ var FeatureAbilities = class extends Abilities {
 
             console.log(`${creature.name_color} converted a ${spellSlotName} into ${cost} Sorcery Points.`, "all")
         }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
 
     static _metamagic_ability(conditionName, cost = 1) {
@@ -550,7 +566,7 @@ var FeatureAbilities = class extends Abilities {
             "element": {
                 value: "Acid,Cold,Fire,Lightning,Poison,Thunder",
                 label: "Element",
-                type: "list",
+                type: "radio",
                 options: {
                     select: 0,
                     value: "string",
