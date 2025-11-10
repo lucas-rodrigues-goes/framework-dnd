@@ -3,6 +3,21 @@
 var PlayerClass = class {
 
     //---------------------------------------------------------------------------------------------------
+    // List of Classes
+    //---------------------------------------------------------------------------------------------------
+
+    static #classes = {}
+    static get list () {
+        return Object.keys(this.#classes)
+    }
+    static get classes () {
+        return this.#classes
+    }
+    static add (name, cls) {
+        this.#classes[name] = cls
+    }
+
+    //---------------------------------------------------------------------------------------------------
     // Helpers
     //---------------------------------------------------------------------------------------------------
 
@@ -38,7 +53,7 @@ var PlayerClass = class {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices = { proficiencies: [], features: [], spells: [], subclass: [] }, player_class="") {
+    static level_up(player, choices = { proficiencies: [], features: [], spells: [], subclass: [] }, player_class="") {
         // Add skills from choices
         for (let proficiency of choices.proficiencies) {
             let level = 0; {
@@ -51,12 +66,17 @@ var PlayerClass = class {
                 }
             }
 
-            humanoid.set_proficiency(proficiency, level, true)
+            player.set_proficiency(proficiency, level, true)
+        }
+
+        // Add features from choices
+        for (const feature of choices.features) {
+            player.add_feature(feature)
         }
 
         // Learn Spells
         for (const spell of choices.spells) {
-            humanoid.learn_spell(player_class, spell)
+            player.learn_spell(player_class, spell)
         }
     }
 

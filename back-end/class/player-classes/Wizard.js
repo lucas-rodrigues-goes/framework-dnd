@@ -126,3 +126,6 @@ var Wizard = class extends PlayerClass {
     //---------------------------------------------------------------------------------------------------
 
 }
+
+// Add to PlayerClass
+PlayerClass.add("Wizard", Wizard)

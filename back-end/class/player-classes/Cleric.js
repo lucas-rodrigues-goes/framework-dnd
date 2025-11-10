@@ -107,3 +107,6 @@ var Cleric = class extends PlayerClass {
     //---------------------------------------------------------------------------------------------------
 
 }
+
+// Add to PlayerClass
+PlayerClass.add("Cleric", Cleric)

@@ -111,3 +111,5 @@ var Barbarian = class extends PlayerClass {
 
 }
 
+// Add to PlayerClass
+PlayerClass.add("Barbarian", Barbarian)

@@ -121,3 +121,6 @@ var Fighter = class extends PlayerClass {
     //---------------------------------------------------------------------------------------------------
 
 }
+
+// Add to PlayerClass
+PlayerClass.add("Fighter", Fighter)

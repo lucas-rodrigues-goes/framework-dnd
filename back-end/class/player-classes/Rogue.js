@@ -117,3 +117,5 @@ var Rogue = class extends PlayerClass {
 
 }
 
+// Add to PlayerClass
+PlayerClass.add("Rogue", Rogue)
