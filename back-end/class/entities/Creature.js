@@ -643,7 +643,7 @@ var Creature = class extends Entity {
         // Validating parameters
         if (isNaN(Number(value))) { return }
         
-        const oldTempHP = Number(this.#temporary_health) || 0
+        const oldTempHP = Number(this.temporary_health) || 0
         const newTempHP = Math.max(oldTempHP, Number(value));
         this.temporary_health = newTempHP;
         
@@ -718,15 +718,15 @@ var Creature = class extends Entity {
         // Apply damage to temporary health first, then to actual health
         let damageToHealth = damage;
         
-        if (this.#temporary_health > 0) {
-            const tempHPLost = Math.min(damage, this.#temporary_health);
-            this.#temporary_health -= tempHPLost;
+        if (this.temporary_health > 0) {
+            const tempHPLost = Math.min(damage, this.temporary_health);
+            this.temporary_health -= tempHPLost;
             damageToHealth = damage - tempHPLost;
             
             console.log(`${this.name_color} lost ${tempHPLost} temporary hit points.`, "debug");
             
             // If all temporary HP is gone, log it
-            if (this.#temporary_health === 0) {
+            if (this.temporary_health === 0) {
                 console.log(`${this.name_color} has no more temporary hit points.`, "debug");
             }
         }
