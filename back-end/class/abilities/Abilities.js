@@ -431,11 +431,9 @@ var Abilities = class {
             // Apply Empowered Spell if active
             if (hasEmpoweredSpell) {               
                 // Simple implementation: reroll the entire damage and take the better result
-                const alternative_roll = roll_dice(die_amount, die_size)
-                if (alternative_roll > damage_roll) {
-                    empowered_spell_bonus_damage += (alternative_roll - damage_roll)
-                    damage_roll = alternative_roll
-                }
+                const alternative_roll = roll_dice(die_amount, die_size, "Highest")
+                empowered_spell_bonus_damage += (alternative_roll - damage_roll) * damage_multiplier
+                damage_roll = alternative_roll
             }
 
             const damage_to_deal = Math.floor((damage_roll + damage_bonus) * damage_multiplier)
