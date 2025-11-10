@@ -214,10 +214,42 @@ var Abilities = class {
             count ++
 
             // Deal Damage
+            const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
+            if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
             output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
         }
         return output.join(", ")
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Events
+    //---------------------------------------------------------------------------------------------------
+
+    static on_damage_target({creature, target}) {
+        // On target kill
+        if (target.has_condition("Dead")) this.on_target_kill({creature, target})
+    }
+
+    static on_target_kill({creature, target}) {
+        // Soul Reaper
+        if (creature.has_feature("Soul Reaper")) {
+            const cha_bonus = creature.score_bonus["charisma"]
+            const warlock_level = creature.classes?.["Warlock"]?.level || 1
+            const temp_hp = Math.max(warlock_level + cha_bonus, 1)
+            creature.gain_temporary_health(temp_hp)
+
+            // Regular effect
+            if (warlock_level < 11) {
+                console.log(`${creature.name_color} received ${temp_hp} temporary hit points from their patron.`, "all")
+            }
+            // Level 11 additional effects
+            else if (warlock_level >= 11) {
+                const healing = Math.floor(temp_hp / 2)
+                creature.receive_healing(healing)
+                console.log(`${creature.name_color} has been healed for ${healing} and received ${temp_hp} temporary hit points from their patron.`, "all")
+            }
+        }
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -378,7 +410,6 @@ var Abilities = class {
 
         // Metamagic Empowered Spell
         const hasEmpoweredSpell = creature.has_condition("Metamagic: Empowered Spell")
-        console.log(hasEmpoweredSpell, "all")
         let empowered_spell_bonus_damage = 0
 
         // Save for half
@@ -411,7 +442,9 @@ var Abilities = class {
             count++
 
             // Deal Damage
+            const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, damage_type)
+            if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
             output.push(`${damage_dealt} ${damage_type.toLowerCase()}`)
         }
 
@@ -640,7 +673,9 @@ var Abilities = class {
             const damage_to_deal = total_damage[type]
 
             // Deal Damage
+            const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, type)
+            if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
             output.push(`${damage_dealt ? damage_dealt : "no"} ${type.toLowerCase()}`)
 
             // Sound
