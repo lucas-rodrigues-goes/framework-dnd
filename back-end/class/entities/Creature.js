@@ -1150,6 +1150,11 @@ var Creature = class extends Entity {
         return this.features.includes(name);
     }
 
+    reset_features() {
+        this.#features = []
+        this.save()
+    }
+
 
     //=====================================================================================================
     // Proficiencies
@@ -1186,6 +1191,11 @@ var Creature = class extends Entity {
             return this.proficiencies[name]
         }
         return -1
+    }
+
+    reset_proficiencies() {
+        this.#proficiencies = {}
+        this.save()
     }
 
     //=====================================================================================================

@@ -46,17 +46,15 @@ var Monster = class extends Creature {
         }
 
         // Proficiencies
-        if (proficiencies) {
-            for (const [proficiency, level] of Object.entries(proficiencies)) {
-                this.set_proficiency(proficiency, level, true)
-            }
+        this.reset_proficiencies()
+        for (const [proficiency, level] of Object.entries(proficiencies)) {
+            this.set_proficiency(proficiency, level, true)
         }
 
         // Features
-        if (features) {
-            for (const name of features) {
-                if (!this.has_feature(name)) this.add_feature(name)
-            }
+        this.reset_features()
+        for (const name of features) {
+            if (!this.has_feature(name)) this.add_feature(name)
         }
 
         // Spells

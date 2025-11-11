@@ -1,3 +1,5 @@
+
+
 var Abilities = class {
     // Ability List
     static abilities_list(creature=impersonated()) {
