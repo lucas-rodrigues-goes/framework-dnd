@@ -1410,11 +1410,12 @@
 
 					const class_select = document.getElementById("spells-tab-class")
 					class_select.clearChildren()
+					spells_switch.classList.add("hidden")
 
 					// Verifies which of the player classes can spellcast
 					let classes_search_text = ""
 					for (const name in character.classes) {
-						classes_search_text += name + `: ` + name + `?.spellcasting || "", `
+						classes_search_text += name + `: ` + name + `?.spellcasting || "None", `
 					}
 					const classes_spellcasting = JSON.parse(await backend(`JSON.stringify({
 						`+classes_search_text+`
@@ -1422,15 +1423,14 @@
 					
 					// Adds option for all spellcasting classes
 					for (const name in classes_spellcasting) {
-						if (classes_spellcasting[name] == "") continue
+						if (classes_spellcasting[name] == "None") continue
 
 						class_select.appendChild({tag: "option", text: name})
 					}
 					class_select.dispatchEvent(new Event("change"))
 
 					// Hide tab if character has no spellcasting classes
-					if (class_select.children.length == 0) spells_switch.classList.add("hidden")
-					else spells_switch.classList.remove("hidden")
+					if (class_select.children.length > 0) spells_switch.classList.remove("hidden")
 				}
 				updateClass()
 
@@ -1772,6 +1772,7 @@
 			function loadPage() {
 				// Loading main div, tabs, and context menu
 				create_tabs({content:["character","inventory", "spells", "journal"], parent: document.body})
+				document.getElementById("spells-switch").classList.add("hidden")
 
 				// Character
 				const container_options = {div: {attributes: {class: "hidden"}, style: {paddingBottom: "1vh"}}}
