@@ -8,6 +8,7 @@ var Player = class extends Creature {
 
     #classes = {}
     #experience = 0
+    #exhaustion = 0
 
     //=====================================================================================================
     // Character Creation
@@ -229,6 +230,24 @@ var Player = class extends Creature {
     }
 
     //=====================================================================================================
+    // Exhaustion
+    //=====================================================================================================
+
+    get exhaustion () {
+        return this.#exhaustion
+    }
+
+    set exhaustion (value) {
+        if (isNaN(Number(value))) return
+        this.#exhaustion = Math.min(Math.max(value, 0), 10)
+
+        if (this.#exhaustion > 0) this.set_condition("Exhaustion", -1)
+        else if (this.has_condition("Exhaustion")) this.remove_condition("Exhaustion")
+
+        this.save()
+    }
+
+    //=====================================================================================================
     // Instance
     //=====================================================================================================
 
@@ -261,6 +280,7 @@ var Player = class extends Creature {
     
         this.#classes = object.classes || this.#classes
         this.#experience = object.experience ?? this.#experience
+        this.#exhaustion = object.exhaustion ?? this.#exhaustion
     
         this.token.setProperty("class", JSON.stringify(["Player", "Creature", "Entity"]));
     }
@@ -270,6 +290,7 @@ var Player = class extends Creature {
             ...super.save(),
             experience: this.experience,
             classes: this.classes,
+            exhaustion: this.exhaustion,
         }
         
         this.player = true

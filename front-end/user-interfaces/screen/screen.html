@@ -1009,13 +1009,14 @@
                     if (!database_conditions[name]) continue
                     const image = database_conditions[name].image || ""
                     const remaining_duration = target.remaining_condition_durations[name] || -1
+                    const time = name != "Exhaustion" ? timeUnit(remaining_duration).toLowerCase() : "Level " + remaining_duration
 
                     target_HUD_conditions.appendChild(
                         {tag: "div", 
                             style: {position: "relative", height: "2.8vh", width: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
                             attributes: {
                                 class: "tooltip tooltip-bottom tooltip-condition",
-                                tooltip: name + (remaining_duration != -1 ? " (" + timeUnit(remaining_duration).toLowerCase() + ")" : "")
+                                tooltip: name + (remaining_duration != -1 ? " (" + time + ")" : "")
                             },
                             children: [
                                 {tag: "img", 

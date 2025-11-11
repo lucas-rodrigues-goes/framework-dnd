@@ -121,6 +121,11 @@ var Creature = class extends Entity {
                 creature.remove_condition("Guidance")
                 output += roll_dice(1, 4)
             }
+
+            // Exhaustion
+            if (creature.has_condition("Exhaustion")) {
+                output -= this.exhaustion || 0
+            }
         }
 
         return output
@@ -193,7 +198,6 @@ var Creature = class extends Entity {
                     break
                 }
                 case "Dead": {
-                    if (!this.player && hasCondition) Initiative.remove_creature(this.id)
                     if (hasCondition) {
                         MTScript.evalMacro(`[r: setBarVisible("Health", 0, "${this.id}") ]`)
                         MTScript.evalMacro(`[r: setBarVisible("TemporaryHealth", 0, "${this.id}") ]`)
@@ -224,7 +228,8 @@ var Creature = class extends Entity {
 
             // State effects
             const conditions_with_state = [
-                "Blur", "Rage", "Shield", "Hold Person", "Hold Monster", "Dead", "Bless", "Prone"
+                "Blur", "Rage", "Shield", "Hold Person", "Hold Monster", "Dead", "Bless", "Prone",
+                "Sleep", "Dying"
             ]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
@@ -672,13 +677,31 @@ var Creature = class extends Entity {
     set health(health) {
         // Validating parameters
         if (isNaN(Number(health))) { return }
-        const clampedHealth = Math.max(Math.min(health, this.max_health), 0)
-
-        this.#health = clampedHealth;
+        const newHealth = Math.max(Math.min(health, this.max_health), 0)
 
         // Update States
-        if (clampedHealth <= 0) this.set_condition("Dead", -1)
+        if (newHealth <= 0) {
+            const isPlayer = this.constructor.name == "Player"
+
+            // Remove from initiative
+            Initiative.remove_creature(this.id)
+
+            // Set conditions
+            if (isPlayer && (this.exhaustion || 0) < 10) {
+                if (this.has_condition("Dead")) this.remove_condition("Dead")
+                const duration = this.has_condition("Dying") ? this.get_condition("Dying").duration - 5 : 10
+
+                // Set dying condition
+                this.set_condition("Dying", duration)
+                console.log(`${this.name_color} is dying in ${duration} round${duration>1 ? "s" : ""}.`, "all")
+            }
+            else {
+                this.set_condition("Dead", -1)
+            }
+        }
         else if (this.has_condition("Dead")) this.remove_condition("Dead")
+
+        this.#health = newHealth;
 
         this.update_state()
         this.save();
@@ -734,6 +757,11 @@ var Creature = class extends Entity {
         // Apply remaining damage to actual health
         if (damageToHealth > 0) {
             this.health -= damageToHealth;
+
+            // Apply exhaustion if 0 hp
+            if (this.health <= 0 && this.constructor.name == "Player") {
+                this.exhaustion += 1
+            }
         }
 
         // Lose Concentration (only check if actual health was damaged)
@@ -1548,6 +1576,12 @@ var Creature = class extends Entity {
                 }
                 break
             }
+            case "Dying": {
+                if (this.health == 0) {
+                    this.exhaustion = 10
+                    this.health = 0
+                }
+            }
             default: break
         }
 
@@ -1634,7 +1668,10 @@ var Creature = class extends Entity {
                 continue;
             }
             
-            if (condition.end_time === -1) {
+            if (name == "Exhaustion") {
+                durations[name] = this.exhaustion || -1
+            }
+            else if (condition.end_time === -1) {
                 durations[name] = -1; // Infinite duration
             } else {
                 const remaining_seconds = Math.max(0, condition.end_time - current_time);
@@ -1658,7 +1695,7 @@ var Creature = class extends Entity {
             "Blinded": ["Blindness"],
             "Incapacitated": ["Paralyzed", "Petrified", "Stunned", "Unconscious"],
             "Paralyzed": ["Hold Person", "Hold Monster"],
-            "Unconscious": ["Sleep", "Dead"],
+            "Unconscious": ["Sleep", "Dead", "Dying"],
             "Invisible": ["Invisibility", "Greater Invisibility"]
         };
 
