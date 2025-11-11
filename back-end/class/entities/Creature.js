@@ -679,12 +679,13 @@ var Creature = class extends Entity {
         if (isNaN(Number(health))) { return }
         const newHealth = Math.max(Math.min(health, this.max_health), 0)
 
+        this.#health = newHealth;
+        this.update_state()
+        this.save();
+
         // Update States
         if (newHealth <= 0) {
             const isPlayer = this.constructor.name == "Player"
-
-            // Remove from initiative
-            Initiative.remove_creature(this.id)
 
             // Set conditions
             if (isPlayer && (this.exhaustion || 0) < 10) {
@@ -696,15 +697,15 @@ var Creature = class extends Entity {
                 console.log(`${this.name_color} is dying in ${duration} round${duration>1 ? "s" : ""}.`, "all")
             }
             else {
+                if (this.has_condition("Dying")) this.remove_condition("Dying")
                 this.set_condition("Dead", -1)
+                Initiative.remove_creature(this.id)
             }
         }
-        else if (this.has_condition("Dead")) this.remove_condition("Dead")
-
-        this.#health = newHealth;
-
-        this.update_state()
-        this.save();
+        else {
+            if (this.has_condition("Dead")) this.remove_condition("Dead")
+            if (this.has_condition("Dying")) this.remove_condition("Dying")
+        }
     }
 
     receive_damage(value, type) {
@@ -756,12 +757,15 @@ var Creature = class extends Entity {
 
         // Apply remaining damage to actual health
         if (damageToHealth > 0) {
-            this.health -= damageToHealth;
+            const newHealth = this.health - damageToHealth
 
             // Apply exhaustion if 0 hp
-            if (this.health <= 0 && this.constructor.name == "Player") {
+            if (newHealth <= 0 && this.constructor.name == "Player") {
                 this.exhaustion += 1
             }
+
+            // Apply damage
+            this.health = newHealth;
         }
 
         // Lose Concentration (only check if actual health was damaged)
