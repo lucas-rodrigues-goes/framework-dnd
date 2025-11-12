@@ -328,8 +328,9 @@ var Creature = class extends Entity {
     }
 
     short_rest(hours = 1) {
-        // Health
-        this.health = (this.max_health / 4) * hours
+        // Heal
+        const healing = (this.max_health / 4) * hours
+        this.receive_healing(healing)
 
         // Fill resources
         for (const name in this.#resources) {
@@ -339,11 +340,18 @@ var Creature = class extends Entity {
                 this.set_resource_value(name, resource.max)
             }
         }
+
+        // Log
+        console.log(`${this.name_color} has rested for ${hours} hours.`, "all")
     }
 
     long_rest() {
-        // Fill Health
-        this.health = this.max_health
+        // Heal
+        const healing = this.max_health
+        this.receive_healing(healing)
+
+        // Remove temp HP
+        this.temporary_health = 0
 
         // Update Spell Slot Maximum
         this.update_spell_slots()
@@ -356,6 +364,12 @@ var Creature = class extends Entity {
                 this.set_resource_value(name, resource.max)
             }
         }
+
+        // Reduce Exhaustion
+        if (this.exhaustion) this.exaustion -= 1
+
+        // Log
+        console.log(`${this.name_color} has long rested.`, "all")
     }
 
     //=====================================================================================================
@@ -397,7 +411,7 @@ var Creature = class extends Entity {
             const distance = calculate_distance(revealing_creature, hidden_creature) * 5
             if (distance > 30) perception_modifier -= 5
             else if (distance < 15) perception_modifier += 5
-            if (entering_stealth && distance <= 5) perception_modifier += 5
+            if (entering_stealth && distance <= 5) perception_modifier += 10
 
             // Vision Modifiers
             const isInvisible = hidden_creature.has_condition("Invisible")
@@ -1119,10 +1133,9 @@ var Creature = class extends Entity {
     }
 
     use_resource(resource) {
-        const resource_data = this.#resources[resource]
-        if (!resource_data) return
+        if (!this.#resources[resource]) return
 
-        this.set_resource_value(resource, resource_data.value - 1)
+        this.set_resource_value(resource, this.#resources[resource].value - 1)
     }
 
     set_new_resource(resource, max, restored_on) {
@@ -1136,12 +1149,16 @@ var Creature = class extends Entity {
     }
 
     set_resource_max(resource, max) {
+        if (!this.#resources[resource]) return
+
         this.#resources[resource].max = max
 
         this.save()
     }
 
     set_resource_value(resource, value) {
+        if (!this.#resources[resource]) return
+        
         const resourcesThatCanGoOverMax = ["Sorcery Point"]
         const ignoreMax = resourcesThatCanGoOverMax.includes(resource) || resource.includes("Spell Slot")
 
