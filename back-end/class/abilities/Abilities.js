@@ -252,6 +252,10 @@ var Abilities = class {
                 console.log(`${creature.name_color} has been healed for ${healing} and received ${temp_hp} temporary hit points from their patron.`, "all")
             }
         }
+
+        // Sneak Attack
+        creature.set_resource_value("Sneak Attack", 1)
+        console.log(`${creature.name_color} regained sneak attack.`, "all")
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -788,9 +792,16 @@ var Abilities = class {
             }
         }
 
+        // Dagger CRIT prof
+        const daggerCrit = (
+            creature.get_proficiency_level("Small Sword") >= 2 && 
+            weapon?.properties?.includes("Dagger") && 
+            target.has_condition("Grappled")
+        )
+
         const roll = roll_to_hit + hit_bonus
         const hit = roll >= target.armor_class
-        const forced_crit = target.has_conditions(["Paralyzed", "Unconscious"], "any") && distance <= 5
+        const forced_crit = (target.has_conditions(["Paralyzed", "Unconscious"], "any") || daggerCrit) && distance <= 5
         const output = { success: false, message: "", dice_roll, advantage, advantage_weight };
 
         // Check for graze before hit determination
