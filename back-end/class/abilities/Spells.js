@@ -715,10 +715,7 @@ var Spells = class extends Abilities {
         }
 
         // Temporary Hit points
-        const isInCombat = Initiative.turn_order.includes(creature.id) 
-        const temporary_hit_points = isInCombat
-            ? roll_dice(die_amount, 4) + spellcasting_modifier
-            : (die_amount * 4) + spellcasting_modifier
+        const temporary_hit_points = roll_dice(die_amount, 4) + spellcasting_modifier
 
         // Set false life
         creature.gain_temporary_health(temporary_hit_points)
