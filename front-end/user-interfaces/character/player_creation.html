@@ -116,7 +116,7 @@
                             options: {
                                 button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
                                     mousedown: () => modal({parent: document.getElementById("race-tab"), children: [
-                                        data_description.feature({feature: feature})
+                                        data_description.feature({object: feature})
                                     ]})
                                 }},
                                 content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
@@ -154,7 +154,7 @@
                             options: {
                                 button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
                                     mousedown: () => modal({parent: document.getElementById("race-tab"), children: [
-                                        data_description.proficiency({proficiency: proficiency, level: level})
+                                        data_description.proficiency({object: proficiency, level: level})
                                     ]})
                                 }},
                                 content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
@@ -265,7 +265,7 @@
                             options: {
                                 button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh", opacity}, events: {
                                     mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
-                                        data_description.feature({feature: feature})
+                                        data_description.feature({object: feature})
                                     ]})
                                 }},
                                 content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
@@ -304,7 +304,7 @@
                             options: {
                                 button: {style: {display: "flex", gap: "1vh", padding: "0.5vh", margin: "0 1vh"}, events: {
                                     mousedown: () => modal({parent: document.getElementById("class-tab"), children: [
-                                        data_description.proficiency({proficiency: proficiency, level: level})
+                                        data_description.proficiency({object: proficiency, level: level})
                                     ]})
                                 }},
                                 content: {style: {marginRight: "1.3vh", marginLeft: "1.3vh"}}
