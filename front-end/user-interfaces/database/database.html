@@ -452,7 +452,7 @@
                 }) {
 
                     const properties_string = arrayToList(properties) != "" ? `<br><b>Properties</b>: ` + capitalize(arrayToList(properties)) : ""
-                    const conditions_string = arrayToList(conditions) != "" ? `<br><b>Conditions</b>: ` + arrayToList(conditions, true) : ""
+                    const conditions_string = arrayToList(conditions) != "" ? `<br><b>Conditions</b>: ` + capitalize(arrayToList(conditions)) : ""
                     const base_armor_class_string = base_armor_class != 0 ? `<b>Armor Class</b>: ` + base_armor_class + `<br>`: ""
                     
                     // Damage
@@ -534,7 +534,8 @@
                         item = data[key]
 
                         items.push(key)
-                        rows += custom_row({...item})
+                        try {rows += custom_row({...item})}
+                        catch (error) {console.log(error)}
                     }
 
                     // Update Table
