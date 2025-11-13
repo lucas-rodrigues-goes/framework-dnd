@@ -234,7 +234,7 @@ var Creature = class extends Entity {
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
             // Light effects
-            const conditions_with_light = ["Light"]
+            const conditions_with_light = ["Light", "Torch", "Hooded Lantern"]
             if (conditions_with_light.includes(condition)) this.set_light(condition, hasCondition)
 
             // Concentration && Spellcasting
@@ -1520,7 +1520,27 @@ var Creature = class extends Entity {
     //=====================================================================================================
 
     get conditions() {
-        return this.#conditions
+        const conditions = {...this.#conditions}
+        return conditions
+    }
+
+    get equipment_conditions () {
+        const conditions = {}
+        // Check equipment
+        for (const position in this.equipment) {
+            if (position.includes("secondary")) continue
+
+            const slot = this.equipment[position]
+            if (!slot) continue
+
+            const item = database.items.data[slot.name] || {}
+            if (!item.conditions) continue
+            
+            for (const name of item.conditions) {
+                conditions[name] = {duration: -1, end_time: -1}
+            }
+        }
+        return conditions
     }
 
     get_condition(condition) { return this.conditions[condition] }
@@ -1709,7 +1729,8 @@ var Creature = class extends Entity {
         visited.add(name);
 
         // Direct condition match
-        if (name in this.#conditions) return true;
+        if (name in this.conditions) return true;
+        if (name in this.equipment_conditions) return true;
 
         // Equivalent conditions map
         const equivalent_conditions = {
@@ -1797,6 +1818,7 @@ var Creature = class extends Entity {
         this.#equipment["secondary off hand"] = current_off_hand
 
         this.save()
+        this.update_state()
     }
 
     update_inventory_slots() {
@@ -1888,6 +1910,7 @@ var Creature = class extends Entity {
         }
     
         this.save();
+        this.update_state()
     }
 
     split_item(index, amount) {
@@ -2031,6 +2054,7 @@ var Creature = class extends Entity {
         }
     
         this.save();
+        this.update_state()
     }
 
     unequip_item(index) {
