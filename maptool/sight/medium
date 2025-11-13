@@ -1,0 +1,12 @@
+Truesight: circle r900#ffffff
+Truesight Day: circle r900
+Devil's Sight: circle scale r12#ffffff r24#bfbfbf r36#808080 r48#404040 r60#191919
+Devil's Sight Day: circle scale r60
+Superior Darkvision: circle scale r6#999999 r12#6f6f6f r18#4d4d4d r24#2a2a2a r30#0f0f0f
+Superior Darkvision Day: circle scale r30
+Darkvision: circle scale r15
+Darkvision Day: circle scale r15
+Normal: circle r5
+Normal Day: circle r5
+Blinded: circle distance=5 r5
+Blinded Day: circle distance=5 r5
