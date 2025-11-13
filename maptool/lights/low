@@ -1,0 +1,8 @@
+D20
+----
+Torch: circle 20#ff8800 40#331b00
+Candle: circle 10#ff8800 20#331b00
+Hooded Lantern: circle 30#ff8800 60#331b00
+Lamp: circle 60#ff8800 120#331b00
+Light: circle 20#00e0ff 40#002d33
+Campfire: circle 30#ff8800 60#331b00
