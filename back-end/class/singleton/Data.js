@@ -4,7 +4,7 @@ var data = class {
 
     // Condition
     static get condition () {
-        const cls = "Condition"
+        const cls = "condition"
 
         // Create
         const create = ({name="", type="", duration=0, description="", image=""}) => {
@@ -25,7 +25,7 @@ var data = class {
 
     // Damage Type
     static get damage_type () {
-        const cls = "Damage Type"
+        const cls = "damage type"
 
         // Create
         const create = ({name="", type="", description="", image=""}) => {
@@ -46,7 +46,7 @@ var data = class {
 
     // Feature
     static get feature () {
-        const cls = "Feature"
+        const cls = "feature"
 
         // Create
         const create = ({name="", type="", subtype=undefined, level=0, optional=true, description="", image=""}) => {
@@ -73,12 +73,12 @@ var data = class {
 
     // Item
     static get item () {
-        const cls = "Item"
+        const cls = "item"
 
         // Create
         const create = ({
             // Item
-            name="", 
+            name="",
             type="", 
             subtype="", 
             description="",
@@ -93,18 +93,20 @@ var data = class {
             // Equipment-only
             bonus_armor_class=0,
             resistances={},
-                // Weapon-only
-                damage = [{
-                    die_ammount: 1,
-                    die_size: 4,
-                    damage_type: "Piercing",
-                    damage_bonus: 0,
-                }],
-                recovery = 0,
-                range = [5],
+            conditions=[],
 
-                // Armor-only
-                base_armor_class=0,
+            // Weapon-only
+            damage = [{
+                die_ammount: 1,
+                die_size: 4,
+                damage_type: "Piercing",
+                damage_bonus: 0,
+            }],
+            recovery = 0,
+            range = [5],
+
+            // Armor-only
+            base_armor_class=0,
         }) => {
             // Subtype
             const equipment_subtypes = ["weapon", "armor"]
@@ -124,7 +126,7 @@ var data = class {
                 switch (type) {
                     // Equipment
                     case "equipment":
-                        object = {...object, bonus_armor_class, resistances}
+                        object = {...object, bonus_armor_class, resistances, conditions}
                         break
                 }
 
@@ -150,7 +152,7 @@ var data = class {
 
     // Proficiency
     static get proficiency () {
-        const cls = "Proficiency"
+        const cls = "proficiency"
 
         // Create
         const create = ({name="", type="", description=[], image=""}) => {
@@ -180,7 +182,7 @@ var data = class {
 
     // Race
     static get race () {
-        const cls = "Race"
+        const cls = "race"
 
         // Create
         const create = ({name="", features=[], proficiencies=[], ability_scores={}, description=""}) => {
@@ -200,7 +202,7 @@ var data = class {
 
     // Resource
     static get resource () {
-        const cls = "Resource"
+        const cls = "resource"
 
         // Create
         const create = ({name="", color="", description="", image=""}) => {
@@ -213,7 +215,7 @@ var data = class {
 
     // Spell
     static get spell () {
-        const cls = "Spell"
+        const cls = "spell"
 
         // Create
         const create = ({
