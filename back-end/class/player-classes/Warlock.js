@@ -82,7 +82,8 @@ var Warlock = class extends PlayerClass {
             (a, b) => database.features.data[a].level - database.features.data[b].level
         )
 
-        const invocations = database.get_features_list({}, null, "Invocation: ")
+        const player_features = player ? player.features : []
+        const invocations = database.get_features_list({}, null, "Invocation: ").filter(element => !player_features.includes(element))
         const pact_boons = database.get_features_list({}, null, "Pact of the")
 
         // Choices based on level

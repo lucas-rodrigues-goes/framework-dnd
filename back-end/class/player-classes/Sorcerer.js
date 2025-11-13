@@ -36,36 +36,36 @@ var Sorcerer = class extends PlayerClass {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices) {
-        super.level_up(humanoid, choices, "Sorcerer")
-        const current_level = humanoid.classes.Sorcerer.level
+    static level_up(player, choices) {
+        super.level_up(player, choices, "Sorcerer")
+        const current_level = player.classes.Sorcerer.level
 
         // Update Sorcery Points
-        if (current_level == 2) humanoid.set_new_resource("Sorcery Point", 2, "long rest") //--> Creates resource
-        else if (current_level == 20) humanoid.set_new_resource("Sorcery Point", 20, "short rest")
-        else humanoid.set_resource_max("Sorcery Point", current_level)
+        if (current_level == 2) player.set_new_resource("Sorcery Point", 2, "long rest") //--> Creates resource
+        else if (current_level == 20) player.set_new_resource("Sorcery Point", 20, "short rest")
+        else player.set_resource_max("Sorcery Point", current_level)
 
         // Level based specific changes
         switch(current_level) {
             case 1: {
-                const multi_class = humanoid.level != 1
+                const multi_class = player.level != 1
 
                 // Add starting proficiencies
                 const starting_proficiencies = !multi_class
                     ? ["Constitution Saves", "Charisma Saves"]
                     : [] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
-                humanoid.set_proficiency("Weapon", 0, true)
+                for (const proficiency of starting_proficiencies) player.set_proficiency(proficiency, 0, true)
+                player.set_proficiency("Weapon", 0, true)
                 break
             }
         }
 
-        humanoid.save()
+        player.save()
     }
 
-    static level_up_info(humanoid) {
-        const current_level = humanoid ? (humanoid.classes.Sorcerer?.level + 1) || 1 : 1
-        const multi_class = humanoid ? humanoid.level != 0 : false
+    static level_up_info(player) {
+        const current_level = player ? (player.classes.Sorcerer?.level + 1) || 1 : 1
+        const multi_class = player ? player.level != 0 : false
         const max_spell_slot_level = Math.ceil(current_level / 2)
 
         // Return structures
@@ -75,7 +75,8 @@ var Sorcerer = class extends PlayerClass {
             (a, b) => database.features.data[a].level - database.features.data[b].level
         )
 
-        const metamagic_options = database.get_features_list({}, null, "Metamagic: ")
+        const player_features = player ? player.features : []
+        const metamagic_options = database.get_features_list({}, null, "Metamagic: ").filter(element => !player_features.includes(element))
 
         // Choices based on level
         switch (current_level) {
