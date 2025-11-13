@@ -3,6 +3,8 @@
 var FeatureAbilities = class extends Abilities {
     // Ability List
     static abilities_list(creature=impersonated()) {
+        const functionName = (name) => name.replace(/:/g, '').toLowerCase().replace(/ /g, '_')
+        const showName = (name) => name.split(": ").length > 1 ? name.split(": ")[1] : name
         const origin = "FeatureAbilities"
         const abilities_list = {}
         const type = "Class"
@@ -51,7 +53,7 @@ var FeatureAbilities = class extends Abilities {
         /* Rogue */ {
             // Sneak Attack
             const weapon = database.items.data[creature.equipment["primary main hand"]?.name]
-            const dex_weapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ammunition") : false
+            const dex_weapon = weapon ? weapon.properties.includes("Finesse") || weapon.properties.includes("Ametamagicunition") : false
             if (creature.has_feature("Sneak Attack") && dex_weapon && false) abilities_list["sneak_attack"] = {
                 resources: ["Attack Action"],
                 description: database.features.data["Sneak Attack"]?.description || "",
@@ -112,7 +114,7 @@ var FeatureAbilities = class extends Abilities {
             }
 
             // Metamagic: Distant Spell
-            if (creature.has_feature("Metamagic: Distant Spell")) abilities_list["mm_distant_spell"] = {
+            if (creature.has_feature("Metamagic: Distant Spell")) abilities_list["metamagic_distant_spell"] = {
                 name: "Distant Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Distant Spell"]?.description || "",
@@ -122,7 +124,7 @@ var FeatureAbilities = class extends Abilities {
             }
 
             // Metamagic: Empowered Spell
-            if (creature.has_feature("Metamagic: Empowered Spell")) abilities_list["mm_empowered_spell"] = {
+            if (creature.has_feature("Metamagic: Empowered Spell")) abilities_list["metamagic_empowered_spell"] = {
                 name: "Empowered Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Empowered Spell"]?.description || "",
@@ -132,7 +134,7 @@ var FeatureAbilities = class extends Abilities {
             }
 
             // Metamagic: Transmute Spells
-            if (creature.has_feature("Metamagic: Transmute Spells")) abilities_list["mm_transmute_spells"] = {
+            if (creature.has_feature("Metamagic: Transmute Spells")) abilities_list["metamagic_transmute_spells"] = {
                 name: "Transmute Spells",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Transmute Spells"]?.description || "",
@@ -142,7 +144,7 @@ var FeatureAbilities = class extends Abilities {
             }
 
             // Metamagic: Extended Spell
-            if (creature.has_feature("Metamagic: Extended Spell")) abilities_list["mm_extended_spell"] = {
+            if (creature.has_feature("Metamagic: Extended Spell")) abilities_list["metamagic_extended_spell"] = {
                 name: "Extended Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Extended Spell"]?.description || "",
@@ -152,7 +154,7 @@ var FeatureAbilities = class extends Abilities {
             }
 
             // Metamagic: Quickened Spell
-            if (creature.has_feature("Metamagic: Quickened Spell")) abilities_list["mm_quickened_spell"] = {
+            if (creature.has_feature("Metamagic: Quickened Spell")) abilities_list["metamagic_quickened_spell"] = {
                 name: "Quickened Spell",
                 resources: ["Sorcery Point"],
                 description: database.features.data["Metamagic: Quickened Spell"]?.description || "",
@@ -162,7 +164,58 @@ var FeatureAbilities = class extends Abilities {
             }
         }
 
+        /* Warlock */ {
+            let name;
+            
+            name = "Invocation: Armor of Shadows"
+            if (creature.has_feature(name)) abilities_list[functionName(name)] = {
+                name: showName(name),
+                resources: ["Action"],
+                description: database.features.data[name]?.description || "",
+                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                type: type,
+                origin: origin,
+            }
+
+            name = "Invocation: Fiendish Vigor"
+            if (creature.has_feature(name)) abilities_list[functionName(name)] = {
+                name: showName(name),
+                resources: ["Action"],
+                description: database.features.data[name]?.description || "",
+                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                type: type,
+                origin: origin,
+            }
+
+            name = "Invocation: Maddening Hex"
+            if (creature.has_feature(name)) abilities_list[functionName(name)] = {
+                name: showName(name),
+                resources: ["Bonus Action"],
+                description: database.features.data[name]?.description || "",
+                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                type: type,
+                origin: origin,
+            }
+
+            name = "Invocation: Shroud of Shadow"
+            if (creature.has_feature(name)) abilities_list[functionName(name)] = {
+                name: showName(name),
+                resources: ["Action"],
+                description: database.features.data[name]?.description || "",
+                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                type: type,
+                origin: origin,
+            }
+        }
+
         return abilities_list
+    }
+
+    static #name_to_ability_func(name) {
+        return name
+            .replace(/:/g, '')      // Remove colons
+            .toLowerCase()          // Lowercase everything
+            .replace(/ /g, '_');    // Transform spaces into underscores
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -331,7 +384,7 @@ var FeatureAbilities = class extends Abilities {
         Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
-        public_log(creature.name_color + " disengages, gaining immunity to opportunity attacks.")
+        public_log(creature.name_color + " disengages, gaining imetamagicunity to opportunity attacks.")
     }
 
     static cunning_action_hide () {
@@ -551,15 +604,15 @@ var FeatureAbilities = class extends Abilities {
         public_log(`${creature.name_color} has activated ${conditionName}!`)
     }
 
-    static mm_distant_spell() {
+    static metamagic_distant_spell() {
         this._metamagic_ability("Metamagic: Distant Spell", 1)
     }
 
-    static mm_empowered_spell() {
+    static metamagic_empowered_spell() {
         this._metamagic_ability("Metamagic: Empowered Spell", 2)
     }
 
-    static mm_transmute_spells() {
+    static metamagic_transmute_spells() {
         const conditionName = "Metamagic: Transmute Spells"
         const cost = 2
         const element = input({
@@ -606,12 +659,104 @@ var FeatureAbilities = class extends Abilities {
         public_log(`${creature.name_color} has activated ${conditionName}!`)
     }
 
-    static mm_extended_spell() {
+    static metamagic_extended_spell() {
         this._metamagic_ability("Metamagic: Extended Spell", 1)
     }
 
-    static mm_quickened_spell() {
+    static metamagic_quickened_spell() {
         this._metamagic_ability("Metamagic: Quickened Spell", 1)
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Warlock
+    //---------------------------------------------------------------------------------------------------
+
+    static invocation_armor_of_shadows () {
+        // Requirements
+        const require_target = false
+        const { valid, action_details } = this.check_action_requirements("invocation_armor_of_shadows", require_target);
+        if (!valid) return
+
+        // Effect
+        const spellcast = Spells.mage_armor({name: "Armor of Shadows", force_self: true})
+        if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+
+    static invocation_fiendish_vigor () {
+        // Requirements
+        const require_target = false
+        const { creature, valid, action_details } = this.check_action_requirements("invocation_fiendish_vigor", require_target);
+        if (!valid) return
+
+        // Effect
+        const spellcast = Spells.false_life({
+            name: "Fiendish Vigor",
+            spellcasting_modifier: creature.score_bonus.charisma || 0
+        })
+        if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+
+    static invocation_maddening_hex () {
+        // Requirements
+        const require_target = false
+        const { creature, targets, valid, action_details } = this.check_action_requirements("invocation_maddening_hex", require_target);
+        if (!valid) return
+        if (targets.length < 1) {
+            console.log(`${creature.name_color} needs to select a target for this action.`, "all")
+        }
+
+        // Localize hexed target
+        let hexed_target
+        for (const target of targets) {
+            for (const condition of ["Hex", "Sign of Ill Omen", "Hexblade's Curse"]) {
+                if (target.has_condition(condition)) {
+                    if (target.get_condition(condition).source == creature.id) {
+                        hexed_target = target
+                        break
+                    }
+                }
+            }
+        }
+
+        if (!hexed_target) {
+            console.log(`${creature.name_color} needs to select a valid hexed target for this ability.`, "all")
+        }
+
+        // Effect
+        const damage = Math.max(creature.score_bonus.charisma || 1, 1)
+        for (const target of targets) {
+            if (calculate_distance(target, hexed_target) * 5 <= 5) {
+                const damageDealt = target.receive_damage(damage, "Psychic")
+                console.log(`${creature.name_color} casts Maddening Hex on ${target.name_color} dealing ${damageDealt} psychic damage.`, "all")
+            }
+        }
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+
+    static invocation_shroud_of_shadow () {
+        // Requirements
+        const require_target = false
+        const { valid, action_details } = this.check_action_requirements("invocation_shroud_of_shadow", require_target);
+        if (!valid) return
+
+        // Effect
+        const spellcast = Spells.invisibility({name: "Shroud of Shadow", force_self: true})
+        if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
 
     //---------------------------------------------------------------------------------------------------

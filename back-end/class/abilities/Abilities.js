@@ -583,6 +583,18 @@ var Abilities = class {
                     type: "check"
                 };
             }
+
+            // Eldritch Smite
+            if (
+                creature.has_feature("Invocation: Eldritch Smite") &&
+                creature.get_resource_value("Pact Slot")
+            ) {
+                fields["eldritch_smite"] = {
+                    label: "Eldritch Smite",
+                    value: 0,
+                    type: "check"
+                }
+            }
         }
 
         // Request User Input
@@ -600,6 +612,22 @@ var Abilities = class {
                     damage_type: weapon.damage?.[0]?.damage_type || "piercing" 
                 });
                 if (isPlaying) this.use_resources(["Sneak Attack"])
+            }
+
+            // Eldritch Smite
+            if (response.eldritch_smite == 1) {
+                const warlock_level = creature ? creature.classes.Warlock?.level || 1 : 1
+                let die_amount = 3; {
+                    if (warlock_level >= 7) die_amount += 1
+                    if (warlock_level >= 9) die_amount += 1
+                    if (warlock_level >= 11) die_amount += 1
+                }
+                damage_bonuses.push({
+                    die_amount: die_amount,
+                    die_size: 8,
+                    damage_type: "Force"
+                });
+                this.use_resources(["Pact Slot"])
             }
         }
 
