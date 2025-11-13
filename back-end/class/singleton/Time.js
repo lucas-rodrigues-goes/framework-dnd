@@ -38,20 +38,24 @@ var Time = class {
 
     // Setters
     static set current(current) {
+        const old_time = this.json
         this._seconds = this.#roundSeconds(current)
         
-        // Check for expired conditions on all creatures
-        this.check_all_creature_conditions()
-
         // Update maps
-        this.update_time_of_day()
+        this.update_time_of_day(old_time)
     }
 
     // Methods
     static increase() {
+        const old_time = this.json
+
         // Build units list with capitalized labels
         const unit_keys = Object.keys(TimeUnit.UNITS)
         const unit_labels = unit_keys.map(u => u.charAt(0).toUpperCase() + u.slice(1))
+
+        // Invert the order
+        unit_keys.reverse()
+        unit_labels.reverse()
 
         const user_input = input({
             amount: {
@@ -87,15 +91,15 @@ var Time = class {
         const plural = Number(amount) == 1 ? "" : "s"
         console.log(`Time advanced by ${amount} ${selected_label.toLowerCase()}${plural}.`, "all")
         
-        // Check for expired conditions on all creatures
-        this.check_all_creature_conditions()
-
         // Update maps
-        this.update_time_of_day()
+        this.update_time_of_day(old_time)
     }
 
 
+
     static set() {
+        const old_time = this.json
+
         // Custom month names
         const months = [
             "Hammer", "Alturiak", "Ches", 
@@ -143,20 +147,18 @@ var Time = class {
         // Replace the stored time
         this._seconds = this.#roundSeconds(total_seconds)
         
-        // Check for expired conditions on all creatures
-        this.check_all_creature_conditions()
-
         // Update maps
-        this.update_time_of_day()
+        this.update_time_of_day(old_time)
     }
 
     // Check all creature conditions for expiration
-    static check_all_creature_conditions() {
+    static check_all_creature_conditions({daytime=undefined}={}) {
         try {
             const creatures = mapCreatures();
             let total_expired = 0;
             
             for (const creature of creatures) {
+                creature.update_state({daytime})
                 if (creature && typeof creature.check_expired_conditions === 'function') {
                     const had_expired = creature.check_expired_conditions();
                     if (had_expired) total_expired++;
@@ -171,13 +173,28 @@ var Time = class {
         }
     }
 
-    static update_time_of_day() {
+    static async update_time_of_day(old_time) {
+        // Old daytime
+        const old_hour =  JSON.parse(old_time).hour
+        const old_daytime = old_hour >= 6 && old_hour < 18 ? "day" : "night"
+
+        // New daytime
         const hour = JSON.parse(this.json).hour
         const daytime = hour >= 6 && hour < 18 ? "day" : "night"
+
+        // No change to lightning
+        if (old_daytime == daytime) {
+            this.check_all_creature_conditions()
+            return
+        }
+
+        // Update Lightning
         const maps = MTScript.evalMacro(`[r:getAllMapNames()]`).split(",")
         const current_map = MTScript.evalMacro(`[r:getCurrentMapName()]`)
+        let current_map_vision = "off"
 
         for (const map of maps) {
+            if (map == "Assets" || map == "Framework") continue
             const tokens = MapTool.tokens.getMapTokens(map)
             MTScript.evalMacro(`[r:setCurrentMap("${map}")]`)
             let isExteriorMap = false // Maps that contain a DAY or NIGHT mode are exterior maps
@@ -194,14 +211,15 @@ var Time = class {
             }
 
             // Change map vision
-            const vision = isExteriorMap ? daytime : "off" 
-            MTScript.evalMacro(`[r:setMapVision("${vision}")]`)
+            const vision = isExteriorMap ? daytime : "off"
+            if (map == current_map) current_map_vision = vision
+            await MTScript.evalMacro(`[r:setMapVision("${vision}")]`)
         }
 
-        MTScript.evalMacro(`[r:setCurrentMap("${current_map}")]`)
+        // Return to current map
+        await MTScript.evalMacro(`[r:setCurrentMap("${current_map}")]`)
+        this.check_all_creature_conditions({daytime: current_map_vision})
     }
-
-
 
     // Helpers
     static #roundSeconds(seconds) {

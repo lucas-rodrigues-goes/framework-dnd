@@ -170,7 +170,7 @@ var Creature = class extends Entity {
     // Methods
     //=====================================================================================================
 
-    update_state() {
+    update_state({daytime=undefined}={}) {
         // Update Health Bar
         function crunchNumber(num, from = [0, 100], to = [0, 100]) {
             // Define the input and output ranges
@@ -193,7 +193,17 @@ var Creature = class extends Entity {
             const hasCondition = this.has_condition(condition)
             switch (condition) {
                 case "Blinded": {
-                    const DEFAULT_TYPE = this.has_feature("Darkvision") ? "Darkvision 30" : "Normal"
+                    let DEFAULT_TYPE; {
+                        if (this.has_feature("Truesight")) DEFAULT_TYPE = "Truesight"
+                        else if (this.has_feature("Invocation: Devil's Sight")) DEFAULT_TYPE = "Devil's Sight"
+                        else if (this.has_feature("Superior Darkvision")) DEFAULT_TYPE = "Superior Darkvision"
+                        else if (this.has_feature("Darkvision")) DEFAULT_TYPE = "Darkvision"
+                        else DEFAULT_TYPE = "Normal"
+
+                        const getMapVision = daytime || MTScript.evalMacro(`[r:getMapVision()]`)
+                        const day_light = ["day", "dia"].includes(getMapVision.toLowerCase())
+                        if (day_light) DEFAULT_TYPE += " Day"
+                    }
                     this.sight = hasCondition ? "Blinded" : DEFAULT_TYPE
                     break
                 }
@@ -784,8 +794,12 @@ var Creature = class extends Entity {
 
         // Lose Concentration (only check if actual health was damaged)
         if (damageToHealth > 0 && this.has_condition("Concentration")) {
+            // Concentration advantage
+            let advantage_weight = 0
+            if (this.has_conditions(["Invocation: Eldritch Mind"], "any")) advantage_weight += 1
+
             // Roll d20
-            const roll_result = roll_20(0)
+            const roll_result = roll_20(advantage_weight)
             const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
