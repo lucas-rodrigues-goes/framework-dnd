@@ -169,6 +169,7 @@ var Entity = class {
     
     // Get a percent of how visible the target is from 0 to 1
     target_visibility(target=selected()) {
+        if (!target) return false
         const visible_points = JSON.parse(MTScript.evalMacro(`[r:canSeeToken("${target.id}","${this.id}")]`))
         return visible_points.length / 5
     }
