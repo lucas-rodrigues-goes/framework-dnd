@@ -172,7 +172,7 @@ var FeatureAbilities = class extends Abilities {
                 name: showName(name),
                 resources: ["Action"],
                 description: database.features.data[name]?.description || "",
-                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                image: "asset://183703eb6c279573111270c93b8b3110",
                 type: type,
                 origin: origin,
             }
@@ -182,7 +182,7 @@ var FeatureAbilities = class extends Abilities {
                 name: showName(name),
                 resources: ["Action"],
                 description: database.features.data[name]?.description || "",
-                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                image: "asset://ddeff0e369848928fe844a9d17b1dcfe",
                 type: type,
                 origin: origin,
             }
@@ -192,7 +192,7 @@ var FeatureAbilities = class extends Abilities {
                 name: showName(name),
                 resources: ["Bonus Action"],
                 description: database.features.data[name]?.description || "",
-                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                image: "asset://eaafbc9a39caf1309ce1c1ef12260992",
                 type: type,
                 origin: origin,
             }
@@ -202,7 +202,7 @@ var FeatureAbilities = class extends Abilities {
                 name: showName(name),
                 resources: ["Action"],
                 description: database.features.data[name]?.description || "",
-                image: "asset://9663e79e3e5c493352a92ca0ba6acc60",
+                image: "asset://dbb54113cc9b2b32991f44356f5d869d",
                 type: type,
                 origin: origin,
             }
