@@ -38,14 +38,43 @@ var Spells = class extends Abilities {
             }
         }
 
+        // Reapply Hex
+        if (creature.has_condition("Concentration")) {
+            let canReapplyHex = false; {
+                const concentration = creature.get_condition("Concentration")
+                const { condition } = concentration
+                if (condition == "Hex") {
+                    const target = instance(concentration.targets?.[0])
+                    if (target) {
+                        if (target.health == 0) canReapplyHex = true
+                    }
+                    else canReapplyHex = true
+                }
+            }
+
+            const spell = database.spells.data["Hex"]
+            if (canReapplyHex) abilities_list.reapply_hex = {
+                name: "Reapply " + spell.name,
+                resources: ["Bonus Action"],
+                recovery: 0,
+                image: spell.image,
+                origin: origin,
+                type: "Special",
+                description: `Reapply Hex.`
+            }
+        }
+
         return abilities_list
     }
 
     static play_element_sound(type) {
         const hasTransmuteSpells = impersonated().has_condition("Metamagic: Transmute Spells")
         const element = hasTransmuteSpells ? impersonated()?.get_condition("Metamagic: Transmute Spells")?.element : type
+        if (element == "none") return
 
-        Sound.play(element.toLowerCase())
+        try {
+            Sound.play(element.toLowerCase())
+        } catch {}
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -229,6 +258,8 @@ var Spells = class extends Abilities {
     }
 
     static concentrate(creature, spell, targets) {
+        this.end_concentration(creature)
+
         // New concentration
         creature.set_condition("Concentration", spell.duration, {
             condition: spell.name,
@@ -237,9 +268,27 @@ var Spells = class extends Abilities {
         console.log(`${creature.name_color} has started concentrating on ${spell.name}.`, "all")
     }
 
-    static end_concentration() {
-        const creature = impersonated()
+    static end_concentration(creature=impersonated()) {
         creature.remove_condition("Concentration")
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Special
+    //---------------------------------------------------------------------------------------------------
+
+    static reapply_hex () {
+        // Requirements
+        const require_target = true
+        const { valid, action_details } = this.check_action_requirements("reapply_hex", require_target);
+        if (!valid) return
+
+        // Effect
+        const spellcast = Spells.hex()
+        if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -296,6 +345,84 @@ var Spells = class extends Abilities {
         })
     }
 
+    static lightning_streak(spell) {
+        try {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        const hit_targets = []
+        let current_target = selected()
+        let i = 0
+        while (i < 100) {
+            i ++
+            Spells.play_element_sound("lightning")
+            const spellattack = Spells.make_spell_attack({
+                ...spell,
+                melee_disadvantage: i == 1,
+                face_target: i == 1,
+                range: i == 1 ? spell.range : 1000,
+                target: current_target,
+                damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Lightning", damage_bonus: spell.spellcasting_modifier}],
+            })
+            if (!spellattack.success) return spellattack
+            console.log(spellattack.message, "all")
+
+            if (!spellattack.success) break
+            else if (!spellattack.hit_result.success) break
+            else {
+                hit_targets.push(current_target.id)
+                let newTarget = false
+                for (const target of mapCreatures()) {
+                    if (hit_targets.includes(target.id)) continue
+                    if (calculate_distance(target, current_target) * 5 > 10) continue
+                    newTarget = true
+                    current_target = target
+                    break
+                }
+                if (newTarget == false) break
+            }
+        }
+        return { success: true }
+        } catch (e) {console.log(e)}
+    }
+
+    static eldritch_blast (options = {}) {
+        const original_spell = {...database.spells.data["Eldritch Blast"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        // Parameters
+        const { spellcasting_modifier = 0 } = spell
+
+        // Attacks
+        let attacks = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) attacks += 1
+            if (creature.spellcasting_level >= levels[1]) attacks += 1
+            if (creature.spellcasting_level >= levels[2]) attacks += 1
+        }
+
+        Sound.play(attacks == 1 ? `force` : `force ${attacks} times`)
+        Spells.play_element_sound("none")
+        for (let i = 0; i < attacks; i++) {
+            const attack = Spells.make_spell_attack({
+                ...spell,
+                target: selected(),
+                damage_dice: [{die_amount: 1, die_size: 10, damage_type: "Force", damage_bonus: spellcasting_modifier}],
+            })
+            console.log(attack.message, "all")
+        }
+
+        return {success: true}
+    }
+
     static guidance(spell) {
         const creature = impersonated()
         const target = selected()
@@ -309,7 +436,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -377,7 +504,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -417,7 +544,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -486,7 +613,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -512,6 +639,45 @@ var Spells = class extends Abilities {
             )
         }
     }
+
+    static hex(options = {}) {
+        const original_spell = {...database.spells.data["Hex"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const creature = impersonated()
+        const target =  selected()
+
+        // Validate Target
+        if (!target) return {
+            success: false,
+            message: `${creature.name_color} needs to select a target for this spell.`
+        }
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0 && !castingOnSelf) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range({creature, target, range:spell.range})
+        if (range_validation.outOfRange && !castingOnSelf) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${spell.name}, but their target is out of range.`
+        }
+
+        // Set condition
+        Spells.concentrate(creature, spell, [target.id])
+        target.set_condition(original_spell.name, spell.duration, {
+            source: creature.id
+        })
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${spell.name} on ${target.name_color}.`
+        }
+    }
     
     static healing_word(spell) {
         const creature = impersonated()
@@ -526,7 +692,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -658,7 +824,7 @@ var Spells = class extends Abilities {
 
         // Validate Range
         for (const target of targets) {
-            const range_validation = Spells.validate_spell_range(creature, target, range)
+            const range_validation = Spells.validate_spell_range({creature, target, range})
             if (range_validation.outOfRange) return {
                 success: false,
                 message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -760,6 +926,7 @@ var Spells = class extends Abilities {
     }
 
     static mage_armor (options = {}) {
+        try {
         const original_spell = {...database.spells.data["Mage Armor"]}
         const spell = {...original_spell, ...options}
 
@@ -779,7 +946,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, spell.range)
+        const range_validation = Spells.validate_spell_range({creature, target, range:spell.range})
         if (range_validation.outOfRange && !castingOnSelf) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -794,6 +961,7 @@ var Spells = class extends Abilities {
                 : `${creature.name_color} cast ${name}.`
             )
         }
+        } catch (e) {console.log(e)}
     }
 
     static shield (spell) {
@@ -816,6 +984,98 @@ var Spells = class extends Abilities {
             success: true,
             message: `${creature.name_color} cast ${name}.`
         }
+    }
+
+    static absorb_elements (options = {}) {
+        const original_spell = {...database.spells.data["Absorb Elements"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const creature = impersonated()
+
+        // Damage Type
+        const damage_type = input({damage_type: {
+            label: "Damage Type",
+            value: "Fire,Lightning,Cold,Acid,Thunder",
+            type: "radio",
+            options: {value: "string"}
+        }}).damage_type
+
+        // Parameters
+        const { name = spell.name } = spell
+
+        // Bonus Armor Class
+        let reduction = 10; {
+            const levels = [3, 5, 7]
+            if (creature.spellcasting_level >= levels[0]) reduction += 10
+            if (creature.spellcasting_level >= levels[1]) reduction += 10
+            if (creature.spellcasting_level >= levels[2]) reduction += 10
+        }
+
+        // Set condition
+        creature.set_condition(original_spell.name, spell.duration, {
+            resistances: {
+                [damage_type]: {type: "resistance", reduction: reduction},
+            }
+        })
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} ${damage_type}.`
+        }
+    }
+
+    static magic_missile (options = {}) {
+        const original_spell = {...database.spells.data["Magic Missile"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+        const target = selected()
+
+        // Validate Target
+        if (!target) return {
+            success: false,
+            message: `${creature.name_color} needs to select a target for this spell.`
+        }
+        
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+        
+        // Validate Range
+        const range_validation = Spells.validate_spell_range({creature, target, range:spell.range})
+        if (range_validation.outOfRange) {
+            return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${spell.name}, but their target is out of range.`
+            }
+        }
+
+        // Darts
+        let darts = 3; {
+            const levels = [3, 5, 7]
+            if (creature.spellcasting_level >= levels[0]) darts += 1
+            if (creature.spellcasting_level >= levels[1]) darts += 1
+            if (creature.spellcasting_level >= levels[2]) darts += 1
+        }
+
+        // Sound
+        Sound.play(darts == 1 ? `force` : `force ${darts} times`)
+        Spells.play_element_sound("none")
+
+        // Cast
+        for (let i = 0; i < darts; i++) {
+            const damage = Spells.spell_damage(creature, target, "hit", [{
+                die_amount: 1,
+                die_size: 4,
+                damage_bonus: 1,
+                damage_type: "Force"
+            }])
+            console.log(`${creature.name_color} casts ${spell.name} on ${target.name_color} dealing ${damage} damage.`, "all")
+        }
+
+        return {success: true}
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -918,6 +1178,48 @@ var Spells = class extends Abilities {
         return save_return
     }
 
+    static misty_step (options = {}) {
+        const original_spell = {...database.spells.data["Misty Step"]}
+        const spell = {...original_spell, ...options}
+
+        const creature = impersonated()
+
+        // Current position
+        const {x, y} = creature
+
+        // New position
+        const coordinates = input({
+            x: {
+                label: "X",
+                value: "0",
+                type: "text",
+            },
+            y: {
+                label: "Y",
+                value: "0",
+                type: "text",
+            },
+        })
+
+        // Validate
+        const xDiff = Math.abs(x - Number(coordinates.x))
+        const yDiff = Math.abs(y - Number(coordinates.y))
+        const distance = (xDiff + yDiff) * 5
+        if (distance <= 30) {
+            creature.x = Number(coordinates.x)
+            creature.y = Number(coordinates.y)
+        }
+        else return {
+            success: false,
+            message: `Maximum distance for misty step is 30ft, attempted ${distance}ft`
+        }
+
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${spell.name}.`
+        }
+    }
+
     static reveal_invisibility({ name, range }) {
         const creature = impersonated()
 
@@ -986,7 +1288,7 @@ var Spells = class extends Abilities {
 
         // Validate Range
         for (const target of targets) {
-            const range_validation = Spells.validate_spell_range(creature, target, range)
+            const range_validation = Spells.validate_spell_range({creature, target, range})
             if (range_validation.outOfRange) return {
                 success: false,
                 message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
@@ -1049,7 +1351,7 @@ var Spells = class extends Abilities {
         }
 
         // Validate Range
-        const range_validation = Spells.validate_spell_range(creature, target, range)
+        const range_validation = Spells.validate_spell_range({creature, target, range})
         if (range_validation.outOfRange) return {
             success: false,
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`

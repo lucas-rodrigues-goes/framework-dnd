@@ -218,8 +218,12 @@ var Abilities = class {
             // Deal Damage
             const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, damage.damage_type)
+            const resisted_text = damage_to_deal - damage_dealt > 0 
+                ? ` <span style="color:grey">(-${damage_to_deal - damage_dealt})</span>`
+                : ""
             if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
-            output.push(`${damage_dealt} ${damage.damage_type.toLowerCase()}`)
+
+            output.push(`${damage_dealt}${resisted_text} ${damage.damage_type.toLowerCase()}`)
         }
         return output.join(", ")
     }
@@ -231,6 +235,19 @@ var Abilities = class {
     static on_damage_target({creature, target}) {
         // On target kill
         if (target.has_condition("Dead")) this.on_target_kill({creature, target})
+
+        // Hex
+        if (target.has_condition("Hex")) {
+            if (target.get_condition("Hex").source == creature.id) {
+                const damage_to_deal = roll_dice(1, 6)
+                const damage_dealt = target.receive_damage(damage_to_deal, "Necrotic")
+                const resisted_text = damage_to_deal - damage_dealt > 0 
+                ? ` <span style="color:grey">(-${damage_to_deal - damage_dealt})</span>`
+                : ""
+                
+                console.log(`${target.name_color} received ${damage_dealt}${resisted_text} necrotic damage from hex.`, "all")
+            }
+        }
     }
 
     static on_target_kill({creature, target}) {
@@ -262,8 +279,16 @@ var Abilities = class {
     // Spell Helpers
     //---------------------------------------------------------------------------------------------------
     
-    static make_spell_attack({name, target, level, spellcasting_modifier, range, damage_dice, advantage_weight = 0}={}) {
-        const creature = impersonated()
+    static make_spell_attack({
+        name, creature=impersonated(), target, level, spellcasting_modifier, range, damage_dice, advantage_weight = 0,
+        melee_disadvantage=true, face_target = true
+    }={}) {
+
+        // Validate Target
+        if (!target) return {
+            success: false,
+            message: `${creature.name_color} needs to select a target for this spell.`
+        }
         
         // Validate Visibility
         const target_visibility = creature.target_visibility()
@@ -273,7 +298,7 @@ var Abilities = class {
         }
         
         // Validate Range
-        const range_validation = this.validate_spell_range(creature, target, range)
+        const range_validation = this.validate_spell_range({creature, target, range, melee_disadvantage})
         if (range_validation.outOfRange) {
             return {
                 success: false,
@@ -286,7 +311,7 @@ var Abilities = class {
         const level_number = level[0] == "c" ? 0 : Number(level[0])
         const level_bonus = Math.max(0, Math.floor((level_number - 1) / 2));
         const hit_bonus = spellcasting_modifier + 2 + level_bonus
-        const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight})
+        const hit_result = this.attack_hit_result({hit_bonus, creature, target, advantage_weight, face_target})
 
         // Deal damage
         const damage_result = (hit_result.success
@@ -309,9 +334,7 @@ var Abilities = class {
         }
     }
 
-    static make_spell_save({name, targets=[], max_targets=false, spellcasting_modifier, level, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
-        const creature = impersonated()
-
+    static make_spell_save({name, creature=impersonated(), targets=[], max_targets=false, spellcasting_modifier, level, half_on_fail=false, range, damage_dice=[], saving_throw_score, advantage_weight = 0}={}) {
         // Validate Targets
         if (max_targets) {
             if (targets.length > max_targets) return {
@@ -329,7 +352,7 @@ var Abilities = class {
             }
 
             // Validate Range
-            const range_validation = Spells.validate_spell_range(creature, target, range)
+            const range_validation = Spells.validate_spell_range({creature, target, range})
             if (range_validation.outOfRange) return {
                 success: false,
                 message: `${creature.name_color} tried to cast ${name}, but one target is out of range.`
@@ -381,7 +404,7 @@ var Abilities = class {
         return output
     }
 
-    static validate_spell_range(creature, target, range) {
+    static validate_spell_range({creature, target, range, melee_disadvantage=true}) {
         range = Number(range)
         const distance = calculate_distance(creature, target) * 5
         const meleeRange = distance <= 5
@@ -398,7 +421,7 @@ var Abilities = class {
             }
 
             // Ranged Spell
-            else if (range > 5) {
+            else if (range > 5 && melee_disadvantage) {
                 // Melee disadvantage
                 if (meleeRange) output.advantage_weight -= 1
             }
@@ -448,8 +471,12 @@ var Abilities = class {
             // Deal Damage
             const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, damage_type)
+            const resisted_text = damage_to_deal - damage_dealt > 0 
+                ? ` <span style="color:grey">(-${damage_to_deal - damage_dealt})</span>`
+                : ""
             if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
-            output.push(`${damage_dealt} ${damage_type.toLowerCase()}`)
+
+            output.push(`${damage_dealt}${resisted_text} ${damage_type.toLowerCase()}`)
         }
 
         // Log metamagic
@@ -664,9 +691,8 @@ var Abilities = class {
         const cha_bonus = creature.score_bonus["charisma"]
 
         // Attribute Bonus
-        let damage_attribute_bonus = 0;
-        if (!isAmmo) damage_attribute_bonus = str_bonus
-        else if (!isAmmo && isFinesse) damage_attribute_bonus = Math.max(str_bonus, dex_bonus)
+        let damage_attribute_bonus = str_bonus;
+        if (!isAmmo && isFinesse) damage_attribute_bonus = Math.max(str_bonus, dex_bonus)
         else if (isAmmo) damage_attribute_bonus = dex_bonus
 
         // Special Cases
@@ -707,8 +733,11 @@ var Abilities = class {
             // Deal Damage
             const old_hp = target.health
             const damage_dealt = target.receive_damage(damage_to_deal, type)
+            const resisted_text = damage_to_deal - damage_dealt > 0 
+                ? ` <span style="color:grey">(-${damage_to_deal - damage_dealt})</span>`
+                : ""
             if ((old_hp - target.health) != 0) this.on_damage_target({creature, target})
-            output.push(`${damage_dealt ? damage_dealt : "no"} ${type.toLowerCase()}`)
+            output.push(`${damage_dealt}${resisted_text} ${type.toLowerCase()}`)
 
             // Sound
             Sound.play(type.toLowerCase())
@@ -761,8 +790,8 @@ var Abilities = class {
         return output
     }
 
-    static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), weapon, advantage_weight = 0}) {
-        creature.face_target(target)
+    static attack_hit_result({hit_bonus=0, creature=impersonated(), target=selected(), weapon, advantage_weight = 0, face_target = true}) {
+        if (face_target) creature.face_target(target)
         const distance = calculate_distance(creature, target) * 5
         const target_visibility = creature.target_visibility(target)
 
@@ -897,9 +926,8 @@ var Abilities = class {
         const cha_bonus = creature.score_bonus["charisma"]
 
         // Hit Bonus
-        let hit_bonus = 0;
-        if (!isAmmo) hit_bonus = str_bonus
-        else if (!isAmmo && isFinesse) hit_bonus = Math.max(str_bonus, dex_bonus)
+        let hit_bonus = str_bonus;
+        if (!isAmmo && isFinesse) hit_bonus = Math.max(str_bonus, dex_bonus)
         else if (isAmmo) hit_bonus = dex_bonus
         
         // Pact of the blade
