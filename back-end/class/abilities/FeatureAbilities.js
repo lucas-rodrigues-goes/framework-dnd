@@ -230,9 +230,9 @@ var FeatureAbilities = class extends Abilities {
         // Reduction
         let reduction = 3; {
             const barbarian_level = creature.classes?.Barbarian?.level || 0
-            if (barbarian_level > 5) reduction = 5
-            if (barbarian_level > 11) reduction = 7
-            if (barbarian_level > 17) reduction = 9
+            if (barbarian_level >= 5) reduction = 5
+            if (barbarian_level >= 11) reduction = 8
+            if (barbarian_level >= 17) reduction = 10
         }
 
         // Receive condition
