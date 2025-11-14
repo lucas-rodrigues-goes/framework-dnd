@@ -32,7 +32,10 @@ var Entity = class {
 
     // Sight
     get sight() {return MTScript.evalMacro(`[r:getSightType("${this.id}")]`)}
-    set sight(value) { MTScript.evalMacro(`[r:setSightType("${value}", "${this.id}")]`) }
+    set sight(value) { 
+        MTScript.evalMacro(`[r:setHasSight(1, "${this.id}")]`)
+        MTScript.evalMacro(`[r:setSightType("${value}", "${this.id}")]`)
+    }
 
     // Invisible
     get invisible() {return MTScript.evalMacro(`[r:getOwnerOnlyVisible("${this.id}")]`) == "true"}
