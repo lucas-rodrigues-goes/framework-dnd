@@ -13,28 +13,29 @@ var Sound = class {
     //-----------------------------------------------------------------------------------------------------
 
     static get currently_streaming() {
-        const object = JSON.parse(this.#data.getProperty("object"));
-        return object?.currently_streaming || [];
+        /* const object = JSON.parse(this.#data.getProperty("object"));
+        return object?.currently_streaming || []; */
+        return []
     }
 
     static set currently_streaming(currently_streaming) {
-        const object = JSON.parse(this.#data.getProperty("object")) || {};
+        /* const object = JSON.parse(this.#data.getProperty("object")) || {};
         object.currently_streaming = currently_streaming;
         
-        this.#data.setProperty("object", JSON.stringify(object));
+        this.#data.setProperty("object", JSON.stringify(object)); */
     }
 
     //-----------------------------------------------------------------------------------------------------
     // Sound Playing/Stopping Methods
     //-----------------------------------------------------------------------------------------------------
 
-    static play (name, {volume = 0.1, stream = false} = {}) {
+    static play (name, {volume = 0.1, stream = false, count = 1} = {}) {
         try {
             // Play Sound
             MTScript.evalMacro(`
                 [h,macro("playLocal${ stream ? "Stream" : "Clip" }All@lib:JUH.media"): json.append("",
                     "audio:${name}",
-                    ${stream ? -1 : 1},
+                    ${stream ? -1 : count},
                     ${volume}
                 )]
             `)
@@ -49,8 +50,8 @@ var Sound = class {
                 this.currently_streaming = this.currently_streaming.filter((elem) => elem != name)
             }
         } 
-        catch {
-            console.log(`Error occurred when playing ${name}`, "debug")
+        catch (error) {
+            console.log(`Error occurred when playing ${name}: ${error}`, "debug")
         }
     }
 
