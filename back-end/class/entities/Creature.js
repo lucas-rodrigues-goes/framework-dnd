@@ -238,8 +238,13 @@ var Creature = class extends Entity {
 
             // State effects
             const conditions_with_state = [
-                "Blur", "Rage", "Shield", "Hold Person", "Hold Monster", "Dead", "Bless", "Prone",
-                "Sleep", "Dying"
+                // Natural
+                "Dying", "Dead", "Prone", "Sleep",
+
+                // Spells
+                "Blur", "Rage", "Shield", "Hold Person", 
+                "Hold Monster", "Bless", "Absorb Elements",
+                "Hex"
             ]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 
@@ -295,7 +300,12 @@ var Creature = class extends Entity {
         }
 
         // If Incapacitated
-        if (this.has_condition("Incapacitated")) actions = 0, bonus_actions = 0, reactions = 0
+        if (this.has_conditions(["Incapacitated", "Unconscious"], "any")) {
+            actions = 0, bonus_actions = 0, reactions = 0
+        }
+        if (this.has_conditions(["Paralyzed", "Unconscious"], "any")) {
+            movement = 0
+        }
 
         // Set resource maxes on character
         const resourceMapping = {
@@ -447,7 +457,7 @@ var Creature = class extends Entity {
         if (!this.has_condition("Hidden")) return
 
         // Stealth Roll
-        let { stealth_roll, roll_text } = this.conditions["Hidden"]
+        let { stealth_roll, roll_text } = this.get_condition("Hidden")
         const entering_stealth = stealth_roll === undefined || roll_text === undefined || new_roll
         if (new_roll || entering_stealth) {
             const armor = database.items.data[this.equipment.body?.name]
@@ -460,10 +470,9 @@ var Creature = class extends Entity {
             roll_text = `${die_roll.text_color} ${stealth_bonus < 0 ? "-" : "+"} ${Math.abs(stealth_bonus)}`
 
             // Update on character conditions
-            this.conditions["Hidden"] = {...this.conditions["Hidden"],
-                stealth_roll: stealth_roll,
-                roll_text: roll_text
-            }
+            this.set_condition("Hidden", -1, {
+                stealth_roll, roll_text
+            })
             this.save()
         }
         
