@@ -191,7 +191,7 @@ var Time = class {
         // Update Lightning
         const maps = MTScript.evalMacro(`[r:getAllMapNames()]`).split(",")
         const current_map = MTScript.evalMacro(`[r:getCurrentMapName()]`)
-        let current_map_vision = "off"
+        let current_map_vision = "night"
 
         for (const map of maps) {
             if (map == "Assets" || map == "Framework") continue
@@ -211,7 +211,7 @@ var Time = class {
             }
 
             // Change map vision
-            const vision = isExteriorMap ? daytime : "off"
+            const vision = isExteriorMap ? daytime : "night"
             if (map == current_map) current_map_vision = vision
             await MTScript.evalMacro(`[r:setMapVision("${vision}")]`)
         }
