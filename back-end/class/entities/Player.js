@@ -187,10 +187,10 @@ var Player = class extends Creature {
                         spellcasting_level = class_level
                         break
                     case "half":
-                        spellcasting_level = Math.floor(class_level / 2)
+                        spellcasting_level = Math.ceil(class_level / 2)
                         break
                     case "third":
-                        spellcasting_level = Math.floor(class_level / 3)
+                        spellcasting_level = Math.ceil(class_level / 3)
                         break
                 }
 
@@ -215,10 +215,10 @@ var Player = class extends Creature {
                         spellcasting_level = class_level
                         break
                     case "half":
-                        spellcasting_level = Math.floor(class_level / 2)
+                        spellcasting_level = Math.ceil(class_level / 2)
                         break
                     case "third":
-                        spellcasting_level = Math.floor(class_level / 3)
+                        spellcasting_level = Math.ceil(class_level / 3)
                         break
                 }
 
