@@ -414,7 +414,10 @@
             //return `#ddd`
             return `rgba(`+red+`, `+green+`, `+80+`, 1)`;
         }
-    
+        function teleport() {
+            backend(`MTScript.evalMacro("[r: teleport(0)]")`)
+        }
+        
         //-----------------------------------------------------------------------------------------------------
         // Components
         //-----------------------------------------------------------------------------------------------------
@@ -951,103 +954,122 @@
         async function updateCurrentTarget() {
     
             const hasTarget = await backend("selected()") != ""
-    
-            // Target HUD
-            const target_HUD = getId("current-target")
-    
-            // Stop execution and hide if no target selected
-            if (!hasTarget) { 
-                target_HUD.style.display = "none"
-                return
-            }
-    
-            // Target
-            const { target, database_conditions } = JSON.parse(await backend(`JSON.stringify({
-                target: {
-                    name: selected()?.name,
-                    type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
-                    portrait: selected()?.portrait,
-                    player: selected()?.player,
-                    armor_class: selected()?.armor_class,
-                    health: selected()?.health,
-                    max_health: selected()?.max_health,
-                    conditions: selected()?.conditions,
-                    remaining_condition_durations: selected()?.get_all_remaining_durations()
-                },
-                database_conditions: database.conditions.data
-            })`))
-    
-            // Verify if there is need for update
-            if (!isEqualJSON(current_target, target)) {
-                current_target = target
-    
-                // Calculated attributes
-                let hp_percent = target.health / target.max_health * 100
-                let color = target.player ? "#5ab350" : "#b44"
-    
-                // Update values
-                getId("current-target-name").textContent = target.name
-                getId("current-target-type").textContent = target.type
-                getId("current-target-health").style.background = `linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%)`
-    
-                // Update portrait
-                const target_HUD_portrait = getId("current-target-portrait")
-                target_HUD_portrait.setAttribute("src", target.portrait)
-                target_HUD_portrait.style.display = target.portrait ? "" : "none"
-    
-                // Update AC
-                const target_HUD_armor_class = getId("current-target-armor-class")
-                target_HUD_armor_class.textContent = target.armor_class
-                target_HUD_armor_class.style.display = target.armor_class ? "" : "none"
-
-                // Update conditions
-                const target_HUD_conditions = getId("current-target-conditions")
-                target_HUD_conditions.clearChildren()
-                
-                for (const name in target.conditions) {
-                    const condition = target.conditions[name]
-                    if (!database_conditions[name]) continue
-                    const image = database_conditions[name].image || ""
-                    const remaining_duration = target.remaining_condition_durations[name] || -1
-                    const time = name != "Exhaustion" ? timeUnit(remaining_duration).toLowerCase() : "Level " + remaining_duration
-
-                    target_HUD_conditions.appendChild(
-                        {tag: "div", 
-                            style: {position: "relative", height: "2.8vh", width: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
-                            attributes: {
-                                class: "tooltip tooltip-bottom tooltip-condition",
-                                tooltip: name + (remaining_duration != -1 ? " (" + time + ")" : "")
-                            },
-                            children: [
-                                {tag: "img", 
-                                    attributes: {src: image},
-                                    style: {
-                                        position: "absolute",
-                                        left: "50%", top: "50%", transform: "translate(-50%, -50%)",
-                                        height: "2.6vh",
-                                    }
-                                },
-                                {tag: "div", 
-                                    attributes: {
-                                        class: "text-shadow"
-                                    },
-                                    style: {
-                                        position: "absolute",
-                                        display: (remaining_duration != -1 && remaining_duration < 999 ? "" : "none"),
-                                        bottom: "-1.5vh",
-                                        right: "-0.3vh",
-                                        fontSize: "80%"
-                                    }, 
-                                    text: remaining_duration
-                                }
-                            ]
-                        }
-                    )
+            const { GMName, name } = JSON.parse(await backend(`
+                try {
+                    const GMName = MTScript.evalMacro("[r: getGMName(getSelected()) ]")
+                    const name = MTScript.evalMacro("[r: getName(getSelected()) ]")
+                    JSON.stringify({name, GMName})
+                } 
+                catch (e) {
+                    JSON.stringify({name: undefined, GMName: undefined})
                 }
-            }
+            `))
+
     
-            // Unhide after updating values
-            target_HUD.style.display = ""
+            // HUDs
+            const target_HUD = getId("current-target")
+            target_HUD.style.display = "none"
+            const teleport_HUD = getId("teleport")
+            teleport_HUD.style.display = "none"
+
+            // Functions
+            async function updateTarget() {
+                // Target
+                const { target, database_conditions } = JSON.parse(await backend(`JSON.stringify({
+                    target: {
+                        name: selected()?.name,
+                        type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
+                        portrait: selected()?.portrait,
+                        player: selected()?.player,
+                        armor_class: selected()?.armor_class,
+                        health: selected()?.health,
+                        max_health: selected()?.max_health,
+                        conditions: selected()?.conditions,
+                        remaining_condition_durations: selected()?.get_all_remaining_durations()
+                    },
+                    database_conditions: database.conditions.data
+                })`))
+        
+                // Verify if there is need for update
+                if (!isEqualJSON(current_target, target)) {
+                    current_target = target
+        
+                    // Calculated attributes
+                    let hp_percent = target.health / target.max_health * 100
+                    let color = target.player ? "#5ab350" : "#b44"
+        
+                    // Update values
+                    getId("current-target-name").textContent = target.name
+                    getId("current-target-type").textContent = target.type
+                    getId("current-target-health").style.background = `linear-gradient(90deg, `+color+` `+hp_percent+`%, rgba(0,0,0,0.5) `+hp_percent+`%)`
+        
+                    // Update portrait
+                    const target_HUD_portrait = getId("current-target-portrait")
+                    target_HUD_portrait.setAttribute("src", target.portrait)
+                    target_HUD_portrait.style.display = target.portrait ? "" : "none"
+        
+                    // Update AC
+                    const target_HUD_armor_class = getId("current-target-armor-class")
+                    target_HUD_armor_class.textContent = target.armor_class
+                    target_HUD_armor_class.style.display = target.armor_class ? "" : "none"
+
+                    // Update conditions
+                    const target_HUD_conditions = getId("current-target-conditions")
+                    target_HUD_conditions.clearChildren()
+                    
+                    for (const name in target.conditions) {
+                        const condition = target.conditions[name]
+                        if (!database_conditions[name]) continue
+                        const image = database_conditions[name].image || ""
+                        const remaining_duration = target.remaining_condition_durations[name] || -1
+                        const time = name != "Exhaustion" ? timeUnit(remaining_duration).toLowerCase() : "Level " + remaining_duration
+
+                        target_HUD_conditions.appendChild(
+                            {tag: "div", 
+                                style: {position: "relative", height: "2.8vh", width: "2.8vh", padding: "0.1vh", backgroundColor: "#222", border: "0.2vh solid #888", borderRadius: "50%"},
+                                attributes: {
+                                    class: "tooltip tooltip-bottom tooltip-condition",
+                                    tooltip: name + (remaining_duration != -1 ? " (" + time + ")" : "")
+                                },
+                                children: [
+                                    {tag: "img", 
+                                        attributes: {src: image},
+                                        style: {
+                                            position: "absolute",
+                                            left: "50%", top: "50%", transform: "translate(-50%, -50%)",
+                                            height: "2.6vh",
+                                        }
+                                    },
+                                    {tag: "div", 
+                                        attributes: {
+                                            class: "text-shadow"
+                                        },
+                                        style: {
+                                            position: "absolute",
+                                            display: (remaining_duration != -1 && remaining_duration < 999 ? "" : "none"),
+                                            bottom: "-1.5vh",
+                                            right: "-0.3vh",
+                                            fontSize: "80%"
+                                        }, 
+                                        text: remaining_duration
+                                    }
+                                ]
+                            }
+                        )
+                    }
+                }
+        
+                // Unhide after updating values
+                target_HUD.style.display = ""
+            }
+
+            if (hasTarget) {
+                target_HUD.style.display = ""
+                updateTarget()
+            } else if (GMName.includes("teleport:")) {
+                teleport_HUD.style.display = ""
+                getId("teleport-button").textContent = name
+            }
         }
     
         let current_party = [] ; let current_party_impersonated_id = ""
@@ -1255,6 +1277,9 @@
                                 {tag: "div", style: {display: "flex", position: "relative", gap: "0.5vh", width: "100%", left: "1vh"}, attributes: {id: "current-target-conditions"}}
                             ]},
                         ]}
+                    ]},
+                    {tag: "div", attributes: {id: "teleport"}, style: {display: ""}, children: [
+                        {tag: "button", text: "Travel", attributes: {id: "teleport-button"}, events: {click: teleport}}
                     ]}
                 ]}
             )
