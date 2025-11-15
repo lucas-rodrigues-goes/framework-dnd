@@ -1975,20 +1975,6 @@
 					]},
 				])
 			
-				// Abilities (deprecated)
-				/* document.getElementById("abilities-tab").appendChildren([
-					{tag: "div", style: {position: "absolute", left: "-4%", width: "75%"}, children: [
-						container({title: "Abilites", id: "abilities-tab-abilities", scroll: true, options: {
-							div: {style: {height: "80vh"}},
-							content: {style: {padding: "0 2vh", paddingRight: "2.5vh"}}
-						}})
-					]},
-					{tag: "div", style: {position: "absolute", right: "-1%", width: "37%"}, children: [
-						container({title: "Resources", id: "abilities-tab-resources", scroll: true, options: {
-							div: {style: {height: "80vh"}},
-						}})
-					]},
-				]) */
 			}
 
 			//=====================================================================================================
@@ -2000,17 +1986,21 @@
 				closeIfNotImpersonated()
 				updateInventoryTab()
 				updateCharacterTab()
-				//updateAbilitiesTab()
 				updateSpellsTab()
 				updateNotesTab()
 
 				// Set update intervals
 				setInterval(()=> {
+					try {
+					const updateCharacter = (document.getElementById("character-switch").classList == "tab-switch active")
+					const updateInventory = (document.getElementById("inventory-switch").classList == "tab-switch active")
+					const updateSpells = (document.getElementById("spells-switch").classList == "tab-switch active")
+
 					closeIfNotImpersonated()
-					updateInventoryTab()
-					//updateAbilitiesTab()
-					updateSpellsTab()
-					updateCharacterTab()
+					if (updateCharacter) updateCharacterTab()
+					if (updateInventory) updateInventoryTab()
+					if (updateSpells) updateSpellsTab()
+					} catch (e) {console.log(e)}
 				}, 1000)
 			}
 
