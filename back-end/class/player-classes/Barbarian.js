@@ -30,45 +30,45 @@ var Barbarian = class extends PlayerClass {
     // Leveling
     //---------------------------------------------------------------------------------------------------
 
-    static level_up(humanoid, choices) {
-        super.level_up(humanoid, choices, "Barbarian")
-        const current_level = humanoid.classes.Barbarian.level
+    static level_up(player, choices) {
+        super.level_up(player, choices, "Barbarian")
+        const current_level = player.classes.Barbarian.level
 
         // Update Rage
-        if (current_level == 1) humanoid.set_new_resource("Rage", 2, "long rest") //--> Creates resource
+        if (current_level == 1) player.set_new_resource("Rage", 2, "long rest") //--> Creates resource
         if ([3, 6, 12, 17].includes(current_level)) { //--> Increases resource by 1 on levels specified
-            humanoid.set_resource_max("Rage", humanoid.resources["Rage"].max + 1)
+            player.set_resource_max("Rage", player.resources["Rage"].max + 1)
         }
 
         // Level based specific changes
         switch(current_level) {
             case 1: {
-                const multi_class = humanoid.level != 1           
+                const multi_class = player.level != 1           
 
                 // Add starting proficiencies
                 const starting_proficiencies = !multi_class
                     ? ["Light Armor", "Medium Armor", "Shield", "Martial Weapon", "Strength Saves", "Constitution Saves"]
                     : ["Shield", "Martial Weapon"] //--> Reduced list for multiclassing
-                for (const proficiency of starting_proficiencies) humanoid.set_proficiency(proficiency, 0, true)
-                humanoid.set_proficiency("Weapon", 2, true)
+                for (const proficiency of starting_proficiencies) player.set_proficiency(proficiency, 0, true)
+                player.set_proficiency("Weapon", 2, true)
                 break
             }
 
             case 5: {
                 // Add extra attack feature
-                if (!humanoid.has_feature("Extra Attack")) { humanoid.add_feature("Extra Attack") }
+                if (!player.has_feature("Extra Attack")) { player.add_feature("Extra Attack") }
 
                 break
             }
         }
 
-        humanoid.save()
+        player.save()
     }
 
-    static level_up_info(humanoid) {
-        const current_level = humanoid ? (humanoid.classes.Barbarian?.level + 1) || 1 : 1
-        const multi_class = humanoid ? humanoid.level != 0 : false
-        const current_proficiencies = humanoid ? humanoid.proficiencies : {}
+    static level_up_info(player) {
+        const current_level = player ? (player.classes.Barbarian?.level + 1) || 1 : 1
+        const multi_class = player ? player.level != 0 : false
+        const current_proficiencies = player ? player.proficiencies : {}
 
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
