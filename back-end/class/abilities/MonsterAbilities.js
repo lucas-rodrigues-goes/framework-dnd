@@ -33,7 +33,7 @@ var MonsterAbilities = class extends Abilities {
         // Process each target
         for (const target of targets) {
             // Validate Range
-            const range_validation = this.validate_spell_range(creature, target, ability.range);
+            const range_validation = this.validate_spell_range({creature, target, range: ability.range});
             if (range_validation.outOfRange) {
                 console.log(`${creature.name_color} tried to use ${ability.name} on ${target.name_color} but they are out of range.`, "all");
                 continue;

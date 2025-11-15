@@ -244,7 +244,7 @@ var Creature = class extends Entity {
                 // Spells
                 "Blur", "Rage", "Shield", "Hold Person", 
                 "Hold Monster", "Bless", "Absorb Elements",
-                "Hex"
+                "Hex", "Hunter's Mark"
             ]
             if (conditions_with_state.includes(condition)) this.set_state(condition, hasCondition)
 

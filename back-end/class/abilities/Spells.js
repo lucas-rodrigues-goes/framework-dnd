@@ -40,27 +40,53 @@ var Spells = class extends Abilities {
 
         // Reapply Hex
         if (creature.has_condition("Concentration")) {
-            let canReapplyHex = false; {
+            let canReapply = false; {
                 const concentration = creature.get_condition("Concentration")
                 const { condition } = concentration
                 if (condition == "Hex") {
                     const target = instance(concentration.targets?.[0])
                     if (target) {
-                        if (target.health == 0) canReapplyHex = true
+                        if (target.health == 0) canReapply = true
                     }
-                    else canReapplyHex = true
+                    else canReapply = true
                 }
             }
 
             const spell = database.spells.data["Hex"]
-            if (canReapplyHex) abilities_list.reapply_hex = {
+            if (canReapply) abilities_list.reapply_hex = {
                 name: "Reapply " + spell.name,
                 resources: ["Bonus Action"],
                 recovery: 0,
                 image: spell.image,
                 origin: origin,
                 type: "Special",
-                description: `Reapply Hex.`
+                description: spell.description
+            }
+        }
+
+        // Reapply Hunter's Mark
+        if (creature.has_condition("Concentration")) {
+            let canReapply = false; {
+                const concentration = creature.get_condition("Concentration")
+                const { condition } = concentration
+                if (condition == "Hunter's Mark") {
+                    const target = instance(concentration.targets?.[0])
+                    if (target) {
+                        if (target.health == 0) canReapply = true
+                    }
+                    else canReapply = true
+                }
+            }
+
+            const spell = database.spells.data["Hunter's Mark"]
+            if (canReapply) abilities_list.reapply_hunters_mark = {
+                name: "Reapply " + spell.name,
+                resources: ["Bonus Action"],
+                recovery: 0,
+                image: spell.image,
+                origin: origin,
+                type: "Special",
+                description: spell.description
             }
         }
 
@@ -82,6 +108,7 @@ var Spells = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
 
     static finish_casting () {
+        try {
         const creature = impersonated()
         if (!creature.has_condition("Spellcasting")) return
 
@@ -103,7 +130,7 @@ var Spells = class extends Abilities {
         creature.remove_condition("Invisibility")
 
         // Spell Function
-        const spell_function_name = spell.name.replace(/ /g, "_").toLowerCase()
+        const spell_function_name = spell.name.replace(/ /g, "_").replace(/'/g, "").toLowerCase()
         const spell_function = Spells[spell_function_name]
 
         // Call Spell
@@ -118,9 +145,12 @@ var Spells = class extends Abilities {
 
         // Remove Spellcasting
         creature.remove_condition("Spellcasting")
+        } catch (e) {console.log(e)}
     }
 
     static cast_spell(spell, player_class) {
+        try {
+
         spell = {...spell}
 
         spell.cast_time = Number(spell.cast_time)
@@ -139,7 +169,7 @@ var Spells = class extends Abilities {
         const hasExtendedSpell = creature.has_condition("Metamagic: Extended Spell")
         if (hasExtendedSpell && spell.duration > 0) {
             spell.duration = spell.duration * 2
-            creature.remove_condition("Metamagic: Distant Spell")
+            creature.remove_condition("Metamagic: Extended Spell")
         }
 
         // Player Class Object
@@ -158,7 +188,7 @@ var Spells = class extends Abilities {
         }
 
         // Spell Function
-        const spell_function_name = name.replace(/ /g, "_").toLowerCase()
+        const spell_function_name = name.replace(/ /g, "_").replace(/'/g, "").toLowerCase()
         const spell_function = Spells[spell_function_name]
 
         // Resources
@@ -255,6 +285,8 @@ var Spells = class extends Abilities {
 
         // Consume Resources
         this.use_resources(resources)
+
+        } catch (e) {console.log(e)}
     }
 
     static concentrate(creature, spell, targets) {
@@ -284,6 +316,21 @@ var Spells = class extends Abilities {
 
         // Effect
         const spellcast = Spells.hex()
+        if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+
+    static reapply_hunters_mark () {
+        // Requirements
+        const require_target = true
+        const { valid, action_details } = this.check_action_requirements("reapply_hunters_mark", require_target);
+        if (!valid) return
+
+        // Effect
+        const spellcast = Spells.hunters_mark()
         if (spellcast.message) console.log(spellcast.message, "all")
 
         // Consume resources
@@ -642,6 +689,82 @@ var Spells = class extends Abilities {
 
     static hex(options = {}) {
         const original_spell = {...database.spells.data["Hex"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const creature = impersonated()
+        const target =  selected()
+
+        // Validate Target
+        if (!target) return {
+            success: false,
+            message: `${creature.name_color} needs to select a target for this spell.`
+        }
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0 && !castingOnSelf) return {
+            success: false,
+            message: `${creature.name_color} needs to see their target.`
+        }
+
+        // Validate Range
+        const range_validation = Spells.validate_spell_range({creature, target, range:spell.range})
+        if (range_validation.outOfRange && !castingOnSelf) return {
+            success: false,
+            message: `${creature.name_color} tried to cast ${spell.name}, but their target is out of range.`
+        }
+
+        // Set condition
+        Spells.concentrate(creature, spell, [target.id])
+        target.set_condition(original_spell.name, spell.duration, {
+            source: creature.id
+        })
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${spell.name} on ${target.name_color}.`
+        }
+    }
+
+    static elemental_weapon(options = {}) {
+        const original_spell = {...database.spells.data["Hex"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const [creature, target] = [impersonated(), impersonated()]
+        const { name, range, spellcasting_modifier } = spell
+
+        // Damage Type
+        const damage_type = input({damage_type: {
+            label: "Damage Type",
+            value: "Fire,Lightning,Cold,Acid,Poison",
+            type: "radio",
+            options: {value: "string"}
+        }}).damage_type
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Add new imbue weapon
+        Spells.remove_previous(creature, name)
+        creature.set_condition(name, spell.duration, {
+            die_amount,
+            damage_type
+        })
+
+        return {
+            success: true,
+            message: `${creature.name_color} cast ${name} granting them bonus ${damage_type} damage on their weapon attacks.`
+        }
+    }
+
+    static hunters_mark(options = {}) {
+        const original_spell = {...database.spells.data["Hunter's Mark"]}
         const spell = {...original_spell, ...options}
 
         // Targetting

@@ -538,6 +538,8 @@ var Abilities = class {
     //---------------------------------------------------------------------------------------------------
 
     static make_attack({slot, creature=impersonated(), target=selected(), damage_bonuses=[], hit_bonus=0, use_release_sound=true}) {
+        try {
+        
         const weapon = database.items.data[creature.equipment[slot]?.name]
         let advantage_weight = 0
 
@@ -560,14 +562,14 @@ var Abilities = class {
         if (use_release_sound) Sound.play(release_sound, 0.1)
 
         // Calculate Hit
-        hit_bonus += this.weapon_attack_hit_bonus({weapon, creature})
+        hit_bonus += this.weapon_attack_hit_bonus({weapon, creature, target})
         const hit_result = this.attack_hit_result({hit_bonus, creature, target, weapon, advantage_weight})
         if (hit_result.success) {
             damage_bonuses = [...damage_bonuses, ...this.on_attack_hit_abilities({weapon, creature, target, advantage_weight: hit_result.advantage_weight})]
         }
 
         // Deal damage
-        const dmg_bonus = [...this.weapon_attack_damage_bonuses({creature}), ...damage_bonuses]
+        const dmg_bonus = [...this.weapon_attack_damage_bonuses({creature, weapon}), ...damage_bonuses]
         const args = {weapon, creature, target, hit_result: hit_result.message, slot, damage_bonuses: dmg_bonus}
         const damage_result = (hit_result.success 
             ? ` dealing ${this.weapon_attack_damage(args)} damage.`
@@ -585,6 +587,8 @@ var Abilities = class {
             damage_result: damage_result,
             message: `${creature.name_color} attacks ${target.name_color} (AC ${target.armor_class}) with their ${weapon?.name || "fists"} and ${hit_result.message} (${hit_result.dice_roll.text_color})${damage_result}`
         }
+
+        } catch (e) {console.log(e)}
     }
 
     static on_attack_hit_abilities({weapon, creature=impersonated(), target=selected(), advantage_weight=0}) {
@@ -915,15 +919,16 @@ var Abilities = class {
         return output
     }
 
-    static weapon_attack_hit_bonus({weapon, creature=impersonated()}) {
+    static weapon_attack_hit_bonus({weapon, creature=impersonated(), target=selected()}) {
         const isFinesse = weapon?.properties?.includes("Finesse") || false;
         const isAmmo = weapon?.properties?.includes("Ammunition") || false;
         const hasPactOfTheBlade = creature.has_feature("Pact of the Blade")
 
         // Applicable bonuses
-        const str_bonus = Math.min(creature.score_bonus["strength"], 3);
-        const dex_bonus = creature.score_bonus["dexterity"];
-        const cha_bonus = creature.score_bonus["charisma"]
+        const str_bonus = Math.min(creature.score_bonus.strength, 3);
+        const dex_bonus = creature.score_bonus.dexterity;
+        const cha_bonus = creature.score_bonus.charisma
+        const wis_bonus = creature.score_bonus.wisdom
 
         // Hit Bonus
         let hit_bonus = str_bonus;
@@ -932,6 +937,10 @@ var Abilities = class {
         
         // Pact of the blade
         if (hasPactOfTheBlade) hit_bonus = Math.max(hit_bonus, cha_bonus)
+
+        // Favored Enemy
+        const feature_name = `Favored Enemy: ${target.type}`
+        if (creature.has_feature(feature_name)) hit_bonus += wis_bonus
 
         // Proficiency
         const prof_bonus = 2
@@ -1041,13 +1050,34 @@ var Abilities = class {
         return output
     }
 
-    static weapon_attack_damage_bonuses({creature=impersonated(), target=selected()}) {
+    static weapon_attack_damage_bonuses({creature=impersonated(), target=selected(), weapon}) {
         const output = []; {
+            const default_damage = weapon?.damage?.[0]?.damage_type || "Force"
+
+            // Favored Enemy
+            const feature_name = `Favored Enemy: ${target.type}`
+            if (creature.has_feature(feature_name)) {
+                output.push({die_amount: 0, die_size: 0, damage_type: default_damage, damage_bonus: creature.score_bonus.wisdom})
+            }
+
+            // Hunter's Mark
+            if (target.has_condition("Hunter's Mark")) {
+                const condition = target.get_condition("Hunter's Mark")
+                if (condition.source == creature.id) {
+                    output.push({die_amount: 1, die_size: 6, damage_type: default_damage, damage_bonus: 0})
+                }
+            }
 
             // Imbue Weapon
             if (creature.has_condition("Imbue Weapon")) {
                 const condition = creature.get_condition("Imbue Weapon")
                 output.push({die_amount: 0, die_size: 0, damage_type: condition.damage_type, damage_bonus: condition.damage_bonus})
+            }
+
+            // Elemental Weapon
+            if (creature.has_condition("Elemental Weapon")) {
+                const condition = creature.get_condition("Elemental Weapon")
+                output.push({die_amount: condition.die_amount || 1, die_size: 4, damage_type: condition.damage_type, damage_bonus: 0})
             }
 
         }

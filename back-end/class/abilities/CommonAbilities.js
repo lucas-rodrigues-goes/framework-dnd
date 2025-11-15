@@ -389,7 +389,7 @@ var CommonAbilities = class extends Abilities {
         const current_movement = creature.resources["Movement"]
         
         // Check if creature has enough movement
-        if (current_movement.value < half_movement) {
+        if (current_movement.value < half_movement && Initiative.turn_order.includes(creature.id)) {
             console.log(`${creature.name_color} doesn't have enough movement (${current_movement.value}/${half_movement}) to stand up.`, "all")
             return
         }
