@@ -73,6 +73,63 @@ var console = class {
         this.history = history
     }
 
+    static indent(object, visibility) {
+
+        function escape_html(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        function format(value, level = 0) {
+            const indent = "&nbsp;".repeat(level * 4);   // 4-space indentation in HTML
+
+            if (value === null) return "null";
+            if (typeof value !== "object") {
+                return escape_html(JSON.stringify(value));
+            }
+
+            // Array
+            if (Array.isArray(value)) {
+                if (value.length === 0) return "[]";
+
+                let result = "[<br>";
+                const inner = value
+                    .map(v => indent + "&nbsp;&nbsp;&nbsp;&nbsp;" + format(v, level + 1))
+                    .join(",<br>");
+                result += inner + "<br>" + indent + "]";
+                return result;
+            }
+
+            // Object
+            const keys = Object.keys(value);
+            if (keys.length === 0) return "{}";
+
+            let result = "{<br>";
+            const inner = keys
+                .map(key => {
+                    const key_html = escape_html(JSON.stringify(key));
+                    const val_html = format(value[key], level + 1);
+                    return (
+                        indent +
+                        "&nbsp;&nbsp;&nbsp;&nbsp;" +  // indent one level (4 spaces)
+                        key_html +
+                        ": " +
+                        val_html
+                    );
+                })
+                .join(",<br>");
+
+            result += inner + "<br>" + indent + "}";
+            return result;
+        }
+
+        const html = format(object, 0);
+
+        this.log(html, visibility);
+    }
+
     static clear() {
         this.history = []
     }

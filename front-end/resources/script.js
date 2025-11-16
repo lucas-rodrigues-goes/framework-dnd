@@ -67,6 +67,10 @@ function isEqualJSON(a, b) {
     return JSON.stringify(a) === JSON.stringify(b)
 }
 
+console.indent = (object) => {
+    console.log(JSON.stringify(object, null, 4))
+}
+
 //=====================================================================================================
 // External functions
 //=====================================================================================================
