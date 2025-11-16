@@ -1189,13 +1189,17 @@ var Spells = class extends Abilities {
 
         // Cast
         for (let i = 0; i < darts; i++) {
-            const damage = Spells.spell_damage(creature, target, "hit", [{
-                die_amount: 1,
-                die_size: 4,
-                damage_bonus: 1,
-                damage_type: "Force"
-            }])
-            console.log(`${creature.name_color} casts ${spell.name} on ${target.name_color} dealing ${damage} damage.`, "all")
+            if (target.has_condition("Shield")) {
+                console.log(`${creature.name_color} casts ${spell.name} on ${target.name_color} but it is blocked by Shield.`, "all")
+            } else {
+                const damage = Spells.spell_damage(creature, target, "hit", [{
+                    die_amount: 1,
+                    die_size: 4,
+                    damage_bonus: 1,
+                    damage_type: "Force"
+                }])
+                console.log(`${creature.name_color} casts ${spell.name} on ${target.name_color} dealing ${damage} damage.`, "all")
+            }
         }
 
         return {success: true}
