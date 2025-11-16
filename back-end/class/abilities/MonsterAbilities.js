@@ -174,10 +174,24 @@ var MonsterAbilities = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
 
     static attack(ability) {
-
         // Requirements
         const { valid, creature, targets } = this.check_action_requirements(ability);
         if (!valid || !creature) return;
+
+        // Parameters
+        const damage_list = [...ability.damage]
+        let hit_bonus = ability.hit_bonus
+
+        /* Buffs */ ; {
+            // Ranger's Companion
+            if (creature.has_condition("Ranger's Companion")) {
+                const condition = creature.get_condition("Ranger's Companion")
+                const source = instance(condition.source)
+                if (source) {
+                    hit_bonus += Number(source.score_bonus.wisdom)
+                }
+            }
+        }
 
         // Validate target selection count
         if (targets.length === 0) {
@@ -225,7 +239,6 @@ var MonsterAbilities = class extends Abilities {
             if (i === 0) Sound.play("swing", 0.1);
 
             // Calculate hit
-            const hit_bonus = ability.hit_bonus;
             const hit_result = this.attack_hit_result({
                 hit_bonus,
                 creature,
@@ -235,7 +248,7 @@ var MonsterAbilities = class extends Abilities {
 
             // Damage result
             const damage_result = hit_result.success
-                ? ` dealing ${this.damage(creature, target, hit_result.message, ability.damage)} damage.`
+                ? ` dealing ${this.damage(creature, target, hit_result.message, damage_list)} damage.`
                 : `.`
 
             // Make stealth checks and others
@@ -243,7 +256,7 @@ var MonsterAbilities = class extends Abilities {
 
             // Damage sound
             if (hit_result.success) {
-                for (const damage of ability.damage) Sound.play(damage.damage_type.toLowerCase())
+                for (const damage of damage_list) Sound.play(damage.damage_type.toLowerCase())
             }
 
             // Apply condition

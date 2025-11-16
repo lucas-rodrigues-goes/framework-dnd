@@ -3,7 +3,11 @@
 var FeatureAbilities = class extends Abilities {
     // Ability List
     static abilities_list(creature=impersonated()) {
-        const functionName = (name) => name.replace(/:/g, '').toLowerCase().replace(/ /g, '_')
+        const functionName = (name) => name
+            .replace(/:/g, '')
+            .replace(/'/g, '')
+            .replace(/ /g, '_')
+            .toLowerCase()
         const showName = (name) => name.split(": ").length > 1 ? name.split(": ")[1] : name
         const origin = "FeatureAbilities"
         const abilities_list = {}
@@ -208,14 +212,21 @@ var FeatureAbilities = class extends Abilities {
             }
         }
 
-        return abilities_list
-    }
+        /* Ranger */ {
+            let name;
+            
+            name = "Ranger's Companion"
+            if (creature.has_feature(name)) abilities_list[functionName(name)] = {
+                name: showName(name),
+                resources: ["Action"],
+                description: database.features.data[name]?.description || "",
+                image: "asset://f0a05f39feac18ad8603bda1c9297ce4",
+                type: type,
+                origin: origin,
+            }
+        }
 
-    static #name_to_ability_func(name) {
-        return name
-            .replace(/:/g, '')      // Remove colons
-            .toLowerCase()          // Lowercase everything
-            .replace(/ /g, '_');    // Transform spaces into underscores
+        return abilities_list
     }
 
     //---------------------------------------------------------------------------------------------------
@@ -753,6 +764,106 @@ var FeatureAbilities = class extends Abilities {
         // Effect
         const spellcast = Spells.invisibility({name: "Shroud of Shadow", force_self: true})
         if (spellcast.message) console.log(spellcast.message, "all")
+
+        // Consume resources
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
+    }
+
+    //---------------------------------------------------------------------------------------------------
+    // Ranger
+    //---------------------------------------------------------------------------------------------------
+
+    static rangers_companion () {
+        const name = `Ranger's Companion`
+
+        // Requirements
+        const require_target = false
+        const { valid, creature, target, action_details } = this.check_action_requirements("rangers_companion", require_target);
+        if (!valid) return
+
+        // Remove previous companion
+        if (!target) {
+            input({
+                "none": {
+                    label: "Are you sure you want to end your bond with your current companion?",
+                    type: "label",
+                    options: {
+                        span: true
+                    }
+                }
+            })
+            const previous_target = this.remove_previous(creature, name); 
+            return {
+                success: false, 
+                message: (previous_target
+                    ? `${creature.name_color} ended their bond with ${previous_target.name_color}.`
+                    : `${creature.name_color} needs to choose a target for this spell.`
+                )
+            }
+        }
+
+        // Max target XP
+        const level = creature.classes.Ranger.level
+        let max_exp; {
+            if (level >= 15) max_exp = 450
+            else if (level >= 7) max_exp = 200
+            else if (level >= 5) max_exp = 100
+            else if (level >= 3) max_exp = 50
+        }
+        if (target.exp > max_exp) {
+            console.log(`This creature is too powerful for this.`, "all")
+            return
+        }
+
+        // Validate Type
+        if (["Humanoid"].includes(target.type)) {
+            console.log(`${creature.name_color} selected an invalid creature for a companion.`, "all")
+            return
+        }
+
+        // Validate Visibility
+        const target_visibility = creature.target_visibility()
+        if (target_visibility == 0) {
+            console.log(`${creature.name_color} needs to see their target.`, "all")
+            return
+        }
+
+        // Validate Range
+        if (calculate_distance(creature, target) > 1) {
+            console.log(`${creature.name_color} tried to cast ${name}, but their target is out of range.`, "all")
+            return
+        }
+
+        // Validate if is in combat
+        if (Initiative.turn_order.includes(creature.id)) {
+            console.log(`This ability cannot be used while in combat.`)
+            return
+        }
+
+        // Effect
+        Spells.remove_previous(creature, name)
+        target.set_condition(name, -1, {
+            source: creature.id
+        })
+        creature.set_condition(`Maintaining: ${name}`, -1, {
+            target: target.id
+        })
+
+        // Change name
+        const newName = input({
+            "name": {
+                label: "Choose a name",
+                type: "text",
+                options: {
+                }
+            }
+        }).name
+        target.name = newName
+        target.alignment = "friendly"
+
+        target.long_rest()
+        console.log(`${creature.name_color} cast ${name} on ${target.name_color}.`, "all")
 
         // Consume resources
         this.use_resources(action_details.resources)

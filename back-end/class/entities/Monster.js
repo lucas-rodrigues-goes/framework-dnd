@@ -98,6 +98,7 @@ var Monster = class extends Creature {
         this.speed = speed
         this.spellcasting_level = spellcasting_level
         this.abilities = abilities
+        this.attitude = "hostile"
 
         // Fill Resources
         if (spellcasting_level > 0) this.update_spell_slots()
@@ -251,7 +252,18 @@ var Monster = class extends Creature {
     }
 
     get natural_armor_class() {
-        return this.#natural_armor_class
+        let natural_ac = this.#natural_armor_class
+
+        // Ranger Companion
+        if (this.has_condition("Ranger's Companion")) {
+            const condition = this.get_condition("Ranger's Companion")
+            const source = instance(condition.source)
+            if (source) {
+                natural_ac += Number(source.score_bonus.wisdom)
+            }
+        }
+
+        return natural_ac
     }
 
     set initiative_mod(init) {
