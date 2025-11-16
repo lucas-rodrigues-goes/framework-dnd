@@ -1437,16 +1437,18 @@ var Creature = class extends Entity {
     }
 
     unlearn_spell(player_class, spell_name) {
-        // Validates if spell exists, and if character has it
-        if (!database.get_spell(spell_name)) { return }
-        if (!this.#spells[player_class]) { return }
-        if (!this.#spells[player_class].known) { return }
-        if (!this.#spells[player_class.known.includes(spell_name)]) { return }
+        try {
+            // Validates if spell exists, and if character has it
+            if (!database.get_spell(spell_name)) { return }
+            if (!this.#spells[player_class]) { return }
+            if (!this.#spells[player_class].known) { return }
+            if (!this.#spells[player_class].known.includes(spell_name)) { return }
 
-        // Removes spell from known list
-        this.#spells[player_class].known = this.#spells[player_class].known.filter(
-            item => item != spell_name
-        )
+            // Removes spell from known list
+            this.#spells[player_class].known = this.#spells[player_class].known.filter(
+                item => item != spell_name
+            )
+        } catch (error) {console.log(error)}
     }
 
     memorize_spell(player_class, spell_name) {
