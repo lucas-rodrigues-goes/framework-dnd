@@ -94,11 +94,8 @@ var Sorcerer = class extends PlayerClass {
                     choices.proficiencies.push(super.skill_choice(["Arcana", "Deception", "Insight", "Intimidation", "Persuasion", "Religion"], 2))
                 }
 
-                // Choose 4 new cantrips
-                choices.spells.push({amount: 4, player_class: "Sorcerer", level: 0})
-
-                // Choose 6 new spells
-                choices.spells.push({amount: 2, player_class: "Sorcerer", level: max_spell_slot_level})
+                // Choose 3 new cantrips
+                choices.spells.push({amount: 3, player_class: "Sorcerer", level: 0})
 
                 break
             }
@@ -134,8 +131,10 @@ var Sorcerer = class extends PlayerClass {
             }
         }
 
-        // On every new level learn 1 spells
-        if (current_level != 1) choices.spells.push({amount: 1, player_class: "Sorcerer", level: max_spell_slot_level})
+        // On every new level learn 1 or 2 spells
+        const oddLevel = (current_level % 2) == 1
+        const spellAmount = current_level >= 11 ? (oddLevel ? 1 : 0) : (oddLevel ? 2 : 1)
+        choices.spells.push({amount: spellAmount, player_class: "Sorcerer", level: max_spell_slot_level})
         
         return {proficiencies, choices, features}
     }

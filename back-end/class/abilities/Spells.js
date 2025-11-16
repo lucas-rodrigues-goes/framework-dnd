@@ -1411,18 +1411,18 @@ var Spells = class extends Abilities {
         const xDiff = Math.abs(x - Number(coordinates.x))
         const yDiff = Math.abs(y - Number(coordinates.y))
         const distance = (xDiff + yDiff) * 5
-        if (distance <= 30) {
+        if (distance <= spell.range) {
             creature.x = Number(coordinates.x)
             creature.y = Number(coordinates.y)
         }
         else return {
             success: false,
-            message: `Maximum distance for misty step is 30ft, attempted ${distance}ft`
+            message: `Maximum distance for misty step is ${spell.range}ft, attempted ${distance}ft`
         }
 
         return {
             success: true,
-            message: `${creature.name_color} cast ${spell.name}.`
+            message: `${creature.name_color} cast ${spell.name} teleporting ${distance}ft.`
         }
     }
 
