@@ -178,28 +178,21 @@ var mapCreatures = function (map_name) {
 //---------------------------------------------------------------------------------------------------
 
 // Receives simple party information for HUD display
-var party_info = function () {
+var owned_info = function () {
     // Maps all map tokens
-    const tokens = MapTool.tokens.getMapTokens()
-    const party_info = []
+    const tokens = MTScript.evalMacro("[r:getOwned()]").split(",")
+    const owned_info = []
 
     // Goes through all map tokens
     for (let i = 0; i < tokens.length; i++) {
-        const token = tokens[i]
+        const creature = instance(tokens[i])
+        if (!creature) continue
+        const {health, max_health, portrait, id} = creature
 
-        // If current token is a party character
-        if(token.isPC()) {
-            const party_member = instance(token.getId())
-
-            // Push token information
-            if (party_member) {
-                const object = [party_member.health, party_member.max_health, party_member.portrait, token.getId()]
-                party_info.push(object)
-            }
-        }
+        owned_info.push([health, max_health, portrait, id])
     }
 
-    return party_info
+    return owned_info
 }
 
 //---------------------------------------------------------------------------------------------------
