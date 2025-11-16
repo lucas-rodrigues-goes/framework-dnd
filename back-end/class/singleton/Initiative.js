@@ -41,10 +41,11 @@ var Initiative = class {
                 player: creature.player,
                 portrait: creature.portrait || creature.image,
                 name: creature.name,
+                attitude: creature.attitude,
                 status: initiative_info.status,
                 description: initiative_info.description,
                 initiative: initiative_info.initiative - creatures[this.turn_order[0]].initiative,
-                offset: initiative_info.offset
+                offset: initiative_info.offset,
             })
         }
 

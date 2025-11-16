@@ -62,6 +62,7 @@ var Creature = class extends Entity {
     }
     #inventory = Array.from({ length: 25 }, () => null);
     #notes = {}
+    #attitude = "friendly" // friendly, neutral, hostile
 
     //=====================================================================================================
     // Basic Getters / Setters
@@ -101,6 +102,13 @@ var Creature = class extends Entity {
     }
 
     get abilities() {return Abilities.abilities_list(this)}
+
+    get attitude () {return this.#attitude}
+    set attitude (value) {
+        value = value.toLowerCase()
+        if (["friendly", "hostile", "neutral"].includes(value)) this.#attitude = value
+        this.save()
+    }
 
     //=====================================================================================================
     // Buffs and Debuffs
@@ -406,8 +414,8 @@ var Creature = class extends Entity {
             if (!revealing_creature || !hidden_creature) return false;
             if (!(revealing_creature instanceof Creature) || !(hidden_creature instanceof Creature)) return false;
 
-            // Both are PCs or NPCs
-            if (revealing_creature.player == hidden_creature.player) return false
+            // Both are same teams
+            if (revealing_creature.attitude == hidden_creature.attitude) return false
 
             // Creature is not hidden
             if (!hidden_creature.has_condition("Hidden")) return false
@@ -650,14 +658,23 @@ var Creature = class extends Entity {
             calculated_max_health += adjusted_base_health * level
         }
 
-        // Feature-based modifiers
-        const feature_modifiers = {
-            "Dwarven Toughness": { type: "add", value: 1 * level }
-        };
-        for (const [feature, modifier] of Object.entries(feature_modifiers)) {
-            if (this.has_feature(feature)) {
-                if (modifier.type === "add") { calculated_max_health += modifier.value; } 
-                else if (modifier.type === "multiply") { calculated_max_health *= modifier.value; }
+        /* Feature-based modifiers */; {
+            // Dwarven Toughness
+            if (this.has_feature("Dwarven Toughness")) {
+                calculated_max_health += (1 * level)
+            }
+        }
+
+        /* Condition-based modifiers */; {
+            // Ranger's Companion
+            if (this.has_condition("Ranger's Companion")) {
+                const condition = this.get_condition("Ranger's Companion")
+                const source = instance(condition.source)
+                if (source) {
+                    const wisdom = Number(source.score_bonus.wisdom) || 0
+                    const source_level = Number(source.classes.Ranger.level) || 0
+                    calculated_max_health += (source_level * wisdom)
+                }
             }
         }
 
@@ -805,7 +822,7 @@ var Creature = class extends Entity {
         if (damageToHealth > 0 && this.has_condition("Concentration")) {
             // Concentration advantage
             let advantage_weight = 0
-            if (this.has_conditions(["Invocation: Eldritch Mind"], "any")) advantage_weight += 1
+            if (this.has_feature("Invocation: Eldritch Mind")) advantage_weight += 1
 
             // Roll d20
             const roll_result = roll_20(advantage_weight)
@@ -825,8 +842,12 @@ var Creature = class extends Entity {
 
         // Lose Spellcasting (only check if actual health was damaged)
         if (damageToHealth > 0 && this.has_condition("Spellcasting")) {
+            // Concentration advantage
+            let advantage_weight = 0
+            if (this.has_feature("Invocation: Eldritch Mind")) advantage_weight += 1
+
             // Roll d20
-            const roll_result = roll_20(0)
+            const roll_result = roll_20(advantage_weight)
             const save_bonus = this.saving_throws.constitution + this.roll_bonus()
             const roll_to_save = roll_result.result + save_bonus
 
@@ -2232,6 +2253,7 @@ var Creature = class extends Entity {
         this.#inventory = object.inventory || this.#inventory;
         this.#notes = object.notes || this.#notes;
         this.#spellcasting_level = object.spellcasting_level || this.#spellcasting_level
+        this.#attitude = object.attitude || this.#attitude
     }
     
     save() {
@@ -2251,7 +2273,8 @@ var Creature = class extends Entity {
             equipment: this.#equipment,
             inventory: this.#inventory,
             notes: this.#notes,
-            spellcasting_level: this.#spellcasting_level
+            spellcasting_level: this.#spellcasting_level,
+            attitude: this.#attitude
         };
     
         this.token.setName(this.#name);

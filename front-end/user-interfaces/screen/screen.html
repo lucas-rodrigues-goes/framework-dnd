@@ -490,18 +490,17 @@
         }
         async function updateInitiative() {
             function characterElement(creature) {
-                const {id = "", player = false, portrait = "", name = "", status = "", description = "", initiative = 0} = creature
+                const {id = "", attitude = "hostile", player = "false", portrait = "", name = "", status = "", description = "", initiative = 0} = creature
                 const isPlaying = status == "Playing"
                 const isGM = "'+isGM()+'" == 1
 
                 // Border color
-                let color
-                if (description == "Spellcasting") color = "#66f"
-                else if (status == "Suspended") color = "#fb6"
-                else if (!player) color = "#b44"
-                else if (isPlaying) color = "#ddd"
-                // else if (player) color = "#5ab350"
-                else color = "#666"
+                let color = "#666"; {
+                    if (description == "Spellcasting") color = "#66f"
+                    else if (attitude == "hostile") color = "#b44"
+                    else if (attitude == "neutral") color = "#b8a44d"
+                    else if (attitude == "friendly") color = "#5ab350"
+                }
 
                 const show_initiative = initiative
 
@@ -980,7 +979,7 @@
                         name: selected()?.name,
                         type: selected()?.race || selected()?.type || selected()?.token.getProperty("class") || "Entity",
                         portrait: selected()?.portrait,
-                        player: selected()?.player,
+                        attitude: selected()?.attitude,
                         armor_class: selected()?.armor_class,
                         health: selected()?.health,
                         max_health: selected()?.max_health,
@@ -996,7 +995,11 @@
         
                     // Calculated attributes
                     let hp_percent = target.health / target.max_health * 100
-                    let color = target.player ? "#5ab350" : "#b44"
+                    let color; {
+                        if (target.attitude == "friendly") color = "#5ab350";
+                        else if (target.attitude == "neutral") color = "#b8a44d";
+                        else if (target.attitude == "hostile") color = "#b44";
+                    }
         
                     // Update values
                     getId("current-target-name").textContent = target.name
@@ -1076,10 +1079,9 @@
         async function updateCurrentParty() {
     
             // Gather party info
-            const {party, impersonated_ID, isPlayer} = JSON.parse(await backend(`JSON.stringify({
-                party: party_info(),
+            const {party, impersonated_ID} = JSON.parse(await backend(`JSON.stringify({
+                party: owned_info(),
                 impersonated_ID: getImpersonated(),
-                isPlayer: impersonated()?.player
             })`))
             
             // Verify if there is need for update
@@ -1089,7 +1091,6 @@
     
                 // Clear
                 getId("current-party").clearChildren()
-                if (!isPlayer) return
 
     
                 for (const character_info of party) {
@@ -1304,7 +1305,7 @@
                         ]},
 
                         // Current Party
-                        //{tag: "div", attributes: {id: "current-party"}},
+                        {tag: "div", attributes: {id: "current-party"}},
 
                         // Buttons
                         {tag: "div", style: {
@@ -1570,7 +1571,7 @@
                 updateInitiative()
                 updateCurrentCharacter()
                 updateCurrentTarget()
-                //updateCurrentParty()
+                updateCurrentParty()
                 updateLog()
                 updateClock()
             }, 1000)
