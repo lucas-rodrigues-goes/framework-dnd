@@ -108,6 +108,7 @@ var Creature = class extends Entity {
         value = value.toLowerCase()
         if (["friendly", "hostile", "neutral"].includes(value)) this.#attitude = value
         this.save()
+        this.update_state()
     }
 
     //=====================================================================================================
@@ -179,6 +180,8 @@ var Creature = class extends Entity {
     //=====================================================================================================
 
     update_state({daytime=undefined}={}) {
+        try {
+
         // Update Health Bar
         function crunchNumber(num, from = [0, 100], to = [0, 100]) {
             // Define the input and output ranges
@@ -195,6 +198,26 @@ var Creature = class extends Entity {
         }
         const crunchedHealth = crunchNumber(this.health / this.max_health, [0, 1], [0.292, 0.708])
         const crunchedTempHealth = crunchNumber(this.temporary_health / this.max_health, [0, 1], [0.292, 0.708])
+        const updateBars = (isDead) => {
+            const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+            const healthBars = ["FriendlyHealth", "NeutralHealth", "HostileHealth"]
+            const characterBar = capitalize(this.attitude)+"Health"
+
+            if (isDead) {
+                for (const bar of healthBars) {
+                    MTScript.evalMacro(`[r: setBarVisible("${bar}", 0, "${this.id}") ]`)
+                }
+                MTScript.evalMacro(`[r: setBarVisible("TemporaryHealth", 0, "${this.id}") ]`)
+            }
+            else {
+                for (const bar of healthBars) {
+                    if (bar != characterBar)
+                    MTScript.evalMacro(`[r: setBarVisible("${bar}", 0, "${this.id}") ]`)
+                }
+                MTScript.evalMacro(`[r: setBar("${characterBar}", ${crunchedHealth}, "${this.id}")]`)
+                MTScript.evalMacro(`[r: setBar("TemporaryHealth", ${crunchedTempHealth}, "${this.id}")]`)
+            }
+        }
         
         // Verify all conditions
         for (const condition in database.conditions.data) {
@@ -216,14 +239,7 @@ var Creature = class extends Entity {
                     break
                 }
                 case "Dead": {
-                    if (hasCondition) {
-                        MTScript.evalMacro(`[r: setBarVisible("Health", 0, "${this.id}") ]`)
-                        MTScript.evalMacro(`[r: setBarVisible("TemporaryHealth", 0, "${this.id}") ]`)
-                    }
-                    else {
-                        MTScript.evalMacro(`[r: setBar("Health", ${crunchedHealth}, "${this.id}")]`)
-                        MTScript.evalMacro(`[r: setBar("TemporaryHealth", ${crunchedTempHealth}, "${this.id}")]`)
-                    }
+                    updateBars(hasCondition)
                     break
                 }
                 case "Hidden": {
@@ -271,6 +287,8 @@ var Creature = class extends Entity {
                 [h: setTerrainModifier('{"terrainModifier":1.5,"terrainModifierOperation":"MULTIPLY","terrainModifiersIgnored":["NONE"]}', "${this.id}")]
             `)
         }
+
+        } catch (error) { console.log(error) }
     }
 
     turn_start() {
@@ -723,38 +741,50 @@ var Creature = class extends Entity {
         this.health = Math.floor(new_max_health * health_percentage);
     }
 
-
     set health(health) {
         // Validating parameters
         if (isNaN(Number(health))) { return }
         const newHealth = Math.max(Math.min(health, this.max_health), 0)
 
+        // Store old health for comparison
+        const oldHealth = this.#health;
+
+        // Prevent infinite loop - don't process if health hasn't actually changed
+        if (oldHealth === newHealth) return;
+
         this.#health = newHealth;
         this.update_state()
         this.save();
 
-        // Update States
-        if (newHealth <= 0) {
-            const isPlayer = this.constructor.name == "Player"
-
-            // Set conditions
-            if (isPlayer && (this.exhaustion || 0) < 10) {
-                if (this.has_condition("Dead")) this.remove_condition("Dead")
-                const duration = this.has_condition("Dying") ? this.get_condition("Dying").duration - 5 : 10
-
-                // Set dying condition
-                this.set_condition("Dying", duration)
-                console.log(`${this.name_color} is dying in ${duration} round${duration>1 ? "s" : ""}.`, "all")
-            }
-            else {
-                if (this.has_condition("Dying")) this.remove_condition("Dying")
-                this.set_condition("Dead", -1)
-                Initiative.remove_creature(this.id)
-            }
+        // Handle transitions to/from 0 HP
+        if (newHealth <= 0 && oldHealth > 0) {
+            this.#handle_zero_hp();
         }
-        else {
+        else if (newHealth > 0 && oldHealth <= 0) {
+            // Remove death/dying conditions if health is restored from 0
             if (this.has_condition("Dead")) this.remove_condition("Dead")
             if (this.has_condition("Dying")) this.remove_condition("Dying")
+        }
+    }
+
+    #handle_zero_hp() {
+        const isPlayer = this.constructor.name === "Player"
+
+        // Set conditions
+        if (isPlayer && (this.exhaustion || 0) < 10) {
+            if (this.has_condition("Dead")) this.remove_condition("Dead")
+            const duration = this.has_condition("Dying") ? this.get_condition("Dying").duration - 5 : 10
+
+            // Set dying condition
+            this.set_condition("Dying", duration)
+            console.log(`${this.name_color} is dying in ${duration} round${duration>1 ? "s" : ""}.`, "all")
+        }
+        else {
+            if (this.has_condition("Dying")) this.remove_condition("Dying")
+            this.set_condition("Dead", -1)
+            if (Initiative && Initiative.remove_creature) {
+                Initiative.remove_creature(this.id)
+            }
         }
     }
 
@@ -805,17 +835,44 @@ var Creature = class extends Entity {
             }
         }
 
+        // Check if target is already at 0 HP and has Dying condition
+        const isDying = this.health <= 0 && this.has_condition("Dying");
+        
         // Apply remaining damage to actual health
         if (damageToHealth > 0) {
             const newHealth = this.health - damageToHealth
 
             // Apply exhaustion if 0 hp
-            if (newHealth <= 0 && this.constructor.name == "Player") {
+            const isPlayer = this.player || this.constructor.name === "Player" || 
+                            (this.token && JSON.parse(this.token.getProperty("class") || "[]").includes("Player"));
+            if (newHealth <= 0 && this.health > 0 && isPlayer) {
                 this.exhaustion += 1
             }
 
             // Apply damage
             this.health = newHealth;
+        }
+
+        // If target is already dying and takes damage, reduce dying duration
+        if (isDying && damageToHealth > 0) {
+            const dyingCondition = this.get_condition("Dying");
+            if (dyingCondition) {
+                const newDuration = dyingCondition.duration - 5;
+                
+                if (newDuration <= 0) {
+                    // Dying condition ends, creature dies
+                    this.remove_condition("Dying");
+                    this.set_condition("Dead", -1);
+                    if (Initiative && Initiative.remove_creature) {
+                        Initiative.remove_creature(this.id);
+                    }
+                    console.log(`${this.name_color} has succumbed to their injuries and died.`, "all");
+                } else {
+                    // Update dying condition with reduced duration
+                    this.set_condition("Dying", newDuration, {...dyingCondition, duration: newDuration});
+                    console.log(`${this.name_color} is closer to death. Dying condition reduced to ${newDuration} rounds.`, "all");
+                }
+            }
         }
 
         // Lose Concentration (only check if actual health was damaged)
