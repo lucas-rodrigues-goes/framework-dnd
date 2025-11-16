@@ -1000,8 +1000,8 @@ var Creature = class extends Entity {
         };
 
         // Apply resistances from conditions
-        for (const name in this.conditions) {
-            const condition = this.conditions[name];
+        for (const name in this.all_conditions) {
+            const condition = this.all_conditions[name];
             if (condition.resistances) {
                 applyResistancesOfObject(condition.resistances);
             }
@@ -1124,8 +1124,8 @@ var Creature = class extends Entity {
 
         // Condition Bonus
         let condition_bonus = 0; {
-            for (const name in this.conditions) {
-                const condition = this.conditions[name]
+            for (const name in this.all_conditions) {
+                const condition = this.all_conditions[name]
                 if (condition.bonus_armor_class) condition_bonus += condition.bonus_armor_class
             }
         }
@@ -1626,9 +1626,12 @@ var Creature = class extends Entity {
     // Conditions
     //=====================================================================================================
 
+    get all_conditions() {
+        return {...this.conditions, ...this.equipment_conditions}
+    }
+
     get conditions() {
-        const conditions = {...this.#conditions}
-        return conditions
+        return {...this.#conditions}
     }
 
     get equipment_conditions () {
@@ -1825,6 +1828,11 @@ var Creature = class extends Entity {
                 const remaining_seconds = Math.max(0, condition.end_time - current_time);
                 durations[name] = Math.round(TimeUnit.toRounds(remaining_seconds));
             }
+        }
+
+        // Equipment conditions
+        for (const [name, condition] of Object.entries(this.equipment_conditions)) {
+            durations[name] = -1
         }
         
         return durations;
