@@ -781,7 +781,7 @@ var Creature = class extends Entity {
         }
         else {
             if (this.has_condition("Dying")) this.remove_condition("Dying")
-            this.set_condition("Dead", -1)
+            this.set_condition("Dead", -1, {time_of_death: Time.current})
             if (Initiative && Initiative.remove_creature) {
                 Initiative.remove_creature(this.id)
             }
@@ -862,7 +862,7 @@ var Creature = class extends Entity {
                 if (newDuration <= 0) {
                     // Dying condition ends, creature dies
                     this.remove_condition("Dying");
-                    this.set_condition("Dead", -1);
+                    this.set_condition("Dead", -1, {time_of_death: Time.current});
                     if (Initiative && Initiative.remove_creature) {
                         Initiative.remove_creature(this.id);
                     }
@@ -934,6 +934,10 @@ var Creature = class extends Entity {
     }
 
     receive_healing(value) {
+        if (this.has_condition("Dead")) {
+            console.log(`${this.name_color} can't be healed.`, "all")
+            return
+        }
         this.health += value
 
         log(this.#name + " received " + value + " points of healing.");
