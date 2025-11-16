@@ -342,6 +342,85 @@ var Spells = class extends Abilities {
     // Cantrips
     //---------------------------------------------------------------------------------------------------
 
+    static daze(options = {}) {
+        const original_spell = {...database.spells.data["Daze"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const creature = impersonated()
+        const saving_throw_score = "Wisdom"
+
+        // Fail if non-humanoid is selected
+        for (const target of allSelected()) {
+            if (target.type != "Humanoid") {
+                console.log(`${creature.name_color} tried to cast ${spell.name} but non-humanoids can't be targets for this spell.`)
+            }
+        }
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+        }
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: max_targets,
+            saving_throw_score: saving_throw_score
+        })
+        if (!save_return.success) return save_return
+
+        // Apply effect
+        const targets = []
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition("Incapacitated", spell.duration)
+                targets.push(element.target.id)
+            }
+        }
+
+        return save_return
+    }
+
+    static mind_sliver(options = {}) {
+        const original_spell = {...database.spells.data["Mind Sliver"]}
+        const spell = {...original_spell, ...options}
+
+        // Targetting
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Spells.play_element_sound("")
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: 1,
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Psychic", damage_bonus: spell.spellcasting_modifier}],
+            saving_throw_score: "Intelligence"
+        })
+        if (!save_return.success) return save_return
+
+        // Apply effect
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition(spell.name, spell.duration)
+            }
+        }
+
+        return save_return
+    }
+
     static frostbite(spell) {
         const creature = impersonated()
 
@@ -388,7 +467,7 @@ var Spells = class extends Abilities {
         return Spells.make_spell_attack({
             ...spell,
             target: selected(),
-            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire", damage_bonus: spell.spellcasting_modifier}],
+            damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Fire", damage_bonus: spell.spellcasting_modifier}],
         })
     }
 
