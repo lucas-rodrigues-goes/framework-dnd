@@ -445,10 +445,10 @@
             function updateItems() {
                 
                 // Model for row component to be used in table
-                function custom_row ({
-                    name, image, type, subtype, description, weight, rarity,
-                    price, stackable, equippable, properties, bonus,
-                    conditions, damage, base_armor_class, recovery=""
+                function custom_row({
+                    name="", image="", type="", subtype="", description="", weight=0, rarity="Common",
+                    price=0, stackable=true, properties=[],
+                    conditions=[], damage=[], base_armor_class="", recovery=""
                 }) {
 
                     const properties_string = arrayToList(properties) != "" ? `<br><b>Properties</b>: ` + capitalize(arrayToList(properties)) : ""
@@ -484,8 +484,8 @@
                     columns = [
                         img({src:image, style:"height:2.4vh"}), 
                         name, 
-                        capitalize(type),
-                        capitalize(subtype),
+                        capitalizeAll(type),
+                        capitalizeAll(subtype),
                         price + "gp",
                         img({src:edit_icon, id:"items-table-row-"+name+"-edit"}) +
                         img({src:remove_icon, id:"items-table-row-"+name+"-remove"})
@@ -924,7 +924,7 @@
             getId("items-tab").innerHTML += (
                 input({id:"items-string-filter", placeholder:"Search", style:"width:80%"}) +
                 select({id:"items-type-filter", placeholder:"Type", style:"width:15%", content:[
-                    "equipment"
+                    "currency", "equipment", "ammunition", "adventuring gear", "consumables", "other", "tools", "trade goods",
                 ]}) +
                 table({id:"items-table", headers:[""], config:"3vh 1fr 1fr 1fr 1fr min-content"}) +
                 button({id:"items-new", content:"Create New", style:"position:sticky", classes:"bottom right page-turner"})

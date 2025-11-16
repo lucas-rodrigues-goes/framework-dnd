@@ -23,7 +23,7 @@
         type: "",
         subtype: "",
         description: "",
-        image: "",
+        image: "asset://96c8f5df6ba83a400951bd9627d10177",
         weight: 1,
         rarity: "common",
         price: 0,
@@ -66,9 +66,9 @@
         // Backend
         const request = `database.set_item(`+JSON.stringify(item)+`)`
         
-        //console.log(request)
+        console.log(request)
         backend(request)
-        closePage("Item")
+        //closePage("Item")
     }
 
     function formatDamageForInput(damageArray) {
@@ -158,7 +158,7 @@
             "Other"
         ]
         const subtype_options = [
-            "Weapon", "Armor"
+            "Weapon", "Armor", "Amulet", "Belt", "Boots", "Gloves", "Helmet", "Ring", "Shield", "Cape"
         ]
         
         // Update functions

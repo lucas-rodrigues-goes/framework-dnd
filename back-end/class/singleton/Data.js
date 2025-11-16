@@ -109,7 +109,7 @@ var data = class {
             base_armor_class=0,
         }) => {
             // Subtype
-            const equipment_subtypes = ["weapon", "armor"]
+            const equipment_subtypes = ["weapon", "armor", "amulet", "belt", "boots", "gloves", "helmet", "ring", "shield", "cape"]
             if (type != "equipment") {if (equipment_subtypes.includes(subtype)) subtype = ""}
 
             // Rarity
