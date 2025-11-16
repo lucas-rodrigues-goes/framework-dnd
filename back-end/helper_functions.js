@@ -9,6 +9,7 @@ var player = MTScript.evalMacro(`[r:player.getName()]`)
 // Instances a token by its ID
 const instances = {}
 var instance = function (id) {
+    if (!id) return
     try {
         const maptool_token = MapTool?.tokens?.getTokenByID(id);
         const token = {
@@ -179,11 +180,11 @@ var mapCreatures = function (map_name) {
 
 // Receives simple party information for HUD display
 var owned_info = function () {
-    // Maps all map tokens
+    // Maps all owned tokens in map
     const tokens = MTScript.evalMacro("[r:getOwned()]").split(",")
     const owned_info = []
 
-    // Goes through all map tokens
+    // Goes through all owned tokens
     for (let i = 0; i < tokens.length; i++) {
         const creature = instance(tokens[i])
         if (!creature) continue
@@ -220,6 +221,90 @@ var moveLock = function (lock=true) {
     const value = lock ? 1 : 0
 
     MTScript.evalMacro(`[r:setMoveLock(`+value+`)]`)
+}
+
+var macro = function (command) {
+    return MTScript.evalMacro(`[r: ${command} ]`)
+}
+
+//---------------------------------------------------------------------------------------------------
+// Dice Rolling
+//---------------------------------------------------------------------------------------------------
+
+var roll = (sides) => Math.ceil(Math.random() * sides)
+var roll_dice = function (amount, sides, type) {
+    let total = 0
+
+    // Roll each die
+    for (let i = 0; i < amount; i++) {
+        switch (type) {
+            // Lowest
+            case "Lowest":
+                total += Math.min(roll(sides), roll(sides))
+                break
+
+            // Highest
+            case "Highest":
+                total += Math.max(roll(sides), roll(sides))
+                break
+
+            // Regular Roll
+            default: 
+                total += roll(sides)
+                break
+        }
+    }
+
+    // Output
+    return total
+}
+var roll_20 = function (advantage_weight = 0) {
+    const rolls = [roll(20), roll(20)]
+    let advantage ; {
+        if (advantage_weight > 0) advantage = "Advantage"
+        else if (advantage_weight < 0) advantage = "Disadvantage"
+        else advantage = "None"
+    }
+
+    // Calculation
+    let result, color; {
+        switch (advantage) {
+            case "Advantage": 
+                color = "#7ED321"
+                result = Math.max(rolls[0], rolls[1])
+                break
+            case "Disadvantage":
+                color = "#C82E42"
+                result = Math.min(rolls[0], rolls[1])
+                break
+            default:
+                color = "#F5A623"
+                result = rolls[0]
+                break
+        }
+    }
+
+    // Text
+    const DEFAULT_COLOR = "#777"
+    let text = "", text_color = ""; {
+        if (advantage == "None") {
+            text += `${result}`
+            text_color += `<span style="color: ${color}">${result}</span>`
+        }
+        else {
+            text += `${rolls[0]}|${rolls[1]}`
+            text_color += `<span style="color: ${rolls[0] == result ? color : DEFAULT_COLOR}">${rolls[0]}</span>|`
+            text_color += `<span style="color: ${rolls[1] == result ? color : DEFAULT_COLOR}">${rolls[1]}</span>`
+        }
+    }
+
+    // Result
+    return {
+        result: result,
+        text: text,
+        text_color: text_color,
+        dice: rolls,
+    }
 }
 
 //---------------------------------------------------------------------------------------------------
@@ -303,81 +388,81 @@ var calculate_direction = function(source, target) {
     return "none"; // fallback
 }
 
-// Dice Rolling
-var roll = (sides) => Math.ceil(Math.random() * sides)
-var roll_dice = function (amount, sides, type) {
-    let total = 0
+var teleport = function (map_name=undefined) {
+    try {
 
-    // Roll each die
-    for (let i = 0; i < amount; i++) {
-        switch (type) {
-            // Lowest
-            case "Lowest":
-                total += Math.min(roll(sides), roll(sides))
-                break
+        // Get name of map if not provided
+        if (!map_name) {
+            const id = getSelected()
+            if (id == "") return
 
-            // Highest
-            case "Highest":
-                total += Math.max(roll(sides), roll(sides))
-                break
-
-            // Regular Roll
-            default: 
-                total += roll(sides)
-                break
+            let action
+            [action, map_name] = macro(`getGMName("${id}")`).split(":")
+            if (!map_name || action != "teleport") return
         }
-    }
 
-    // Output
-    return total
-}
-var roll_20 = function (advantage_weight = 0) {
-    const rolls = [roll(20), roll(20)]
-    let advantage ; {
-        if (advantage_weight > 0) advantage = "Advantage"
-        else if (advantage_weight < 0) advantage = "Disadvantage"
-        else advantage = "None"
-    }
+        // Impersonated
+        const impersonatedId = impersonated()?.id || undefined
+        const isInCombat = Initiative.turn_order.includes(impersonatedId)
+        let bringImpersonated = false
+        let allowTeleport = Number(macro(`isGM()`)) == 1
+        if (impersonatedId && !isInCombat) {
+            const teleporterName = `teleport:${map_name}`
 
-    // Calculation
-    let result, color; {
-        switch (advantage) {
-            case "Advantage": 
-                color = "#7ED321"
-                result = Math.max(rolls[0], rolls[1])
-                break
-            case "Disadvantage":
-                color = "#C82E42"
-                result = Math.min(rolls[0], rolls[1])
-                break
-            default:
-                color = "#F5A623"
-                result = rolls[0]
-                break
+            const teleporterSize = macro(`getSize("${teleporterName}")`)
+            console.log(teleporterSize)
+            const maxDistance = {
+                "Large": 2,
+                "Huge": 3,
+                "Gargantuan": 4,
+                "Colossal": 6
+            }[teleporterSize] || 1
+
+            const teleporterVisible = Number(macro(`getVisible(getSelected())`))
+            const distanceToTeleporter = Number(macro(`getDistance(getImpersonated(), 0, getSelected())`))
+
+            if ((distanceToTeleporter <= maxDistance) && teleporterVisible == 1) {
+                bringImpersonated = true
+                allowTeleport = true
+            }
         }
-    }
+        if (!allowTeleport) return
 
-    // Text
-    const DEFAULT_COLOR = "#777"
-    let text = "", text_color = ""; {
-        if (advantage == "None") {
-            text += `${result}`
-            text_color += `<span style="color: ${color}">${result}</span>`
-        }
-        else {
-            text += `${rolls[0]}|${rolls[1]}`
-            text_color += `<span style="color: ${rolls[0] == result ? color : DEFAULT_COLOR}">${rolls[0]}</span>|`
-            text_color += `<span style="color: ${rolls[1] == result ? color : DEFAULT_COLOR}">${rolls[1]}</span>`
-        }
-    }
+        // Teleport
+        const oldMap = macro(`getCurrentMapName()`)
+        const oldZoom = macro(`getZoom()`)
+        const allMaps = macro(`getAllMapNames()`).split(",")
+        if (!allMaps.includes(map_name)) return
 
-    // Result
-    return {
-        result: result,
-        text: text,
-        text_color: text_color,
-        dice: rolls,
-    }
+        // Set new map
+        macro(`setCurrentMap("${map_name}")`)
+        macro(`setZoom(${oldZoom})`)
+        macro(`deselectTokens()`)
+
+        // Go to teleporter on other side
+        try {
+            const teleporterName = `teleport:${oldMap}`
+            macro(`goto("${teleporterName}")`)
+
+            if (bringImpersonated) {
+                const teleporterSize = macro(`getSize("${teleporterName}")`)
+                const variance = {
+                    "Large": 2,
+                    "Huge": 3,
+                    "Gargantuan": 4,
+                    "Colossal": 6
+                }[teleporterSize] || 1
+
+                const x = Number(macro(`getTokenX(0, "${teleporterName}")`)) + roll_dice(1, variance) - 1
+                const y = Number(macro(`getTokenY(0, "${teleporterName}")`)) + roll_dice(1, variance) - 1
+
+                macro(`moveTokenFromMap("${impersonatedId}", "${oldMap}", ${x}, ${y})`)
+            }
+        } catch (error) {
+            console.log("Teleporter unavailable on other side.")
+        }
+
+    } catch (error) {console.log(error)}
 }
 
 //---------------------------------------------------------------------------------------------------
