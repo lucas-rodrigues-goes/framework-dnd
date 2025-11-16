@@ -732,14 +732,15 @@
 					if (!isEqualJSON(character_tab.proficiencies, character.proficiencies)) {
 						character_tab.proficiencies = character.proficiencies
 
+						// Clear container
+						const proficiencies = document.getElementById("character-proficiencies")
+						proficiencies.clearChildren()
+						proficiencies.parentElement.classList.add("hidden") 
+
 						// Ordered proficiencies
 						const character_proficiencies_ordered = database.proficiencies_ordered.filter(
 							item => Object.keys(character.proficiencies).includes(item)
 						)
-
-						// Clear container
-						const proficiencies = document.getElementById("character-proficiencies")
-						proficiencies.clearChildren()
 
 						// Append Conditions
 						for (const name of character_proficiencies_ordered) {
