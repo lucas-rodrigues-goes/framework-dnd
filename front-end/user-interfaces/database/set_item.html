@@ -1,284 +1,402 @@
-[h:id = arg(0)]
-
-[dialog5("Item", "width=800; height=800; temporary=1; input=1; noframe=0"), code: {
+[dialog5("Item", "width=800; height=800; temporary=0; input=1; noframe=0"), code: {
 <head>
-    <script>
-        const id = "{id}"
-    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+    [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
     [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-    [r:scriptTag("open")][r:importScript("components.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+    [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
 
     [r:'
+    <style>
+        .container {
+            margin-bottom: 4vh
+        }
+    </style>
     <script>
 
-        //=====================================================================================================
-        // Helper functions
-        //=====================================================================================================
+    const id = "'+arg(0)+'"
 
-        function updateFields() {
+    const item = {
+        name: "",
+        type: "",
+        subtype: "",
+        description: "",
+        image: "",
+        weight: 1,
+        rarity: "common",
+        price: 0,
+        max_stack: 20,
+        properties: [],
+        conditions: [],
 
-            if(id == "") {return}
+        // Equipment only
+        bonus_armor_class: 0,
+        resistances: {},
 
-            toBackend("database.items.data", (response) => {
-                data = JSON.parse(response)
-                object = data[id]
-                
-                getId("name").value = object.name || ""
-                getId("rarity").value = object.rarity || ""
-                getId("type").value = object.type; getId("type").dispatchEvent(new Event("input")) || ""
-                getId("subtype").value = object.subtype; getId("subtype").dispatchEvent(new Event("input")) || ""
-                getId("description").value = object.description; getId("description").dispatchEvent(new Event("input")) || ""
-                getId("image").value = object.image || ""
+        // Weapon Only
+        damage: [],
+        recovery: 0,
+        range: [],
 
-                getId("weight").value = object.weight || ""
-                getId("price").value = object.price || ""
-                getId("max-stack").value = object.max_stack || ""
-                getId("properties").value = object.properties.join(", ") || ""
+        // Armor Only
+        base_armor_class: 0
+    }
 
-                getId("base-armor-class").value = object.base_armor_class || ""
+    async function loadItem() {
+        try {
+            const itemById = JSON.parse(await backend(`database.items.data["`+id+`"]`))
+            for (const key in itemById) item[key] = itemById[key]
 
-                let damage = ""
-                for (const i in object.damage) {
-                    const current = object.damage[i]
-                    damage += current["die_ammount"] + ":" + current["die_size"] + ":" + current["damage_type"]
-                    damage += i != object.damage.length - 1 ? ", " : ""
+            if (typeof item.conditions != "object") item.conditions = []
+            console.indent({itemById, item})
+        } catch {}
+    }
+
+    //=====================================================================================================
+    // Helper functions
+    //=====================================================================================================
+    
+    async function submit() {
+        // Treat Numbers
+        const keys = ["weight", "price", "max_stack", "bonus_armor_class", "base_armor_class", "recovery"]
+        for (const key of keys) item[key] = Number(item[key]) || 0
+
+        // Backend
+        const request = `database.set_item(`+JSON.stringify(item)+`)`
+        
+        //console.log(request)
+        backend(request)
+        closePage("Item")
+    }
+
+    function formatDamageForInput(damageArray) {
+        if (!Array.isArray(damageArray) || damageArray.length === 0) return "";
+        
+        return damageArray.map(d => {
+            const bonus = d.damage_bonus ? (d.damage_bonus.startsWith("-") ? d.damage_bonus : "+" + d.damage_bonus) : "";
+            return (d.die_amount || d.die_ammount) + "d" + d.die_size + bonus + " " + d.damage_type;
+        }).join(", ");
+    }
+
+    function parseDamageInput(damageText) {
+        const damage = [];
+        const entries = damageText.split(",").map(s => s.trim());
+        
+        for (const entry of entries) {
+            if (!entry) continue;
+            const parts = entry.split(" ");
+            if (parts.length < 2) continue;
+            
+            const dice_block = parts[0];
+            const damage_type = parts.slice(1).join(" ");
+            let die_amount = "";
+            let die_size = "";
+            let damage_bonus = "";
+            
+            const d_index = dice_block.indexOf("d");
+            if (d_index === -1) continue;
+            
+            die_amount = dice_block.substring(0, d_index);
+            let after_d = dice_block.substring(d_index + 1);
+            let plus_index = after_d.indexOf("+");
+            let minus_index = after_d.indexOf("-");
+            
+            if (plus_index !== -1) {
+                die_size = after_d.substring(0, plus_index);
+                damage_bonus = after_d.substring(plus_index + 1);
+            } else if (minus_index !== -1) {
+                die_size = after_d.substring(0, minus_index);
+                damage_bonus = "-" + after_d.substring(minus_index + 1);
+            } else {
+                die_size = after_d;
+            }
+            
+            const dmg_obj = { damage_type, die_amount, die_size };
+            if (damage_bonus !== "") dmg_obj.damage_bonus = damage_bonus;
+            damage.push(dmg_obj);
+        }
+        
+        return damage;
+    }
+
+    function triggerAllInputFields() {
+        for (const elem of document.querySelectorAll("input, select, textarea")) {
+            elem.dispatchEvent(new Event("input"))
+            elem.dispatchEvent(new Event("change"))
+        }
+    }
+
+    async function getImageFromSelected() {
+        const elem = document.getElementById("image")
+        const image = await backend(`getSelectedImage()`)
+        elem.value = image
+        item.image = image
+    }
+
+    //=====================================================================================================
+    // Create Tabs
+    //=====================================================================================================
+
+    async function mainTab() {
+        try {
+        const tab = document.getElementById("main-tab")
+
+        // Options
+        const rarity_options = [
+            "Common", "Uncommon", "Rare", "Very Rare", "Legendary"
+        ]
+        const type_options = [
+            "Adventuring Gear",
+            "Ammunition", 
+            "Consumables",
+            "Equipment",
+            "Tools",
+            "Trade Goods",
+            "Currency",
+            "Other"
+        ]
+        const subtype_options = [
+            "Weapon", "Armor"
+        ]
+        
+        // Update functions
+        const updateAttribute = {change: function (event) {
+            item[this.id] = this.value
+            //console.indent({item})
+        }}
+        const updateNumberAttribute = {input: function (event) {
+            item[this.id] = Number(this.value) || 0
+            //console.indent({item})
+        }}
+        const updateArrayAttribute = {input: function (event) {
+            const array = this.value
+                .split(", ")
+                .map(f => f.trim())
+                .filter(f => f !== "");
+            item[this.id] = [...new Set(array)];
+            //console.indent({item})
+        }}
+        const updateBooleanAttribute = {input: function (event) {
+            item[this.id] = this.checked
+            //console.indent({item})
+        }}
+        const updateDamageAttribute = {input: function (event) {
+            item.damage = parseDamageInput(this.value);
+        }};
+
+        // Create elements
+        const nameInput = input({
+            id: "name", 
+            placeholder: "Name", 
+            options: {
+                input: {attributes: {value: item.name || ""}, events: updateAttribute}
+            }
+        });
+        
+        const typeSelect = select({
+            id: "type",
+            placeholder: "Type", 
+            children: type_options.map(type => ({
+                tag: "option",
+                attributes: { value: type.toLowerCase() },
+                text: type
+            })),
+            options: {
+                input: {events: {input: function (event) {
+                    item[this.id] = this.value
+                    updateSubtypeVisibility()
+                }}}
+            }
+        });
+
+        const subtypeSelect = select({
+            id: "subtype",
+            placeholder: "Subtype",
+            children: subtype_options.map(subtype => ({
+                tag: "option", 
+                attributes: { value: subtype.toLowerCase() },
+                text: subtype
+            })),
+            options: {
+                input: {events: {input: function (event) {
+                    item[this.id] = this.value
+                    updateEquipmentVisibility()
+                }}}
+            }
+        });
+
+        const raritySelect = select({
+            id: "rarity",
+            placeholder: "Rarity",
+            children: rarity_options.map(rarity => ({
+                tag: "option",
+                attributes: { value: rarity.toLowerCase() },
+                text: rarity
+            })),
+            options: {
+                input: {events: {input: function (event) {
+                    item[this.id] = this.value
+                }}}
+            }
+        });
+
+        // Helper functions for visibility
+        function updateSubtypeVisibility() {
+            const subtypeDiv = document.getElementById("subtype-div")
+            if (item.type === "equipment") {
+                subtypeDiv.parentElement.classList.remove("hidden")
+            } else {
+                subtypeDiv.parentElement.classList.add("hidden")
+                item.subtype = ""
+            }
+            updateEquipmentVisibility()
+        }
+
+        function updateEquipmentVisibility() {
+            const weaponDiv = document.getElementById("weapon-fields")
+            const armorDiv = document.getElementById("armor-fields")
+            const equipmentDiv = document.getElementById("equipment-fields")
+            
+            if (item.type === "equipment") {
+                equipmentDiv.parentElement.classList.remove("hidden")
+                if (item.subtype === "weapon") {
+                    weaponDiv.parentElement.classList.remove("hidden")
+                    armorDiv.parentElement.classList.add("hidden")
+                } else if (item.subtype === "armor") {
+                    weaponDiv.parentElement.classList.add("hidden") 
+                    armorDiv.parentElement.classList.remove("hidden")
+                } else {
+                    weaponDiv.parentElement.classList.add("hidden")
+                    armorDiv.parentElement.classList.add("hidden")
                 }
-                getId("damage").value = damage
-                getId("recovery").value = object.recovery
-                getId("range").value = object.range?.join("/") || 5
-
-                loadSelect()
-            })
+            } else {
+                equipmentDiv.parentElement.classList.add("hidden")
+                weaponDiv.parentElement.classList.add("hidden")
+                armorDiv.parentElement.classList.add("hidden")
+            }
         }
 
-        function submit() {
+        // Set initial values
+        typeSelect.children[0].value = item.type || ""
+        subtypeSelect.children[0].value = item.subtype || ""
+        raritySelect.children[0].value = item.rarity || ""
 
-            // Properties (transform to array)
-            const properties = JSON.stringify(getId("properties").value.split(", ")) // splits by ", " then stringifies
+        // Content
+        tab.style.overflow = "hidden"
+        tab.appendChildren([
+            {tag: "div", style: {position: "absolute", left: "0", width: "50%", height: "100%", overflow: "auto"}, children: [
+                // Basic Information
+                container({title: "Basic Information", children: [
+                    nameInput,
+                    typeSelect,
+                    {tag: "div", id: "subtype-div", children: [subtypeSelect]},
+                    input({id: "image", placeholder: "Image URL", options: {
+                        div: {style: {width: "60%", marginRight: "1%"}},
+                        input: {attributes: {value: item.image || ""}, events: updateAttribute}
+                    }}),
+                    {tag: "button", 
+                        text: "Get from selected token", 
+                        style: {margin: 0, width: "39%"}, events: {click: getImageFromSelected}
+                    },
+                    raritySelect,
+                    input({id: "weight", placeholder: "Weight", options: {
+                        input: {attributes: {type: "number", value: item.weight || 1}, events: updateNumberAttribute}
+                    }}),
+                    input({id: "price", placeholder: "Price", options: {
+                        input: {attributes: {type: "number", value: item.price || 0}, events: updateNumberAttribute}
+                    }}),
+                    input({id: "max_stack", placeholder: "Max Stack Size", options: {
+                        input: {attributes: {type: "number", value: item.max_stack || 20}, events: updateNumberAttribute}
+                    }}),
+                    input({id: "properties", placeholder: "Properties (comma separated)", options: {
+                        input: {attributes: {value: item.properties.join(", ") || ""}, events: updateArrayAttribute}
+                    }}),
+                    textarea({id: "description", placeholder: "Description", options: {
+                        input: {attributes: {value: item.description}, events: updateAttribute, style: {maxHeight: "10vh"}, text: item.description}
+                    }}),
+                ]}),
+            ]},
 
-            // Damage (transform to array)
-            const damage_input = getId("damage").value.split(", ")
-            const damage = []
-            for (let value of damage_input) {
-                value = value.split(":")
-                object = {
-                    die_ammount: value[0],
-                    die_size: value[1],
-                    damage_type: value[2]
-                }
-                damage.push(object)
+            {tag: "div", style: {position: "absolute", left: "50%", width: "50%", height: "100%", overflow: "auto"}, children: [
+                // Equipment Fields (conditionally visible)
+                container({id: "equipment-fields", title: "Equipment Properties", children: [
+                    input({id: "bonus_armor_class", placeholder: "Bonus Armor Class", options: {
+                        input: {attributes: {type: "number", value: item.bonus_armor_class || 0}, events: updateNumberAttribute}
+                    }}),
+                    input({id: "resistances", placeholder: "Resistances (JSON object)", options: {
+                        input: {attributes: {value: JSON.stringify(item.resistances) || "{}"}, events: {input: function (event) {
+                            try {
+                                item.resistances = JSON.parse(this.value)
+                            } catch (e) {
+                                item.resistances = {}
+                            }
+                        }}}
+                    }}),
+                    input({id: "conditions", placeholder: "Conditions (comma separated)", options: {
+                        input: {attributes: {value: item.conditions.join(", ") || ""}, events: updateArrayAttribute}
+                    }})
+                ]}),
+            
+                // Weapon Fields (conditionally visible)
+                container({id: "weapon-fields", title: "Weapon Properties", children: [
+                    input({id: "damage", placeholder: "Damage (1d4 Piercing, 1d4 Fire)", options: {
+                        input: {attributes: {value: formatDamageForInput(item.damage) || ""}, events: updateDamageAttribute}
+                    }}),
+                    input({id: "recovery", placeholder: "Recovery", options: {
+                        input: {attributes: {type: "number", value: item.recovery || 0}, events: updateNumberAttribute}
+                    }}),
+                    input({id: "range", placeholder: "Range (JSON array)", options: {
+                        input: {attributes: {value: JSON.stringify(item.range) || "[]"}, events: {input: function (event) {
+                            try {
+                                item.range = JSON.parse(this.value)
+                            } catch (e) {
+                                item.range = []
+                            }
+                        }}}
+                    }})
+                ]}),
+
+                // Armor Fields (conditionally visible)  
+                container({id: "armor-fields", title: "Armor Properties", children: [
+                    input({id: "base_armor_class", placeholder: "Base Armor Class", options: {
+                        input: {attributes: {type: "number", value: item.base_armor_class || 0}, events: updateNumberAttribute}
+                    }})
+                ]})
+            ]},
+
+            {tag: "button", text: "Submit", attributes: {class: "bottom right page-turner"}, 
+                events: {click: submit}
             }
+        ])
 
-            // Placeholder for not yet implemented fields
-            const placeholder = ""
+        // Initialize visibility
+        updateSubtypeVisibility()
 
-            let request = (
-            "database.set_item({" +
-                "name: `" + getId("name").value + "`," +
-                "rarity: `" + getId("rarity").value + "`," +
-                "type: `" + getId("type").value + "`," +
-                "subtype: `" + getId("subtype").value + "`," +
-                "description: `" + getId("description").value + "`," +
-                "image: `" + getId("image").value + "`," +
+        } catch (error) {console.log(error)} 
+    }
 
-                "weight: " + getId("weight").value + "," +
-                "price: " + getId("price").value + "," +
-                "max_stack: " + (getId("max-stack").value || 1) + "," +
+    async function loadPage() {
+        create_tabs({content: ["main"], parent: document.body})
+        
+        await loadItem()
+        await mainTab()
 
-                "properties: " + properties + ","
-            )
+        triggerAllInputFields()
+    }
+    
+    //=====================================================================================================
+    // Execution
+    //=====================================================================================================
 
-            switch(getId("type").value) {
-                case "equipment":
-                    request += (
-                        "bonus_armor_class: " + (getId("bonus-armor-class").value || 0 ) + "," +
-                        "conditions: `" + placeholder + "`,"
-                    )
-                    break
-                default:
-                    break
-            }
-
-            console.log(getId("range").value.split("/") || "")
-
-            switch(getId("subtype").value) {
-                case "armor":
-                    request += (
-                        "base_armor_class: `" + getId("base-armor-class").value + "`,"
-                    )
-                    break
-                case "weapon":
-                    request += (
-                        "damage: " + JSON.stringify(damage) + "," +
-                        "recovery: " + getId("recovery").value + "," +
-                        "range: " + JSON.stringify(getId("range").value.split("/")) + ","
-                    )
-                default:
-                    break
-            }
-
-            request += "})"
-
-            console.log(request)
-            toBackend(request)
-            closePage("Item")
-        }
-
-
-        //=====================================================================================================
-        // Execution
-        //=====================================================================================================
-
-        function loadPage () {
-
-            // Creates main div
-            document.body.innerHTML = div({classes:"outer", id:"content"})
-
-            // Fills main div with content
-            getId("content").innerHTML += (
-
-                // Div positioned to the left of the page
-                div({style:"position:absolute; left:0; width:50%", content:(
-                    container({title:"Basic", content:(
-                        input({
-                            id:"name", 
-                            placeholder:"Name"
-                        }) +
-                        select({
-                            id:"rarity",
-                            placeholder:"Rarity",
-                            content:["common", "uncommon", "rare", "very rare", "legendary"]
-                        }) +
-                        textarea({id:"description", placeholder:"Description", style:"max-height:40vh"}) +
-                        select({
-                            id:"type",
-                            placeholder:"Type",
-                            content:[
-                                "adventuring gear", "ammunition", "consumables", 
-                                "equipment", "tools", "trade goods", "currency", 
-                                "other"
-                            ]
-                        }) +
-                        select({
-                            id:"subtype",
-                            placeholder:"Subtype",
-                            content:[],
-                            style:"display:none"
-                        }) +
-                        input({
-                            id:"image", 
-                            placeholder:"Image URL"
-                        }) + "<br><br>" +
-                        button({id:"get-image", content:"Get image from token"})
-                    )})
-                )}) +
-
-                // Div positioned to the right of the page
-                div({id:"right-area", style:"position:absolute; right:0; width:50%", content:(
-                   container({title:"Data", content:(
-                        input({
-                            id:"weight",
-                            placeholder:"Weight (lb)"
-                        }) +
-                        input({
-                            id:"price",
-                            placeholder:"Price (gp)"
-                        }) +
-                        input({
-                            id:"max-stack",
-                            placeholder:"Maximum Stack Size (only non-equipment)"
-                        }) +
-                        textarea({
-                            id:"properties",
-                            placeholder:"Properties"
-                        })
-                    )}) + "<br>" +
-                    container({id:"equipment-container", title:"Equipment Properties", style:"display:none", content:(
-                        textarea({
-                            id:"conditions",
-                            placeholder:"Conditions"
-                        }) +
-                        input({
-                            id:"bonus-armor-class",
-                            placeholder:"Bonus Armor Class"
-                        })
-                    )})  + "<br>" +
-                    container({id:"armor-container", title:"Armor Properties", style:"display:none", content:(
-                        input({
-                            id:"base-armor-class",
-                            placeholder:"Armor Class"
-                        })
-                    )}) +
-                    container({id:"weapon-container", title:"Weapon Properties", style:"display:none", content:(
-                        input({
-                            id:"damage",
-                            placeholder:"Damage (1d4 Piercing -> 1:4:Piercing)"
-                        }) +
-                        input({
-                            id:"recovery",
-                            placeholder:"Recovery",
-                            style: "width: 49%"
-                        }) +
-                        input({
-                            id:"range",
-                            placeholder:"Range (normal/extended)",
-                            style: "width: 49%"
-                        })
-                    )})
-                )}) +
-                button({id:"close", content:"Cancel", classes:"bottom left page-turner"}) +
-                button({id:"submit", content:"Save", classes:"bottom right page-turner"})
-            )
-
-            // Event listeners
-            getId("close").addEventListener("click", () => { closePage("Item") })
-            getId("submit").addEventListener("click", () => { submit() })
-            getId("get-image").addEventListener("click", ()=>{
-                toBackend(`getSelectedImage()`, (image) => { getId("image").value = image; })
-            })
-            getId("type").addEventListener("input", () => {
-                const type = getId("type").value
-                const hasSubtype = ["equipment"].includes(type)
-
-                // Subtype selector
-                style = hasSubtype ? "" : "display:none"
-                getId("subtype-container").setAttribute("style", style)
-                getId("subtype").innerHTML = option({content:" ", value:""})
-
-                // Equipment container
-                style = type == "equipment" ? "" : "display:none"
-                getId("equipment-container").setAttribute("style", style)
-                getId("subtype").innerHTML += type == "equipment" ? options_from_array([
-                    "weapon", "shield", "armor", "clothing", "helmet", "hat", "amulet", "ring", "gloves", "cape", "belt", "boots"
-                ]) : ""
-                
-            })
-            getId("subtype").addEventListener("input", () => {
-                const subtype = getId("subtype").value
-
-                // Armor container
-                style = subtype == "armor" ? "" : "display:none"
-                getId("armor-container").setAttribute("style", style)
-
-                // Weapon container
-                style = subtype == "weapon" ? "" : "display:none"
-                getId("weapon-container").setAttribute("style", style)
-            })
-
-            loadSelect()
-        }
-
-        function onWindowLoad() {
+    window.onload = function () {
+        try {
             loadPage()
-            updateFields()
-        }
+        } catch (error) {console.log(error)} 
+    }
 
-        document.addEventListener("DOMContentLoaded", onWindowLoad)
-
-        //=====================================================================================================
+    //=====================================================================================================
 
     </script>
     ']

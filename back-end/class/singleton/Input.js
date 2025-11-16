@@ -71,12 +71,15 @@ var input = function(fields) {
         [h: status = input(
             ${macroLines.join(",\n            ")}
         )]
-        [h: abort(status)]
         [h: output = "{}"]
-        [h, foreach(key, '${JSON.stringify(return_fields)}'): 
-            output = json.set(output, key, eval(key))
-        ]
-        [r: output]
+        [if(status), code: {
+            [h, foreach(key, '${JSON.stringify(return_fields)}'): 
+                output = json.set(output, key, eval(key))
+            ]
+            [r: output]
+        };{
+            [r: "{}"]
+        }]
     `;
 
     const result = MTScript.evalMacro(macro);
@@ -115,11 +118,16 @@ var give_items = function () {
                     }
                 },
             })
+            if (Object.keys(response).length == 0) break
+
             const {amount, itemName, targetType} = response
             targetTypeSelect = targetType == "All Selected" ? "0" : "1"
 
             const targets = targetType == "Impersonated" ? [impersonated()] : allSelected()
-            for (const target of targets) target.receive_item(itemName, Number(amount))
+            for (const target of targets) {
+                target.receive_item(itemName, Number(amount))
+                console.indent(target.inventory)
+            }
         }
         
 

@@ -86,8 +86,8 @@ var data = class {
             weight=1,
             rarity="common",
             price=0,
-            stackable=true,
             max_stack=20,
+            stackable=true,
             properties=[],
 
             // Equipment-only
@@ -118,6 +118,11 @@ var data = class {
             if (!valid_rarities.includes(rarity)) {
                 console.log(`Invalid type "${rarity}" for "${cls}" object."`, "debug")
                 rarity = ""
+            }
+
+            // Stackable
+            if (max_stack == 1 || type == "equipment") {
+                stackable = false
             }
 
             // Object

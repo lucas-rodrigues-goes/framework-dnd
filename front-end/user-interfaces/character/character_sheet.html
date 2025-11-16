@@ -842,8 +842,9 @@
 						// Add up weapon damages
 						let minimum = damage_bonus, maximum = damage_bonus
 						for (const damage of main_hand.damage) {
-							minimum += Number(damage.die_ammount)
-							maximum += Number(damage.die_size) * Number(damage.die_ammount)
+							const die_amount = Number(damage.die_amount || damage.die_ammount)
+							minimum += die_amount
+							maximum += Number(damage.die_size) * die_amount
 						}
 
 						// Element

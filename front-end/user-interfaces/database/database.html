@@ -453,14 +453,14 @@
 
                     const properties_string = arrayToList(properties) != "" ? `<br><b>Properties</b>: ` + capitalize(arrayToList(properties)) : ""
                     const conditions_string = arrayToList(conditions) != "" ? `<br><b>Conditions</b>: ` + capitalize(arrayToList(conditions)) : ""
-                    const base_armor_class_string = base_armor_class != 0 ? `<b>Armor Class</b>: ` + base_armor_class + `<br>`: ""
+                    const base_armor_class_string = base_armor_class ? `<b>Armor Class</b>: ` + base_armor_class + `<br>`: ""
                     
                     // Damage
                     const damage_array = damage
                     damage = ""
                     for (const i in damage_array) {
                         const current = damage_array[i]
-                        damage += current["die_ammount"] + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
+                        damage += (current.die_amount || current.die_ammount) + "d" + current["die_size"] + " " + current["damage_type"].toLowerCase()
                         damage += i != damage_array.length - 1 ? ", " : ""
                     }
                     const damage_string = damage.length > 0 ? `<b>Damage</b>: ` + damage + `<br>`: ""
