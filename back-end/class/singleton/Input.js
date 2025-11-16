@@ -82,3 +82,46 @@ var input = function(fields) {
     const result = MTScript.evalMacro(macro);
     return JSON.parse(result);
 };
+
+var give_items = function () {
+    try {
+        const itemsOptions = Object.keys(database.items.data).join(",")
+        let targetTypeSelect = 0
+
+        while (true) {
+            const response = input({
+                "itemName": {
+                    value: itemsOptions,
+                    label: "Select an item",
+                    type: "list",
+                    options: {
+                        value: "string",
+                        icon: "false",
+                        iconsize: "20",
+                    }
+                },
+                "amount": {
+                    value: "1",
+                    label: "Amount",
+                    type: "text"
+                },
+                "targetType": {
+                    value: "All Selected,Impersonated",
+                    label: "Target",
+                    type: "radio",
+                    options: {
+                        select: targetTypeSelect,
+                        value: "string",
+                    }
+                },
+            })
+            const {amount, itemName, targetType} = response
+            targetTypeSelect = targetType == "All Selected" ? "0" : "1"
+
+            const targets = targetType == "Impersonated" ? [impersonated()] : allSelected()
+            for (const target of targets) target.receive_item(itemName, Number(amount))
+        }
+        
+
+    } catch (error) {console.log(error)}
+}

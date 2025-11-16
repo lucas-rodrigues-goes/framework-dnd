@@ -1517,12 +1517,12 @@
                                 ]
                             },
 
-                            // Give Item
+                            // Give Items
                             {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Give Item"},
+                                attributes: {class: "tooltip", tooltip: "Give Items"},
                                 style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "8.3vh", right: "-0.4vh"},
                                 events: {
-                                    click: () => openClosePage("", "Give Item", "give_item.html")
+                                    click: () => backend(`give_items()`)
                                 },
                                 children: [
                                     {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://454b7c974737ffe30aaac28f07cfdcc1"}}
