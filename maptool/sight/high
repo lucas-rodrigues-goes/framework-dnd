@@ -1,6 +1,0 @@
-True Sight: circle r900+1#ffffff 
-Devil's Sight: circle scale r12#ffffff r24#bfbfbf r36#808080 r48#404040 r60#191919
-Darkvision 30: circle scale r6#999999 r12#6f6f6f r18#4d4d4d r24#2a2a2a r30#0f0f0f
-Darkvision 15: circle scale r15
-Normal: circle r5+1 
-Blinded: circle distance=5 r5+1 
