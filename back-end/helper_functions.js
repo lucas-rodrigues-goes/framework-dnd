@@ -465,4 +465,22 @@ var teleport = function (map_name=undefined) {
     } catch (error) {console.log(error)}
 }
 
+function capitalize(text, capitalizeAllFirstLetters = false) {
+    if (typeof text !== 'string' || text.length === 0) {
+        return text;
+    }
+    
+    if (capitalizeAllFirstLetters) {
+        // Capitalize first letter of each word
+        return text
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    } else {
+        // Capitalize only the first letter of the entire text
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    }
+}
+
 //---------------------------------------------------------------------------------------------------

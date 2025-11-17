@@ -6,35 +6,34 @@ var Sound = class {
     // Stored Attributes
     //-----------------------------------------------------------------------------------------------------
 
-    static #data = MapTool.tokens.getTokenByID("7644598835564E7EA8BC5E323C508749");
+    static #data = MapTool.tokens.getTokenByID("DCC636DB655344C0AF1C395609ED54E6");
 
     //-----------------------------------------------------------------------------------------------------
     // Getters / Setters
     //-----------------------------------------------------------------------------------------------------
 
     static get currently_streaming() {
-        /* const object = JSON.parse(this.#data.getProperty("object"));
-        return object?.currently_streaming || []; */
-        return []
+        const object = JSON.parse(this.#data.getProperty("object"));
+        return object?.currently_streaming || [];
     }
 
     static set currently_streaming(currently_streaming) {
-        /* const object = JSON.parse(this.#data.getProperty("object")) || {};
+        const object = JSON.parse(this.#data.getProperty("object")) || {};
         object.currently_streaming = currently_streaming;
         
-        this.#data.setProperty("object", JSON.stringify(object)); */
+        this.#data.setProperty("object", JSON.stringify(object));
     }
 
     //-----------------------------------------------------------------------------------------------------
     // Sound Playing/Stopping Methods
     //-----------------------------------------------------------------------------------------------------
 
-    static play (name, {volume = 0.1, stream = false, count = 1} = {}) {
+    static play (name, {volume = 1, stream = false, count = 1} = {}) {
         try {
             // Play Sound
             MTScript.evalMacro(`
                 [h,macro("playLocal${ stream ? "Stream" : "Clip" }All@lib:JUH.media"): json.append("",
-                    "audio:${name}",
+                    "${stream ? "stream" : "clip"}:${name}",
                     ${stream ? -1 : count},
                     ${volume}
                 )]
@@ -59,7 +58,7 @@ var Sound = class {
         try {
             MTScript.evalMacro(`
                 [h,macro("playLocalStreamAll@lib:JUH.media"): json.append("",
-                    "audio:${name}",
+                    "stream:${name}",
                     0
                 )]
             `)
@@ -76,5 +75,6 @@ var Sound = class {
         for (const sound of this.currently_streaming) {
             this.stop(sound)
         }
+        macro(`stopSound()`)
     }
 }

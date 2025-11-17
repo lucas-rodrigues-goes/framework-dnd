@@ -1529,27 +1529,27 @@
                                 ]
                             },
 
+                            // Sound Manager
+                            {tag: "button",
+                                attributes: {class: "tooltip", tooltip: "Sound Manager"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", right: "-0.4vh"},
+                                events: {
+                                    click: () => backend(`sound_manager()`)
+                                },
+                                children: [
+                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://5bd850a16525cdf0e47ef08f3bb4258d"}}
+                                ]
+                            },
+
                             // Database
                             {tag: "button",
                                 attributes: {class: "tooltip", tooltip: "Database"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", right: "-0.4vh"},
+                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, right: "-2.5vh"},
                                 events: {
                                     click: () => openClosePage("", "Database", "database.html")
                                 },
                                 children: [
                                     {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://aa347dbe8d8970836c46fefb0ececdb3"}}
-                                ]
-                            },
-
-                            // Placeholder
-                            {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Blank"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, right: "-2.5vh"},
-                                events: {
-                                    click: () => openClosePage("journal", "Character", "character_sheet.html")
-                                },
-                                children: [
-                                    {tag: "img", style: {height: "100%", width: "100%", display: "none"}, attributes: {src: "asset://cc763e3377c5787dc7c81eb443145869"}}
                                 ]
                             },
                         ]},

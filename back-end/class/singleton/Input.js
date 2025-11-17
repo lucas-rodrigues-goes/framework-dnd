@@ -86,6 +86,53 @@ var input = function(fields) {
     return JSON.parse(result);
 };
 
+var sound_manager = function () {
+    try {
+        const tokenNames = macro(` getTokenNames (",", '{"mapName": "Assets"}') `).split(",").sort();
+        const soundOptions = []
+        for (const token of tokenNames) {
+            const [type, name] = token.split(":")
+            if (type != "stream") continue
+            soundOptions.push(capitalize(name, true))
+        }
+        let actionSelect = 0
+
+        let i = 0
+        while (i < 1) {
+            i++
+            const response = input({
+                "soundName": {
+                    value: soundOptions,
+                    label: "Select an item",
+                    type: "list",
+                    options: {
+                        value: "string",
+                        icon: "false",
+                        iconsize: "20",
+                    }
+                },
+                "action": {
+                    value: "Play, Stop, Stop All",
+                    label: "Target",
+                    type: "radio",
+                    options: {
+                        select: actionSelect,
+                        value: "string",
+                    }
+                },
+            })
+            if (Object.keys(response).length == 0) break
+
+            const {soundName, action} = response
+            if (action == "Play") Sound.play(soundName.toLowerCase(), {stream: true})
+            else if (action == "Stop") Sound.stop(soundName.toLowerCase())
+            else if (action == "Stop All") Sound.stopAll()
+        }
+        
+
+    } catch (error) {console.log(error)}
+}
+
 var give_items = function () {
     try {
         const itemsOptions = Object.keys(database.items.data).join(",")
