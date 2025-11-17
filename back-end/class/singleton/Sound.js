@@ -6,7 +6,9 @@ var Sound = class {
     // Stored Attributes
     //-----------------------------------------------------------------------------------------------------
 
-    static #data = MapTool.tokens.getTokenByID("DCC636DB655344C0AF1C395609ED54E6");
+    static #data = MapTool.tokens.getTokenByID(
+        getTokenID("lib:sound", "Framework")
+    );
 
     //-----------------------------------------------------------------------------------------------------
     // Getters / Setters

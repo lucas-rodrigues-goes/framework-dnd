@@ -6,7 +6,9 @@ var console = class {
     // Stored Attributes
     //=====================================================================================================
 
-    static #data = MapTool.tokens.getTokenByID("D111E023F771474D9A6567941FB4B350");
+    static #data = MapTool.tokens.getTokenByID(
+        getTokenID("lib:console", "Framework")
+    );
 
     //=====================================================================================================
     // Getters / Setters

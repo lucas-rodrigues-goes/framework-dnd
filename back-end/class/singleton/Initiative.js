@@ -6,7 +6,9 @@ var Initiative = class {
     // Stored Attributes
     //=====================================================================================================
 
-    static #data = MapTool.tokens.getTokenByID("6C44FBFB69674787B1D79E5DF5DCDC12")
+    static #data = MapTool.tokens.getTokenByID(
+        getTokenID("lib:initiative", "Framework")
+    );
 
     //=====================================================================================================
     // Creatures

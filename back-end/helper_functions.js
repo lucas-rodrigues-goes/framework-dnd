@@ -174,6 +174,14 @@ var mapCreatures = function (map_name) {
     return creatures
 }
 
+// Find Token ID
+var getTokenID = function (name, map_name = "") {
+    const tokens = MapTool.tokens.getMapTokens(map_name);
+    for (const token of tokens) {
+        if (token.getName() == name) return token.getId()
+    }
+}
+
 //---------------------------------------------------------------------------------------------------
 // HUD Helpers
 //---------------------------------------------------------------------------------------------------

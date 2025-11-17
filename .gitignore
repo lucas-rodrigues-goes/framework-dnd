@@ -1,1 +1,2 @@
-framework.cmpgn
+*.cmpgn
+/releases

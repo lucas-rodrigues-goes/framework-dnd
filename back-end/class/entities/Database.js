@@ -1140,22 +1140,17 @@ var Database = class extends Entity {
     //=====================================================================================================
 
     constructor() {
-        super("CD63A98070EB4D2792D8AAC3F9504EE4")
+        try {
+            super(getTokenID("lib:database", "Framework"))
 
-        let has_property_object = String(this.token.getProperty("object")) != "null";
-
-        // Reset if no previous data or if reset flag is true
-        if (!has_property_object) {
-            this.save();
-        }
-        else {
-            try {
-                this.load();
+            // Reset if no previous data or if reset flag is true
+            const has_property_object = String(this.token.getProperty("object")) != "null";
+            if (!has_property_object) this.save();
+            else {
+                try { this.load(); }
+                catch { this.save(); }
             }
-            catch {
-                this.save();
-            }
-        }
+        } catch (error) {console.log(error)}
     }
 
 
