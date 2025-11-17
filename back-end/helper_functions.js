@@ -183,28 +183,6 @@ var getTokenID = function (name, map_name = "") {
 }
 
 //---------------------------------------------------------------------------------------------------
-// HUD Helpers
-//---------------------------------------------------------------------------------------------------
-
-// Receives simple party information for HUD display
-var owned_info = function () {
-    // Maps all owned tokens in map
-    const tokens = MTScript.evalMacro("[r:getOwned()]").split(",")
-    const owned_info = []
-
-    // Goes through all owned tokens
-    for (let i = 0; i < tokens.length; i++) {
-        const creature = instance(tokens[i])
-        if (!creature) continue
-        const {health, max_health, portrait, id} = creature
-
-        owned_info.push([health, max_health, portrait, id])
-    }
-
-    return owned_info
-}
-
-//---------------------------------------------------------------------------------------------------
 // From MTScript
 //---------------------------------------------------------------------------------------------------
 
@@ -489,6 +467,28 @@ function capitalize(text, capitalizeAllFirstLetters = false) {
         // Capitalize only the first letter of the entire text
         return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     }
+}
+
+//---------------------------------------------------------------------------------------------------
+// Legacy
+//---------------------------------------------------------------------------------------------------
+
+// Receives simple owned tokens information for HUD display
+var owned_info = function () {
+    // Maps all owned tokens in map
+    const tokens = macro("getOwned()").split(",")
+    const owned_info = []
+
+    // Goes through all owned tokens
+    for (let i = 0; i < tokens.length; i++) {
+        const creature = instance(tokens[i])
+        if (!creature) continue
+        const {health, max_health, portrait, id} = creature
+
+        owned_info.push([health, max_health, portrait, id])
+    }
+
+    return owned_info
 }
 
 //---------------------------------------------------------------------------------------------------
