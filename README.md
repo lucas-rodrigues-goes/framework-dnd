@@ -1,66 +1,58 @@
 # D&D Framework for MapTool
 
-This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is heavily based on **D&D 5e core rules**, it incorporates many homebrew systems that would be cumbersome to manage manually (most, if not all, of these are combat-related).  
+This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is based on **D&D 5e core rules**, it incorporates a lot of ideas from other editions and homebrew systems (mostly combat).
 
-## Goals for first release
-
-- **Player Classes:** 5/6
-- **Implemented Spells:** 22 / 51
-- **Combat Proficiencies (Homebrew):** 9 / 28
-- **Monster Creation:** In development..
-- **Audio Player**
-- **Organized Map Navigation**
-
-## Current Features
-
-- **Character Creation**  
-- **Interactive Character Sheet**  
-- **Drag-and-Drop Inventory**  
-- **Spell Learning and Memorization** for single- and multi-class characters  
-- **Automated Actions, Abilities, and Spells** displayed through an **Action Bar HUD**
-- **Automated Initiative** (Homebrew System)
-- **Sound System** integration with **JUH** for local audio files (currently used for damage sounds).
-- **Calendar and Time Tracking** with an automatic day-night cycle based on the current hour.
-- **Journal/Notes Entries** a creature's owner may create notes through the journal tab in the character sheet. 
-
-## Screenshots
-
-### Interface
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%200.png" width="400" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%201.png" width="400" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%202.png" width="400" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%203.png" width="400" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Interface%204.png" width="400" />
-</div>
+## Main Features
 
 ### Character Creation
+An intuitive and automated screen for creating new characters where players can easily read and choose from the available races, classes, and features. Currently classes are safely implemented up to level 5, although most will work fine on higher levels.
+- **Races:** *Dwarf, Elf, Half-Elf, Half-Orc, and Human.*
+- **Classes:** *Barbarian, Cleric, Fighter, Sorcerer, Wizard, Warlock, Rogue, and Ranger.*
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%200.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%202.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%206.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%207.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%208.png" width="250" />
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0px; align-items: center; justify-content: center">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%202.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%206.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%208.png" width="180" />
 </div>
 
-### Character Screens
+### Monster Creation
+Unified screen for both creating and updating existing monsters, allows to represent most monster attacks and abilities from 5e, as well as utilize spells and various features from Player Classes and Races.
+- **Basic Attributes:** *Name, Type, Race, Size, CR, Ability Scores, Health Archetype, Natural AC, Initiative Modifier, Walking Speed, Features, and Proficiencies.*
+- **Spellcasting:** *Spellcasting Level, Known Spells, and Innate Spells.*
+- **Abilities:** Creation of custom ***Attacks** (such as bite)* or ***Monster Abilities** (such as breath weapons)*.
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Inventory.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Spells.png" width="250" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Journal.png" width="250" />
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0px; align-items: center; justify-content: center">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%201.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%202.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%203.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%204.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%205.png" width="180" />
 </div>
 
-### Day-Night Cycle
+### Character Sheet
+Screen applicable to both monsters and player characters, shows creature stats as well as management of spells, inventory, and notes.
+- **Character:** Basic character attributes, features, and proficiencies.
+- **Inventory:**  View current equipment info, resistances, inventory, send/drop/move items.
+- **Spells:** See known, memorized, always prepared, and innate spells for all classes, memorize/forget spells.
+- **Journal:** Add, edit, and delete notes.
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cycle%200.png" width="400" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Day%20Night%20Cicle%201.png" width="400" />
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0px; align-items: center; justify-content: center">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%201.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%202.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%203.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%204.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%205.png" width="180" />
+</div>
+
+### Automated Combat
+- **Action Bar:** Players and monsters will have their abilities automatically shown in the action bar, clicking the respective buttons will cast or use these abilities/features.
+- **Resources:** Resources for abilities are shown at the top of the action bar, and are automatically spent.
+- **Initiative and Time:** Starting combat is as simple as adding creatures to the initiative and then taking your turns. Initiative, conditions and other time based systems are directly tied to the world's calendar/time tracker, which automatically advances in combat and is manually advanced outside of it. Map lightning is also automatically changed based on the current time.
+
+<div style="display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0px; align-items: center; justify-content: center">
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%201.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%202.png" width="180" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%203.png" width="180" />
 </div>
