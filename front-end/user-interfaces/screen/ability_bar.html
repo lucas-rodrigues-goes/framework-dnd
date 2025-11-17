@@ -1,0 +1,544 @@
+[overlay("Ability Bar"), code: {
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
+    
+        [r:'
+        <style>
+    
+        /*===================================================================================================*/
+        /* Document */
+        /*===================================================================================================*/
+    
+        body {
+            all:unset;
+            font-size: 1.7vh;
+            color: #ddd;
+        }
+
+        img {filter: none}
+    
+        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+    
+        .menu {
+            position: fixed;
+    
+            padding: 1vh;
+            margin: 0.5vh;
+    
+            display: flex;
+            align-items: end;
+            gap: 1vh;
+        }
+
+        .clickable:hover {
+            filter: brightness(1.1);
+        }
+
+        .hidden { display: none !important }
+    
+        .block {
+            --pointermap: block
+        }
+    
+        /*===================================================================================================*/
+        /* Button */
+        /*===================================================================================================*/
+    
+        .button-background {
+            background-color: #333;
+            border: 0.2vh solid #444;
+            border-radius: 1vh;
+            padding: 0.3vh;
+            padding-left: 0.4vh;
+            display:flex;
+    
+            background-color: rgba(0,0,0,0);
+            border: none;
+        }
+    
+        .button-background img {
+            background-color: #292929;
+            border: 0.3vh solid #444;
+            border-radius: 0.5vh;
+            display:block;
+            height: 3vh;
+            padding: 0.5vh;
+            margin: 0 0.25vh;
+            min-height:29px;
+        }
+    
+        .button-background img:hover {
+            background-color: #444;
+            border: 0.3vh solid #555;
+            opacity:1;
+        }
+        .button-background img:active {
+            background-color: #555;
+            opacity:1;
+        }
+
+        button {
+            background-color: #292929;
+            border: 0.2vh solid #666;
+            color: #fff;
+            border-radius: 0.5vh;
+            padding: 0.5vh;
+            margin-top: 1.5vh;
+            width: 95%;
+            opacity: 0.9;
+        }
+        button:hover {
+            background-color: #444;
+            border-color: #555; 
+            cursor: default;
+        }
+        button:active {
+            background-color: #555;
+        }
+    
+    
+        /*===================================================================================================*/
+        /* Circular Health Bar */
+        /*===================================================================================================*/
+    
+        .circular-bar {
+            position: relative;
+            width: 13vh;
+            height: 13vh;
+            margin: 0.7vh 0px;
+            left: 0;
+    
+            background: rgba(0,0,0,0.15);
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        .circular-bar img {
+            border-radius: 50%;
+            border: 0.3vh solid #444;
+            height: 11.5vh;
+        }
+    
+        .circular-bar img:hover {
+            filter: brightness(1.1)
+        }
+    
+        .circular-bar img:active {
+            filter: brightness(1.3)
+        }
+
+        .circular-bar-small {
+            width: 6.5vh;
+            height: 6.5vh;
+            min-height: 0;
+            min-width: 0;
+            margin: 1vh 0vh;
+        }
+    
+        .circular-bar-small img {
+            height: 5.5vh;
+            min-height: 0;
+        }
+    
+        #current-party {
+            position: absolute;
+            bottom: 15vh;
+        }
+
+        /*===================================================================================================*/
+        /* Calendar/Clock */
+        /*===================================================================================================*/
+
+        .clock {
+            position: absolute;
+            width: 13vh;
+            height: 13vh;
+            margin: 0.7vh 0px;
+            right: 0;
+            bottom: 0;
+    
+            background: rgba(18,18,18,0.9);
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        /*===================================================================================================*/
+        /* Target */
+        /*===================================================================================================*/
+    
+        #current-target {
+            top: 1vh;
+        }
+    
+        #current-target > .top {
+            width: fit-content;
+            position: relative;
+    
+            bottom: -1vh;
+            height: 6vh;
+    
+            color: #ddd;
+    
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    
+        #current-target-portrait {
+            position: absolute;
+            height: 4vh;
+            left: -5vh;
+            border-radius: 50%;
+            border: 0.3vh solid #333;
+            bottom: 1vh;
+        }
+    
+        #current-target-health {
+            position: relative;
+            width: 35vh;
+            
+            height: 1.5vh;
+            bottom: 0px;
+            background-color: rgba(0,0,0,0.15);
+            border-radius: 1vh;
+            border: 0.3vh solid #333;
+        }
+    
+        #current-target .armor-class {
+            position:relative;
+            display:inline;
+    
+            color:#ddd;
+            text-align: center;
+            font-weight: bold;
+            font-size: 120%;
+    
+            background-color: #444;
+            border: 0.3vh solid #292929;
+            border-radius: 50%;
+            border-top-right-radius: 0;
+            border-top-left-radius: 0;
+    
+            height: 2.5vh;
+            padding: 0.5vh;
+            width: 2vh;
+            left: 1vh;
+        }
+    
+        .text-shadow {
+            text-shadow: 0.3vh 0.3vh 0.2vh rgba(12, 12, 12, 1), 
+                -0.2vh -0.2vh 0.2vh rgba(12, 12, 12, 1);
+        }
+
+        .box-shadow {
+            box-shadow: 0.3vh 0.3vh 0.5vh rgba(0, 0, 0, 1), -0.3vh -0.3vh 0.5vh rgba(0,0,0,1)
+        }
+
+        .tooltip-condition::after {
+            padding: 0.5vh;
+            font-size: 75%;
+        }
+
+        .ability-button {
+            background-color: #1c1c1c;
+            --pointermap: block
+        }
+        .ability-button:hover {
+            background-color: #333;
+        }
+        .ability-button:active {
+            background-color: #444;
+        }
+    
+    
+        /*===================================================================================================*/
+    
+        </style>
+        <script>
+        
+        const isGM = '+isGM()+' == 1
+
+        //-----------------------------------------------------------------------------------------------------
+        // Update Elements
+        //-----------------------------------------------------------------------------------------------------
+
+        async function updateResources ({ resources, hasInitiative=false }={}) {
+            const elem = document.getElementById("resources")
+            elem.classList.add("hidden")
+            elem.clearChildren()
+            if (!resources) return
+
+            for (const [name, resource] of Object.entries(resources)) {
+                const {value, color, image, restored_on} = resource
+
+                elem.appendChild({
+                    tag: "div",
+                    attributes: {class: "tooltip block", tooltip: name},
+                    style: {
+                        display: "flex", justifyContent: "center", alignItems: "flex-end", backgroundColor: value ? "#222" : "rgba(28,28,28,0.65)", 
+                        border: "0.2vh solid #666", height: "fit-content", width: "2.7vh", position: "relative", height: "5.2vh", padding: "0 0.3vh", 
+                        borderRadius: "0.5vh"
+                    },
+                    events: {},
+                    children: [
+                        {tag: "span", style: {padding: "0 0.5vh", textAlign: "center", fontWeight: "700", fontSize: "100%", whiteSpace: "nowrap"}, children: [
+                            {tag: "img", 
+                                attributes: {src: image, 
+                                class: "center-horizontal"}, 
+                                style: {position: "absolute", top: "0.2vh", height: "2.5vh", opacity: value ? 1 : 0.5}
+                            },
+                            {tag: "span", text: value}
+                        ]}
+                    ]
+                })
+            }
+
+            elem.classList.remove("hidden")
+        }
+
+        async function updateAbilityDescription ({ object, type, player_class="" }={}) {
+            const elem = document.getElementById("ability-description")
+            elem.parentElement.classList.add("hidden")
+            elem.clearChildren()
+            if (!object) return
+
+            const descriptionFunc = {
+                Ability: data_description.ability,
+                Spell: data_description.spell,
+                MonsterAbilities: data_description.monster_ability
+            }[type]
+
+            const descriptionElem = await descriptionFunc({object, style: {padding: 0, margin: 0}})
+            elem.appendChild(descriptionElem)
+            elem.parentElement.classList.remove("hidden")
+        }
+
+        function updateAbilityBar ({ abilities=[] }={}) {
+            console.log(abilities)
+            const elem = document.getElementById("abilities")
+            elem.clearChildren()
+
+            let ordered = undefined
+            let abilityAreaElem = undefined
+            for (const ability of abilities) {
+                if (ability.ordered != ordered) {
+                    ordered = ability.ordered
+                    if (abilityAreaElem) elem.appendChild(abilityAreaElem)
+                    abilityAreaElem = AbilityArea()
+                }
+
+                abilityAreaElem.appendChild(
+                    AbilitySlot(ability)
+                )
+            }
+            elem.appendChildren([
+                abilityAreaElem
+            ])
+        }
+
+        function updatePage({visible = false}={}) {
+            const elem = document.getElementById("body")
+            if (visible) elem.classList.remove("hidden")
+            else elem.classList.add("hidden")
+            
+            console.log(elem.outerHTML)
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Components
+        //-----------------------------------------------------------------------------------------------------
+
+        function ResourcesArea() {
+
+            // Element
+            return element({tag: "div", 
+                attributes: {id: "resources"}, 
+                style: {
+                    position: "relative",
+                    right: "50%",
+                    transform: "translate(50%)",
+                    height: "fit-content", width: "fit-content",
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "0.5vh",
+                    padding: "0.5vh",
+                    margin: 0
+                }
+            })
+        }
+
+        function AbilityDescription() {    
+            // Element
+            return container({id: "ability-description", options: {
+                div: {
+                    style: {
+                        position: "relative", 
+                        bottom: "170%",
+                        right: "50%",
+                        transform: "translate(50%)",
+                        height: "fit-content", width: "fit-content", maxWidth: "80%",
+                        display: "flex",
+                        justifyContent: "center",
+                        borderColor: "#666",
+                        borderWidth: "0.2vh",
+                        gap: "0.5vh",
+                        padding: "0.5vh",
+                        margin: 0,
+                        marginBottom: "5vh",
+                        background: "rgba(26, 26, 26, 0.90)",
+
+                        fontSize: "80%",
+                    },
+                    attributes: {
+                        class: "hidden"
+                    }
+                }
+            }})
+        }
+    
+        function AbilitySlot ({ key = "", object = {}, type, player_class = "" }={}) {
+            // Events
+            async function click () {
+                // Execute
+                const command = {
+                    Ability: object.origin + "." + key + "()",
+                    Spell: "Spells.cast_spell(database.spells.data[`"+object.name+"`], `"+player_class+"`)",
+                    MonsterAbilities: "MonsterAbilities.use("+JSON.stringify(object)+")"
+                }[type]
+
+                await backend(command)
+            }
+            function mouseover () {
+                if (type) updateAbilityDescription({object, type, player_class})
+            }
+            function mouseout () {
+                if (type) updateAbilityDescription()
+            }
+        
+            const imageElem = type 
+                ? {tag: "img", attributes: {src: object.image || ""}, style: {height: "3vh", width: "3vh"}}
+                : null
+
+            // Element
+            return element({tag: "div",
+                attributes: {class: "ability-button"},
+                style: {borderRadius: "0.5vh", padding: "0.5vh", height: "3vh", width: "3vh", margin: 0, border: "0.2vh solid #444"},
+                events: {click, mouseover, mouseout},
+                children: [imageElem]
+            })
+        }
+
+        function AbilityArea ({ rows=2 }={}) {
+            // Rows
+            let templateRows = ""
+            for (let i = 0; i < rows; i++) templateRows += "auto "
+
+            // Element
+            return element({
+                tag: "div",
+                style: {
+                    display: "grid",
+                    gridTemplateRows: templateRows,
+                    gridAutoFlow: "column",
+                    gap: "0.2vh",
+                    margin: 0,
+                    padding: 0,
+                }
+            })
+        }
+
+        function AbilityBar() {
+            // ELement
+            return container({title: "", id: "abilities", options: {
+                div: {
+                    style: {
+                        position: "relative",
+                        backgroundColor: "rgba(42, 42, 42, 0.95)",
+                        borderColor: "#666",
+                        right: "50%",
+                        transform: "translate(50%)",
+                        borderWidth: "0.2vh",
+                        borderRadius: "0.5vh",
+                        width: "fit-content",
+                        fontSize: "1.4vh",
+                        marginBottom: 0,
+                        padding: 0,
+                        margin: 0,
+                        zIndex: 10,
+                    }
+                },
+                content: {
+                    style: {
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "1vh",
+                        margin: 0,
+                        width: "fit-content"
+                    }
+                }
+            }})
+        }
+
+        function Menu() {
+
+            // Element
+            return element(
+                {tag: "div", attributes: {id: "abilities-menu", class: "menu bottom center-horizontal"}, style: {
+                    paddingTop: "0", flexDirection: "column", display: "flex", justifyContent: "center", width: "60vh", gap: 0
+                }, children: [
+                    AbilityDescription(),
+                    ResourcesArea(),
+                    AbilityBar(),
+                ]}
+            )
+        }
+
+        function Body ({ children=[] }={}) {
+            return element({tag: "div", attributes: {id: "body", class: "hidden"}, parent: document.body, children: children})
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+        // Execution
+        //-----------------------------------------------------------------------------------------------------
+
+        function Page () {
+            // Elements
+            Body({children: [
+                Menu()
+            ]})
+        }
+
+        window.onload = function () {
+            try {
+                Page()
+                updatePage()
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+    
+        </script>
+        ']
+    </head>
+    
+    <body>
+    
+    </body>
+    
+    }]
