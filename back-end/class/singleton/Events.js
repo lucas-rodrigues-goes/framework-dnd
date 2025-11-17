@@ -170,11 +170,16 @@ var Events = class {
             const resources = {}
             const hasInitiative = Initiative.turn_order.includes(impersonated().id)
 
-            for (const [key, object] of Object.entries(impersonated().resources)) {
+            for (const [key, resource] of Object.entries(impersonated().resources)) {
+                const {value, restored_on} = resource
+
+                if(key == "Attack Action" && value <= 0) continue
+                if(restored_on == "turn start" && !hasInitiative) continue
+
                 resources[key] = {
-                    ...object,
-                    color: database.resources.data[key],
-                    image: database.resources.data[key]
+                    ...resource,
+                    color: database.resources.data[key].color,
+                    image: database.resources.data[key].image
                 }
             }
             
@@ -182,7 +187,7 @@ var Events = class {
                 name: "Ability Bar",
                 type: "Overlay",
                 functionName: "updateResources",
-                args: [{resources: resources, hasInitiative: hasInitiative}]
+                args: [{resources: resources}]
             })
         } catch (error) {console.log(error)}
     }
