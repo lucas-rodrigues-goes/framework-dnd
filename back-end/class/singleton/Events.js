@@ -3,103 +3,109 @@
 var Events = class {
 
     //=====================================================================================================
-    // Helpers
-    //=====================================================================================================
-
-    static #runJSfunction = ({name, type="Overlay", functionName, args=[]}) => {
-        const jsonString = JSON.stringify(args)
-        macro(`runJSfunction("${name}", "${type}", "${functionName}", "null", '${jsonString.replace(/'/g, "`")}')`)
-    }
-
-    //=====================================================================================================
     // Events
     //=====================================================================================================
+
+    static onChangeImpersonated () {
+        // This event runs when any data is saved in MapTool or
+        // when impersonating another token.
+        this.updateScreens()
+    }
+
+    static onMouseOver ({args}) {
+        // Parameters
+        const [id, tempX, tempY, shiftDown, ctrlDown] = args.split(",")
+        const [x, y] = [tempX/150, tempY/150]
+
+        // Call Mouse Off
+        if (args.includes("exit")) {this.onMouseOff({id: id}); return}
+
+        // Test
+        //console.indent({id, x, y, shiftDown, ctrlDown})
+    }
+
+    static onMouseOff ({id}) {
+
+    }
 
     static onChangeSelection () {
 
     }
 
-    static onChangeImpersonated () {
-        const isImpersonated = !!impersonated()
-        this.#runJSfunction({
-            name: "Ability Bar",
-            type: "Overlay",
-            functionName: "updatePage",
-            args: [{visible: isImpersonated}]
-        })
 
-        this.onUpdateAbilities()
-        this.onUpdateResources()
+    static onTokenMove ({id}) {
+
+    }
+
+    static onChangeMap({id}) {
+        
+    }
+
+    static onCampaignLoad() {
+        console.log("Framework Loaded Successfully.", "all")
+    }
+
+    //=====================================================================================================
+    // Helpers
+    //=====================================================================================================
+
+    static runJSfunction = ({name, type="Overlay", functionName, args=[]}) => {
+        const jsonString = JSON.stringify(args)
+        macro(`runJSfunction("${name}", "${type}", "${functionName}", "null", '${jsonString.replace(/'/g, "`")}')`)
     }
 
     //=====================================================================================================
     // Screen Updates
     //=====================================================================================================
 
-    static onUpdateAbilities () {
-        if (!impersonated()) return
+    static updateScreens () {
+        this.updateAbilitiesBar()
+    }
 
-        // Ability Bar Overlay
-        try {
-            const abilities = []
+    // Abilities Bar
+    static updateAbilitiesBar () {
+        // Functions
+        function updateVisibility () {
+            const isImpersonated = !!impersonated()
+            Events.runJSfunction({
+                name: "Ability Bar",
+                type: "Overlay",
+                functionName: "updatePage",
+                args: [{visible: isImpersonated}]
+            })
+        }
+        function updateAbilities () {
+            if (!impersonated()) return
+            try {
+                const abilities = []
 
-            // Abilities
-            for (const [key, object] of Object.entries(impersonated().abilities)) {
-                if (!object) continue
-                object.name = object.name || capitalize(key.replace(/_/g, " "), true)
-                abilities.push({
-                    key: key, 
-                    object: object,
-                    type: "Ability",
-                    ordered: object.type
-                })
-            }
+                // Abilities
+                for (const [key, object] of Object.entries(impersonated().abilities)) {
+                    if (!object) continue
+                    object.name = object.name || capitalize(key.replace(/_/g, " "), true)
+                    abilities.push({
+                        key: key, 
+                        object: object,
+                        type: "Ability",
+                        ordered: object.type
+                    })
+                }
 
-            // Spells
-            const spells = impersonated().spells
-            if (spells) {
-                try {
-                    for (const [cls, spellList] of Object.entries(spells)) {
-                        const evalClass = eval(cls) || {}
-                        const spellcasting = evalClass.spellcasting || undefined
-                        if (!spellcasting) continue
+                // Spells
+                const spells = impersonated().spells
+                if (spells) {
+                    try {
+                        for (const [cls, spellList] of Object.entries(spells)) {
+                            const evalClass = eval(cls) || {}
+                            const spellcasting = evalClass.spellcasting || undefined
+                            if (!spellcasting) continue
 
-                        // Create a Set of existing spell keys for faster lookup
-                        const existingSpellKeys = new Set(abilities.map(ab => ab.key))
+                            // Create a Set of existing spell keys for faster lookup
+                            const existingSpellKeys = new Set(abilities.map(ab => ab.key))
 
-                        // General spells (innate + always_prepared)
-                        const generalSpells = [...(spellList.innate || []), ...(spellList.always_prepared || [])]
-                        for (const spell of generalSpells) {
-                            if (!existingSpellKeys.has(spell) && database.spells.data[spell]) {
-                                abilities.push({
-                                    key: spell,
-                                    object: database.spells.data[spell],
-                                    type: "Spell",
-                                    ordered: "Spells",
-                                    player_class: cls
-                                })
-                                existingSpellKeys.add(spell)
-                            }
-                        }
-
-                        if (spellcasting.memorization) {
-                            // Cantrips
-                            for (const spell of spellList.known || []) {
-                                const object = database.spells.data[spell]
-                                if (!existingSpellKeys.has(spell) && object && object.level == "cantrip") {
-                                    abilities.push({
-                                        key: spell,
-                                        object: object,
-                                        type: "Spell",
-                                        ordered: "Cantrip",
-                                        class: cls
-                                    })
-                                    existingSpellKeys.add(spell)
-                                }
-                            }
-
-                            // Memorized spells
-                            for (const spell of spellList.memorized || []) {
+                            // General spells (innate + always_prepared)
+                            const generalSpells = [...(spellList.innate || []), ...(spellList.always_prepared || [])]
+                            for (const spell of generalSpells) {
                                 if (!existingSpellKeys.has(spell) && database.spells.data[spell]) {
                                     abilities.push({
                                         key: spell,
@@ -111,85 +117,118 @@ var Events = class {
                                     existingSpellKeys.add(spell)
                                 }
                             }
-                        } else {
-                            // Known spells (for non-memorization classes)
-                            for (const spell of spellList.known || []) {
-                                if (!existingSpellKeys.has(spell) && database.spells.data[spell]) {
-                                    abilities.push({
-                                        key: spell,
-                                        object: database.spells.data[spell],
-                                        type: "Spell",
-                                        ordered: database.spells.data[spell].level == "cantrip" ? "Cantrip" : "Spells",
-                                        player_class: cls
-                                    })
-                                    existingSpellKeys.add(spell)
+
+                            if (spellcasting.memorization) {
+                                // Cantrips
+                                for (const spell of spellList.known || []) {
+                                    const object = database.spells.data[spell]
+                                    if (!existingSpellKeys.has(spell) && object && object.level == "cantrip") {
+                                        abilities.push({
+                                            key: spell,
+                                            object: object,
+                                            type: "Spell",
+                                            ordered: "Cantrip",
+                                            class: cls
+                                        })
+                                        existingSpellKeys.add(spell)
+                                    }
+                                }
+
+                                // Memorized spells
+                                for (const spell of spellList.memorized || []) {
+                                    if (!existingSpellKeys.has(spell) && database.spells.data[spell]) {
+                                        abilities.push({
+                                            key: spell,
+                                            object: database.spells.data[spell],
+                                            type: "Spell",
+                                            ordered: "Spells",
+                                            player_class: cls
+                                        })
+                                        existingSpellKeys.add(spell)
+                                    }
+                                }
+                            } else {
+                                // Known spells (for non-memorization classes)
+                                for (const spell of spellList.known || []) {
+                                    if (!existingSpellKeys.has(spell) && database.spells.data[spell]) {
+                                        abilities.push({
+                                            key: spell,
+                                            object: database.spells.data[spell],
+                                            type: "Spell",
+                                            ordered: database.spells.data[spell].level == "cantrip" ? "Cantrip" : "Spells",
+                                            player_class: cls
+                                        })
+                                        existingSpellKeys.add(spell)
+                                    }
                                 }
                             }
                         }
+                    } catch (error) {
                     }
-                } catch (error) {
                 }
-            }
-            
-            // Order
-            const order_priority = [
-                "Attack",
-                "Common",
-                "Cantrip",
-                "Class",
-                "Spells",
-                "Special"
-            ];
+                
+                // Order
+                const order_priority = [
+                    "Attack",
+                    "Common",
+                    "Cantrip",
+                    "Class",
+                    "Spells",
+                    "Special"
+                ];
 
-            // Output List
-            const outputAbilities = abilities
-            .filter(e => e.object)
-            .sort((a, b) => {
-                const pa = order_priority.indexOf(a.ordered);
-                const pb = order_priority.indexOf(b.ordered);
+                // Output List
+                const outputAbilities = abilities
+                .filter(e => e.object)
+                .sort((a, b) => {
+                    const pa = order_priority.indexOf(a.ordered);
+                    const pb = order_priority.indexOf(b.ordered);
 
-                if (pa !== pb) return pa - pb;
+                    if (pa !== pb) return pa - pb;
 
-                // Same category → sort alphabetically by key
-                return a.key.localeCompare(b.key);
-            });
-            this.#runJSfunction({
-                name: "Ability Bar",
-                type: "Overlay",
-                functionName: "updateAbilityBar",
-                args: [{abilities: outputAbilities}]
-            })
-        } catch (error) {console.log(error)}
-    }
+                    // Same category → sort alphabetically by key
+                    return a.key.localeCompare(b.key);
+                });
+                Events.runJSfunction({
+                    name: "Ability Bar",
+                    type: "Overlay",
+                    functionName: "updateAbilityBar",
+                    args: [{abilities: outputAbilities}]
+                })
+            } catch (error) {console.log(error)}
+        }
+        function updateResources () {
+            if (!impersonated()) return
+            try {
+                const resources = {}
+                const hasInitiative = Initiative.turn_order.includes(impersonated().id)
 
-    static onUpdateResources () {
-        if (!impersonated()) return
+                for (const [key, resource] of Object.entries(impersonated().resources)) {
+                    const {value, restored_on} = resource
 
-        // Ability Bar Overlay
-        try {
-            const resources = {}
-            const hasInitiative = Initiative.turn_order.includes(impersonated().id)
+                    if(key == "Attack Action" && value <= 0) continue
+                    if(restored_on == "turn start" && !hasInitiative) continue
 
-            for (const [key, resource] of Object.entries(impersonated().resources)) {
-                const {value, restored_on} = resource
-
-                if(key == "Attack Action" && value <= 0) continue
-                if(restored_on == "turn start" && !hasInitiative) continue
-
-                resources[key] = {
-                    ...resource,
-                    color: database.resources.data[key].color,
-                    image: database.resources.data[key].image
+                    resources[key] = {
+                        ...resource,
+                        color: database.resources.data[key].color,
+                        image: database.resources.data[key].image
+                    }
                 }
-            }
-            
-            this.#runJSfunction({
-                name: "Ability Bar",
-                type: "Overlay",
-                functionName: "updateResources",
-                args: [{resources: resources}]
-            })
-        } catch (error) {console.log(error)}
+                
+                Events.runJSfunction({
+                    name: "Ability Bar",
+                    type: "Overlay",
+                    functionName: "updateResources",
+                    args: [{resources: resources}]
+                })
+            } catch (error) {console.log(error)}
+        }
+
+        // Run
+        updateVisibility()
+        updateAbilities()
+        updateResources()
     }
 
     //=====================================================================================================
