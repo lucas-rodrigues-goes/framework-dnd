@@ -276,6 +276,53 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
+        // Implement perhaps
+        const resourceContext = (event, name, resource, resource_data, character) => {
+            if (event.button != 2) return
+            const buttons = {}
+            const isGM = '+isGM()+' == 1
+            const key = name
+            
+            // Restore all
+            if(isGM) buttons["Restore All"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ resource.max +`)`); updateAbilitiesBar()
+            }
+
+            // Increase
+            if(isGM && name != "Movement") buttons["Increase"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 1) +`)`); updateAbilitiesBar()
+            }
+            else if(isGM && name == "Movement") buttons["Increase 5ft"] = async () => {
+                await backend(`impersonated().set_resource_value("`+ key +`", `+ (resource.value + 5) +`)`); updateAbilitiesBar()
+            }
+
+            // Reduce
+            if(resource.value > 0  && name != "Movement") buttons["Reduce"] = async () => {
+                await backend(`impersonated().use_resource("`+key+`")`); updateAbilitiesBar()
+            }
+            else if(resource.value > 0  && name == "Movement") buttons["Reduce 5ft"] = async () => {
+                await backend(`impersonated().set_resource_value("`+key+`", `+ (resource.value - 5) +`)`); updateAbilitiesBar()
+            }
+            
+            // Description
+            /* if(!isEqualJSON(resource_data, {})) buttons["Description"] = async () => modal({parent: document.body, children: [
+                await data_description.resource({resource: resource_data})
+            ]}) */
+
+            // Spell recovery
+            if (key.includes("Level Spell Slot")) {
+                const cost = {1: 2, 2: 3, 3: 5, 4: 6, 5: 7}[key[0]]
+
+                // Arcane Recovery
+                if((character.classes["Wizard"]?.level || 0) >= 1) buttons["Arcane Recovery ("+cost+" charges)"] = async () => {
+                    await backend(`Wizard.arcane_recovery(`+level+`)`); updateAbilitiesBar()
+                }
+            }
+
+            // Run context menu
+            context_menu({event: event, buttons: buttons})
+        }
+
         async function updateResources ({ resources }={}) {
             const elem = document.getElementById("resources")
             elem.classList.add("hidden")
@@ -331,19 +378,31 @@
             const elem = document.getElementById("abilities")
             elem.clearChildren()
 
+            // Rows
+            let rows = 2
+
             let ordered = undefined
             let abilityAreaElem = undefined
             for (const ability of abilities) {
                 if (ability.ordered != ordered) {
                     ordered = ability.ordered
-                    if (abilityAreaElem) elem.appendChild(abilityAreaElem)
-                    abilityAreaElem = AbilityArea()
+                    if (abilityAreaElem) {
+                        // Always even number of slots
+                        while ((abilityAreaElem.children.length % rows) != 0) abilityAreaElem.appendChild(
+                            AbilitySlot()
+                        )
+                        elem.appendChild(abilityAreaElem)
+                    }
+                    abilityAreaElem = AbilityArea({rows})
                 }
 
                 abilityAreaElem.appendChild(
                     AbilitySlot(ability)
                 )
             }
+            while ((abilityAreaElem.children.length % rows) != 0) abilityAreaElem.appendChild(
+                AbilitySlot()
+            )
             elem.appendChildren([
                 abilityAreaElem
             ])
