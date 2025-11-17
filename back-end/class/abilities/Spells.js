@@ -401,7 +401,7 @@ var Spells = class extends Abilities {
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
 
-        Spells.play_element_sound("")
+        Spells.play_element_sound("psychic")
         const save_return = Spells.make_spell_save({
             ...spell,
             targets: allSelected(),

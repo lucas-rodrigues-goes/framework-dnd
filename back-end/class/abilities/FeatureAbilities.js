@@ -689,6 +689,7 @@ var FeatureAbilities = class extends Abilities {
         if (!valid) return
 
         // Effect
+        Sound.play("invocation")
         const spellcast = Spells.mage_armor({name: "Armor of Shadows", force_self: true})
         if (spellcast.message) console.log(spellcast.message, "all")
 
@@ -704,6 +705,7 @@ var FeatureAbilities = class extends Abilities {
         if (!valid) return
 
         // Effect
+        Sound.play("invocation")
         const spellcast = Spells.false_life({
             name: "Fiendish Vigor",
             spellcasting_modifier: creature.score_bonus.charisma || 0
@@ -742,6 +744,7 @@ var FeatureAbilities = class extends Abilities {
         }
 
         // Effect
+        Sound.play("invocation")
         const damage = Math.max(creature.score_bonus.charisma || 1, 1)
         for (const target of targets) {
             if (calculate_distance(target, hexed_target) * 5 <= 5) {
@@ -762,6 +765,7 @@ var FeatureAbilities = class extends Abilities {
         if (!valid) return
 
         // Effect
+        Sound.play("invocation")
         const spellcast = Spells.invisibility({name: "Shroud of Shadow", force_self: true})
         if (spellcast.message) console.log(spellcast.message, "all")
 
