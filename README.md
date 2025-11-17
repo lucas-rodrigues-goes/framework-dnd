@@ -10,9 +10,9 @@ This framework aims to provide an automated D&D experience for **MapTool**, offe
 - **Initiative and Time:** Starting combat is as simple as adding creatures to the initiative and then taking your turns. Initiative, conditions and other time based systems are directly tied to the world's calendar/time tracker, which automatically advances in combat and is manually advanced outside of it. Map lightning is also automatically changed based on the current time.
 
 <div style="display: flex; flex-wrap: wrap; position: relative; left: 5%; width: 95%; justify-content: center">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%202.png" width="100%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%201.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%203.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%202.png" width="96%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%201.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Combat%203.png" width="48%" />
 </div>
 
 ### Character Sheet
@@ -23,10 +23,10 @@ Screen applicable to both monsters and player characters, shows creature stats a
 - **Journal:** Add, edit, and delete notes.
 
 <div style="display: flex; flex-wrap: wrap; position: relative; left: 5%; width: 95%; justify-content: center">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%201.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%202.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%203.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%204.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%201.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%202.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%203.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Sheet%204.png" width="48%" />
 </div>
 
 ### Character Creation
@@ -35,10 +35,10 @@ An intuitive and automated screen for creating new characters where players can 
 - **Classes:** *Barbarian, Cleric, Fighter, Sorcerer, Wizard, Warlock, Rogue, and Ranger.*
 
 <div style="display: flex; flex-wrap: wrap; position: relative; left: 5%; width: 95%; justify-content: center">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%201.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%203.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%204.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Character%20Creation%205.png" width="48%" />
 </div>
 
 ### Monster Creation
@@ -48,8 +48,8 @@ Unified screen for both creating and updating existing monsters, allows to repre
 - **Abilities:** Creation of custom ***Attacks** (such as bite)* or ***Monster Abilities** (such as breath weapons)*.
 
 <div style="display: flex; flex-wrap: wrap; position: relative; left: 5%; width: 95%; justify-content: center">
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%201.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%202.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%203.png" width="50%" />
-  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%204.png" width="50%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%201.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%202.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%203.png" width="48%" />
+  <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/screenshots/Monster%20Creation%204.png" width="48%" />
 </div>
