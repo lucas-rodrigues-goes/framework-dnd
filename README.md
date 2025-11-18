@@ -1,4 +1,4 @@
-# D&D Framework for MapTool
+# Azuth D&D Framework
 
 This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is based on **D&D 5e core rules**, it incorporates a lot of ideas from other editions and homebrew systems (mostly combat).
 
