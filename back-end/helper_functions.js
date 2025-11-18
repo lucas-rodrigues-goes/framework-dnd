@@ -465,6 +465,7 @@ var teleport = function (map_name=undefined) {
                 const y = Number(macro(`getTokenY(0, "${teleporterName}")`)) + roll_dice(1, variance) - 1
 
                 macro(`moveTokenFromMap("${impersonatedId}", "${oldMap}", ${x}, ${y})`)
+                macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)
             }
         } catch (error) {
             console.log("Teleporter unavailable on other side.")
