@@ -1,19 +1,30 @@
 ﻿#Requires AutoHotkey v2.0
 
+; Only apply to MapTool.exe
 GroupAdd("MapTool", "ahk_exe MapTool.exe")
+#HotIf WinActive("ahk_group MapTool")
 
-#HotIf WinActive('ahk_group MapTool')
-
+; Tab to disable/enable hotkeys
 #SuspendExempt
 Tab::Suspend(-1)
 #SuspendExempt False
 
-w::+F1
-a::+F3
-s::+F2
-d::+F4
+; Repeat Key
+repeat_key(key, fn) {
+    while GetKeyState(key, "P") {
+        Send("+{" fn "}")     ; Shift + Fn key
+        Sleep(350)
+    }
+}
 
-p::+F9
-i::+F10
-j::+F11
-k::+F12
+; Hold (WASD)
+w::repeat_key("w", "F1")
+a::repeat_key("a", "F3")
+s::repeat_key("s", "F2")
+d::repeat_key("d", "F4")
+
+; Others
+p::Send("+{F9}")
+i::Send("+{F10}")
+j::Send("+{F11}")
+k::Send("+{F12}")
