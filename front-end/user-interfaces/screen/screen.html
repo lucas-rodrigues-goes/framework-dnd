@@ -546,58 +546,6 @@
             }
 
         }
-    
-        let current_character = {}
-        async function updateCurrentCharacter() {
-    
-            // Validation
-            const { isImpersonated, isInstanced } = JSON.parse(await backend(`JSON.stringify({
-                isImpersonated: getImpersonated() != "",
-                isInstanced: impersonated() != undefined
-            })`))
-    
-            // Character Menu
-            const character_menu = document.getElementById("character-menu")
-            const create_character_menu = document.getElementById("create-character-menu")
-    
-            // Stop exectuion if not impersonated
-            if (isInstanced) {
-                character_menu.classList.remove("hidden")
-                create_character_menu.classList.add("hidden")
-            }
-            else if (isImpersonated) { 
-                character_menu.classList.add("hidden")
-                create_character_menu.classList.remove("hidden")
-                return 
-            }
-            else {
-                character_menu.classList.add("hidden")
-                create_character_menu.classList.add("hidden")
-                return
-            }
-    
-            // Character
-            const character = JSON.parse(await backend(`JSON.stringify({
-                health: impersonated().health,
-                max_health: impersonated().max_health,
-                portrait: impersonated().portrait || impersonated().image,
-                id: impersonated().id
-            })`))
-    
-            // Verify if there is need for update
-            if (!isEqualJSON(current_character, character)) {
-                current_character = character
-    
-                let hp_percent = character.health / character.max_health * 100
-                let end_hp = hp_percent != 0 ? hp_percent + 2 : 0
-    
-                getId("current-character-health").style.background = `linear-gradient(0deg, `+getColor(hp_percent)+` `+hp_percent+`%, rgba(28,28,28,0.6) `+end_hp+`%)`
-                getId("current-character-portrait").setAttribute("src", character.portrait)
-            }
-    
-            // Unhide after updates
-            character_menu.classList.remove("hidden")
-        }
 
         let current_target = {}
         async function updateCurrentTarget() {
@@ -724,44 +672,7 @@
                 getId("teleport-button").textContent = name
             }
         }
-    
-        let current_party = [] ; let current_party_impersonated_id = ""
-        async function updateCurrentParty() {
-    
-            // Gather party info
-            const {party, impersonated_ID} = JSON.parse(await backend(`JSON.stringify({
-                party: owned_info(),
-                impersonated_ID: getImpersonated(),
-            })`))
-            
-            // Verify if there is need for update
-            if (!isEqualJSON(current_party, party) || current_party_impersonated_id != impersonated_ID) {
-                current_party = party
-                current_party_impersonated_id = impersonated_ID
-    
-                // Clear
-                getId("current-party").clearChildren()
 
-    
-                for (const character_info of party) {
-    
-                    // Character
-                    const character = {
-                        id: character_info[3],
-                        portrait: character_info[2],
-                        health: character_info[0],
-                        max_health: character_info[1]
-                    }
-    
-                    // Skip if own character
-                    if (character.id == impersonated_ID) {continue}
-                    
-                    // Create element
-                    partyCharacter({...character})
-                }
-            }
-        }
-    
         let current_time = {}
         async function updateClock() {
 
@@ -935,93 +846,6 @@
                 ]}
             )
 
-            // Bottom Left
-            element(
-                {tag: "div", parent: document.body, children: [
-                    {tag: "div", attributes: {id: "character-menu", class: "menu bottom left hidden"}, children: [
-                        // Current Character
-                        {tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
-                            {tag: "div", 
-                                attributes: {class: "circular-bar", id: "current-character-health"},
-                                style: {background: "rgba(0,0,0,0.15)"},
-                                children: [
-                                    {tag: "img", 
-                                        attributes: {id: "current-character-portrait", src: ""},
-                                        style: {backgroundColor: "#222"},
-                                        events: {click: () => portraitClick()}
-                                    },
-                                ]
-                            },
-                        ]},
-
-                        // Current Party
-                        {tag: "div", attributes: {id: "current-party"}},
-
-                        // Buttons
-                        {tag: "div", style: {
-                            width: "100%", height: "100%", padding: 0, margin: 0, position: "absolute", left: "15vh",
-                        }, children: [
-                            // Character
-                            {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Character"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "12.3vh", left: "-2.5vh"},
-                                events: {
-                                    click: () => openClosePage("character", "Character Sheet", "character_sheet.html")
-                                },
-                                children: [
-                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://65479d57a2b1ffc116a12a5c731d91a7"}}
-                                ]
-                            },
-
-                            // Inventory
-                            {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Inventory"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "8.3vh", left: "-0.4vh"},
-                                events: {
-                                    click: () => openClosePage("inventory", "Character Sheet", "character_sheet.html")
-                                },
-                                children: [
-                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://711c8f12938d7ef430fbcf7e2e5845ae"}}
-                                ]
-                            },
-
-                            // Spells
-                            {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Spells"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", left: "-0.4vh"},
-                                events: {
-                                    click: () => openClosePage("spells", "Character Sheet", "character_sheet.html")
-                                },
-                                children: [
-                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://4e98be9419bf1ce960319891b66add73"}}
-                                ]
-                            },
-
-                            // Journal
-                            {tag: "button",
-                                attributes: {class: "tooltip", tooltip: "Journal"},
-                                style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, left: "-2.5vh"},
-                                events: {
-                                    click: () => openClosePage("journal", "Character Sheet", "character_sheet.html")
-                                },
-                                children: [
-                                    {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://cc763e3377c5787dc7c81eb443145869"}}
-                                ]
-                            },
-                        ]},
-                        
-                    ]},
-                    {tag: "div", attributes: {id: "create-character-menu", class: "menu bottom left hidden"}, style: {width: "18vh"}, children: [
-                        {tag: "button", text: "Player Creation", 
-                            events: {click: () => openClosePage("", "Player Creation", "player_creation.html")}
-                        },
-                        {tag: "button", text: "Monster Creation", 
-                            events: {click: () => openClosePage("", "Monster Creation", "monster_creation.html")}
-                        },
-                    ]}
-                ]}
-            )
-
             // Bottom Right
             const gm_display = isGM ? "block" : "none"
             element(
@@ -1038,10 +862,10 @@
                                         {tag: "span", text: ":"},
                                         {tag: "span", attributes: {id: "minute"}, text: "00"}
                                     ]},
-                                    {tag: "span", style: {fontSize: "65%"}, children: [
+                                    /* {tag: "span", style: {fontSize: "65%"}, children: [
                                         {tag: "span", text: ":"},
                                         {tag: "span", attributes: {id: "second"}, text: "00"}
-                                    ]}
+                                    ]} */
                                 ]},
                             
                                 // Day, month, year
@@ -1148,9 +972,7 @@
             // Set update intervals
             setInterval(()=> {
                 updateInitiative()
-                updateCurrentCharacter()
                 updateCurrentTarget()
-                updateCurrentParty()
                 updateLog()
                 updateClock()
             }, 1000)

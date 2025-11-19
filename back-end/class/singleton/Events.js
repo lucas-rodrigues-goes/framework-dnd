@@ -38,7 +38,9 @@
         }
 
         static onChangeMap({id}) {
-            
+            try {
+                this.updateScreens()
+            } catch (error) {console.log(error)}
         }
 
         static onCampaignLoad() {
@@ -60,6 +62,7 @@
 
         static updateScreens () {
             this.updateAbilitiesBar()
+            this.updatePortrait()
         }
 
         // Abilities Bar
@@ -261,6 +264,56 @@
             updateVisibility()
             updateAbilities()
             updateResources()
+        }
+        
+        // Portrait
+        static updatePortrait () {
+            // Functions
+            function updateImpersonatedPortrait() {
+                Events.runJSfunction({
+                    name: "Portrait",
+                    type: "Overlay",
+                    functionName: "updatePage",
+                    args: [{
+                        visible: getImpersonated(),
+                        needsCreate: !["Monster", "Player"].includes(impersonated()?.constructor?.name || ""), 
+                        portrait: impersonated()?.portrait || "",
+                        attitude: impersonated()?.attitude || "",
+                        health: impersonated()?.health || 10,
+                        max_health: impersonated()?.max_health || 10,
+                    }]
+                })
+            }
+            function updateOwnedCharacterPortraits() {
+                // Maps all owned tokens in map
+                const tokens = macro("getOwned()").split(",")
+                const ownedCharacters = []
+
+                // Goes through all owned tokens
+                if (true) {
+                    for (let i = 0; i < tokens.length; i++) {
+                        const creature = instance(tokens[i])
+                        if (!creature) continue
+                        if (creature.id == getImpersonated()) continue
+                        const {health, max_health, portrait, id, attitude} = creature
+
+                        ownedCharacters.push({health, max_health, attitude, portrait, id})
+                    }
+                }
+
+                Events.runJSfunction({
+                    name: "Portrait",
+                    type: "Overlay",
+                    functionName: "updateOwnedCharacterPortraits",
+                    args: [{
+                        characters: ownedCharacters
+                    }]
+                })
+            }
+
+            // Run
+            updateImpersonatedPortrait()
+            updateOwnedCharacterPortraits()
         }
 
         //=====================================================================================================

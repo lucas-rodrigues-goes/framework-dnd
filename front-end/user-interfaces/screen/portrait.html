@@ -1,0 +1,509 @@
+[overlay("Portrait"), code: {
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("style.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
+    
+        [r:'
+        <style>
+    
+        /*===================================================================================================*/
+        /* Document */
+        /*===================================================================================================*/
+    
+        body {
+            all:unset;
+            font-size: 1.7vh;
+            color: #ddd;
+        }
+
+        img {filter: none}
+    
+        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+    
+        .menu {
+            position: fixed;
+    
+            padding: 1vh;
+            margin: 0.5vh;
+    
+            display: flex;
+            align-items: end;
+            gap: 1vh;
+        }
+
+        .clickable:hover {
+            filter: brightness(1.1);
+        }
+
+        .hidden { display: none !important }
+    
+        .block {
+            --pointermap: block
+        }
+    
+        /*===================================================================================================*/
+        /* Button */
+        /*===================================================================================================*/
+    
+        .button-background {
+            background-color: #333;
+            border: 0.2vh solid #444;
+            border-radius: 1vh;
+            padding: 0.3vh;
+            padding-left: 0.4vh;
+            display:flex;
+    
+            background-color: rgba(0,0,0,0);
+            border: none;
+        }
+    
+        .button-background img {
+            background-color: #292929;
+            border: 0.3vh solid #444;
+            border-radius: 0.5vh;
+            display:block;
+            height: 3vh;
+            padding: 0.5vh;
+            margin: 0 0.25vh;
+            min-height:29px;
+        }
+    
+        .button-background img:hover {
+            background-color: #444;
+            border: 0.3vh solid #555;
+            opacity:1;
+        }
+        .button-background img:active {
+            background-color: #555;
+            opacity:1;
+        }
+
+        button {
+            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.3);
+            background-color: #292929;
+            border: 0.2vh solid #666;
+            color: #fff;
+            border-radius: 0.5vh;
+            padding: 0.5vh;
+            margin-top: 1.5vh;
+            width: 95%;
+            opacity: 0.9;
+        }
+        button:hover {
+            background-color: #444;
+            border-color: #555; 
+            cursor: default;
+        }
+        button:active {
+            background-color: #555;
+        }
+    
+    
+        /*===================================================================================================*/
+        /* Circular Health Bar */
+        /*===================================================================================================*/
+    
+        .circular-bar {
+            position: relative;
+            width: 13vh;
+            height: 13vh;
+            margin: 0.7vh 0px;
+            left: 0;
+    
+            background: rgba(0,0,0,0.15);
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    
+        .circular-bar img {
+        }
+    
+        .circular-bar img:hover {
+            filter: brightness(1.1)
+        }
+    
+        .circular-bar img:active {
+            filter: brightness(1.3)
+        }
+
+        .circular-bar-small {
+            width: 6.5vh;
+            height: 6.5vh;
+            min-height: 0;
+            min-width: 0;
+            margin: 1vh 0vh;
+        }
+    
+        .circular-bar-small img {
+            height: 5.5vh;
+            min-height: 0;
+        }
+    
+    
+        /*===================================================================================================*/
+    
+        </style>
+        <script>
+
+        const isGM = '+isGM()+' == 1
+
+        //-----------------------------------------------------------------------------------------------------
+        // Helpers
+        //-----------------------------------------------------------------------------------------------------
+
+        function calcHealthBackground({attitude, health=0, max_health=0}) {
+            const color = colors?.healthbar?.[attitude] || ""
+            const hp_percent = health / max_health * 100
+            const end_hp = hp_percent != 0 ? hp_percent + 2 : 0;
+            return `linear-gradient(0deg, `+color+` `+hp_percent+`%, rgba(28,28,28,0.6) `+end_hp+`%)`
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Update Elements
+        //-----------------------------------------------------------------------------------------------------
+
+        function updateOwnedCharacterPortraits ({characters}) {
+            const elem = document.getElementById("owned-characters")
+            elem.classList.add("hidden")
+            elem.clearChildren()
+
+            for (const character of characters) {
+                elem.appendChild(
+                    smallCharacterPortrait(character)
+                )
+            }
+
+            if (elem.children.length > 0) elem.classList.remove("hidden")
+        }
+
+        function updatePage({visible = false, portrait, needsCreate=false, attitude="friendly", health=10, max_health=10}={}) {
+            try {
+                const elem = document.getElementById("body")
+                elem.classList[visible ? "remove" : "remove"]("hidden")
+
+                // Portrait, Healthbar
+                const portraitElem = document.getElementById("character-health")
+                document.getElementById("portrait-image").setAttribute("src", portrait || "asset://7117d0983ba2656e84922c2b098acb2c")
+                portraitElem.style.background = calcHealthBackground({attitude, health, max_health})
+                portraitElem.classList[needsCreate ? "add" : "remove"]("hidden")
+                
+                // Buttons
+                const buttonsElem = document.getElementById("character-sheet-buttons")
+                buttonsElem.classList[needsCreate ? "add" : "remove"]("hidden")
+
+                // Create new
+                const createElem = document.getElementById("create-buttons")
+                createElem.classList[needsCreate && visible ? "remove" : "add"]("hidden")
+            } catch (error) {console.log(error)}
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Components
+        //-----------------------------------------------------------------------------------------------------
+
+        function CharacterSheetButtons () {
+
+            // Element
+            return element({tag: "div", attributes: {id: "character-sheet-buttons", class: "hidden"}, style: {
+                width: "100%", height: "100%", padding: 0, margin: 0, position: "absolute", left: "15vh",
+            }, children: [
+                // Stop Impersonating
+                {tag: "button",
+                    style: {borderRadius: "2vh", width: "2vh", height: "2vh", position: "absolute", bottom: "0", left: "-15vh"},
+                    events: {
+                        click: () => backend(`stopImpersonating()`)
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://684c533f24f83c66f9592c09a2df93e7"}}
+                    ]
+                },
+
+                // Character
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Character"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "12.3vh", left: "-2.5vh"},
+                    events: {
+                        click: () => openClosePage("character", "Character Sheet", "character_sheet.html")
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://65479d57a2b1ffc116a12a5c731d91a7"}}
+                    ]
+                },
+
+                // Inventory
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Inventory"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "8.3vh", left: "-0.4vh"},
+                    events: {
+                        click: () => openClosePage("inventory", "Character Sheet", "character_sheet.html")
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://711c8f12938d7ef430fbcf7e2e5845ae"}}
+                    ]
+                },
+
+                // Spells
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Spells"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", left: "-0.4vh"},
+                    events: {
+                        click: () => openClosePage("spells", "Character Sheet", "character_sheet.html")
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://4e98be9419bf1ce960319891b66add73"}}
+                    ]
+                },
+
+                // Journal
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Journal"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, left: "-2.5vh"},
+                    events: {
+                        click: () => openClosePage("journal", "Character Sheet", "character_sheet.html")
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://cc763e3377c5787dc7c81eb443145869"}}
+                    ]
+                },
+            ]},)
+        }
+
+        function smallCharacterPortrait ({id, portrait="", attitude="friendly", health=10, max_health=10}) {
+            // Style
+            const style = {
+                padding: 0,
+                margin: 0,
+                position: "absolute",
+                backgroundColor: "#222",
+                borderRadius: "50%",
+                border: "0.3vh solid #444",
+                display: "flex",
+            }
+
+            // Events
+            const portraitClick = (id) => {
+                const creature = id ? `instance("`+id+`");` : `impersonated();`
+                backend(`{
+                    const creature = `+creature+`;
+                    const imp_creature = impersonated();
+                    const sel_creature = selected();
+
+                    const ownsCreature = creature.owners.includes(player) || `+isGM+`;
+                    const impersonatesCreature = imp_creature ? imp_creature.id == creature.id : false;
+                    const canSeeCreature = imp_creature ? imp_creature.target_visibility(creature) > 0 : false;
+                    const selectsCreature = sel_creature ? sel_creature.id == creature.id : false;
+
+                    if (ownsCreature && !impersonatesCreature) {
+                        creature.impersonate();
+                    } else {
+                        if (selectsCreature && canSeeCreature) {
+                            creature.go_to()
+                        } else if (!selectsCreature && canSeeCreature) {
+                            creature.select()
+                        }
+                    }
+                }`)
+            }
+
+            // Element
+            return element({tag: "div",
+                attributes: {class: "circular-bar circular-bar-small"},
+                style: {background: calcHealthBackground({attitude, health, max_health}), boxShadow: "0 0.5vh 1vh rgba(0,0,0,0.3)"},
+                children: [
+                    // Impersonated Portrait
+                    {tag: "img",
+                        attributes: {id: "portrait-image", src: portrait || "asset://7117d0983ba2656e84922c2b098acb2c" },
+                        style: style,
+                        events: {click: () => portraitClick(id)}
+                    },
+                ]
+            })
+        }
+
+        function OwnedCharacterPortraits () {
+
+            // Element
+            return element({tag: "div", attributes: {id: "owned-characters"}, style: {marginBottom: "-2vh"}})
+        }
+
+        function CharacterPortrait () {
+            // Style
+            const style = {
+                padding: 0,
+                margin: 0,
+                position: "absolute",
+                backgroundColor: "#222",
+                borderRadius: "50%",
+                border: "0.3vh solid #444",
+                height: "11.5vh",
+                width: "11.5vh", 
+                display: "flex",
+            }
+            const textStyle = {
+                width: "50%",
+                top: "25%",
+                height: "50%",
+                position: "absolute",
+                fontSize: "75%",
+                fontWeight: "bold"
+            }
+            const eventCatcherStyle = {
+                padding: 0, margin: 0,
+                top: 0,
+                backgroundColor: "rgba(0,0,0,0)",
+                height: "100%", 
+                width: "50%",
+                position: "absolute",
+                zIndex: "100",
+            }
+
+            // Events
+            function mouseover (event) {
+                this.parentElement.children[0].style.backgroundColor = "#333"
+            }
+            function mouseout (event) {
+                this.parentElement.children[0].style.backgroundColor = style.backgroundColor
+            }
+            const portraitClick = (id) => {
+                const creature = id ? `instance("`+id+`");` : `impersonated();`
+                backend(`{
+                    const creature = `+creature+`;
+                    const imp_creature = impersonated();
+                    const sel_creature = selected();
+
+                    const ownsCreature = creature.owners.includes(player) || `+isGM+`;
+                    const impersonatesCreature = imp_creature ? imp_creature.id == creature.id : false;
+                    const canSeeCreature = imp_creature ? imp_creature.target_visibility(creature) > 0 : false;
+                    const selectsCreature = sel_creature ? sel_creature.id == creature.id : false;
+
+                    if (ownsCreature && !impersonatesCreature) {
+                        creature.impersonate();
+                    } else {
+                        if (selectsCreature && canSeeCreature) {
+                            creature.go_to()
+                        } else if (!selectsCreature && canSeeCreature) {
+                            creature.select()
+                        }
+                    }
+                }`)
+            }
+
+            // Element
+            return element({tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
+                // Has impersonated player or monster
+                {tag: "div", 
+                    attributes: {class: "circular-bar hidden", id: "character-health"},
+                    style: {background: "rgba(0,0,0,0.15)", boxShadow: "0 0.5vh 1vh rgba(0,0,0,0.3)"},
+                    children: [
+                        // Impersonated Portrait
+                        {tag: "img",
+                            attributes: {id: "portrait-image", src: ""},
+                            style: style,
+                            events: {click: () => portraitClick()}
+                        },
+                    ]
+                },
+                
+                // Has impersonated non entity
+                {tag: "div", 
+                    attributes: {class: "circular-bar hidden", id: "create-buttons"},
+                    style: {background: "rgba(0,0,0,0.15)"},
+                    children: [
+                        // Background
+                        {tag: "div",
+                            attributes: {class: ""},
+                            style: {...style, backgroundColor: "#444"}
+                        },
+
+                        // Create Monster
+                        {tag: "div", style: {padding: 0, margin: 0, position: "absolute"}, children: [
+                            // Pretty half circle
+                            {tag: "div",
+                                attributes: {id: "create-monster", class: ""},
+                                style: {...style, position: "", mask: "linear-gradient(to right, black 49%, transparent 49%)"},
+                                children: [
+                                    {tag: "p", text: "Create Monster", style: {...textStyle, left: "0.1vh"}},
+                                ]
+                            },
+                            // Event Handler
+                            {tag: "div", style: {...eventCatcherStyle, left: 0}, events: {
+                                mouseout, mouseover, click: () => openClosePage("", "Monster Creation", "monster_creation.html")
+                            }},
+                        ]},
+
+                        // Create Player
+                        {tag: "div", style: {padding: 0, margin: 0, position: "absolute"}, children: [
+                            // Pretty half circle
+                            {tag: "div",
+                                attributes: {id: "create-player", class: ""},
+                                style: {...style, position: "", mask: "linear-gradient(to left, black 49%, transparent 49%)"},
+                                children: [
+                                    {tag: "p", text: "Create Player", style: {...textStyle, right: 0}},
+                                ]
+                            },
+                            // Event Handler
+                            {tag: "div", style: {...eventCatcherStyle, right: 0}, events: {
+                                mouseout, mouseover, click: () => openClosePage("", "Player Creation", "player_creation.html")
+                            }},
+                        ]}
+                    ]
+                },
+            ]})
+        }
+
+        function Menu() {
+
+            // Element
+            return element(
+                {tag: "div", attributes: {id: "character-menu", class: "menu bottom left"}, style: {
+                    display: "flex", flexDirection: "column-reverse", alignItems: "flex-start"
+                }, children: [
+                    CharacterPortrait(),
+                    OwnedCharacterPortraits(),
+                    CharacterSheetButtons(),
+                ]}
+            )
+        }
+
+        function Body ({ children=[] }={}) {
+            return element({tag: "div", attributes: {id: "body", class: ""}, parent: document.body, children: children})
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+        // Execution
+        //-----------------------------------------------------------------------------------------------------
+
+        function Page () {
+            // Elements
+            Body({children: [
+                Menu()
+            ]})
+        }
+
+        window.onload = function () {
+            try {
+                Page()
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+    
+        </script>
+        ']
+    </head>
+    
+    <body>
+    
+    </body>
+    
+    }]
