@@ -6,7 +6,7 @@ GroupAdd("MapTool", "ahk_exe MapTool.exe")
 
 ; Tab to disable/enable hotkeys
 #SuspendExempt
-Tab::Suspend(-1)
++Tab::Suspend(-1)
 #SuspendExempt False
 
 ; Repeat Key
@@ -19,8 +19,8 @@ repeat_key(key, fn) {
 
 ; Hold (WASD)
 w::repeat_key("w", "F1")
-a::repeat_key("a", "F3")
-s::repeat_key("s", "F2")
+a::repeat_key("a", "F2")
+s::repeat_key("s", "F3")
 d::repeat_key("d", "F4")
 
 ; Others
