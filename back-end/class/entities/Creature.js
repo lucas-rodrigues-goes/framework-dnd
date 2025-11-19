@@ -2308,7 +2308,7 @@ var Creature = class extends Entity {
                 this.facing = direction
                 this.onMove()
                 macro(`goto(getImpersonated())`)
-                macro(`exposeFOW(getCurrentMapName())`)
+                macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)
             }
         } catch (error) {console.log(error)}
     }
