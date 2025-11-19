@@ -1234,7 +1234,7 @@ var Creature = class extends Entity {
     get resources() {return this.#resources}
 
     get_resource_value(resource) {
-        return this.#resources?.[resource]?.value
+        return this.#resources?.[resource]?.value || 0
     }
 
     use_resource(resource) {
@@ -2277,6 +2277,40 @@ var Creature = class extends Entity {
 
     remove_note(title) {
         delete this.#notes[title]
+    }
+
+    //=====================================================================================================
+    // Keyboard Movement
+    //=====================================================================================================
+
+    keyboard_move(direction) {
+        try {
+            const isInCombat = Initiative.turn_order.includes(this.id)
+            const isPlaying = Initiative.current_creature == this.id
+            const visibility = this.has_condition("Hidden") && !this.player ? "gm" : "all"
+            const distance = 5
+            
+            const isValidMovement = () => {
+                if (!isInCombat) return {success: true}
+                if (!isPlaying) return {success: false, message: `${this.name_color} can't move outside of their turn.`, visibility: "debug"}
+
+                const movement = this.get_resource_value("Movement")
+                if (movement < distance) return {success: false, message: `${this.name_color} does not have enough movement.`, visibility: "debug"}
+                else {
+                    this.set_resource_value("Movement", movement - 5)
+                    return {success: true, message: `${this.name_color} moved 5ft.`, visibility: visibility}
+                }
+            }
+            const validMovement = isValidMovement()
+            if (validMovement.message) console.log(validMovement.message, validMovement.visibility)
+            if (validMovement.success) {
+                this.move(direction, 1)
+                this.facing = direction
+                this.onMove()
+                macro(`goto(getImpersonated())`)
+                macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)
+            }
+        } catch (error) {console.log(error)}
     }
 
     //=====================================================================================================
