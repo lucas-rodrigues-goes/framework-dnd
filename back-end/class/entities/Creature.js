@@ -2287,6 +2287,15 @@ var Creature = class extends Entity {
     // Keyboard Movement
     //=====================================================================================================
 
+    #get_gridless_movement(speed_ft_per_round, tick_ms = 200) {
+        const ticks_per_round = 6000 / tick_ms; // 6 seconds = 6000ms
+        const movement_per_tick = speed_ft_per_round / ticks_per_round;
+        const rounded_movement = Math.round((movement_per_tick * 10) / 10)
+        const minimum_movement = 0.5
+
+        return Math.max(minimum_movement, rounded_movement)
+    }
+
     keyboard_move(direction) {
         try {
             const isInCombat = Initiative.turn_order.includes(this.id)
@@ -2294,7 +2303,7 @@ var Creature = class extends Entity {
             const visibility = this.has_condition("Hidden") && !this.player ? "gm" : "all"
             
             macro(`setTokenSnapToGrid(${settings.gridMovement}, getImpersonated())`)
-            const distance = settings.gridMovement ? 5 : 1
+            const distance = settings.gridMovement ? 5 : this.#get_gridless_movement(this.speed)
             
             const isValidMovement = () => {
                 if (!isInCombat) return {success: true}
