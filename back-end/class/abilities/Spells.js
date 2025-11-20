@@ -1408,9 +1408,10 @@ var Spells = class extends Abilities {
         })
 
         // Validate
-        const xDiff = Math.abs(x - Number(coordinates.x))
-        const yDiff = Math.abs(y - Number(coordinates.y))
-        const distance = (xDiff + yDiff) * 5
+        coordinates.x = coordinates.x * settings.cellSize
+        coordinates.y = coordinates.y * settings.cellSize
+        const distance = calculate_distance(creature, coordinates)
+
         if (distance <= spell.range) {
             creature.x = Number(coordinates.x)
             creature.y = Number(coordinates.y)

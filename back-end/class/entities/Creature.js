@@ -288,6 +288,9 @@ var Creature = class extends Entity {
             `)
         }
 
+        // Set grid type
+        macro(`setTokenSnapToGrid(${settings.gridMovement}, "${this.id}")`)
+
         } catch (error) { console.log(error) }
     }
 
@@ -2288,7 +2291,9 @@ var Creature = class extends Entity {
             const isInCombat = Initiative.turn_order.includes(this.id)
             const isPlaying = Initiative.current_creature == this.id
             const visibility = this.has_condition("Hidden") && !this.player ? "gm" : "all"
-            const distance = 5
+            
+            macro(`setTokenSnapToGrid(${settings.gridMovement}, getImpersonated())`)
+            const distance = settings.gridMovement ? 5 : 1
             
             const isValidMovement = () => {
                 if (!isInCombat) return {success: true}
@@ -2297,15 +2302,16 @@ var Creature = class extends Entity {
                 const movement = this.get_resource_value("Movement")
                 if (movement < distance) return {success: false, message: `${this.name_color} does not have enough movement.`, visibility: "debug"}
                 else {
-                    this.set_resource_value("Movement", movement - 5)
-                    return {success: true, message: `${this.name_color} moved 5ft.`, visibility: visibility}
+                    this.set_resource_value("Movement", movement - distance)
+                    //return {success: true, message: `${this.name_color} moved ${distance}ft.`, visibility: visibility}
+                    return {success: true}
                 }
             }
             const validMovement = isValidMovement()
             if (validMovement.message) console.log(validMovement.message, validMovement.visibility)
             if (validMovement.success) {
-                this.move(direction, 1)
                 this.facing = direction
+                this.move(direction, distance/5)
                 this.onMove()
                 macro(`goto(getImpersonated())`)
                 macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)

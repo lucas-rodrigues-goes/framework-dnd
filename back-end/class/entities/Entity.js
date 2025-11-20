@@ -60,51 +60,31 @@ var Entity = class {
     // Position X
     get x() {
         const size = this.size;
-        const sizeToCells = {
-            "Large": 0.5,
-            "Huge": 1,
-            "Gargantuan": 1.5,
-            "Colossal": 2.5
-        };
-        const baseX = Number(MTScript.evalMacro(`[r:getTokenX(0,"${this.id}")]`));
-        return baseX + (sizeToCells[size] || 0);
+        const baseX = Number(MTScript.evalMacro(`[r:getTokenX(${!settings.gridMovement},"${this.id}")]`));
+        return baseX + (sizeToCells[size] || 0) * settings.cellSize;
     }
     set x(x) {
+        x = Math.round(x)
         const size = this.size;
-        const sizeToCells = {
-            "Large": 0.5,
-            "Huge": 1,
-            "Gargantuan": 1.5,
-            "Colossal": 2.5
-        };
-        const offset = sizeToCells[size] || 0;
-        const adjustedX = x - offset;
-        MTScript.evalMacro(`[r:moveToken(${adjustedX}, ${this.y - (sizeToCells[this.size] || 0)}, 0, "${this.id}")]`);
+        const offset = (sizeToCells[size] || 0) * settings.cellSize;
+        const adjustedX = Math.round(x - offset);
+        const adjustedY = Math.round(this.y - offset);
+        MTScript.evalMacro(`[r:moveToken(${adjustedX}, ${adjustedY}, ${!settings.gridMovement}, "${this.id}")]`);
     }
 
     // Position Y
     get y() {
         const size = this.size;
-        const sizeToCells = {
-            "Large": 0.5,
-            "Huge": 1,
-            "Gargantuan": 1.5,
-            "Colossal": 2.5
-        };
-        const baseY = Number(MTScript.evalMacro(`[r:getTokenY(0,"${this.id}")]`));
-        return baseY + (sizeToCells[size] || 0);
+        const baseY = Number(MTScript.evalMacro(`[r:getTokenY(${!settings.gridMovement},"${this.id}")]`));
+        return baseY + (sizeToCells[size] || 0) * settings.cellSize;
     }
     set y(y) {
+        y = Math.round(y)
         const size = this.size;
-        const sizeToCells = {
-            "Large": 0.5,
-            "Huge": 1,
-            "Gargantuan": 1.5,
-            "Colossal": 2.5
-        };
-        const offset = sizeToCells[size] || 0;
-        const adjustedY = y - offset;
-        MTScript.evalMacro(`[r:moveToken(${this.x - (sizeToCells[this.size] || 0)}, ${adjustedY}, 0, "${this.id}")]`);
+        const offset = (sizeToCells[size] || 0) * settings.cellSize;
+        const adjustedY = Math.round(y - offset);
+        const adjustedX = Math.round(this.x - offset);
+        MTScript.evalMacro(`[r:moveToken(${adjustedX}, ${adjustedY}, ${!settings.gridMovement}, "${this.id}")]`);
     }
 
     // Facing
@@ -177,41 +157,43 @@ var Entity = class {
     }
 
     // Move entity in a direction by a number of cells
-    move(direction, cells) {
-        cells = Number(cells)
-        if (isNaN(cells)) return
+    move(direction, units) {        
+        if (isNaN(units)) return
+
+        // Non grid movement uses pixels
+        units = Number(units * settings.cellSize)
 
         switch (direction) {
             // Cardinal directions
             case "up":
-                this.y -= cells
+                this.y -= units
                 break
             case "down":
-                this.y += cells
+                this.y += units
                 break
             case "left":
-                this.x -= cells
+                this.x -= units
                 break
             case "right":
-                this.x += cells
+                this.x += units
                 break
                 
             // Diagonal directions
             case "right-up":
-                this.x += cells
-                this.y -= cells
+                this.x += units
+                this.y -= units
                 break
             case "right-down":
-                this.x += cells
-                this.y += cells
+                this.x += units
+                this.y += units
                 break
             case "left-up":
-                this.x -= cells
-                this.y -= cells
+                this.x -= units
+                this.y -= units
                 break
             case "left-down":
-                this.x -= cells
-                this.y += cells
+                this.x -= units
+                this.y += units
                 break
         }
     }

@@ -13,7 +13,7 @@ GroupAdd("MapTool", "ahk_exe MapTool.exe")
 repeat_key(key, fn) {
     while GetKeyState(key, "P") {
         Send("+{" fn "}")     ; Shift + Fn key
-        Sleep(350)
+        Sleep(500)
     }
 }
 
