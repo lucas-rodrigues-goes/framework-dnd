@@ -970,6 +970,12 @@ var Abilities = class {
                 output -= 1
             }
 
+            // Vicious Mockery
+            if (creature.has_condition("Vicious Mockery")) {
+                if (!view_only) creature.remove_condition("Vicious Mockery")
+                output -= 1
+            }
+
             // Guiding Bolt
             if (target.has_condition("Guiding Bolt")) {
                 if (!view_only) target.remove_condition("Guiding Bolt")

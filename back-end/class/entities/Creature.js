@@ -1184,6 +1184,7 @@ var Creature = class extends Entity {
                 "Bulky":  { type:"add", value: -5 },
             },
             conditions: {
+                "Longstrider": {type: "add", value: 10},
                 "Haste": { type: "multiply", value: 2 },
                 "Slow": { type: "multiply", value: 0.5 },
                 "Ray of Frost": {type: "multiply", value: 0.5},
