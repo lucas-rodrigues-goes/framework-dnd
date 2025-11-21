@@ -1,11 +1,12 @@
+[h: quote = "'"]
 [overlay("Ability Bar"), code: {
     <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
-        [r:scriptTag("open")][r:importScript("images.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
+        <script src="lib://front/macro/style.js?cachelib=false"></script>
+        <script src="lib://front/macro/script.js?cachelib=false"></script>
+        <script src="lib://front/macro/components_new.js?cachelib=false"></script>
+        <script src="lib://front/macro/data_description.js?cachelib=false"></script>
     
         [r:'
         <style>
@@ -272,12 +273,15 @@
 
             // Events
             async function click () {
+                object.name = object.name.replace(/`/g, "'+quote+'");
+
                 // Execute
                 const command = {
                     Ability: object.origin + "." + key + "()",
                     Spell: "Spells.cast_spell(database.spells.data[`"+object.name+"`], `"+player_class+"`)",
                     MonsterAbilities: "MonsterAbilities.use("+JSON.stringify(object)+")"
                 }[type]
+                console.indent({command})
                 await backend(command)
             }
             function mouseover () {
@@ -287,7 +291,7 @@
                 if (type) updateAbilityDescription()
             }
         
-            const imageElem = type 
+            const imageElem = type
                 ? {tag: "img", attributes: {src: object.image || ""}, style: {height: "3vh", width: "3vh"}}
                 : null
 

@@ -2,10 +2,10 @@
     <head>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
-        [r:scriptTag("open")][r:importScript("style.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
-        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
+        <script src="lib://front/macro/style.js?cachelib=false"></script>
+        <script src="lib://front/macro/script.js?cachelib=false"></script>
+        <script src="lib://front/macro/components_new.js?cachelib=false"></script>
+        <script src="lib://front/macro/data_description.js?cachelib=false"></script>
     
         [r:'
         <style>
@@ -250,7 +250,7 @@
         }
     
         .text-shadow {
-            text-shadow: 0vh 0.2vh 0.5vh rgba(0,0,0,1);
+            text-shadow: 0.2vh 0.2vh 0.5vh rgba(0,0,0,1), -0.2vh -0.2vh 0.5vh rgba(0,0,0,1);
         }
 
         .box-shadow {
@@ -289,7 +289,7 @@
         function updateCurrentTarget (args = {}) {
             const { visible = false, name, type, portrait, attitude, armor_class, health, max_health, conditions } = args
             if (old_target == JSON.stringify(args)) return
-            else old_target == JSON.stringify(args)
+            else old_target = JSON.stringify(args)
 
             const elem = document.getElementById("current-target")
             elem.classList.add("hidden")
