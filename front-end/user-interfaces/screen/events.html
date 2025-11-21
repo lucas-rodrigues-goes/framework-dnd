@@ -1,4 +1,12 @@
 [overlay("Events"):{
 	<link rel="onChangeSelection" type="macro" href="[r: macroLinkText("console@lib:back","", "onChangeSelection()","")]">
     <link rel="onChangeImpersonated" type="macro" href="[r: macroLinkText("console@lib:back","", "onChangeImpersonated()","")]">
+    [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+
+    [r:'
+    <script>
+        setInterval( () => backend(`Events.every1000ms()`), 1000)
+        setInterval( () => backend(`Events.every5000ms()`), 5000)
+    </script>
+    ']
 }]
