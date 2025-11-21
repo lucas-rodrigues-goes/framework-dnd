@@ -7,7 +7,7 @@
         //=====================================================================================================
 
         static onChangeImpersonated () {
-            this.updateScreens()
+            this.updateImpersonatedScreens()
         }
 
         static onMouseOver ({args}) {
@@ -32,34 +32,44 @@
         }
 
         static onChangeMap({id}) {
-            this.updateScreens()
+            this.updateImpersonatedScreens()
+            this.updateInitiativeCreatures()
         }
 
         static onCampaignLoad() {
             console.log("Framework Loaded Successfully.", "all")
+            this.updateImpersonatedScreens()
+            this.updateInitiativeCreatures()
         }
 
-        static onInitiativeClear () {
-            this.updateScreens()
+        static onInitiativeUpdate () {
+            this.updateInitiativeCreatures()
         }
 
         //=====================================================================================================
         // Helpers
         //=====================================================================================================
 
+        // Runs for current client only
         static runJSfunction = ({name, type="Overlay", functionName, args=[]}) => {
             const jsonString = JSON.stringify(args)
             macro(`runJSfunction("${name}", "${type}", "${functionName}", "null", '${jsonString.replace(/'/g, "`")}')`)
+        }
+
+        // Runs for all players
+        static runJSfunctionAll = ({name, type="Overlay", functionName, args=[], targets="all", defer=0}) => {
+            const runJSArgs = [name, type, functionName, "null", args]
+            macro(`execFunction("runJSfunction", '${JSON.stringify(runJSArgs)}', ${defer}, "${targets}")`)
         }
 
         //=====================================================================================================
         // Screen Updates
         //=====================================================================================================
 
-        static updateScreens () {
+        static updateImpersonatedScreens () {
             this.updateAbilitiesBar()
             this.updatePortrait()
-            this.updateInitiative()
+            this.updateInitiativeEndTurnButton()
         }
 
         // Abilities Bar
@@ -264,13 +274,23 @@
         }
 
         // Initiative
-        static updateInitiative () {
-            Events.runJSfunction({
+        static updateInitiativeCreatures () {
+            Events.runJSfunctionAll({
                 name: "Initiative",
                 type: "Overlay",
-                functionName: "updatePage",
+                functionName: "updateInitiativeCreatures",
                 args: [{
                     creatures: Initiative.creatures_info
+                }]
+            })
+        }
+        static updateInitiativeEndTurnButton () {
+            this.runJSfunction({
+                name: "Initiative",
+                type: "Overlay",
+                functionName: "updateEndTurnButton",
+                args: [{
+                    visible: impersonated()?.id == Initiative.current_creature && Initiative.turn_order.length > 0
                 }]
             })
         }

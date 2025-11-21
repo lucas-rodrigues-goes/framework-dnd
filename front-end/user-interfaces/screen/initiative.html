@@ -277,10 +277,12 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
-        function updatePage ( { creatures=[] }={} ) {
+        function updateEndTurnButton ({visible=false}) {
             // End Turn Button
-            document.getElementById("end-turn").classList[creatures.length ? "remove" : "add"]("hidden")
+            document.getElementById("end-turn").classList[visible ? "remove" : "add"]("hidden")
+        }
 
+        function updateInitiativeCreatures ( { creatures=[] }={} ) {
             // Initiative Creatures
             const elem = document.getElementById("initiative-creatures")
             elem.clearChildren()

@@ -99,17 +99,19 @@ var Initiative = class {
 
         // If round hasnt started, starts it
         if (!hasPlayer) this.next_creature()
+        Events.onInitiativeUpdate()
     }
 
     static remove_creature (id=getSelected()) {
         const temp_creatures = this.creatures
         delete temp_creatures[id]
         this.creatures = temp_creatures
+        Events.onInitiativeUpdate()
     }
 
     static clear_initiative () {
         this.creatures = {}
-        Events.onInitiativeClear()
+        Events.onInitiativeUpdate()
     }
 
     //=====================================================================================================
@@ -215,6 +217,7 @@ var Initiative = class {
                 }
             }
         }
+        Events.onInitiativeUpdate()
     }
 
     static suspend_turn(time, description, creature=impersonated()) {
