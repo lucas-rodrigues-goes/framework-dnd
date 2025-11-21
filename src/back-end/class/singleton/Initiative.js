@@ -175,11 +175,6 @@ var Initiative = class {
     //=====================================================================================================
 
     static next_creature() {
-        if (isGM) {
-            impersonate(this.current_creature)
-            macro(`goto("${this.current_creature}")`)
-        }
-
         // Next playing creature
         const creature = instance(this.current_creature)
         const creature_init = this.creatures[this.current_creature]
