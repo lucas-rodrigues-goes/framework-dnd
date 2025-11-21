@@ -7,8 +7,6 @@
         //=====================================================================================================
 
         static onChangeImpersonated () {
-            // This event runs when any data is saved in MapTool or
-            // when impersonating another token.
             this.updateScreens()
         }
 
@@ -17,11 +15,8 @@
             const [id, tempX, tempY, shiftDown, ctrlDown] = args.split(",")
             const [x, y] = [tempX/150, tempY/150]
 
-            // Call Mouse Off
+            // Call onMouseOff
             if (args.includes("exit")) {this.onMouseOff({id: id}); return}
-
-            // Test
-            //console.indent({id, x, y, shiftDown, ctrlDown})
         }
 
         static onMouseOff ({id}) {
@@ -32,19 +27,20 @@
 
         }
 
-
         static onTokenMove ({id}) {
 
         }
 
         static onChangeMap({id}) {
-            try {
-                this.updateScreens()
-            } catch (error) {console.log(error)}
+            this.updateScreens()
         }
 
         static onCampaignLoad() {
             console.log("Framework Loaded Successfully.", "all")
+        }
+
+        static onInitiativeClear () {
+            this.updateScreens()
         }
 
         //=====================================================================================================
@@ -63,6 +59,7 @@
         static updateScreens () {
             this.updateAbilitiesBar()
             this.updatePortrait()
+            this.updateInitiative()
         }
 
         // Abilities Bar
@@ -264,6 +261,18 @@
             updateVisibility()
             updateAbilities()
             updateResources()
+        }
+
+        // Initiative
+        static updateInitiative () {
+            Events.runJSfunction({
+                name: "Initiative",
+                type: "Overlay",
+                functionName: "updatePage",
+                args: [{
+                    creatures: Initiative.creatures_info
+                }]
+            })
         }
         
         // Portrait

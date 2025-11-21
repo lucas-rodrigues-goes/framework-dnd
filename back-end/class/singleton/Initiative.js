@@ -109,6 +109,7 @@ var Initiative = class {
 
     static clear_initiative () {
         this.creatures = {}
+        Events.onInitiativeClear()
     }
 
     //=====================================================================================================
