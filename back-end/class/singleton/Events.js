@@ -34,16 +34,24 @@
         static onChangeMap({id}) {
             this.updateImpersonatedScreens()
             this.updateInitiativeCreatures()
+            this.updateClock()
         }
 
         static onCampaignLoad() {
             console.log("Framework Loaded Successfully.", "all")
             this.updateImpersonatedScreens()
             this.updateInitiativeCreatures()
+            this.updateClock()
         }
 
         static onInitiativeUpdate () {
             this.updateInitiativeCreatures()
+            macro(`execFunction("c", '["Events.onChangeImpersonated()"]', 0, "all")`)
+        }
+
+        static onTimeAdvancement () {
+            console.log("here")
+            this.updateClock()
         }
 
         //=====================================================================================================
@@ -271,6 +279,35 @@
             updateVisibility()
             updateAbilities()
             updateResources()
+        }
+
+        // Clock
+        static updateClock () {
+            function ordinal(n) {
+                const s = ["th", "st", "nd", "rd"];
+                const v = n % 100;
+                return n + (s[(v - 20) % 10] || s[v] || s[0]);
+            }
+
+            const object = JSON.parse(Time.json)
+            const {hour, minute} = object
+            const month = [
+                "Hammer", "Alturiak", "Ches", 
+                "Tarsakh", "Mirtul", "Kythorn", 
+                "Flamerule", "Eleasis", "Eleint",
+                "Marpenoth", "Uktar", "Nightal"
+            ][object.month]
+            const day = ordinal(object.day)
+
+            Events.runJSfunctionAll({
+                name: "Clock",
+                type: "Overlay",
+                functionName: "updateClock",
+                args: [{
+                    hour_minute: `${hour < 10 ? "0" + hour : hour}:${minute < 10 ? "0" + minute : minute}`,
+                    month_day: `${month} ${day}`,
+                }]
+            })
         }
 
         // Initiative
