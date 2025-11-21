@@ -1,4 +1,4 @@
-`[r:'`
+
 
 const colors = {
     healthbar: {
@@ -72,8 +72,3 @@ const equipment_images = {
     "secondary main hand": "asset://36204064dbd1d4b08a4f367c1fb995ba",
     "secondary off hand": "asset://1590f16edebd685127567b4c02beb3be",
 };
-
-
-//===================================================================================================//
-
-`']`

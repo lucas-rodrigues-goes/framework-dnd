@@ -1,4 +1,3 @@
-`[r:'`
 
 //=====================================================================================================
 // Helper functions
@@ -84,7 +83,7 @@ async function backend(body) {
     .catch(() => ""); // Return an empty string if fetch fails
 }
 
-function toBackend(arguments, valueCallback) {
+function toBackend(args, valueCallback) {
     let request = new XMLHttpRequest();
     request.open("POST", "macro:console@lib:back", true);
 
@@ -93,7 +92,7 @@ function toBackend(arguments, valueCallback) {
             valueCallback(request.response);
         }
     };
-    request.send(arguments);
+    request.send(args);
 }
 
 function closePage(page_name) {
@@ -108,7 +107,7 @@ function closePage(page_name) {
     request.send(page_name);
 }
 
-function openPage(page_link, arguments = getId("id").value) {
+function openPage(page_link, args = getId("id").value) {
     let request = new XMLHttpRequest();
     request.open("POST", "macro:openPage@lib:front", true);
 
@@ -117,10 +116,10 @@ function openPage(page_link, arguments = getId("id").value) {
             valueCallback(request.response);
         }
     };
-    request.send(arguments + ";" + page_link);
+    request.send(args + ";" + page_link);
 }
 
-function openClosePage(arguments, page_name, page_link) {
+function openClosePage(args, page_name, page_link) {
     let request = new XMLHttpRequest();
     request.open("POST", "macro:openClosePage@lib:front", true);
 
@@ -129,10 +128,10 @@ function openClosePage(arguments, page_name, page_link) {
             valueCallback(request.response);
         }
     };
-    request.send(arguments + ";" + page_name + ";" + page_link);
+    request.send(args + ";" + page_name + ";" + page_link);
 }
 
-function teleport(arguments) {
+function teleport(args) {
     let request = new XMLHttpRequest();
     request.open("POST", "macro:teleport@lib:back", true);
 
@@ -141,7 +140,7 @@ function teleport(arguments) {
             valueCallback(request.response);
         }
     };
-    request.send(arguments);
+    request.send(args);
 }
 
 //=====================================================================================================
@@ -159,5 +158,3 @@ document.addEventListener("mousemove", function (e) {
 
 
 //=====================================================================================================
-
-`']`

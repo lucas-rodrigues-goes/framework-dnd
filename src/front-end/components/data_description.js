@@ -1,4 +1,3 @@
-`[r:'`
 
 let data_description; {
     const title_value = ({title, value}) => {
@@ -349,5 +348,3 @@ let data_description; {
         },
     }
 }
-
-`']`
