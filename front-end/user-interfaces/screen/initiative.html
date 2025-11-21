@@ -133,12 +133,22 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
-        function updateEndTurnButton ({visible=false}) {
+        let old_endTurnButton;
+        function updateEndTurnButton (args={}) {
+            const {visible = false} = args
+            if (old_endTurnButton == JSON.stringify(args)) return
+            old_endTurnButton = JSON.stringify(args)
+
             // End Turn Button
             document.getElementById("end-turn").classList[visible ? "remove" : "add"]("hidden")
         }
 
-        function updateInitiativeCreatures ( { creatures=[] }={} ) {
+        let old_creatures;
+        function updateInitiativeCreatures ( args={} ) {
+            const {creatures = []} = args
+            if (old_creatures == JSON.stringify(args)) return
+            old_creatures = JSON.stringify(args)
+
             // Initiative Creatures
             const elem = document.getElementById("initiative-creatures")
             elem.clearChildren()
@@ -187,8 +197,8 @@
             // Element
             return element ({tag: "div", 
                 style: {
-                    transform: isPlaying && "scale(1.2) translateX(-0.5vh) translateY(0.5vh)", 
-                    position: "relative", 
+                    transform: isPlaying ? "scale(1.1) translateX(-0.2vh) translateY(0.5vh)" : "scale(0.9)", 
+                    position: "relative",
                     height: "9.5vh", 
                     opacity: initiative >= 12 ? 1 : 1,
                 },
@@ -221,7 +231,7 @@
             return element (
                 {tag: "div",
                     attributes: {id: "initiative-creatures"},
-                    style: {marginTop: "1.5vh", display: "flex", gap: "1vh", justifyContent: "center"}
+                    style: {marginTop: "0.5vh", display: "flex", gap: "0.5vh", justifyContent: "center"}
                 }
             )
         }
@@ -231,7 +241,7 @@
             // Element
             return element({tag: "div",
                 attributes: {id: "initiative-controls"}, 
-                style: {marginTop: "-1vh", marginBottom: "3vh", gap: "0.1vh", display: "flex", justifyContent: "center"}, 
+                style: {marginTop: "-1vh", gap: "0.1vh", display: "flex", justifyContent: "center"}, 
                 children: [
                     // Add creatures
                     {tag: "button", 
@@ -269,8 +279,8 @@
             // Element
             return element(
                 {tag: "div", attributes: {class: "center-horizontal"}, children: [
-                    InitiativeCreatures(),
                     InitiativeControls(),
+                    InitiativeCreatures(),
                 ]}
             )
         }

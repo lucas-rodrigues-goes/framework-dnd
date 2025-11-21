@@ -180,7 +180,12 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
-        function updateClock ({hour_minute = "00:00", month_day = ""}) {
+        let old_clock;
+        function updateClock (args = {}) {
+            const {hour_minute = "00:00", month_day = ""} = args
+            if (old_clock == JSON.stringify(args)) return
+            old_clock = args
+
             try {
                 document.getElementById("hour-minute").textContent = hour_minute
                 document.getElementById("month-day").textContent = month_day

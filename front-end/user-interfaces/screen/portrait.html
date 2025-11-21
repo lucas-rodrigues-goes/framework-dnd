@@ -170,7 +170,12 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
-        function updateOwnedCharacterPortraits ({characters}) {
+        let old_characters;
+        function updateOwnedCharacterPortraits (args = {}) {
+            const {character} = args
+            if (old_characters == JSON.stringify(args)) return
+            else old_characters = JSON.stringify(args)
+
             const elem = document.getElementById("owned-characters")
             elem.classList.add("hidden")
             elem.clearChildren()
@@ -184,7 +189,13 @@
             if (elem.children.length > 0) elem.classList.remove("hidden")
         }
 
-        function updatePage({visible = false, portrait, needsCreate=false, attitude="friendly", health=10, max_health=10}={}) {
+        let old_page;
+        function updatePage(args = {}) {
+            const {visible = false, portrait, needsCreate=false, attitude="friendly", health=10, max_health=10} = args
+
+            if (old_page == JSON.stringify(args)) return
+            old_page = JSON.stringify(args)
+
             try {
                 const elem = document.getElementById("body")
                 elem.classList[visible ? "remove" : "remove"]("hidden")

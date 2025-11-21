@@ -72,7 +72,12 @@
         // Update Elements
         //-----------------------------------------------------------------------------------------------------
 
-        async function updateResources ({ resources }={}) {
+        let old_resources
+        async function updateResources (args = {}) {
+            const { resources } = args
+            if (old_resources == JSON.stringify(args)) return
+            old_resources = JSON.stringify(args)
+
             const elem = document.getElementById("resources")
             elem.classList.add("hidden")
             elem.clearChildren()
@@ -102,7 +107,12 @@
             elem.parentElement.classList.remove("hidden")
         }
 
-        function updateAbilityBar ({ abilities=[] }={}) {
+        let old_abilityBar
+        function updateAbilityBar (args = {}) {
+            const { abilities = [] } = args
+            if (old_abilityBar == JSON.stringify(args)) return
+            old_abilityBar = JSON.stringify(args)
+
             const elem = document.getElementById("abilities")
             elem.clearChildren()
 
@@ -136,7 +146,12 @@
             ])
         }
 
-        function updatePage({visible = false}={}) {
+        let old_page
+        function updatePage(args = {}) {
+            const { visible = false } = args
+            if (old_page == JSON.stringify(args)) return
+            old_page = JSON.stringify(args)
+
             const elem = document.getElementById("body")
             if (visible) elem.classList.remove("hidden")
             else elem.classList.add("hidden")
@@ -263,8 +278,6 @@
                     Spell: "Spells.cast_spell(database.spells.data[`"+object.name+"`], `"+player_class+"`)",
                     MonsterAbilities: "MonsterAbilities.use("+JSON.stringify(object)+")"
                 }[type]
-
-                console.indent({command, origin:object.origin, type})
                 await backend(command)
             }
             function mouseover () {
