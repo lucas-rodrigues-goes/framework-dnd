@@ -1,0 +1,364 @@
+[overlay("Clock"), code: {
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="style.css@lib:front"></link>
+        [r:scriptTag("open")][r:importScript("style.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("script.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("components_new.js@lib:front")][r:scriptTag("close")]
+        [r:scriptTag("open")][r:importScript("data_description.js@lib:front")][r:scriptTag("close")]
+    
+        [r:'
+        <style>
+    
+        /*===================================================================================================*/
+        /* Document */
+        /*===================================================================================================*/
+    
+        body {
+            all:unset;
+            font-size: 1.7vh;
+            color: #ddd;
+        }
+
+        img {filter: none}
+    
+        .left, .right, .bottom, .top, .center-horizontal {position:fixed;}
+    
+        .menu {
+            position: fixed;
+    
+            padding: 1vh;
+            margin: 0.5vh;
+    
+            display: flex;
+            align-items: end;
+            gap: 1vh;
+        }
+
+        .clickable:hover {
+            filter: brightness(1.1);
+        }
+
+        .hidden { display: none !important }
+    
+        .block {
+            --pointermap: block
+        }
+    
+        /*===================================================================================================*/
+        /* Button */
+        /*===================================================================================================*/
+    
+        .button-background {
+            background-color: #333;
+            border: 0.2vh solid #444;
+            border-radius: 1vh;
+            padding: 0.3vh;
+            padding-left: 0.4vh;
+            display:flex;
+    
+            background-color: rgba(0,0,0,0);
+            border: none;
+        }
+    
+        .button-background img {
+            background-color: #292929;
+            border: 0.3vh solid #444;
+            border-radius: 0.5vh;
+            display:block;
+            height: 3vh;
+            padding: 0.5vh;
+            margin: 0 0.25vh;
+            min-height:29px;
+        }
+    
+        .button-background img:hover {
+            background-color: #444;
+            border: 0.3vh solid #555;
+            opacity:1;
+        }
+        .button-background img:active {
+            background-color: #555;
+            opacity:1;
+        }
+
+        button {
+            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.3);
+            background-color: #292929;
+            border: 0.2vh solid #666;
+            color: #fff;
+            border-radius: 0.5vh;
+            padding: 0.5vh;
+            margin-top: 1.5vh;
+            width: 95%;
+            opacity: 0.9;
+        }
+        button:hover {
+            background-color: #444;
+            border-color: #555; 
+            cursor: default;
+        }
+        button:active {
+            background-color: #555;
+        }
+    
+    
+        /*===================================================================================================*/
+        /* Circular Health Bar */
+        /*===================================================================================================*/
+    
+        .circular-bar {
+            position: relative;
+            width: 13vh;
+            height: 13vh;
+            margin: 0.7vh 0px;
+            left: 0;
+    
+            border-radius: 50%;
+            border: 0.2vh solid #444;
+    
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+    
+    
+        /*===================================================================================================*/
+    
+        </style>
+        <script>
+
+        const isGM = '+isGM()+' == 1
+
+        //-----------------------------------------------------------------------------------------------------
+        // Helpers
+        //-----------------------------------------------------------------------------------------------------
+
+        function calcSkyColor({hour, minute}) {
+            // Validate inputs
+            if (typeof hour !== "number" || typeof minute !== "number" || 
+                hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                return "rgba(90, 77, 173, 1)";
+            }
+
+            const t = hour * 60 + minute;
+            
+            const stops = [
+                { time: 0, r: 90, g: 77, b: 173 },    // Midnight - Purple
+                { time: 720, r: 217, g: 171, b: 63 }, // Noon - Orange  
+                { time: 1439, r: 90, g: 77, b: 173 }  // End of day - Purple
+            ];
+
+            // Handle boundary times
+            if (t <= stops[0].time) return "rgba(" + stops[0].r + ", " + stops[0].g + ", " + stops[0].b + ", 1)";
+            if (t >= stops[2].time) return "rgba(" + stops[2].r + ", " + stops[2].g + ", " + stops[2].b + ", 1)";
+
+            // Determine which segment were in
+            let start, end, f;
+            if (t < stops[1].time) {
+                // First segment: purple to orange
+                start = stops[0];
+                end = stops[1];
+                f = (t - start.time) / (end.time - start.time);
+            } else {
+                // Second segment: orange to purple  
+                start = stops[1];
+                end = stops[2];
+                f = (t - start.time) / (end.time - start.time);
+            }
+
+            // Interpolate RGB values
+            const r = Math.round(start.r + (end.r - start.r) * f);
+            const g = Math.round(start.g + (end.g - start.g) * f);
+            const b = Math.round(start.b + (end.b - start.b) * f);
+
+            return "rgba(" + r + ", " + g + ", " + b + ", 0.8)";
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Update Elements
+        //-----------------------------------------------------------------------------------------------------
+
+        function updateClock ({hour_minute = "00:00", month_day = ""}) {
+            try {
+                document.getElementById("hour-minute").textContent = hour_minute
+                document.getElementById("month-day").textContent = month_day
+
+                const hour = Number(hour_minute.split(":")[0]) || 0
+                const minute = Number(hour_minute.split(":")[1]) || 0
+                document.getElementById("clock").style.background = calcSkyColor({hour, minute})
+            } catch (error) {console.log(error)}
+        }
+
+        //-----------------------------------------------------------------------------------------------------
+        // Components
+        //-----------------------------------------------------------------------------------------------------
+
+        function SideButtons () {
+
+            // Element
+            return element({tag: "div", style: {
+                width: "100%", height: "100%", padding: 0, margin: 0, position: "absolute", right: "15vh",
+            }, children: [
+                // Reset Character
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Reset Character"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "12.3vh", right: "-2.5vh"},
+                    events: {
+                        click: () => backend(`resetImpersonated()`)
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://1510654d6ca8b1f36fdd7796d1393f85"}}
+                    ]
+                },
+
+                // Give Items
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Give Items"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "8.3vh", right: "-0.4vh"},
+                    events: {
+                        click: () => backend(`give_items()`)
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://454b7c974737ffe30aaac28f07cfdcc1"}}
+                    ]
+                },
+
+                // Sound Manager
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Sound Manager"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: "4vh", right: "-0.4vh"},
+                    events: {
+                        click: () => backend(`sound_manager()`)
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://5bd850a16525cdf0e47ef08f3bb4258d"}}
+                    ]
+                },
+
+                // Database
+                {tag: "button",
+                    attributes: {class: "tooltip", tooltip: "Database"},
+                    style: {borderRadius: "2vh", width: "3.5vh", height: "3.5vh", position: "absolute", bottom: 0, right: "-2.5vh"},
+                    events: {
+                        click: () => openClosePage("", "Database", "database.html")
+                    },
+                    children: [
+                        {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://aa347dbe8d8970836c46fefb0ececdb3"}}
+                    ]
+                },
+            ]},)
+        }
+
+        function Clock () {
+            // Style
+            const style = {
+                padding: 0,
+                margin: 0,
+                position: "absolute",
+                backgroundColor: "#222",
+                borderRadius: "50%",
+                border: "0.3vh solid #888",
+                height: "11.5vh",
+                width: "11.5vh", 
+                display: "flex",
+            }
+
+            // Element
+            return element({tag: "div", attributes: {id: "current-character"}, style: {display: "block", position: "relative", textAlign: "center"}, children: [
+                // Has impersonated player or monster
+                {tag: "div", 
+                    attributes: {class: "circular-bar", id: "clock"},
+                    style: {background: calcSkyColor({hour:0,minute:0}), boxShadow: "0 0.5vh 1vh rgba(0,0,0,0.3)"},
+                    children: [
+                        // Clock
+                        {tag: "div", style: style, children: [
+                            // Show time
+                            {tag: "div", style: {height: "100%", width: "100%"}, children: [
+                                {tag: "p", text: "00:00", 
+                                    style: {fontSize: "110%", fontWeight: "bold", fontFamily: "", margin: "1.2vh", marginBottom: 0},
+                                    attributes: {id: "hour-minute"}
+                                },
+                                {tag: "p", text: "Marpenoth 26th",
+                                    style: {fontSize: "70%", fontWeight: "bold", margin: "1vh"},
+                                    attributes: {id: "month-day"}
+                                },
+
+                                // Buttons
+                                {tag: "div", attributes: {class: isGM ? "" : "hidden"}, style: {display: "flex", alignItems: "center", justifyContent: "center", marginTop: 0}, children: [
+                                    {tag: "button",
+                                        attributes: {class: "tooltip", tooltip: "Specify Time"},
+                                        style: {borderRadius: "2vh", width: "2vh", height: "2vh", marginTop: 0},
+                                        events: {
+                                            click: () => backend("Time.set()")
+                                        },
+                                        children: [
+                                            {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://684c533f24f83c66f9592c09a2df93e7"}}
+                                        ]
+                                    },
+                                    {tag: "button",
+                                        attributes: {class: "tooltip", tooltip: "Increase Time"},
+                                        style: {borderRadius: "2vh", width: "2vh", height: "2vh", marginTop: 0, padding: "0"},
+                                        events: {
+                                            click: () => backend("Time.increase()")
+                                        },
+                                        children: [
+                                            {tag: "img", style: {height: "100%", width: "100%"}, attributes: {src: "asset://ca3a35626f1849b6872f2ca0704a1a1d"}}
+                                        ]
+                                    },
+                                ]}
+                            ]}
+                        ]},
+                    ]
+                },
+            ]})
+        }
+
+        function Menu() {
+
+            // Element
+            return element(
+                {tag: "div", attributes: {id: "character-menu", class: "menu bottom right"}, style: {
+                    display: "flex", flexDirection: "column-reverse", alignItems: "flex-start"
+                }, children: [
+                    Clock(),
+                    isGM ? SideButtons() : null,
+                ]}
+            )
+        }
+
+        function Body ({ children=[] }={}) {
+            return element({tag: "div", attributes: {id: "body", class: ""}, parent: document.body, children: children})
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+        // Execution
+        //-----------------------------------------------------------------------------------------------------
+
+        function Page () {
+            // Elements
+            Body({children: [
+                Menu()
+            ]})
+        }
+
+        window.onload = function () {
+            try {
+                Page()
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    
+        //-----------------------------------------------------------------------------------------------------
+    
+        </script>
+        ']
+    </head>
+    
+    <body>
+    
+    </body>
+    
+    }]

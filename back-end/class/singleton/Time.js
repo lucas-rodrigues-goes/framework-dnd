@@ -49,7 +49,8 @@ var Time = class {
         const old_time = this.json
         this._seconds = this.#roundSeconds(current)
         
-        // Update maps
+        // Updates
+        Events.onTimeAdvancement()
         this.update_time_of_day(old_time)
     }
 
@@ -204,6 +205,7 @@ var Time = class {
         console.log(`Time advanced by ${amount} ${selected_label.toLowerCase()}${plural}.`, "all")
         
         // Update maps
+        Events.onTimeAdvancement()
         this.update_time_of_day(old_time)
     }
 
@@ -258,6 +260,7 @@ var Time = class {
         this._seconds = this.#roundSeconds(total_seconds)
         
         // Update maps
+        Events.onTimeAdvancement()
         this.update_time_of_day(old_time)
     }
 }
