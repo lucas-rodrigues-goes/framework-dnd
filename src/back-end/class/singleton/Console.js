@@ -143,6 +143,10 @@ var console = class {
         this.log(html, visibility);
     }
 
+    static error(name, error) {
+        console.log(`Error running "${name}": ${error}`, "debug")
+    }
+
     static clear() {
         this.history = []
     }
