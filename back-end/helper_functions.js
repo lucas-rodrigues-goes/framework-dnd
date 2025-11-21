@@ -151,6 +151,14 @@ var impersonated = function () {
     }
 }
 
+var impersonate = function (id) {
+    macro(`impersonate("${id}")`)
+}
+
+var stopImpersonating = function () {
+    macro(`impersonate("")`)
+}
+
 // Resets currently impersonated token
 var resetImpersonated = function () {
     delete instances[impersonated().id]
