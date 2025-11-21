@@ -41,38 +41,38 @@
 	            const movement = creature.resources["Movement"].value
 	            if (movement < distance) {
 					if (!isGM) {
-						console.log(creature.name_color + " does not have enough movement for that move.", visibility)
-						return false
+						console.log(creature.name_color + " does not have enough movement for that move.", visibility);
+						return false;
 					}
 					else {
-						console.log("GM forced " + creature.name + " to move "+ distance +"ft.", "gm")
-	               		return true
+						console.log("GM forced " + creature.name + " to move "+ distance +"ft.", "gm");
+	               		return true;
 					}
 				}
 	
-	            creature.set_resource_value("Movement", movement - distance)
-	            console.log(creature.name_color + " moved " + distance + "ft", visibility)
-	            return true
+	            creature.set_resource_value("Movement", movement - distance);
+	            console.log(creature.name_color + " moved " + distance + "ft", visibility);
+	            return true;
 	        }
 	        else {
 	            if (!isGM) {
-	                console.log(creature.name_color + " does not have enough movement for that move.", visibility)
-	                return false
+	                console.log(creature.name_color + " does not have enough movement for that move.", visibility);
+	                return false;
 	            }
 	            else {
-	                console.log("GM forced " + creature.name + " to move "+ distance +"ft.", "gm")
-	                return true
+	                console.log("GM forced " + creature.name + " to move "+ distance +"ft.", "gm");
+	                return true;
 	            }
 	        }
 	    }
 	    const validMovement = validateMovement()
 	    if (validMovement && creature) {
-	        if (isPlaying) creature.go_to()
-	        creature.onMove()
+	        if (isPlaying) creature.go_to();
+	        creature.onMove();
 	    }
-	    (validMovement ? 1 : 0)
+	    (validMovement ? 1 : 0);
 	}
 	')]
-	[h, if(!return_value):setFacing(arguments)]
+	[h, if(!return_value && distance != 0):setFacing(arguments)]
 	[r: return_value ]
 }]
