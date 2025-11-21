@@ -65,7 +65,7 @@ var console = class {
         switch(visibility) {
             // Debug
             case "debug": {
-                MapTool.chat.broadcastToGM(`<span style="color:rgb(197, 70, 70)">${this.#time_hours_minutes_seconds()} ${text}</span>`)
+                if (settings.showDebug) MapTool.chat.broadcastToGM(`<span style="color:rgb(197, 70, 70)">${this.#time_hours_minutes_seconds()} ${text}</span>`)
                 break
             }
             // GM

@@ -33,6 +33,14 @@ var Settings = class {
     // Properties
     //=====================================================================================================
 
+    // Show Debug
+    static #DEFAULT_SHOW_DEBUG = false
+    static get showDebug() { return this.#get_obj_key("showDebug", this.#DEFAULT_SHOW_DEBUG) }
+    static set showDebug(value) {
+        if (![true, false].includes(value)) return
+        this.#set_obj_key("showDebug", value) 
+    }
+
     // Grid Movement
     static #DEFAULT_GRID_MOVEMENT = true
     static get gridMovement() { return this.#get_obj_key("gridMovement", this.#DEFAULT_GRID_MOVEMENT) }
