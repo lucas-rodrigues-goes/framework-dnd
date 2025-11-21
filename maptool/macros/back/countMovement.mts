@@ -17,7 +17,7 @@
 	{
 	    const isGM = '+isGM()+' == 1
 	    const id = "'+currentToken()+'"
-	    const distance = '+ distance +'
+	    const distance = Math.round('+ distance +')
 	    const creature = instance(id)
 	
 	    const isInCombat = Initiative.turn_order.includes(id)

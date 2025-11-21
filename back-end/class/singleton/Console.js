@@ -3,28 +3,39 @@
 var console = class {
 
     //=====================================================================================================
-    // Stored Attributes
+    // Data
     //=====================================================================================================
 
     static #data = MapTool.tokens.getTokenByID(
         getTokenID("lib:console", "Framework")
     );
 
-    //=====================================================================================================
-    // Getters / Setters
-    //=====================================================================================================
-
-    static get history() {
-        const object = JSON.parse(this.#data.getProperty("object"));
-        return object?.history || [];
+    static #get_object() {
+        return JSON.parse(this.#data.getProperty("object")) || {};
     }
 
-    static set history(history) {
-        const object = JSON.parse(this.#data.getProperty("object")) || {};
-        object.history = history;
-        
-        this.#data.setProperty("object", JSON.stringify(object));
+    static #set_object(obj) {
+        this.#data.setProperty("object", JSON.stringify(obj || {}));
     }
+
+    static #get_obj_key(key, default_value) {
+        const obj = this.#get_object();
+        return obj[key] ?? default_value;
+    }
+
+    static #set_obj_key(key, value) {
+        const obj = this.#get_object();
+        obj[key] = value;
+        this.#set_object(obj);
+    }
+
+    //=====================================================================================================
+    // Properties
+    //=====================================================================================================
+
+    // History
+    static get history() { return this.#get_obj_key("history", []) }
+    static set history(value) { this.#set_obj_key("history", value) }
 
     //=====================================================================================================
     // Methods

@@ -1,7 +1,4 @@
 
-
-var player = MTScript.evalMacro(`[r:player.getName()]`)
-
 //---------------------------------------------------------------------------------------------------
 // Token Instancing
 //---------------------------------------------------------------------------------------------------
@@ -305,43 +302,47 @@ var roll_20 = function (advantage_weight = 0) {
 // Others
 //---------------------------------------------------------------------------------------------------
 
-// Calculate distance between entities
 var calculate_distance = function (source, target) {
-    const delta_x = target.x - source.x; // Difference in X-coordinates
-    const delta_y = target.y - source.y; // Difference in Y-coordinates
-    let distance = Math.round(Math.sqrt(delta_x * delta_x + delta_y * delta_y))
+    const delta_x = source.x - target.x
+    const delta_y = source.y - target.y
+
+    // Calculate distance, then convert to units
+    let distance = Math.round(
+        Math.sqrt(delta_x * delta_x + delta_y * delta_y) / settings.cellSize
+    )
 
     // Size modifiers
-    switch (source.size) {
+    switch (source.size || "Normal") {
         case "Large":
-            distance -= 1
-            break
+            distance -= 1;
+            break;
         case "Huge":
-            distance -= 1
-            break
+            distance -= 1;
+            break;
         case "Gargantuan":
-            distance -= 2
-            break
+            distance -= 2;
+            break;
         case "Colossal":
-            distance -= 3
-            break
+            distance -= 3;
+            break;
     }
-    switch (target.size) {
+    switch (target.size || "Normal") {
         case "Large":
-            distance -= 1
-            break
+            distance -= 1;
+            break;
         case "Huge":
-            distance -= 1
-            break
+            distance -= 1;
+            break;
         case "Gargantuan":
-            distance -= 2
-            break
+            distance -= 2;
+            break;
         case "Colossal":
-            distance -= 3
-            break
+            distance -= 3;
+            break;
     }
 
-    return distance;
+    // Ensure distance doesn't go below 0
+    return Math.max(0, distance);
 }
 
 // Calculate direction from source to target
@@ -451,6 +452,7 @@ var teleport = function (map_name=undefined) {
                 const y = Number(macro(`getTokenY(0, "${teleporterName}")`)) + roll_dice(1, variance) - 1
 
                 macro(`moveTokenFromMap("${impersonatedId}", "${oldMap}", ${x}, ${y})`)
+                macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)
             }
         } catch (error) {
             console.log("Teleporter unavailable on other side.")

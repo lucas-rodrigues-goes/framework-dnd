@@ -1,10 +1,11 @@
-# D&D Framework for MapTool
+# Azuth D&D Framework
 
 This framework aims to provide an automated D&D experience for **MapTool**, offering a more game-like experience for both players and the DM. Although it is based on **D&D 5e core rules**, it incorporates a lot of ideas from other editions and homebrew systems (mostly combat).
 
 ## Main Features
 
 ### Automated Combat
+[Video Demo](https://www.youtube.com/watch?v=y4eSjgkel1k)
 - **Action Bar:** Players and monsters will have their abilities automatically shown in the action bar, clicking the respective buttons will cast or use these abilities/features.
 - **Resources:** Resources for abilities are shown at the top of the action bar, and are automatically spent.
 - **Initiative and Time:** Starting combat is as simple as adding creatures to the initiative and then taking your turns. Initiative, conditions and other time based systems are directly tied to the world's calendar/time tracker, which automatically advances in combat and is manually advanced outside of it. Map lightning is also automatically changed based on the current time.

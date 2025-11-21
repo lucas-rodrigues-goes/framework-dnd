@@ -25,6 +25,7 @@ var Player = class extends Creature {
         // Set basic information
         this.name = name
         this.race = race
+        this.size = "Medium"
 
         // Add class
         if (character_class) { this.level_up(character_class, class_choices) }

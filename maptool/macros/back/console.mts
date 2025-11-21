@@ -1,12 +1,8 @@
-[h: argument = arg(0)]
-[h: quote = "'"]
-[h: command = '
-	try {
-		'+argument+'
-	}
-	catch {
-		console.log('+quote+'Error occurred when running: { '+argument+' }'+quote+', "debug")
-	}
-']
+[h: startTime = js.evalNS("main", "Date.now()") ]
 
-[r, if(0):js.evalNS("main",command); js.evalNS("main",argument)]
+[h: command = arg(0) ]
+[r: js.evalNS("main", command) ]
+
+[h: endTime = js.evalNS("main", "Date.now()") ]
+[h: totalTime = endTime - startTime ]
+[h,if(argCount() > 1): js.evalNS("main", 'console.log(`"'+command+'" took '+totalTime+'ms`)') ]

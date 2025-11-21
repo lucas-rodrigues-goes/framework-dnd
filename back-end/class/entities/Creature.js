@@ -288,6 +288,9 @@ var Creature = class extends Entity {
             `)
         }
 
+        // Set grid type
+        macro(`setTokenSnapToGrid(${settings.gridMovement}, "${this.id}")`)
+
         } catch (error) { console.log(error) }
     }
 
@@ -1181,6 +1184,7 @@ var Creature = class extends Entity {
                 "Bulky":  { type:"add", value: -5 },
             },
             conditions: {
+                "Longstrider": {type: "add", value: 10},
                 "Haste": { type: "multiply", value: 2 },
                 "Slow": { type: "multiply", value: 0.5 },
                 "Ray of Frost": {type: "multiply", value: 0.5},
@@ -1234,7 +1238,7 @@ var Creature = class extends Entity {
     get resources() {return this.#resources}
 
     get_resource_value(resource) {
-        return this.#resources?.[resource]?.value
+        return this.#resources?.[resource]?.value || 0
     }
 
     use_resource(resource) {
@@ -2277,6 +2281,52 @@ var Creature = class extends Entity {
 
     remove_note(title) {
         delete this.#notes[title]
+    }
+
+    //=====================================================================================================
+    // Keyboard Movement
+    //=====================================================================================================
+
+    #get_gridless_movement(speed_ft_per_round, tick_ms = 200) {
+        const ticks_per_round = 6000 / tick_ms; // 6 seconds = 6000ms
+        const movement_per_tick = speed_ft_per_round / ticks_per_round;
+        const rounded_movement = Math.round((movement_per_tick * 10) / 10)
+        const minimum_movement = 0.5
+
+        return Math.max(minimum_movement, rounded_movement)
+    }
+
+    keyboard_move(direction) {
+        try {
+            const isInCombat = Initiative.turn_order.includes(this.id)
+            const isPlaying = Initiative.current_creature == this.id
+            const visibility = this.has_condition("Hidden") && !this.player ? "gm" : "all"
+            
+            macro(`setTokenSnapToGrid(${settings.gridMovement}, getImpersonated())`)
+            const distance = settings.gridMovement ? 5 : this.#get_gridless_movement(this.speed)
+            
+            const isValidMovement = () => {
+                if (!isInCombat) return {success: true}
+                if (!isPlaying) return {success: false, message: `${this.name_color} can't move outside of their turn.`, visibility: "debug"}
+
+                const movement = this.get_resource_value("Movement")
+                if (movement < distance) return {success: false, message: `${this.name_color} does not have enough movement.`, visibility: "debug"}
+                else {
+                    this.set_resource_value("Movement", movement - distance)
+                    //return {success: true, message: `${this.name_color} moved ${distance}ft.`, visibility: visibility}
+                    return {success: true}
+                }
+            }
+            const validMovement = isValidMovement()
+            if (validMovement.message) console.log(validMovement.message, validMovement.visibility)
+            if (validMovement.success) {
+                this.facing = direction
+                this.move(direction, distance/5)
+                this.onMove()
+                macro(`goto(getImpersonated())`)
+                macro(`exposeFOW(getCurrentMapName(), getImpersonated())`)
+            }
+        } catch (error) {console.log(error)}
     }
 
     //=====================================================================================================

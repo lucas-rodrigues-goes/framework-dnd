@@ -581,6 +581,37 @@ var Spells = class extends Abilities {
         }
     }
 
+    static vicious_mockery (spell) {
+        const creature = impersonated()
+
+        // Die amount
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Spells.play_element_sound("psychic")
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            max_targets: 1,
+            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Psychic", damage_bonus: spell.spellcasting_modifier}],
+            saving_throw_score: "Wisdom"
+        })
+        if (!save_return.success) return save_return
+
+        // Apply effect
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                element.target.set_condition(spell.name, spell.duration)
+            }
+        }
+
+        return save_return
+    }
+
     static ray_of_frost(spell) {
         const target = selected()
         const creature = impersonated()
@@ -1048,6 +1079,44 @@ var Spells = class extends Abilities {
         }
     }
 
+    static longstrider(spell) {
+        const creature = impersonated()
+        const targets = allSelected()
+        const { name, range } = spell
+
+        // Target Amount
+        let max_targets = 1; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) max_targets += 1
+            if (creature.spellcasting_level >= levels[1]) max_targets += 1
+            if (creature.spellcasting_level >= levels[2]) max_targets += 1
+            if (targets.length > max_targets) return {
+                success: false,
+                message: `${creature.name_color} can only select up to ${max_targets} target${max_targets > 1 ? "s" : ""} for this spell.`
+            }
+        }
+
+        // Validate Range
+        for (const target of targets) {
+            const range_validation = Spells.validate_spell_range({creature, target, range})
+            if (range_validation.outOfRange) return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
+            }
+        }
+
+        // Apply effect
+        for (const target of targets) {
+            target.set_condition(spell.name, spell.duration)
+            console.log(`${creature.name_color} casts ${name} on ${target.name_color}.`, "all")
+        }
+
+        return {
+            success: true,
+            message: ""
+        }
+    }
+
     static burning_hands (spell) {
         const creature = impersonated()
 
@@ -1224,6 +1293,32 @@ var Spells = class extends Abilities {
             success: true,
             message: `${creature.name_color} cast ${name} ${damage_type}.`
         }
+    }
+
+    static faerie_fire (spell) {
+        const creature = impersonated()
+
+        // Saving throws
+        const save_return = Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            saving_throw_score: "Dexterity"
+        })
+        if (!save_return.success) return save_return
+
+        // Apply effect
+        const targets = []
+        let success = false
+        for (const element of save_return.targets) {
+            if (!element.save_result.success) {
+                success = true
+                element.target.set_condition(spell.name, spell.duration)
+                targets.push(element.target.id)
+            }
+        }
+        if (success) Spells.concentrate(creature, spell, targets)
+
+        return save_return
     }
 
     static magic_missile (options = {}) {
@@ -1408,9 +1503,10 @@ var Spells = class extends Abilities {
         })
 
         // Validate
-        const xDiff = Math.abs(x - Number(coordinates.x))
-        const yDiff = Math.abs(y - Number(coordinates.y))
-        const distance = (xDiff + yDiff) * 5
+        coordinates.x = coordinates.x * settings.cellSize
+        coordinates.y = coordinates.y * settings.cellSize
+        const distance = calculate_distance(creature, coordinates)
+
         if (distance <= spell.range) {
             creature.x = Number(coordinates.x)
             creature.y = Number(coordinates.y)
