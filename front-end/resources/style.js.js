@@ -1,5 +1,13 @@
 `[r:'`
 
+const colors = {
+    healthbar: {
+        hostile: "#b44",
+        neutral: "#b8a44d",
+        friendly: "#5ab350",
+    }
+}
+
 const condition_images = {
     special: "asset://38525024141fedd5b4503268f411f587",
     spell: "asset://8ee4b85b9fe045563d3cfb058e3f9ce0",
