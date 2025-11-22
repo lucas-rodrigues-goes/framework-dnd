@@ -54,3 +54,8 @@ Unified screen for both creating and updating existing monsters, allows to repre
   <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/docs/screenshots/Monster%20Creation%203.png" width="48%" />
   <img src="https://raw.githubusercontent.com/lucas-rodrigues-goes/framework-dnd/main/docs/screenshots/Monster%20Creation%204.png" width="48%" />
 </div>
+
+
+### Also check
+- [Documented Rules](https://github.com/lucas-rodrigues-goes/azuth-dnd/tree/main/docs/rules)
+- [Planned Features](https://github.com/lucas-rodrigues-goes/azuth-dnd/tree/main/docs/planned)
