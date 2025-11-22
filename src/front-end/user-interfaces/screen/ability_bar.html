@@ -281,7 +281,6 @@
                     Spell: "Spells.cast_spell(database.spells.data[`"+object.name+"`], `"+player_class+"`)",
                     MonsterAbilities: "MonsterAbilities.use("+JSON.stringify(object)+")"
                 }[type]
-                console.indent({command})
                 await backend(command)
             }
             function mouseover () {

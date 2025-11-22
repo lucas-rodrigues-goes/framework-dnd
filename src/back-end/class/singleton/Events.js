@@ -210,7 +210,7 @@ var Events = class {
                                             object: object,
                                             type: "Spell",
                                             ordered: "Cantrip",
-                                            class: cls
+                                            player_class: cls
                                         })
                                         existingSpellKeys.add(spell)
                                     }

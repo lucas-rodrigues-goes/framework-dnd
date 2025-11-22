@@ -425,14 +425,16 @@ var FeatureAbilities = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
     
     static arcane_recovery(level) {
+        const action_name = "arcane_recovery"
+        
         // Requirements
-        const { valid, action_details } = this.check_action_requirements("arcane_recovery", false);
+        const { valid, creature, action_details } = this.check_action_requirements(action_name, false);
         if (!valid) return
 
         // Ask level if not provided
         if (!level) {
             // Get the creature's spellcasting level
-            const spellcastingLevel = impersonated().spellcasting_level
+            const spellcastingLevel = creature.spellcasting_level
             
             // Calculate maximum spell slot level (ceil(spellcasting_level/2) up to maximum of 5)
             const maxSpellSlotLevel = Math.min(Math.ceil(spellcastingLevel / 2), 5)
@@ -449,19 +451,14 @@ var FeatureAbilities = class extends Abilities {
                     label: "Spell Slot Level",
                     type: "list",
                     options: {
-                        select: 0, // Selects the first option by default
-                        value: "string", // Return the string value instead of index number
-                        delimiter: "," // Delimiter for the list
+                        select: 0,
+                        value: "string",
+                        delimiter: ","
                     }
                 }
             }).spellSlotLevel
-
-            // Consume resources
-            this.use_resources(action_details.resources)
-            Initiative.set_recovery(action_details.recovery, creature)
         }
 
-        const creature = impersonated()
         const arcane_recovery_charges = creature.resources["Arcane Recovery"].value
         const cost = {
             1: 2,
@@ -472,19 +469,28 @@ var FeatureAbilities = class extends Abilities {
         }[level]
 
         // Validation
+        if (!cost) {
+            public_log(`${creature.name_color} selected an invalid spell slot level.`)
+            return
+        }
+        
         if (arcane_recovery_charges < cost) {
-            public_log(`${creature.name_color} has insufficient Arcane Recovery charges for this spell level.`)
+            public_log(`${creature.name_color} has insufficient Arcane Recovery charges for this spell level. Need ${cost} but only have ${arcane_recovery_charges}.`)
             return
         }
 
         // Increase Resource
-        const slot = level
+        const slot = parseInt(level)
         const postfix = ["st", "nd", "rd"].length >= slot ? ["st", "nd", "rd"][slot - 1] : "th"
         const spell_slot = `${slot}${postfix} Level Spell Slot`
         creature.set_resource_value(spell_slot, creature.resources[spell_slot].value + 1)
 
         // Consume Arcane Recovery Charges
         creature.set_resource_value("Arcane Recovery", arcane_recovery_charges - cost)
+
+        // Consume resources (moved to after successful execution)
+        this.use_resources(action_details.resources)
+        Initiative.set_recovery(action_details.recovery, creature)
 
         // Logging
         console.log(`${creature.name_color} used ${cost} Arcane Recovery charges to regain a ${spell_slot}.`, "all")
