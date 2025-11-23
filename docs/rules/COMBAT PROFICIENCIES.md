@@ -82,7 +82,7 @@ These are general proficiencies that can be applied with most weapons.
 - Grandmastery: (No additional benefit)
 
 ### Heavy Striking
-- Proficiency: While wielding a melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit.
+- Proficiency: While wielding a two-handed melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit.
 - Expertise: You can choose to receive a -5 penalty and +10 damage on hit instead.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)

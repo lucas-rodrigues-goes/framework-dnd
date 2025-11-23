@@ -21,7 +21,7 @@ The following are still to be implemented.
 - Proficiency: You have learned combat techniques for dealing with spellcasters, your attacks impose disadvantage on saving throws for maintaining concentration on your target for 1 round.
 
 ### Heavy Striking
-- Proficiency: While wielding a melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit.
+- Proficiency: While wielding a two-handed melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit.
 - Expertise: You can choose to receive a -5 penalty and +10 damage on hit instead.
 
 ### Shield
