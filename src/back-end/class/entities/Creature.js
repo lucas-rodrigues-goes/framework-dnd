@@ -1239,51 +1239,60 @@ var Creature = class extends Entity {
 
     get resources() {return this.#resources}
 
-    get_resource_value(resource) {
-        return this.#resources?.[resource]?.value || 0
-    }
-
-    use_resource(resource) {
-        if (!this.#resources[resource]) return
-
-        this.set_resource_value(resource, this.#resources[resource].value - 1)
-    }
-
-    set_new_resource(resource, max, restored_on) {
+    set_resource(resource, max, restored_on, value=0) {
         this.#resources[resource] = {
-            value: 0,
+            value: value,
             max: max, 
             restored_on: restored_on,
         }
-
         this.save()
+    }
+
+    get_resource_max(resource) {
+        return this.#resources?.[resource]?.max || 0
     }
 
     set_resource_max(resource, max) {
         if (!this.#resources[resource]) return
-
         this.#resources[resource].max = max
-
         this.save()
+    }
+
+    get_resource_value(resource) {
+        return this.#resources?.[resource]?.value || 0
     }
 
     set_resource_value(resource, value) {
         if (!this.#resources[resource]) return
-        
-        const resourcesThatCanGoOverMax = ["Sorcery Point"]
-        const ignoreMax = resourcesThatCanGoOverMax.includes(resource) || resource.includes("Spell Slot")
-
-        // Set
-        if (!ignoreMax) {
-            // Clamp value
-            const resource_data = this.#resources[resource]
-            const clamped_value = Math.min(resource_data.max, Math.max(0, value))
-            this.#resources[resource].value = clamped_value
-            
-        }
-        else this.#resources[resource].value = value
-
+        else this.#resources[resource].value = Math.max(0, value)
         this.save()
+    }
+    
+    increase_resource(resource, value) {
+        if (!this.#resources[resource]) return
+        else this.#resources[resource].value += Math.max(0, value)
+        this.save()
+    }
+
+    reduce_resource(resource, value) {
+        if (!this.#resources[resource]) return
+        else this.#resources[resource].value -= Math.max(0, value)
+        this.save()
+    }
+
+    use_resource(resource) {
+        if (!this.#resources[resource]) return
+        this.reduce_resource(resource, 1)
+    }
+
+    fill_resource(resource) {
+        if (!this.#resources[resource]) return
+        this.set_resource_value(resource, this.get_resource_max(resource))
+    }
+
+    // Legacy
+    set_new_resource(resource, max, restored_on) {
+        this.set_resource(resource, max, restored_on)
     }
 
     //=====================================================================================================
@@ -1414,7 +1423,7 @@ var Creature = class extends Entity {
                 if (max > 0) this.set_resource_max(resource, max)
                 else delete this.#resources[resource]
             } else {
-                if (max > 0) this.set_new_resource(resource, max, "long rest")
+                if (max > 0) this.set_resource(resource, max, "long rest")
             }
         }
 
