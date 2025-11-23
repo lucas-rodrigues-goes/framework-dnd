@@ -604,6 +604,9 @@ var Abilities = class {
                 : `.`
             )
 
+            // Axe Expertise
+            //----- knock down on a failed DC 10 + strength
+
             // Make stealth tests and others
             this.attack_roll_advantage_modifiers({creature, target})
 
@@ -963,8 +966,10 @@ var Abilities = class {
 
     static weapon_attack_hit_bonus({weapon, creature=impersonated(), target=selected()}) {
         try {
-            const isFinesse = weapon?.properties?.includes("Finesse") || false;
-            const isAmmo = weapon?.properties?.includes("Ammunition") || false;
+            const weapon_properties = weapon?.properties || []
+
+            const isFinesse = weapon_properties.includes("Finesse") || false;
+            const isAmmo = weapon_properties.includes("Ammunition") || false;
             const hasPactOfTheBlade = creature.has_feature("Pact of the Blade")
 
             // Applicable bonuses
@@ -985,12 +990,23 @@ var Abilities = class {
             const feature_name = `Favored Enemy: ${target.type}`
             if (creature.has_feature(feature_name)) hit_bonus += wis_bonus
 
+            // Bow/Crossbow/Dueling Proficiency
+            if (
+                (weapon_properties.includes("Bow") && creature.get_proficiency_level("Bow") >= 1) ||
+                (weapon_properties.includes("Crossbow") && creature.get_proficiency_level("Crossbow") >= 1) ||
+                (
+                    !weapon_properties.includes("Two-Handed") && 
+                    creature.get_proficiency_level("Dueling") >= 0 &&
+                    creature.equipment["primary off hand"] == null
+                )
+            ) hit_bonus += 2
+
             // Proficiency
             const canApplyProfBonus = (
                 creature.constructor.name == "Monster" ||
-                ((weapon?.properties?.includes("Mundane")) && creature.get_proficiency_level("Weapon") >= 0) ||
-                ((weapon?.properties?.includes("Simple")) && creature.get_proficiency_level("Weapon")) >= 1 ||
-                ((weapon?.properties?.includes("Marial")) && creature.get_proficiency_level("Weapon")) >= 1
+                ((weapon_properties.includes("Mundane")) && creature.get_proficiency_level("Weapon") >= 0) ||
+                ((weapon_properties.includes("Simple")) && creature.get_proficiency_level("Weapon")) >= 1 ||
+                ((weapon_properties.includes("Marial")) && creature.get_proficiency_level("Weapon")) >= 1
             )
             const prof_bonus = canApplyProfBonus ? 2 : 0
 

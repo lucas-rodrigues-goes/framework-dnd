@@ -280,6 +280,14 @@ var Spells = class extends Abilities {
             Initiative.suspend_turn(spell.cast_time, "Spellcasting", creature)
         }
 
+        // Receive extra attack if has necessary proficiency
+        const spell_level = Number(spell.level[0]) || 0
+        const canReceiveExtraAttack = (
+            (creature.get_proficiency_level("Combat Casting") >= 0 && spell_level == 0) ||
+            (creature.get_proficiency_level("Combat Casting") >= 1 && spell_level <= 5)
+        )
+        if (canReceiveExtraAttack) creature.increase_resource("Attack Action", 1)
+
         // Sound
         Sound.play("spell")
 

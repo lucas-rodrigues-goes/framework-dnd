@@ -1125,6 +1125,15 @@ var Creature = class extends Entity {
                     }
                 }
             }
+
+            // Dueling Proficiency
+            const main_weapon = database.items.data?.[this.equipment?.["primary main hand"]?.name]
+            if (
+                main_weapon &&
+                !main_weapon.properties.includes("Two-Handed") && 
+                this.get_proficiency_level("Dueling") >= 0 &&
+                this.equipment["primary off hand"] == null
+            ) equipment_bonus += 2
         }
 
         // Condition Bonus
@@ -1267,7 +1276,7 @@ var Creature = class extends Entity {
         else this.#resources[resource].value = Math.max(0, value)
         this.save()
     }
-    
+
     increase_resource(resource, value) {
         if (!this.#resources[resource]) return
         else this.#resources[resource].value += Math.max(0, value)
