@@ -742,8 +742,8 @@
 							.filter(item => Object.keys(character.proficiencies).includes(item))
 							.sort(
 								(a, b) => {
-									const a_type = database.proficiencies[a]
-									const b_type = database.proficiencies[b]
+									const a_type = database.proficiencies[a].type
+									const b_type = database.proficiencies[b].type
 									if (a_type !== b_type) return b_type - a_type
 
 									const level_a = character.proficiencies[a];
