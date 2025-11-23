@@ -919,7 +919,7 @@ var Abilities = class {
                     // Simulate armor or leather lessening the impact
                     if (is_metal_armor) Sound.play("armor")
                     else Sound.play("bludgeoning")
-                
+
                     return output;
                 }
             }
@@ -985,7 +985,13 @@ var Abilities = class {
             if (creature.has_feature(feature_name)) hit_bonus += wis_bonus
 
             // Proficiency
-            const prof_bonus = 2
+            const canApplyProfBonus = (
+                creature.constructor.name == "Monster" ||
+                ((weapon?.properties?.includes("Mundane")) && creature.get_proficiency_level("Weapon") >= 0) ||
+                ((weapon?.properties?.includes("Simple")) && creature.get_proficiency_level("Weapon")) >= 1 ||
+                ((weapon?.properties?.includes("Marial")) && creature.get_proficiency_level("Weapon")) >= 1
+            )
+            const prof_bonus = canApplyProfBonus ? 2 : 0
 
             return hit_bonus + prof_bonus;
         } catch (error) {console.error("weapon_attack_hit_bonus()", error)}
