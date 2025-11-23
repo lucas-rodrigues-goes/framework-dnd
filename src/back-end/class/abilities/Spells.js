@@ -96,7 +96,7 @@ var Spells = class extends Abilities {
     static play_element_sound(type) {
         const hasTransmuteSpells = impersonated().has_condition("Metamagic: Transmute Spells")
         const element = hasTransmuteSpells ? impersonated()?.get_condition("Metamagic: Transmute Spells")?.element : type
-        if (element == "none") return
+        if (["none", "acid", "necrotic"].includes(element)) return
 
         try {
             Sound.play(element.toLowerCase())
@@ -342,11 +342,53 @@ var Spells = class extends Abilities {
     // Cantrips
     //---------------------------------------------------------------------------------------------------
 
+    static thunderclap (options = {}) {
+        const original_spell = {...database.spells.data["Thunderclap"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Spells.play_element_sound("thunder")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Thunder", damage_bonus: spell.spellcasting_modifier}],
+            saving_throw_score: "Constitution"
+        })
+    }
+
+    static word_of_radiance (options = {}) {
+        const original_spell = {...database.spells.data["Word of Radiance"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 1; {
+            const levels = [5, 11, 17] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Spells.play_element_sound("radiant")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Radiant", damage_bonus: spell.spellcasting_modifier}],
+            saving_throw_score: "Constitution"
+        })
+    }
+
     static daze(options = {}) {
         const original_spell = {...database.spells.data["Daze"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const creature = impersonated()
         const saving_throw_score = "Wisdom"
 
@@ -357,7 +399,6 @@ var Spells = class extends Abilities {
             }
         }
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -389,11 +430,8 @@ var Spells = class extends Abilities {
     static mind_sliver(options = {}) {
         const original_spell = {...database.spells.data["Mind Sliver"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -424,7 +462,6 @@ var Spells = class extends Abilities {
     static frostbite(spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -455,7 +492,6 @@ var Spells = class extends Abilities {
     static fire_bolt(spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -475,7 +511,6 @@ var Spells = class extends Abilities {
         try {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -584,7 +619,6 @@ var Spells = class extends Abilities {
     static vicious_mockery (spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -616,7 +650,6 @@ var Spells = class extends Abilities {
         const target = selected()
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -735,7 +768,6 @@ var Spells = class extends Abilities {
     static sacred_flame(spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 1; {
             const levels = [5, 11, 17] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -757,6 +789,26 @@ var Spells = class extends Abilities {
     // 1st Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static inflict_wounds(options = {}) {
+        const original_spell = {...database.spells.data["Inflict Wounds"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 3; {
+            const levels = [3, 5, 7] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        Spells.play_element_sound("necrotic")
+        return Spells.make_spell_attack({
+            ...spell,
+            target: selected(),
+            damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Necrotic", damage_bonus: spell.spellcasting_modifier}],
+        })
+    }
+
     static cure_wounds(spell) {
         const creature = impersonated()
         const target = selected()
@@ -776,7 +828,6 @@ var Spells = class extends Abilities {
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
         }
 
-        // Die amount
         let die_amount = 1; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -800,8 +851,6 @@ var Spells = class extends Abilities {
     static hex(options = {}) {
         const original_spell = {...database.spells.data["Hex"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const creature = impersonated()
         const target =  selected()
 
@@ -839,8 +888,6 @@ var Spells = class extends Abilities {
     static elemental_weapon(options = {}) {
         const original_spell = {...database.spells.data["Hex"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const [creature, target] = [impersonated(), impersonated()]
         const { name, range, spellcasting_modifier } = spell
 
@@ -852,7 +899,6 @@ var Spells = class extends Abilities {
             options: {value: "string"}
         }}).damage_type
 
-        // Die amount
         let die_amount = 1; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -876,8 +922,6 @@ var Spells = class extends Abilities {
     static hunters_mark(options = {}) {
         const original_spell = {...database.spells.data["Hunter's Mark"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const creature = impersonated()
         const target =  selected()
 
@@ -931,7 +975,6 @@ var Spells = class extends Abilities {
             message: `${creature.name_color} tried to cast ${name}, but their target is out of range.`
         }
 
-        // Die amount
         let die_amount = 1; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -955,15 +998,13 @@ var Spells = class extends Abilities {
     static arms_of_hadar (spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 2; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
         Spells.play_element_sound("necrotic")
         return Spells.make_spell_save({
             ...spell,
@@ -977,15 +1018,13 @@ var Spells = class extends Abilities {
     static hellish_rebuke (spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 2; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
         Spells.play_element_sound("fire")
         return Spells.make_spell_save({
             ...spell,
@@ -1001,7 +1040,6 @@ var Spells = class extends Abilities {
         const creature = impersonated()
         const saving_throw_score = "Charisma"
 
-        // Target Amount
         let max_targets = 3; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1043,7 +1081,6 @@ var Spells = class extends Abilities {
         const targets = allSelected()
         const { name, range } = spell
 
-        // Target Amount
         let max_targets = 3; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1084,7 +1121,6 @@ var Spells = class extends Abilities {
         const targets = allSelected()
         const { name, range } = spell
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1120,15 +1156,13 @@ var Spells = class extends Abilities {
     static burning_hands (spell) {
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 3; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
         Spells.play_element_sound("fire")
         return Spells.make_spell_save({
             ...spell,
@@ -1145,11 +1179,8 @@ var Spells = class extends Abilities {
 
         // Parameters
         const {name , spellcasting_modifier = 0} = spell
-        
-        // Targetting
         const [creature, target] = [impersonated(), selected()]
 
-        // Die amount
         let die_amount = 1; {
             const levels = [3, 5, 7]
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -1172,7 +1203,6 @@ var Spells = class extends Abilities {
         const target = selected()
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 4; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
@@ -1203,8 +1233,6 @@ var Spells = class extends Abilities {
 
         // Parameters
         const { name = spell.name, force_self = false } = spell
-
-        // Targetting
         const creature = impersonated()
         const target =  (!selected() || force_self) ? impersonated() : selected() 
         const castingOnSelf = target.id == creature.id
@@ -1260,8 +1288,6 @@ var Spells = class extends Abilities {
     static absorb_elements (options = {}) {
         const original_spell = {...database.spells.data["Absorb Elements"]}
         const spell = {...original_spell, ...options}
-
-        // Targetting
         const creature = impersonated()
 
         // Damage Type
@@ -1382,12 +1408,41 @@ var Spells = class extends Abilities {
     //---------------------------------------------------------------------------------------------------
     // 2nd Level Spells
     //---------------------------------------------------------------------------------------------------
+
+    static scorching_ray (options = {}) {
+        const original_spell = {...database.spells.data["Scorching Ray"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        // Parameters
+        const { spellcasting_modifier = 0 } = spell
+
+        // Attacks
+        let attacks = 3; {
+            const levels = [5, 7, 9] 
+            if (creature.spellcasting_level >= levels[0]) attacks += 1
+            if (creature.spellcasting_level >= levels[1]) attacks += 1
+            if (creature.spellcasting_level >= levels[2]) attacks += 1
+        }
+
+        Sound.play(attacks == 1 ? `force` : `force ${attacks} times`)
+        Spells.play_element_sound("fire")
+        for (let i = 0; i < attacks; i++) {
+            const attack = Spells.make_spell_attack({
+                ...spell,
+                target: selected(),
+                damage_dice: [{die_amount: 2, die_size: 6, damage_type: "Fire", damage_bonus: spellcasting_modifier}],
+            })
+            console.log(attack.message, "all")
+        }
+
+        return {success: true}
+    }
     
     static blindness(spell) {
         const creature = impersonated()
         const saving_throw_score = "Constitution"
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [5, 7, 9] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1442,7 +1497,6 @@ var Spells = class extends Abilities {
             }
         }
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [5, 7, 9] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1544,25 +1598,47 @@ var Spells = class extends Abilities {
         }
     }
 
-    static shatter (spell) {
+    static aganazzars_scorcher (options = {}) {
+        const original_spell = {...database.spells.data["Aganazzar's Scorcher"]}
+        const spell = {...original_spell, ...options}
         const creature = impersonated()
 
-        // Die amount
         let die_amount = 3; {
             const levels = [5, 7, 9] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
+        Spells.play_element_sound("fire")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Fire"}],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
+    static shatter (options = {}) {
+        const original_spell = {...database.spells.data["Aganazzar's Scorcher"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 3; {
+            const levels = [5, 7, 9] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
         Spells.play_element_sound("thunder")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
             half_on_fail: true,
             damage_dice: [{die_amount: die_amount, die_size: 8, damage_type: "Thunder"}],
-            saving_throw_score: "Dexterity"
+            saving_throw_score: "Constitution"
         })
     }
 
@@ -1576,7 +1652,6 @@ var Spells = class extends Abilities {
         const creature = impersonated()
         const targets = force_self ? [creature] : allSelected()
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [3, 5, 7] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
@@ -1616,24 +1691,92 @@ var Spells = class extends Abilities {
     // 3rd Level Spells
     //---------------------------------------------------------------------------------------------------
 
-    static fireball (spell) {
+    static mass_healing_word(spell) {
         const creature = impersonated()
+        const targets = allSelected()
+        const { name, range, spellcasting_modifier } = spell
 
-        // Die amount
-        let die_amount = 6; {
+        if (targets.length < 1) return {
+            success: false,
+            message: `${creature.name_color} needs to choose a target for this spell.`
+        }
+        if (targets.length > 6) return {
+            success: false,
+            message: `${creature.name_color} can only select up to 6 targets for this spell.`
+        }
+
+        for (const target of targets) {
+            const target_visibility = creature.target_visibility(target)
+            if (target_visibility == 0) return {
+                success: false,
+                message: `${creature.name_color} needs to see their target.`
+            }
+
+            const range_validation = Spells.validate_spell_range({creature, target, range})
+            if (range_validation.outOfRange) return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${name}, but one of their targets is out of range.`
+            }
+        }
+
+        let die_amount = 1; {
             const levels = [7, 9, 11] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
+        // Apply effect
+        for (const target of targets) {
+            const healing = roll_dice(die_amount, 4) + spellcasting_modifier
+            target.receive_healing(healing)
+            console.log((creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}, who receives ${healing} hit points.`
+                : `${creature.name_color} cast ${name} on themselves, receiving ${healing} hit points.`
+            ), "all")
+        }
+
+        return {
+            success: true,
+        }
+    }
+
+    static fireball (spell) {
+        const creature = impersonated()
+
+        let die_amount = 6; {
+            const levels = [7, 9, 11] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 2
+            if (creature.spellcasting_level >= levels[1]) die_amount += 2
+            if (creature.spellcasting_level >= levels[2]) die_amount += 2
+        }
+
         Spells.play_element_sound("fire")
         return Spells.make_spell_save({
             ...spell,
             targets: allSelected(),
             half_on_fail: true,
             damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Fire"}],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
+    static lightning_bolt (spell) {
+        const creature = impersonated()
+
+        let die_amount = 6; {
+            const levels = [7, 9, 11] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 2
+            if (creature.spellcasting_level >= levels[1]) die_amount += 2
+            if (creature.spellcasting_level >= levels[2]) die_amount += 2
+        }
+
+        Spells.play_element_sound("lightning")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 6, damage_type: "Lightning"}],
             saving_throw_score: "Dexterity"
         })
     }
@@ -1687,6 +1830,53 @@ var Spells = class extends Abilities {
     // 4th Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static ice_storm (options = {}) {
+        const original_spell = {...database.spells.data["Ice Storm"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 2; {
+            const levels = [9, 11, 12] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 2
+            if (creature.spellcasting_level >= levels[1]) die_amount += 2
+            if (creature.spellcasting_level >= levels[2]) die_amount += 2
+        }
+
+        Spells.play_element_sound("cold")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [
+                {die_amount: die_amount, die_size: 8, damage_type: "Bludgeoning"},
+                {die_amount: 4, die_size: 6, damage_type: "Cold"}
+            ],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
+    static vitriolic_sphere (options = {}) {
+        const original_spell = {...database.spells.data["Vitriolic Sphere"]}
+        const spell = {...original_spell, ...options}
+        const creature = impersonated()
+
+        let die_amount = 15; {
+            const levels = [9, 11, 12] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 2
+            if (creature.spellcasting_level >= levels[1]) die_amount += 2
+            if (creature.spellcasting_level >= levels[2]) die_amount += 2
+        }
+
+        Spells.play_element_sound("acid")
+        return Spells.make_spell_save({
+            ...spell,
+            targets: allSelected(),
+            half_on_fail: true,
+            damage_dice: [{die_amount: die_amount, die_size: 4, damage_type: "Acid"},],
+            saving_throw_score: "Dexterity"
+        })
+    }
+
     static stoneskin (spell) {
         const creature = impersonated()
         const { name, duration } = spell
@@ -1718,19 +1908,67 @@ var Spells = class extends Abilities {
     // 5th Level Spells
     //---------------------------------------------------------------------------------------------------
 
+    static mass_cure_wounds(spell) {
+        const creature = impersonated()
+        const targets = allSelected()
+        const { name, range, spellcasting_modifier } = spell
+
+        if (targets.length < 1) return {
+            success: false,
+            message: `${creature.name_color} needs to choose a target for this spell.`
+        }
+        if (targets.length > 6) return {
+            success: false,
+            message: `${creature.name_color} can only select up to 6 targets for this spell.`
+        }
+
+        for (const target of targets) {
+            const target_visibility = creature.target_visibility(target)
+            if (target_visibility == 0) return {
+                success: false,
+                message: `${creature.name_color} needs to see their target.`
+            }
+
+            const range_validation = Spells.validate_spell_range({creature, target, range})
+            if (range_validation.outOfRange) return {
+                success: false,
+                message: `${creature.name_color} tried to cast ${name}, but one of their targets is out of range.`
+            }
+        }
+
+        let die_amount = 3; {
+            const levels = [11, 13, 15] 
+            if (creature.spellcasting_level >= levels[0]) die_amount += 1
+            if (creature.spellcasting_level >= levels[1]) die_amount += 1
+            if (creature.spellcasting_level >= levels[2]) die_amount += 1
+        }
+
+        // Apply effect
+        for (const target of targets) {
+            const healing = roll_dice(die_amount, 8) + spellcasting_modifier
+            target.receive_healing(healing)
+            console.log((creature.id != target.id
+                ? `${creature.name_color} cast ${name} on ${target.name_color}, who receives ${healing} hit points.`
+                : `${creature.name_color} cast ${name} on themselves, receiving ${healing} hit points.`
+            ), "all")
+        }
+
+        return {
+            success: true,
+        }
+    }
+
     static cone_of_cold (spell) {
         const creature = impersonated()
         const saving_throw_score = "Constitution"
 
-        // Die amount
         let die_amount = 8; {
             const levels = [11, 13, 15] 
             if (creature.spellcasting_level >= levels[0]) die_amount += 1
             if (creature.spellcasting_level >= levels[1]) die_amount += 1
             if (creature.spellcasting_level >= levels[2]) die_amount += 1
         }
-        
-        // Output
+
         Spells.play_element_sound("cold")
         return Spells.make_spell_save({
             ...spell,
@@ -1745,7 +1983,6 @@ var Spells = class extends Abilities {
         const creature = impersonated()
         const saving_throw_score = "Wisdom"
 
-        // Target Amount
         let max_targets = 1; {
             const levels = [11, 13, 15] 
             if (creature.spellcasting_level >= levels[0]) max_targets += 1
