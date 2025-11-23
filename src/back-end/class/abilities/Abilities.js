@@ -731,7 +731,8 @@ var Abilities = class {
             else if (isAmmo) damage_attribute_bonus = dex_bonus
 
             // Special Cases
-            if (isOffHand) damage_attribute_bonus = 0;
+            const hasTwoWeaponProf = creature.get_proficiency_level("Two-Weapon") >= 0;
+            if (isOffHand && !hasTwoWeaponProf) damage_attribute_bonus = 0;
             else if (hasPactOfTheBlade) damage_attribute_bonus = Math.max(cha_bonus, damage_attribute_bonus);
             
             // Other damage modifiers

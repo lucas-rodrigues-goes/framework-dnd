@@ -452,6 +452,23 @@ var CommonAbilities = class extends Abilities {
             return
         }
 
+        // Reduce target movement for sentinel proficiency
+        if (attack_result.hit_result.success && creature.get_proficiency_level("Sentinel") >= 0) {
+            target.set_resource_value("Movement", 0)
+        }
+
+        // Receive extra attack if has necessary proficiency
+        const weapon = database.items.data?.[creature.equipment[slot]?.name]
+        const canReceiveSwordBonus = (
+            creature.get_proficiency_level("Sword") >= 1 &&
+            weapon?.properties?.includes("Sword")
+        )
+        const canReceivePolearmBonus = (
+            creature.get_proficiency_level("Polearm") >= 1 &&
+            weapon?.properties?.includes("Polearm")
+        )
+        if (canReceivePolearmBonus || canReceiveSwordBonus) creature.increase_resource("Attack Action", 1)
+
         // Consume resources
         this.use_resources(action_details.resources)
         Initiative.set_recovery(action_details.recovery, creature)
@@ -475,6 +492,9 @@ var CommonAbilities = class extends Abilities {
             public_log(attack_result.message)
             return
         }
+
+        // Receive extra attack if has necessary proficiency
+        if (creature.get_proficiency_level("Two-Weapon") >= 1) creature.increase_resource("Attack Action", 1)
 
         // Consume resources
         this.use_resources(action_details.resources)

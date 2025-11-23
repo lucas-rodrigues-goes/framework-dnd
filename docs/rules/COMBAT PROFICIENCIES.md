@@ -134,6 +134,6 @@ The following proficiencies can only be aquired if the character class already p
 
 ### Shield
 - Proficiency: You may wear shields with no additional penalties.
-- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you can use your reaction to take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.
+- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.
 - Mastery: If you take the Attack action on your turn, you can use a bonus action to utilize your shield as an offhand weapon, it deals 1d6 bludgeoning damage on a hit, you can also use it to attempt to push or knock the target instead.
 - Grandmastery: (No additional benefit)

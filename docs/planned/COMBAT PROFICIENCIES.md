@@ -5,17 +5,11 @@ The following are still to be implemented.
 - Proficiency: While wielding small swords you can add your dexterity modifier as an additional bonus to damage against unnarmored enemies
 - Expertise: Consecutive hits against the same target grant you a cummulative +1 bonus to damage, this effect is lost when attacking a different target.
 
-### Sword
-- Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
-
 ### Blunt Weapon
 - Expertise: Successful hits with blunt weapons reduce the target's armor class by 2 for 1 round.
 
 ### Axe
 - Expertise: Your attacks force opponents to make a Strength Saving throw with a difficulty of 10 + your strength modifier, being knocked prone on a fail.
-
-### Polearm
-- Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 
 ### Bow
 - Proficiency: You gain the focused shooter ability, at the cost of your movement and bonus action, you gain a bonus to damage equal to your dexterity modifier for this round.
@@ -24,10 +18,6 @@ The following are still to be implemented.
 ### Crossbow
 - Proficiency: Your attacks made with crossbows do not receive penalties from attacking in melee range.
 - Expertise: You receive a +2 to hit while wielding crossbows.
-
-### Two-Weapon
-- Proficiency: You've learned to properly time your attacks with two weapons, you can add your ability modifier to the damage of offhand attacks.
-- Expertise: Using your bonus action to make an offhand attack grants you an extra attack.
 
 ### Mage Slaying
 - Proficiency: You have learned combat techniques for dealing with spellcasters, your attacks impose disadvantage on saving throws for maintaining concentration on your target for 1 round.
@@ -49,13 +39,6 @@ The following are still to be implemented.
 - Proficiency: You gain the cleave ability, which allows you to attack multiple targets, at the cost of precision, you can attack 2 adjacent targets at a penalty of -5, or 3 targets at a -7 penalty.
 - Expertise: The penalty is reduced to -3 for 2 targets, and -5 for 3 targets.
 
-### Sentinel
-- Proficiency: When you land an opportunity attack, the target's movement is reduced to 0.
-- Expertise: You can make opportunity attacks even if the enemy is disengaging.
-
-### Medium Armor
-- Expertise: Your dexterity bonus limit while wearing medium armor is raised from +2 to +3.
-
 ### Shield
-- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you can use your reaction to take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.
+- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.
 - Mastery: If you take the Attack action on your turn, you can use a bonus action to utilize your shield as an offhand weapon, it deals 1d6 bludgeoning damage on a hit, you can also use it to attempt to push or knock the target instead.
