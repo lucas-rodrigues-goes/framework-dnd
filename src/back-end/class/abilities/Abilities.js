@@ -1006,7 +1006,7 @@ var Abilities = class {
                 creature.constructor.name == "Monster" ||
                 ((weapon_properties.includes("Mundane")) && creature.get_proficiency_level("Weapon") >= 0) ||
                 ((weapon_properties.includes("Simple")) && creature.get_proficiency_level("Weapon")) >= 1 ||
-                ((weapon_properties.includes("Marial")) && creature.get_proficiency_level("Weapon")) >= 1
+                ((weapon_properties.includes("Martial")) && creature.get_proficiency_level("Weapon")) >= 1
             )
             const prof_bonus = canApplyProfBonus ? 2 : 0
 

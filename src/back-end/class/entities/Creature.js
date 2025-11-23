@@ -1130,7 +1130,7 @@ var Creature = class extends Entity {
             const main_weapon = database.items.data?.[this.equipment?.["primary main hand"]?.name]
             if (
                 main_weapon &&
-                !main_weapon.properties.includes("Two-Handed") && 
+                !main_weapon.properties.includes("Two-handed") && 
                 this.get_proficiency_level("Dueling") >= 0 &&
                 this.equipment["primary off hand"] == null
             ) equipment_bonus += 2
