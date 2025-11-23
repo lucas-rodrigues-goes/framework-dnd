@@ -88,7 +88,7 @@ var Fighter = class extends PlayerClass {
         )
 
         // Combat Proficiencies
-        if ([1,3,5,7,9,11,13,15,17,19].includes(current_level)) choices.proficiencies.push(
+        choices.proficiencies.push(
             super.combat_proficiency_choice(current_level, current_proficiencies)
         )
 

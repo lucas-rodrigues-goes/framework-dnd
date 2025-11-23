@@ -74,12 +74,19 @@ var Warlock = class extends PlayerClass {
         const current_level = player ? (player.classes.Warlock?.level + 1) || 1 : 1
         const multi_class = player ? player.level != 0 : false
         const max_spell_slot_level = Math.ceil(current_level / 2)
+        const current_proficiencies = player ? player.proficiencies : {}
 
         // Return structures
         const choices = { proficiencies: [], features: [], spells: [], subclass: [] }
         const proficiencies = []
         const features = [...database.get_features_list({subtype: "Warlock", optional: "false"})].sort(
             (a, b) => database.features.data[a].level - database.features.data[b].level
+        )
+
+        // Combat Proficiencies
+        const adequateLevel = current_level == 4 || (current_level % 3) == 0
+        if (adequateLevel && player.has_feature("Pact of the Blade")) choices.proficiencies.push(
+            super.combat_proficiency_choice(current_level, current_proficiencies)
         )
 
         const player_features = player ? player.features : []
@@ -116,12 +123,15 @@ var Warlock = class extends PlayerClass {
 
                 break
             }
+            case 3: {
+                // Choose a Pact Boon
+                choices.features.push({amount: 1, options: pact_boons})
+
+                break
+            }
             case 4: {
                 // Choose 1 new cantrip
                 choices.spells.push({amount: 1, player_class: "Warlock", level: 0})
-
-                // Choose a Pact Boon
-                choices.features.push({amount: 1, options: pact_boons})
 
                 break
             }

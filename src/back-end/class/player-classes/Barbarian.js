@@ -78,7 +78,7 @@ var Barbarian = class extends PlayerClass {
         )
 
         // Combat Proficiencies
-        if ([1,5,9,13,17].includes(current_level)) choices.proficiencies.push(
+        if ((current_level % 2) == 0) choices.proficiencies.push(
             super.combat_proficiency_choice(current_level, current_proficiencies)
         )
 

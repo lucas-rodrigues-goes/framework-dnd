@@ -78,6 +78,11 @@ var Ranger = class extends PlayerClass {
             (a, b) => database.features.data[a].level - database.features.data[b].level
         )
 
+        // Combat Proficiencies
+        if ((current_level % 2) == 0) choices.proficiencies.push(
+            super.combat_proficiency_choice(current_level, current_proficiencies)
+        )
+
         const player_features = player ? player.features : []
         const favored_enemy_options = database.get_features_list({optional: true}, null, "Favored Enemy: ").filter(element => !player_features.includes(element))
 
