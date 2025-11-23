@@ -6,7 +6,6 @@ The following are still to be implemented.
 - Expertise: Consecutive hits against the same target grant you a cummulative +1 bonus to damage, this effect is lost when attacking a different target.
 
 ### Sword
-- Proficiency: While wielding swords you can make attacks of opportunity when opponents miss you with melee weapon attacks.
 - Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 
 ### Blunt Weapon
@@ -16,7 +15,6 @@ The following are still to be implemented.
 - Expertise: Your attacks force opponents to make a Strength Saving throw with a difficulty of 10 + your strength modifier, being knocked prone on a fail.
 
 ### Polearm
-- Proficiency: While wielding pikes, halberds, glaives, spears, and tridents you can make attacks of opportunity when opponents first step into your range, or when opponents within range make attack rolls against a creature other than you.
 - Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 
 ### Bow
