@@ -888,25 +888,26 @@ var Abilities = class {
                 }
             }
 
-            // Dagger CRIT prof
-            const daggerCrit = (
-                creature.get_proficiency_level("Small Sword") >= 2 && 
-                weapon?.properties?.includes("Dagger") && 
-                target.has_condition("Grappled")
-            )
-
             const roll = roll_to_hit + hit_bonus
             const hit = roll >= target.armor_class
-            const forced_crit = (target.has_conditions(["Paralyzed", "Unconscious"], "any") || daggerCrit) && distance <= 5
+            const forced_crit = (target.has_conditions(["Paralyzed", "Unconscious"], "any")) && distance <= 5
             const output = { success: false, message: "", dice_roll, advantage, advantage_weight };
 
             // Check for graze before hit determination
             if (!forced_crit && roll >= unarmored_armor_class && roll < target.armor_class) {
                 // Determine if graze is possible based on armor type
-                const canGraze = (target.armor_type != "None" && (
-                    (is_metal_armor && weapon?.properties?.includes("Blunt")) ||
-                    (!is_metal_armor && weapon?.properties?.includes("Axe"))
-                ));
+                const canAxeGraze = (
+                    weapon?.properties?.includes("Axe") && 
+                    (creature.get_proficiency_level("Axe") >= 0) &&
+                    !is_metal_armor
+                )
+                const canBluntGraze = (
+                    weapon?.properties?.includes("Blunt") && 
+                    (creature.get_proficiency_level("Blunt Weapon") >= 0) &&
+                    is_metal_armor
+                )
+                const hasArmor = target.armor_type != "None"
+                const canGraze = hasArmor && (canBluntGraze || canAxeGraze)
 
                 if (canGraze) {
                     output.success = true;
@@ -914,7 +915,11 @@ var Abilities = class {
                     // Add hit bonus to text for graze
                     output.dice_roll.text += ` + ${hit_bonus}`;
                     output.dice_roll.text_color += ` + ${hit_bonus}`;
-                    if (is_metal_armor) Sound.play("armor");
+
+                    // Simulate armor or leather lessening the impact
+                    if (is_metal_armor) Sound.play("armor")
+                    else Sound.play("bludgeoning")
+                
                     return output;
                 }
             }

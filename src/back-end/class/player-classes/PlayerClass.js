@@ -27,7 +27,8 @@ var PlayerClass = class {
         const combat_proficiencies = Object.keys(proficiency_data).filter((name) => proficiency_data[name].type.toLowerCase() == "combat");
 
         let max_level = 0; {
-            if (current_level >= 11) max_level = 2
+            if (current_level >= 15) max_level = 3
+            else if (current_level >= 11) max_level = 2
             else if (current_level >= 7) max_level = 1
         }
 

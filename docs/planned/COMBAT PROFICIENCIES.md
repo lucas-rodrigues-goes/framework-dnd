@@ -10,11 +10,9 @@ The following are still to be implemented.
 - Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 
 ### Blunt Weapon
-- Proficiency: While wielding blunt weapons your attacks that would be blocked by metal armor, deal half damage instead
 - Expertise: Successful hits with blunt weapons reduce the target's armor class by 2 for 1 round.
 
 ### Axe
-- Proficiency: While wielding greataxes and battleaxes your attacks that would be blocked by leather or hide armor, deal half damage instead.
 - Expertise: Your attacks force opponents to make a Strength Saving throw with a difficulty of 10 + your strength modifier, being knocked prone on a fail.
 
 ### Polearm
