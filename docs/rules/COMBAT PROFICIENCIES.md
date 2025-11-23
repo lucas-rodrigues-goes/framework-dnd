@@ -2,17 +2,16 @@
 This system is aimed at providing more meaningful identity to weapon types as well as martial characters, This system addresses the limited combat options available to non-caster classes by offering specialized training paths.
 
 ## Progression Structure
-Characters gain combat proficiencies as their martial level increases. You gain one martial level per:
-- Every fighter level
-- Every two Barbarian or Rogue levels
-- Every three Paladin or Ranger levels
+Characters gain combat proficiencies as they gain levels:
+- Fighters receive a new combat proficiency every level
+- Barbarians, Rogues, Rangers and Paladins every two levels
 
 ## Proficiency Tiers
 Each proficiency can be advanced through four tiers of mastery:
 - Proficiency
-- Expertise (Martial level 7)
-- Mastery (Martial level 11)
-- Grandmastery (Martial level 15)
+- Expertise (level 7)
+- Mastery (level 11)
+- Grandmastery (level 15)
 
 # Proficiency Descriptions
 
@@ -27,7 +26,7 @@ These are proficiencies specific to weapon groups.
 
 ### Sword
 - Proficiency: While wielding swords you can make attacks of opportunity when opponents miss you with melee weapon attacks.
-- Expertise: Using your reaction to make an opportunity attack grants you an extra attack.
+- Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
@@ -45,7 +44,7 @@ These are proficiencies specific to weapon groups.
 
 ### Polearm
 - Proficiency: While wielding pikes, halberds, glaives, spears, and tridents you can make attacks of opportunity when opponents first step into your range, or when opponents within range make attack rolls against a creature other than you.
-- Expertise: Using your reaction to make an opportunity attack grants you an extra attack.
+- Expertise: Using your reaction to make an opportunity attack grants you an extra attack. Which can be used immediately, or when you would normally make an opportunity attack.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
@@ -77,7 +76,7 @@ These are general proficiencies that can be applied with most weapons.
 - Grandmastery: (No additional benefit)
 
 ### Combat Casting
-- Proficiency: You've learned weave weapon attacks between the casting of your spells, when using your action to cast a cantrip, you can use your bonus action to make a melee weapon attack.
+- Proficiency: You've learned weave weapon attacks between the casting of your spells, using your action to cast a cantrip grants you an extra attack.
 - Expertise: You can also use this feature when casting a spell of 5th level or lower.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
@@ -97,6 +96,12 @@ These are general proficiencies that can be applied with most weapons.
 ### Cleaving
 - Proficiency: You gain the cleave ability, which allows you to attack multiple targets, at the cost of precision, you can attack 2 adjacent targets at a penalty of -5, or 3 targets at a -7 penalty.
 - Expertise: The penalty is reduced to -3 for 2 targets, and -5 for 3 targets.
+- Mastery: (No additional benefit)
+- Grandmastery: (No additional benefit)
+
+### Sentinel
+- Proficiency: When you land an opportunity attack, the target's movement is reduced to 0.
+- Expertise: You can make opportunity attacks even if the enemy is disengaging.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
