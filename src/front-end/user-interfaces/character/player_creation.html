@@ -494,6 +494,8 @@
         ]})
     }
     async function proficiency_choice_modal(inputElement, {amount=1, options=[]}) {
+        const ordered_options = options.sort((a,b) => b.level - a.level)
+
         // Store spells user choose
         const chosen_options = inputElement.value != "" ? inputElement.value.split(", ") : []
 
@@ -566,12 +568,21 @@
 
         // Show available spell choices
         const proficienciesList = []
-        for (const {name, level} of options) {
+        for (const {name, level} of ordered_options) {
             const prof = database[name]
             const show_name = name + ["", " Expertise", " Mastery", " Grandmastery"][level]
 
+            let prof_image = proficiency_images[prof.type]
+            if (prof.type == "combat" && level > 0) {
+                prof_image = [
+                    "",
+                    "asset://dabe3f9a71b7a633eb5c5d16eb53e089",
+                    "asset://739834b88d763ee547ca5df5510c4635",
+                    "asset://b4baec64833c01a47ba9977391b9f679"
+                ][level]
+            }
+
             // Create element
-            const prof_image = proficiency_images[prof.type]
             const elem_class = chosen_options.includes(show_name) ? "collapsible-div selected" : "collapsible-div"
             proficienciesList.push(
                 {tag: "div", 

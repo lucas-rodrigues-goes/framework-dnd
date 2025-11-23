@@ -738,9 +738,28 @@
 						proficiencies.parentElement.classList.add("hidden") 
 
 						// Ordered proficiencies
-						const character_proficiencies_ordered = database.proficiencies_ordered.filter(
-							item => Object.keys(character.proficiencies).includes(item)
-						)
+						const character_proficiencies_ordered = database.proficiencies_ordered
+							.filter(item => Object.keys(character.proficiencies).includes(item))
+							.sort(
+								(a, b) => {
+									const a_type = database.proficiencies[a]
+									const b_type = database.proficiencies[b]
+									if (a_type !== b_type) return b_type - a_type
+
+									const level_a = character.proficiencies[a];
+									const level_b = character.proficiencies[b];
+
+									if (level_a !== level_b) return level_b - level_a;
+
+									const aLessPriority = a.includes("Armor") || a.includes("Shield");
+									const bLessPriority = b.includes("Armor") || b.includes("Shield");
+
+									if (aLessPriority && !bLessPriority) return 1;
+									if (!aLessPriority && bLessPriority) return -1;
+
+									return 0;
+								}
+							)
 
 						// Append Conditions
 						for (const name of character_proficiencies_ordered) {
@@ -754,8 +773,16 @@
 							const type = proficiency.type || "None"
 							if (["skill"].includes(type)) continue
 							const description = proficiency.description.slice(0, level + 1) || ""
-							const image = proficiency_images[type] || ""
 							const level_title = " " + ["", "Expertise", "Mastery", "Grandmastery"][level]
+							let image = proficiency_images[type] || ""
+							if (type == "combat" && level > 0) {
+								image = [
+									proficiency_images[type],
+									"asset://dabe3f9a71b7a633eb5c5d16eb53e089",
+									"asset://739834b88d763ee547ca5df5510c4635",
+									"asset://b4baec64833c01a47ba9977391b9f679"
+								][level]
+							}
 
 							// Element
 							collapsible(
