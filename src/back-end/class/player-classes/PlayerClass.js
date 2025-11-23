@@ -23,17 +23,21 @@ var PlayerClass = class {
 
     static combat_proficiency_choice (current_level, current_proficiencies) {
         const options = []
-        const proficiency_data = database.proficiencies.data
-        const combat_proficiencies = Object.keys(proficiency_data).filter((name) => name != "Weapon" && proficiency_data[name].type.toLowerCase() == "combat")
+        const proficiency_data = database.proficiencies.data;
+        const combat_proficiencies = Object.keys(proficiency_data).filter((name) => proficiency_data[name].type.toLowerCase() == "combat");
 
-        let max_level = 1; {
-            if (current_level >= 11) max_level = 3
-            else if (current_level >= 5) max_level = 2
+        let max_level = 0; {
+            if (current_level >= 11) max_level = 2
+            else if (current_level >= 7) max_level = 1
         }
 
         for (const prof of combat_proficiencies) {
-            const new_prof_level = Number(current_proficiencies[prof] || 0) + 1
-            if (new_prof_level <= max_level && proficiency_data[prof].description[new_prof_level] != "") options.push({name: prof, level: new_prof_level})
+            if (prof == "Weapon") continue
+
+            const new_prof_level = Number(current_proficiencies[prof] || -1) + 1
+            if (new_prof_level == 0 && (prof.includes("Armor") || prof == "Shield")) continue
+            if (proficiency_data[prof].description[new_prof_level] == "") continue
+            if (new_prof_level <= max_level) options.push({name: prof, level: new_prof_level})
         }
 
         return {title: "Choose a new combat proficiency", amount: 1, options: options}

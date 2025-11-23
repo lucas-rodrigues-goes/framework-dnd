@@ -1029,7 +1029,7 @@ var Creature = class extends Entity {
             })
 
             // Heavy Armor Expertise
-            if (this.get_proficiency_level("Heavy Armor") >= 1 && this.armor_type == "Heavy") applyResistancesOfObject({
+            if (this.get_proficiency_level("Heavy Armor") >= 2 && this.armor_type == "Heavy") applyResistancesOfObject({
                 Slashing: {type: "resistance", reduction: 3},
                 Bludgeoning: {type: "resistance", reduction: 3},
                 Piercing: {type: "resistance", reduction: 3},
@@ -1093,14 +1093,15 @@ var Creature = class extends Entity {
         // Dexterity Modifier
         let dex_mod = this.score_bonus.dexterity; {
             switch (this.armor_type) {
-                case "Heavy": 
+                case "Heavy": {
                     dex_mod = 0
                     break
-
-                case "Medium":
+                }
+                case "Medium": {
                     const max_bonus = this.get_proficiency_level("Medium Armor") >= 1 ? 3 : 2
                     dex_mod = Math.max(-max_bonus, Math.min(this.score_bonus.dexterity, max_bonus));
                     break
+                }
             }
         }
 
@@ -1108,6 +1109,7 @@ var Creature = class extends Entity {
         let armor = 0; {
             const item_base_ac = this.equipment.body ? database.get_item(this.equipment.body.name).base_armor_class || 0 : 0
             armor = item_base_ac - 10
+            if (this.armor_type == "Heavy" && this.get_proficiency_level("Heavy Armor") >= 1) armor += 1 
         }
         
         // Equipment Bonus
