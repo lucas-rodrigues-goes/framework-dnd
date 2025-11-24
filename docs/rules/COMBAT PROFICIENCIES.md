@@ -1,5 +1,5 @@
 # Combat Proficiencies
-This system is aimed at providing more meaningful identity to weapon types as well as martial characters, This system addresses the limited combat options available to non-caster classes by offering specialized training paths.
+This system is aimed at providing more meaningful identity to weapon types as well as martial characters, This system addresses the limited combat options available to non-caster classes by offering specialized training paths. This system replaces both Fighting Styles and the martial combat Feats from 5e, which will allows you to be more versatile with feat choice as well without losing out on combat capatibilities.
 
 ## Progression Structure
 Characters gain combat proficiencies as they gain levels:
