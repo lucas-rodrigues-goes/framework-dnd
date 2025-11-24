@@ -486,7 +486,7 @@ var Creature = class extends Entity {
         if (!this.has_condition("Hidden")) return
 
         // Stealth Roll
-        let { stealth_roll, roll_text } = this.get_condition("Hidden")
+        let { stealth_roll, roll_text, highest_dc } = this.get_condition("Hidden")
         const entering_stealth = stealth_roll === undefined || roll_text === undefined || new_roll
         if (new_roll || entering_stealth) {
             const armor = database.items.data[this.equipment.body?.name]
@@ -497,16 +497,17 @@ var Creature = class extends Entity {
             const stealth_bonus = this.skills.Stealth + this.roll_bonus()
             stealth_roll = die_roll.result + stealth_bonus
             roll_text = `${die_roll.text_color} ${stealth_bonus < 0 ? "-" : "+"} ${Math.abs(stealth_bonus)}`
+            highest_dc = -1 // Reset highest_dc for new roll
 
             // Update on character conditions
             this.set_condition("Hidden", -1, {
-                stealth_roll, roll_text
+                stealth_roll, roll_text, highest_dc
             })
             this.save()
         }
         
         // Loop through all tokens
-        let roll_was_required, highest_passive_perception = 0
+        let roll_was_required, current_highest_passive_perception = 0
         const hidden_creature = this
         for (const revealing_creature of mapCreatures()) {
             if (!Creature.#can_reveal_stealth(revealing_creature, hidden_creature)) continue
@@ -524,17 +525,27 @@ var Creature = class extends Entity {
             }
             
             roll_was_required = true
-            highest_passive_perception = Math.max(highest_passive_perception, passive_perception + perception_modifier)
+            current_highest_passive_perception = Math.max(current_highest_passive_perception, passive_perception + perception_modifier)
         }
 
         // If there were valid creatures to reveal character, and they kept hidden anyway
         if (roll_was_required) {
-            const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${highest_passive_perception}).`
-            console.log(text, this.player ? "all" : "gm")
+            // Only log if this is a new higher DC than previously stored
+            if (current_highest_passive_perception > highest_dc) {
+                const text = `${hidden_creature.name_color} attempted to stay hidden (${roll_text}) and succeeded (DC ${current_highest_passive_perception}).`
+                console.log(text, this.player ? "all" : "gm")
+                
+                // Update the highest_dc in the condition
+                this.set_condition("Hidden", -1, {
+                    stealth_roll, roll_text, highest_dc: current_highest_passive_perception
+                })
+                this.save()
+            }
             return true
-        } else {
+        } else if (entering_stealth) {
             const text = `${hidden_creature.name_color} has rolled stealth (${roll_text}) and is hidden.`
             console.log(text, this.player ? "all" : "gm")
+            
             return true
         }
     }
