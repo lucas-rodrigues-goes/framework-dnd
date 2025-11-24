@@ -1,4 +1,4 @@
-# Initiative System
+# Initiative
 
 The initiative system is designed around these core goals:
 

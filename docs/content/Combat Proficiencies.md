@@ -19,8 +19,8 @@ Each proficiency can be advanced through four tiers of mastery:
 These are proficiencies specific to weapon groups.
 
 ### Small Sword
-- Proficiency: While wielding small swords you can add your dexterity modifier as an additional bonus to damage against unnarmored enemies
-- Expertise: Consecutive hits against the same target grant you a cummulative +1 bonus to damage, this effect is lost when attacking a different target.
+- Proficiency: While wielding small swords you can add your dexterity modifier as an additional bonus to damage against unnarmored enemies. (WIP)
+- Expertise: Consecutive hits against the same target grant you a cummulative +1 bonus to damage, this effect is lost when attacking a different target. (WIP)
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
@@ -32,13 +32,13 @@ These are proficiencies specific to weapon groups.
 
 ### Blunt Weapon
 - Proficiency: While wielding blunt weapons your attacks that would be blocked by metal armor, deal half damage instead
-- Expertise: Successful hits with blunt weapons reduce the target's armor class by 2 for 1 round.
+- Expertise: Successful hits with blunt weapons reduce the target's armor class by 2 for 1 round. (WIP)
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
 ### Axe
 - Proficiency: While wielding greataxes and battleaxes your attacks that would be blocked by leather or hide armor, deal half damage instead.
-- Expertise: Your attacks force opponents to make a Strength Saving throw with a difficulty of 10 + your strength modifier, being knocked prone on a fail.
+- Expertise: Your attacks force opponents to make a Strength Saving throw with a difficulty of 10 + your strength modifier, being knocked prone on a fail. (WIP)
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
@@ -49,13 +49,13 @@ These are proficiencies specific to weapon groups.
 - Grandmastery: (No additional benefit)
 
 ### Bow
-- Proficiency: You gain the focused shooter ability, at the cost of your movement and bonus action, you gain a bonus to damage equal to your dexterity modifier for this round.
+- Proficiency: You gain the focused shooter ability, at the cost of your movement and bonus action, you gain a bonus to damage equal to your dexterity modifier for this round. (WIP)
 - Expertise: You receive a +2 to hit while wielding bows.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
 ### Crossbow
-- Proficiency: Your attacks made with crossbows do not receive penalties from attacking in melee range.
+- Proficiency: Your attacks made with crossbows do not receive penalties from attacking in melee range. (WIP)
 - Expertise: You receive a +2 to hit while wielding crossbows.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
@@ -70,7 +70,7 @@ These are general proficiencies that can be applied with most weapons.
 - Grandmastery: (No additional benefit)
 
 ### Mage Slaying
-- Proficiency: You have learned combat techniques for dealing with spellcasters, your attacks impose disadvantage on saving throws for maintaining concentration on your target for 1 round.
+- Proficiency: You have learned combat techniques for dealing with spellcasters, your attacks impose disadvantage on saving throws for maintaining concentration on your target for 1 round. (WIP)
 - Expertise: You can make attacks of opportunity whenever a creature starts spellcasting within melee range.
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
@@ -82,8 +82,8 @@ These are general proficiencies that can be applied with most weapons.
 - Grandmastery: (No additional benefit)
 
 ### Heavy Striking
-- Proficiency: While wielding a two-handed melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit.
-- Expertise: You can choose to receive a -5 penalty and +10 damage on hit instead.
+- Proficiency: While wielding a two-handed melee weapon, you can choose to fully commit to each blow, sacrificing precision for sheer force. You can enable this feature to receive a penalty of -2 to hit on your attacks, but deal an additional 4 damage on hit. (WIP)
+- Expertise: You can choose to receive a -5 penalty and +10 damage on hit instead. (WIP)
 - Mastery: (No additional benefit)
 - Grandmastery: (No additional benefit)
 
@@ -134,6 +134,6 @@ The following proficiencies can only be aquired if the character class already p
 
 ### Shield
 - Proficiency: You may wear shields with no additional penalties.
-- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect.
-- Mastery: If you take the Attack action on your turn, you can use a bonus action to utilize your shield as an offhand weapon, it deals 1d6 bludgeoning damage on a hit, you can also use it to attempt to push or knock the target instead.
+- Expertise: If you are subjected to an effect that allows you to make a Dexterity saving throw to take only half damage, you take no damage if you succeed on the saving throw, interposing your shield between yourself and the source of the effect. (WIP)
+- Mastery: If you take the Attack action on your turn, you can use a bonus action to utilize your shield as an offhand weapon, it deals 1d6 bludgeoning damage on a hit, you can also use it to attempt to push or knock the target instead. (WIP)
 - Grandmastery: (No additional benefit)
