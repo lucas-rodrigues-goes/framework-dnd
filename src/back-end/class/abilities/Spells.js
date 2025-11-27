@@ -107,8 +107,7 @@ var Spells = class extends Abilities {
     // Cast Spell
     //---------------------------------------------------------------------------------------------------
 
-    static finish_casting () {
-        try {
+    static finish_casting () { try {
         const creature = impersonated()
         if (!creature.has_condition("Spellcasting")) return
 
@@ -145,12 +144,9 @@ var Spells = class extends Abilities {
 
         // Remove Spellcasting
         creature.remove_condition("Spellcasting")
-        } catch (e) {console.log(e)}
-    }
+    } catch (error) {console.error("Spells.finish_casting()", error)} }
 
-    static cast_spell(spell, player_class) {
-        try {
-
+    static cast_spell(spell, player_class) { try {
         spell = {...spell}
 
         spell.cast_time = Number(spell.cast_time)
@@ -294,8 +290,7 @@ var Spells = class extends Abilities {
         // Consume Resources
         this.use_resources(resources)
 
-        } catch (e) {console.log(e)}
-    }
+    } catch (error) {console.error("Spells.cast_spell()", error)} }
 
     static concentrate(creature, spell, targets) {
         this.end_concentration(creature)
@@ -516,7 +511,6 @@ var Spells = class extends Abilities {
     }
 
     static lightning_streak(spell) {
-        try {
         const creature = impersonated()
 
         let die_amount = 1; {
@@ -559,7 +553,6 @@ var Spells = class extends Abilities {
             }
         }
         return { success: true }
-        } catch (e) {console.log(e)}
     }
 
     static eldritch_blast (options = {}) {
@@ -1235,7 +1228,6 @@ var Spells = class extends Abilities {
     }
 
     static mage_armor (options = {}) {
-        try {
         const original_spell = {...database.spells.data["Mage Armor"]}
         const spell = {...original_spell, ...options}
 
@@ -1268,7 +1260,6 @@ var Spells = class extends Abilities {
                 : `${creature.name_color} cast ${name}.`
             )
         }
-        } catch (e) {console.log(e)}
     }
 
     static shield (spell) {
