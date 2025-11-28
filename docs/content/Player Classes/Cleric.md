@@ -31,25 +31,13 @@ You get the following combat proficiencies:
 
 ## Features
 ### Cleric Spellcasting (Level 1)
-As a conduit for divine power, you can cast Cleric spells.
+As a conduit for divine power, you can cast Cleric spells. 
 
-#### Cantrips
-At 1st level, you know three cantrips of your choice from the Cleric spell list. You learn additional Cleric cantrips of your choice at higher levels, as shown in the Cantrips Known column of the Cleric table.
+You prepare the list of Cleric spells that are available for you to cast, choosing from the Cleric spell list. When you do so, choose a number of Cleric spells equal to your Wisdom modifier + your Cleric level (minimum of one spell). The spells must be of a level for which you have spell slots. You regain all your spent spell slots when you long rest.
 
-#### Preparing and Casting Spells
-The Cleric table shows how many spell slots you have to cast your spells of 1st level and higher. To cast one of these spells, you must expend a slot of the spell's level. You regain all expended spell slots when you finish a long rest.
+Cantrips are spells that do not cost resources to cast, and don't need to be prepared. Spells with the ritual tag can also be cast without cost, but using a casting time of 10 minutes instead of the regular speed.
 
-You prepare the list of Cleric spells that are available for you to cast, choosing from the Cleric spell list. When you do so, choose a number of Cleric spells equal to your Wisdom modifier + your Cleric level (minimum of one spell). The spells must be of a level for which you have spell slots.
-
-For example, if you are a 3rd-level Cleric, you have four 1st-level and two 2nd-level spell slots. With a Wisdom of 16, your list of prepared spells can include six spells of 1st or 2nd level, in any combination. If you prepare the 1st-level spell Cure Wounds, you can cast it using a 1st-level or 2nd-level slot. Casting the spell doesn't remove it from your list of prepared spells.
-
-You can change your list of prepared spells when you finish a long rest. Preparing a new list of Cleric spells requires time spent in prayer and meditation: at least 1 minute per spell level for each spell on your list.
-
-#### Spellcasting Ability
-Wisdom is your spellcasting ability for your Cleric spells. The power of your spells comes from your devotion to your deity. You use your Wisdom whenever a Cleric spell refers to your spellcasting ability. In addition, you use your Wisdom modifier when setting the saving throw DC for a Cleric spell you cast and when making an attack roll with one.
-
-Spell save DC = 8 + your proficiency bonus + your Wisdom modifier
-Spell attack modifier = your proficiency bonus + your Wisdom modifier
+Spell Focuses are needed for most spells, as a Wizard you may use a holy symbol.
 
 ### Channel Divinity (Level 2) - (WIP)
 You gain the ability to channel divine energy directly from your deity, using that energy to fuel magical effects. You start with two such effects: Turn Undead and an effect determined by your domain. Some domains grant you additional effects as you advance in levels, as noted in the domain description.

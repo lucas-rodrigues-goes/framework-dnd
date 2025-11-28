@@ -33,7 +33,7 @@ As a student of arcane magic, you have access to Wizard spells.
 
 Spells can be learned by scribing scrolls, from other Wizard's spellbooks, and by leveling up. To cast spells you need to memorize them and have a spell slot of sufficient level available. When long resting you can memorize a total of spells equal to your Intelligence modifier + your wizard level, and you also regain your spent spell slots. 
 
-Cantrips are spells that do not cost resources to cast, and don't need to be prepared. Spells with the ritual tag can be cast with the same behavior, but using a casting time of 10 minutes instead of the regular speed.
+Cantrips are spells that do not cost resources to cast, and don't need to be prepared. Spells with the ritual tag can also be cast without cost, but using a casting time of 10 minutes instead of the regular speed.
 
 Spell Focuses are needed for most spells, as a Wizard you may use an Arcane Focus.
 
